@@ -14,7 +14,7 @@ Next.js 13 App Router와 Prisma를 사용한 수의사 전용 구인구직 플�
 
 ## 기술 스택
 
-- **Frontend**: Next.js 13 (App Router), React, TypeScript
+- **Frontend**: Next.js 15.0.3 (App Router), React, TypeScript
 - **Backend**: Next.js API Routes
 - **Database**: PostgreSQL + Prisma ORM
 - **State Management**: Zustand
@@ -71,6 +71,7 @@ src/
 ## 페이지 구조
 
 ### 인증
+
 - `/member-select` - 회원 유형 선택
 - `/login/veterinarian` - 수의사 로그인
 - `/login/hospital` - 병원 로그인
@@ -78,6 +79,7 @@ src/
 - `/register/hospital` - 병원 회원가입
 
 ### 메인 서비스
+
 - `/` - 홈페이지
 - `/jobs` - 채용공고 목록
 - `/jobs/[id]` - 채용공고 상세
@@ -88,12 +90,14 @@ src/
 - `/lectures/[id]` - 강의영상 상세
 
 ### 양도양수
+
 - `/transfers` - 양도양수 게시판
 - `/transfers/create` - 양도양수 글 작성
 - `/transfers/[id]` - 양도양수 상세
 - `/transfers/[id]/edit` - 양도양수 수정
 
 ### 수의사 대시보드
+
 - `/dashboard/veterinarian` - 수의사 대시보드
 - `/dashboard/veterinarian/applications` - 지원내역
 - `/dashboard/veterinarian/bookmarks` - 찜한 공고
@@ -102,6 +106,7 @@ src/
 - `/dashboard/veterinarian/resume` - 나의 이력서
 
 ### 병원 대시보드
+
 - `/dashboard/hospital` - 병원 대시보드
 - `/dashboard/hospital/applicants` - 지원자 정보
 - `/dashboard/hospital/transfer-bookmarks` - 양도양수 찜 목록
@@ -116,11 +121,13 @@ src/
 ## API 엔드포인트
 
 ### 인증
+
 - `POST /api/auth/login` - 로그인
 - `POST /api/auth/register` - 회원가입
 - `POST /api/auth/logout` - 로그아웃
 
 ### 수의사
+
 - `GET /api/veterinarians` - 수의사 목록
 - `GET /api/veterinarians/[id]` - 수의사 상세
 - `POST /api/veterinarians` - 수의사 등록
@@ -128,34 +135,42 @@ src/
 - `DELETE /api/veterinarians/[id]` - 수의사 삭제
 
 ### 병원
+
 - `GET /api/hospitals` - 병원 목록
 - `GET /api/hospitals/[id]` - 병원 상세
 - `POST /api/hospitals` - 병원 등록
 
 ### 채용공고
+
 - `GET /api/jobs` - 채용공고 목록
 - `GET /api/jobs/[id]` - 채용공고 상세
 - `POST /api/jobs` - 채용공고 등록
 
 ### 인재정보
+
 - `GET /api/resumes` - 인재정보 목록
 - `GET /api/resumes/[id]` - 인재정보 상세
 
 ### 양도양수
+
 - `GET /api/transfers` - 양도양수 목록
 - `GET /api/transfers/[id]` - 양도양수 상세
 
 ### 강의영상
+
 - `GET /api/lectures` - 강의영상 목록
 - `GET /api/lectures/[id]` - 강의영상 상세
 
 ### 지원내역
+
 - `GET /api/applications` - 지원내역 목록
 
 ### 찜 목록
+
 - `GET /api/bookmarks` - 찜 목록
 
 ### 메시지
+
 - `GET /api/messages` - 메시지 목록
 - `GET /api/messages/[id]` - 메시지 상세
 
