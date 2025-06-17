@@ -1,0 +1,202 @@
+/* src/styles/fonts.css */
+/* Title Font Family */
+@font-face {
+  font-family: "TitleFont";
+  src: url("/fonts/title/TitleFont-Light.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TitleFont";
+  src: url("/fonts/title/TitleFont-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TitleFont";
+  src: url("/fonts/title/TitleFont-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Text Font Family */
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-Thin.woff2") format("woff2");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-ExtraLight.woff2") format("woff2");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TextFont";
+  src: url("/fonts/text/TextFont-Heavy.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  /* Font Families */
+  --font-title: "TitleFont", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-text: "TextFont", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  /* Title Font Weights (only available weights: 400, 500, 700) */
+  --title-weight-light: 400; /* TitleFont-Light */
+  --title-weight-medium: 500; /* TitleFont-Medium */
+  --title-weight-bold: 700; /* TitleFont-Bold */
+
+  /* Text Font Weights (full range available) */
+  --text-weight-thin: 100; /* TextFont-Thin */
+  --text-weight-extralight: 200; /* TextFont-ExtraLight */
+  --text-weight-light: 300; /* TextFont-Light */
+  --text-weight-regular: 400; /* TextFont-Regular */
+  --text-weight-medium: 500; /* TextFont-Medium */
+  --text-weight-semibold: 600; /* TextFont-SemiBold */
+  --text-weight-bold: 700; /* TextFont-Bold */
+  --text-weight-extrabold: 800; /* TextFont-ExtraBold */
+  --text-weight-heavy: 900; /* TextFont-Heavy */
+}
+
+/* ===== UTILITY CLASSES ===== */
+/* Font Family Classes - 자유로운 크기 사용 가능 */
+.font-title {
+  font-family: var(--font-title);
+}
+
+.font-text {
+  font-family: var(--font-text);
+}
+
+/* Title Font Weight Utilities (limited weights) */
+.title-light {
+  font-weight: var(--title-weight-light);
+}
+.title-medium {
+  font-weight: var(--title-weight-medium);
+}
+.title-bold {
+  font-weight: var(--title-weight-bold);
+}
+
+/* Text Font Weight Utilities (full range) */
+.text-thin {
+  font-weight: var(--text-weight-thin);
+}
+.text-extralight {
+  font-weight: var(--text-weight-extralight);
+}
+.text-light {
+  font-weight: var(--text-weight-light);
+}
+.text-regular {
+  font-weight: var(--text-weight-regular);
+}
+.text-medium {
+  font-weight: var(--text-weight-medium);
+}
+.text-semibold {
+  font-weight: var(--text-weight-semibold);
+}
+.text-bold {
+  font-weight: var(--text-weight-bold);
+}
+.text-extrabold {
+  font-weight: var(--text-weight-extrabold);
+}
+.text-heavy {
+  font-weight: var(--text-weight-heavy);
+}
+
+/* Generic Font Weight Utilities (use text font weights as base) */
+.font-thin {
+  font-weight: var(--text-weight-thin);
+}
+.font-extralight {
+  font-weight: var(--text-weight-extralight);
+}
+.font-light {
+  font-weight: var(--text-weight-light);
+}
+.font-regular {
+  font-weight: var(--text-weight-regular);
+}
+.font-medium {
+  font-weight: var(--text-weight-medium);
+}
+.font-semibold {
+  font-weight: var(--text-weight-semibold);
+}
+.font-bold {
+  font-weight: var(--text-weight-bold);
+}
+.font-extrabold {
+  font-weight: var(--text-weight-extrabold);
+}
+.font-heavy {
+  font-weight: var(--text-weight-heavy);
+}
