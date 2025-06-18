@@ -1,0 +1,569 @@
+/* src/styles/components/button.css */
+/* Button 컴포넌트 - 피그마 디자인시스템 완전 준수 */
+
+/* ===== 기본 버튼 구조 ===== */
+.button-base {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: "SUIT";
+  text-decoration: none;
+  position: relative;
+  font-style: normal;
+  box-sizing: border-box;
+}
+
+.button-base:focus-visible {
+  outline: 2px solid var(--Keycolor1);
+  outline-offset: 2px;
+}
+
+.button-base:disabled {
+  cursor: not-allowed;
+}
+
+/* ===== L 크기 버튼 ===== */
+.button-large {
+  display: flex;
+  width: 160px;
+  height: 60px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 135%; /* 27px */
+}
+
+/* L - Default */
+.button-large-default {
+  background: var(--Subtext);
+  color: #fff;
+  border: none;
+}
+
+.button-large-default:hover:not(:disabled) {
+  background: #414c5b;
+}
+
+/* L - Line */
+.button-large-line {
+  border: 1px solid var(--Line);
+  background: var(--Box_Light);
+  color: var(--Subtext);
+  font-weight: 700;
+}
+
+.button-large-line:hover:not(:disabled) {
+  background: var(--Box);
+}
+
+/* L - Disable */
+.button-large-disable {
+  border: 1px solid var(--Line);
+  background: var(--Box_Disable);
+  color: var(--Guidetext);
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+/* ===== M 크기 버튼 ===== */
+.button-medium {
+  display: flex;
+  width: 160px;
+  height: 48px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 135%; /* 24.3px */
+}
+
+/* M - Keycolor */
+.button-medium-keycolor {
+  background: var(--Keycolor1);
+  color: #fff;
+  border: none;
+}
+
+.button-medium-keycolor:hover:not(:disabled) {
+  background: #ff7f8f;
+}
+
+/* M - Default */
+.button-medium-default {
+  background: var(--Subtext);
+  color: #fff;
+  border: none;
+}
+
+.button-medium-default:hover:not(:disabled) {
+  background: #414c5b;
+}
+
+/* M - Line */
+.button-medium-line {
+  border: 1px solid var(--Line);
+  background: var(--Box_Light);
+  color: var(--Subtext);
+  /* M 크기는 font-weight 변경 없음 - 피그마 명세 확인 필요하지만 일단 기본값 유지 */
+}
+
+.button-medium-line:hover:not(:disabled) {
+  background: var(--Box);
+}
+
+/* M - Disable */
+.button-medium-disable {
+  border: 1px solid var(--Line);
+  background: var(--Box_Disable);
+  color: var(--Guidetext);
+  cursor: not-allowed;
+}
+
+/* ===== S 크기 버튼 ===== */
+.button-small {
+  display: flex;
+  width: 90px;
+  height: 36px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 135%; /* 21.6px */
+}
+
+/* S - Keycolor */
+.button-small-keycolor {
+  background: var(--Keycolor1);
+  color: #fff;
+  border: none;
+}
+
+.button-small-keycolor:hover:not(:disabled) {
+  background: #ff7f8f;
+}
+
+/* S - Default (M과 동일한 색상) */
+.button-small-default {
+  background: var(--Subtext);
+  color: #fff;
+  border: none;
+}
+
+.button-small-default:hover:not(:disabled) {
+  background: #414c5b;
+}
+
+/* S - Line (M과 동일한 색상) */
+.button-small-line {
+  border: 1px solid var(--Line);
+  background: var(--Box_Light);
+  color: var(--Subtext);
+}
+
+.button-small-line:hover:not(:disabled) {
+  background: var(--Box);
+}
+
+/* S - Disable (M과 동일한 색상) */
+.button-small-disable {
+  border: 1px solid var(--Line);
+  background: var(--Box_Disable);
+  color: var(--Guidetext);
+  cursor: not-allowed;
+}
+
+/* ===== XS 크기 버튼 ===== */
+.button-xsmall {
+  display: inline-flex;
+  height: 36px;
+  padding: 10px 18px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 135%; /* 18.9px */
+}
+
+/* XS - Default */
+.button-xsmall-default {
+  background: var(--Subtext);
+  color: #fff;
+  border: none;
+}
+
+.button-xsmall-default:hover:not(:disabled) {
+  background: #414c5b;
+}
+
+/* XS - Line */
+.button-xsmall-line {
+  border: 1px solid var(--Line);
+  background: var(--Box_Light);
+  color: var(--Subtext2);
+}
+
+.button-xsmall-line:hover:not(:disabled) {
+  background: var(--Box);
+}
+
+/* XS - Weak */
+.button-xsmall-weak {
+  border: none;
+  background: transparent;
+  color: var(--Subtext2);
+}
+
+.button-xsmall-weak:hover:not(:disabled) {
+  border: none;
+  background: var(--Box_Light);
+  color: var(--Subtext);
+}
+
+/* ===== 아이콘 버튼 ===== */
+/* 아이콘 버튼 - Web, Default */
+.button-icon-web {
+  display: flex;
+  width: 140px;
+  height: 44px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: var(--Subtext);
+  color: var(--Box);
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 135%; /* 24.3px */
+  border: none;
+}
+
+.button-icon-web:hover:not(:disabled) {
+  background: #414c5b;
+}
+
+/* 아이콘 버튼 Web의 content 정렬 */
+.button-icon-web .button-content {
+  gap: 10px;
+  align-items: center;
+}
+
+.button-icon-web .button-icon svg {
+  vertical-align: middle;
+}
+
+.button-icon-web .button-text {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* 아이콘 버튼 - App, Default */
+.button-icon-app {
+  display: flex;
+  width: 60px;
+  height: 60px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-radius: 99px;
+  background: var(--Keycolor1);
+  border: none;
+}
+
+.button-icon-app svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #ffffff;
+  vertical-align: middle;
+}
+
+.button-icon-app:hover:not(:disabled) {
+  background: #ff7f8f;
+}
+
+/* ===== 더보기 버튼 ===== */
+.button-more {
+  display: flex;
+  width: 343px;
+  height: 54px;
+  justify-content: center;
+  align-items: center;
+  gap: 19px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--Line);
+  background: var(--Box_Light);
+  color: var(--Subtext2);
+  font-family: "Gmarket Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 135%; /* 21.6px */
+}
+
+.button-more:hover:not(:disabled) {
+  background: var(--Box);
+}
+
+/* ===== 버튼 내부 구조 ===== */
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* 더보기 버튼의 content는 gap을 19px로 오버라이드 */
+.button-more .button-content {
+  gap: 19px;
+  align-items: center;
+}
+
+.button-text {
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.button-icon svg {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.button-icon-left {
+  order: 1;
+}
+
+.button-icon-right {
+  order: 3;
+}
+
+.button-text {
+  order: 2;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* 아이콘이 있는 버튼의 텍스트 정렬 개선 */
+.button-base[data-has-icon="true"] .button-text {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* 크기별 아이콘 사이즈 */
+.button-large .button-icon svg {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.button-medium .button-icon svg {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.button-small .button-icon svg {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+.button-xsmall .button-icon svg {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+}
+
+/* 더보기 버튼의 아이콘 사이즈 */
+.button-more .button-icon svg {
+  width: 21px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+/* 더보기 버튼의 텍스트 정렬 */
+.button-more .button-text {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* ===== 로딩 스피너 ===== */
+.button-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.button-spinner svg {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+}
+
+.button-base[data-loading="true"] {
+  cursor: not-allowed;
+}
+
+.button-base[data-loading="true"] .button-content {
+  opacity: 0;
+}
+
+/* ===== 버튼 그룹 ===== */
+.button-group {
+  display: flex;
+}
+
+.button-group[data-orientation="horizontal"] {
+  flex-direction: row;
+}
+
+.button-group[data-orientation="vertical"] {
+  flex-direction: column;
+}
+
+.button-group[data-spacing="none"] {
+  gap: 0;
+}
+
+.button-group[data-spacing="small"] {
+  gap: 4px;
+}
+
+.button-group[data-spacing="medium"] {
+  gap: 8px;
+}
+
+.button-group[data-spacing="large"] {
+  gap: 16px;
+}
+
+/* 연결된 버튼 그룹 (spacing="none"일 때) */
+.button-group[data-spacing="none"]
+  .button-base:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+.button-group[data-spacing="none"][data-orientation="horizontal"]
+  .button-base:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right-width: 0;
+}
+
+.button-group[data-spacing="none"][data-orientation="horizontal"]
+  .button-base:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.button-group[data-spacing="none"][data-orientation="horizontal"]
+  .button-base:not(:first-child):not(:last-child) {
+  border-right-width: 0;
+}
+
+.button-group[data-spacing="none"][data-orientation="vertical"]
+  .button-base:first-child {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-width: 0;
+}
+
+.button-group[data-spacing="none"][data-orientation="vertical"]
+  .button-base:last-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.button-group[data-spacing="none"][data-orientation="vertical"]
+  .button-base:not(:first-child):not(:last-child) {
+  border-bottom-width: 0;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+  .button-large {
+    width: 100%;
+    max-width: 160px;
+  }
+
+  .button-medium {
+    width: 100%;
+    max-width: 160px;
+  }
+
+  .button-more {
+    width: 100%;
+    max-width: 343px;
+  }
+
+  .button-group[data-orientation="horizontal"] {
+    flex-wrap: wrap;
+  }
+}
+
+/* ===== Composite 패턴 서브 컴포넌트 ===== */
+.button-icon-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-text-only {
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ===== 폰트 패밀리 클래스 ===== */
+.font-text {
+  font-family: "SUIT";
+}
+
+.font-title {
+  font-family: "Gmarket Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}

@@ -2,106 +2,106 @@
 /* ===== COLOR DESIGN SYSTEM ===== */
 :root {
   /* 기본 텍스트 색상 */
-  --color-text: #3b394d;
-  --color-subtext: #4f5866;
-  --color-subtext2: #9098a4;
-  --color-guidetext: #caced6;
+  --Text: #3b394d;
+  --Subtext: #4f5866;
+  --Subtext2: #9098a4;
+  --Guidetext: #caced6;
 
   /* 라인 색상 */
-  --color-line: #efeff0;
-  --color-line-highlight: #dcdce3;
+  --Line: #efeff0;
+  --Line_Highlight: #dcdce3;
 
   /* 박스 색상 */
-  --color-box: #f6f6f6;
-  --color-box-light: #fafafa;
-  --color-box-disable: #eaeaea;
+  --Box: #f6f6f6;
+  --Box_Light: #fafafa;
+  --Box_Disable: #eaeaea;
 
   /* 키 컬러 (메인 브랜드 색상) */
-  --color-keycolor1: #ff8796;
-  --color-keycolor2: #ffb7b8;
-  --color-keycolor3: #ffd3d3;
-  --color-keycolor4: #ffe5e5;
-  --color-keycolor5: #fff7f7;
+  --Keycolor1: #ff8796;
+  --Keycolor2: #ffb7b8;
+  --Keycolor3: #ffd3d3;
+  --Keycolor4: #ffe5e5;
+  --Keycolor5: #fff7f7;
 
   /* 서브 컬러 (보조 색상) */
-  --color-subcolor1: #698cfc;
-  --color-subcolor2: #85a1ff;
-  --color-subcolor3: #aabeff;
-  --color-subcolor4: #c7d4ff;
-  --color-subcolor5: #f2f5ff;
+  --Subcolor1: #698cfc;
+  --Subcolor2: #85a1ff;
+  --Subcolor3: #aabeff;
+  --Subcolor4: #c7d4ff;
+  --Subcolor5: #f2f5ff;
 }
 
 /* ===== UTILITY CLASSES ===== */
 
 /* 텍스트 색상 클래스 */
 .text-primary {
-  color: var(--color-text);
+  color: var(--Text);
 }
 .text-sub {
-  color: var(--color-subtext);
+  color: var(--Subtext);
 }
 .text-sub2 {
-  color: var(--color-subtext2);
+  color: var(--Subtext2);
 }
 .text-guide {
-  color: var(--color-guidetext);
+  color: var(--Guidetext);
 }
 
 /* 키 컬러 텍스트 */
 .text-key1 {
-  color: var(--color-keycolor1);
+  color: var(--Keycolor1);
 }
 .text-key2 {
-  color: var(--color-keycolor2);
+  color: var(--Keycolor2);
 }
 .text-key3 {
-  color: var(--color-keycolor3);
+  color: var(--Keycolor3);
 }
 .text-key4 {
-  color: var(--color-keycolor4);
+  color: var(--Keycolor4);
 }
 .text-key5 {
-  color: var(--color-keycolor5);
+  color: var(--Keycolor5);
 }
 
 /* 배경 색상 클래스 */
 .bg-box {
-  background-color: var(--color-box);
+  background-color: var(--Box);
 }
 .bg-box-disable {
-  background-color: var(--color-box-disable);
+  background-color: var(--Box_Disable);
 }
 
 /* 키 컬러 배경 */
 .bg-key1 {
-  background-color: var(--color-keycolor1);
+  background-color: var(--Keycolor1);
 }
 .bg-key2 {
-  background-color: var(--color-keycolor2);
+  background-color: var(--Keycolor2);
 }
 .bg-key3 {
-  background-color: var(--color-keycolor3);
+  background-color: var(--Keycolor3);
 }
 .bg-key4 {
-  background-color: var(--color-keycolor4);
+  background-color: var(--Keycolor4);
 }
 .bg-key5 {
-  background-color: var(--color-keycolor5);
+  background-color: var(--Keycolor5);
 }
 
 /* 서브 컬러 배경 */
 .bg-sub1 {
-  background-color: var(--color-subcolor1);
+  background-color: var(--Subcolor1);
 }
 .bg-sub2 {
-  background-color: var(--color-subcolor2);
+  background-color: var(--Subcolor2);
 }
 .bg-sub3 {
-  background-color: var(--color-subcolor3);
+  background-color: var(--Subcolor3);
 }
 .bg-sub4 {
-  background-color: var(--color-subcolor4);
+  background-color: var(--Subcolor4);
 }
 .bg-sub5 {
-  background-color: var(--color-subcolor5);
+  background-color: var(--Subcolor5);
 }
