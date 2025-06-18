@@ -1,0 +1,157 @@
+/* src/styles/components/checkbox.css */
+/* Checkbox 컴포넌트 - 피그마 디자인시스템 완전 준수 */
+
+/* ===== 기본 Checkbox 구조 ===== */
+.checkbox-base {
+  display: inline-flex;
+  padding: 4px 0px;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: "SUIT";
+  position: relative;
+  box-sizing: border-box;
+}
+
+.checkbox-base:focus-within {
+  outline: 2px solid var(--Keycolor1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===== Checkbox Input (완전히 숨김) ===== */
+.checkbox-input {
+  display: none !important;
+  visibility: hidden;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  background: none;
+}
+
+.checkbox-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ===== Checkbox Icon ===== */
+.checkbox-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== 애니메이션 정의 ===== */
+@keyframes checkmark-draw {
+  0% {
+    stroke-dashoffset: 24;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes checkmark-draw-ltr {
+  0% {
+    stroke-dashoffset: -24;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes checkbox-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes checkbox-check {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 체크박스 클릭 시 바운스 효과 */
+.checkbox-icon[data-animate="true"] {
+  animation: checkbox-bounce 0.3s ease-in-out;
+}
+
+/* ===== Checkbox Label ===== */
+.checkbox-label {
+  color: var(--text-default, #35313c);
+  font-family: SUIT;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 24px */
+  transition: font-weight 0.2s ease-in-out;
+  user-select: none;
+}
+
+/* ===== 상태별 스타일 ===== */
+
+/* Disabled 상태 */
+.checkbox-base[data-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.checkbox-base[data-disabled="true"] .checkbox-label {
+  color: var(--text-disabled, #caced6);
+}
+
+/* Checked 상태 */
+.checkbox-base[data-checked="true"] .checkbox-label {
+  font-weight: 600;
+}
+
+/* ===== Checkbox Group ===== */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkbox-group[data-orientation="horizontal"] {
+  flex-direction: row !important;
+  gap: 16px;
+  flex-wrap: wrap;
+}

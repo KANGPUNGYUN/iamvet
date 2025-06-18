@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Radio } from "@/components/ui/Radio";
 import { Tab } from "@/components/ui/Tab";
 import {
@@ -136,6 +137,9 @@ export default function HomePage() {
   }
 
   const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([
+    "",
+  ]);
 
   return (
     <div className="p-6 space-y-8">
@@ -368,25 +372,26 @@ export default function HomePage() {
           <h3 className="mb-4 text-lg font-semibold">
             라디오 버튼 (hover, checked 시 스타일링 추가 예정)
           </h3>
-          <Radio.Group
-            className="flex gap-8"
-            value={selectedPeriod}
-            onChange={setSelectedPeriod}
-          >
-            <Radio.Item value="immediate" className="flex gap-2">
-              즉시 가능
-            </Radio.Item>
-            <Radio.Item value="week" className="flex gap-2">
-              1주일 내
-            </Radio.Item>
-            <Radio.Item value="month" className="flex gap-2">
-              1개월 내
-            </Radio.Item>
-            <Radio.Item value="quarter" className="flex gap-2">
-              3개월 내
-            </Radio.Item>
+          <Radio.Group value={selectedPeriod} onChange={setSelectedPeriod}>
+            <Radio.Item value="immediate">즉시 가능</Radio.Item>
+            <Radio.Item value="week">1주일 내</Radio.Item>
+            <Radio.Item value="month">1개월 내</Radio.Item>
+            <Radio.Item value="quarter">3개월 내</Radio.Item>
           </Radio.Group>
         </div>
+      </div>
+
+      <div className="space-y-8">
+        <h3 className="mb-4 text-lg font-semibold">체크박스</h3>
+        <Checkbox.Group
+          value={selectedDepartments}
+          onChange={setSelectedDepartments}
+        >
+          <Checkbox.Item value="internal">내과</Checkbox.Item>
+          <Checkbox.Item value="surgery">외과</Checkbox.Item>
+          <Checkbox.Item value="pediatrics">소아과</Checkbox.Item>
+          <Checkbox.Item value="dermatology">피부과</Checkbox.Item>
+        </Checkbox.Group>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 // src/components/ui/Radio/RadioItem.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { RadioProps } from "./types";
 import { useRadioContext } from "./RadioContext";
 
@@ -12,6 +12,7 @@ const RadioItem: React.FC<RadioProps> = ({
   className = "",
   onChange,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const {
     value: groupValue,
     onChange: groupOnChange,
@@ -38,6 +39,16 @@ const RadioItem: React.FC<RadioProps> = ({
         onChange?.(value);
       }
     }
+  };
+
+  const handleMouseEnter = () => {
+    if (!isDisabled) {
+      setIsHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
   };
 
   // SVG 아이콘 렌더링
@@ -77,7 +88,66 @@ const RadioItem: React.FC<RadioProps> = ({
       );
     }
 
-    // Default 상태
+    // Hover 상태 (unchecked + enabled + hovered)
+    if (isHovered) {
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          fill="none"
+        >
+          <defs>
+            <filter
+              id="filter0_d_349_5410"
+              x="-18"
+              y="-18"
+              width="68"
+              height="68"
+              filterUnits="userSpaceOnUse"
+              colorInterpolationFilters="sRGB"
+            >
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
+              <feColorMatrix
+                in="SourceAlpha"
+                type="matrix"
+                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                result="hardAlpha"
+              />
+              <feOffset />
+              <feGaussianBlur stdDeviation="12" />
+              <feComposite in2="hardAlpha" operator="out" />
+              <feColorMatrix
+                type="matrix"
+                values="0 0 0 0 1 0 0 0 0 0.559063 0 0 0 0 0.706042 0 0 0 0.75 0"
+              />
+              <feBlend
+                mode="normal"
+                in2="BackgroundImageFix"
+                result="effect1_dropShadow_349_5410"
+              />
+              <feBlend
+                mode="normal"
+                in="SourceGraphic"
+                in2="effect1_dropShadow_349_5410"
+                result="shape"
+              />
+            </filter>
+          </defs>
+          {/* 둥근 분홍빛 배경 */}
+          <circle cx="16" cy="16" r="16" fill="rgba(255, 135, 150, 0.1)" />
+          <g filter="url(#filter0_d_349_5410)">
+            <path
+              d="M16 26C14.6167 26 13.3167 25.7375 12.1 25.2125C10.8833 24.6875 9.825 23.975 8.925 23.075C8.025 22.175 7.3125 21.1167 6.7875 19.9C6.2625 18.6833 6 17.3833 6 16C6 14.6167 6.2625 13.3167 6.7875 12.1C7.3125 10.8833 8.025 9.825 8.925 8.925C9.825 8.025 10.8833 7.3125 12.1 6.7875C13.3167 6.2625 14.6167 6 16 6C17.3833 6 18.6833 6.2625 19.9 6.7875C21.1167 7.3125 22.175 8.025 23.075 8.925C23.975 9.825 24.6875 10.8833 25.2125 12.1C25.7375 13.3167 26 14.6167 26 16C26 17.3833 25.7375 18.6833 25.2125 19.9C24.6875 21.1167 23.975 22.175 23.075 23.075C22.175 23.975 21.1167 24.6875 19.9 25.2125C18.6833 25.7375 17.3833 26 16 26ZM16 24C18.2333 24 20.125 23.225 21.675 21.675C23.225 20.125 24 18.2333 24 16C24 13.7667 23.225 11.875 21.675 10.325C20.125 8.775 18.2333 8 16 8C13.7667 8 11.875 8.775 10.325 10.325C8.775 11.875 8 13.7667 8 16C8 18.2333 8.775 20.125 10.325 21.675C11.875 23.225 13.7667 24 16 24Z"
+              fill="#FF8796"
+            />
+          </g>
+        </svg>
+      );
+    }
+
+    // Default 상태 (unchecked + not hovered)
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -101,6 +171,8 @@ const RadioItem: React.FC<RadioProps> = ({
       data-disabled={isDisabled}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       tabIndex={isDisabled ? -1 : 0}
       role="radio"
       aria-checked={isChecked}
