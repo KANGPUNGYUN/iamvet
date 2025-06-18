@@ -405,6 +405,20 @@ export const ExternalLinkIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
+export const MoreIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 13 2"
+    fill="none"
+  >
+    <circle cx="1.5" cy="1" r="1" fill={currentColor} />
+    <circle cx="6.5" cy="1" r="1" fill={currentColor} />
+    <circle cx="11.5" cy="1" r="1" fill={currentColor} />
+  </svg>
+);
+
 export const MoreVerticalIcon = ({ currentColor = "currentColor" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -796,24 +810,6 @@ export const PhoneIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const CircleIcon = ({ currentColor = "currentColor" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="18"
-    viewBox="0 0 18 18"
-    fill="none"
-  >
-    <path
-      d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
-      stroke={currentColor}
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 export const DollarIcon = ({ currentColor = "currentColor" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1044,6 +1040,107 @@ export const UploadIcon = ({ currentColor = "currentColor" }) => (
       d="M28 20V25.3333C28 26.0406 27.719 26.7189 27.219 27.219C26.7189 27.719 26.0406 28 25.3333 28H6.66667C5.95942 28 5.28115 27.719 4.78105 27.219C4.28095 26.7189 4 26.0406 4 25.3333V20M22.6667 10.6667L16 4M16 4L9.33333 10.6667M16 4V20"
       stroke={currentColor}
       strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const DoublePrevIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="M11.728 12L12.668 11.06L9.61464 8L12.668 4.94L11.728 4L7.72797 8L11.728 12Z"
+      fill={currentColor}
+    />
+    <path
+      d="M7.33344 12L8.27344 11.06L5.2201 8L8.27344 4.94L7.33344 4L3.33344 8L7.33344 12Z"
+      fill={currentColor}
+    />
+  </svg>
+);
+
+export const PrevIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="M10.06 12L11 11.06L7.94667 8L11 4.94L10.06 4L6.06 8L10.06 12Z"
+      fill={currentColor}
+    />
+  </svg>
+);
+
+export const NextIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="M6.94 4L6 4.94L9.05333 8L6 11.06L6.94 12L10.94 8L6.94 4Z"
+      fill={currentColor}
+    />
+  </svg>
+);
+
+export const DoubleNextIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="M4.27203 4L3.33203 4.94L6.38536 8L3.33203 11.06L4.27203 12L8.27203 8L4.27203 4Z"
+      fill={currentColor}
+    />
+    <path
+      d="M8.66656 4L7.72656 4.94L10.7799 8L7.72656 11.06L8.66656 12L12.6666 8L8.66656 4Z"
+      fill={currentColor}
+    />
+  </svg>
+);
+
+export const LinkIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="17"
+    height="17"
+    viewBox="0 0 17 17"
+    fill="none"
+  >
+    <path
+      d="M16.4221 8.85562C16.6176 8.66017 16.6176 8.33862 16.4221 8.14316L11.8826 3.60362C11.6871 3.40817 11.3656 3.40817 11.1701 3.60362C10.9747 3.79907 10.9747 4.12062 11.1701 4.31608L14.849 7.995H0.934081C0.656665 7.995 0.429688 8.22198 0.429688 8.49939C0.429688 8.77681 0.656665 9.00379 0.934081 9.00379H14.849L11.1701 12.6827C10.9747 12.8782 10.9747 13.1997 11.1701 13.3952C11.3656 13.5906 11.6871 13.5906 11.8826 13.3952L16.4221 8.85562Z"
+      fill={currentColor}
+    />
+  </svg>
+);
+
+export const ImageIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="30"
+    height="31"
+    viewBox="0 0 30 31"
+    fill="none"
+  >
+    <path
+      d="M6.25 26.875H23.75C25.1307 26.875 26.25 25.7557 26.25 24.375V6.875C26.25 5.49429 25.1307 4.375 23.75 4.375H6.25C4.86929 4.375 3.75 5.49429 3.75 6.875V24.375C3.75 25.7557 4.86929 26.875 6.25 26.875ZM6.25 26.875L20 13.125L26.25 19.375M12.5 11.25C12.5 12.2855 11.6605 13.125 10.625 13.125C9.58947 13.125 8.75 12.2855 8.75 11.25C8.75 10.2145 9.58947 9.375 10.625 9.375C11.6605 9.375 12.5 10.2145 12.5 11.25Z"
+      stroke={currentColor}
+      strokeWidth="1.875"
       strokeLinecap="round"
       strokeLinejoin="round"
     />

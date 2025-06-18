@@ -20,6 +20,7 @@ import {
   PdfIcon,
   SearchIcon,
   ExternalLinkIcon,
+  MoreIcon,
   MoreVerticalIcon,
   HomeIcon,
   UserPlusIcon,
@@ -36,7 +37,6 @@ import {
   ConnectionIcon,
   WalletIcon,
   PhoneIcon,
-  CircleIcon,
   DollarIcon,
   EyeIcon,
   EyeSmallIcon,
@@ -49,6 +49,12 @@ import {
   BellIcon,
   CloseIcon,
   UploadIcon,
+  DoublePrevIcon,
+  PrevIcon,
+  NextIcon,
+  DoubleNextIcon,
+  LinkIcon,
+  ImageIcon,
 } from "public/icons";
 
 export default function HomePage() {
@@ -76,6 +82,7 @@ export default function HomePage() {
     { name: "PdfIcon", component: PdfIcon },
     { name: "SearchIcon", component: SearchIcon },
     { name: "ExternalLinkIcon", component: ExternalLinkIcon },
+    { name: "MoreIcon", component: MoreIcon },
     { name: "MoreVerticalIcon", component: MoreVerticalIcon },
     { name: "HomeIcon", component: HomeIcon },
     { name: "UserPlusIcon", component: UserPlusIcon },
@@ -90,7 +97,6 @@ export default function HomePage() {
     { name: "ConnectionIcon", component: ConnectionIcon },
     { name: "WalletIcon", component: WalletIcon },
     { name: "PhoneIcon", component: PhoneIcon },
-    { name: "CircleIcon", component: CircleIcon },
     { name: "DollarIcon", component: DollarIcon },
     { name: "EyeIcon", component: EyeIcon },
     { name: "EyeSmallIcon", component: EyeSmallIcon },
@@ -102,6 +108,12 @@ export default function HomePage() {
     { name: "BellIcon", component: BellIcon },
     { name: "CloseIcon", component: CloseIcon },
     { name: "UploadIcon", component: UploadIcon },
+    { name: "DoublePrevIcon", component: DoublePrevIcon },
+    { name: "PrevIcon", component: PrevIcon },
+    { name: "NextIcon", component: NextIcon },
+    { name: "DoubleNextIcon", component: DoubleNextIcon },
+    { name: "LinkIcon", component: LinkIcon },
+    { name: "ImageIcon", component: ImageIcon },
   ];
 
   // 한 줄에 6개씩 그룹화 (더 많은 아이콘을 효율적으로 표시)
