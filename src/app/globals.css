@@ -1,6 +1,8 @@
 @import url("../styles/fonts.css");
 @import url("../styles/colors.css");
 @import url("../styles/components/index.css");
+
+/* Tailwind v3 방식 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
