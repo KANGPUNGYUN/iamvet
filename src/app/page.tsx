@@ -1,4 +1,7 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
+import { Radio } from "@/components/ui/Radio";
 import { Tab } from "@/components/ui/Tab";
 import {
   ArrowLeftIcon,
@@ -61,6 +64,7 @@ import {
   Link2Icon,
   DownloadIcon,
 } from "public/icons";
+import { useState } from "react";
 
 export default function HomePage() {
   const iconComponents = [
@@ -130,6 +134,8 @@ export default function HomePage() {
   for (let i = 0; i < iconComponents.length; i += 6) {
     groupedIcons.push(iconComponents.slice(i, i + 6));
   }
+
+  const [selectedPeriod, setSelectedPeriod] = useState("");
 
   return (
     <div className="p-6 space-y-8">
@@ -353,6 +359,33 @@ export default function HomePage() {
               </div>
             </Tab.Content>
           </Tab>
+        </div>
+      </div>
+
+      <div className="space-y-8">
+        {/* 기본 라디오 그룹 */}
+        <div>
+          <h3 className="mb-4 text-lg font-semibold">
+            라디오 버튼 (hover, checked 시 스타일링 추가 예정)
+          </h3>
+          <Radio.Group
+            className="flex gap-8"
+            value={selectedPeriod}
+            onChange={setSelectedPeriod}
+          >
+            <Radio.Item value="immediate" className="flex gap-2">
+              즉시 가능
+            </Radio.Item>
+            <Radio.Item value="week" className="flex gap-2">
+              1주일 내
+            </Radio.Item>
+            <Radio.Item value="month" className="flex gap-2">
+              1개월 내
+            </Radio.Item>
+            <Radio.Item value="quarter" className="flex gap-2">
+              3개월 내
+            </Radio.Item>
+          </Radio.Group>
         </div>
       </div>
     </div>

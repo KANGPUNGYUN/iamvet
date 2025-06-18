@@ -1,0 +1,108 @@
+/* src/styles/components/radio.css */
+/* Radio 컴포넌트 - 피그마 디자인시스템 완전 준수 */
+
+/* ===== 기본 Radio 구조 ===== */
+.radio-base {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  font-family: "SUIT";
+  position: relative;
+  box-sizing: border-box;
+}
+
+.radio-base:focus-within {
+  outline: 2px solid var(--Keycolor1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===== Radio Input (완전히 숨김) ===== */
+.radio-input {
+  display: none !important;
+  visibility: hidden;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  background: none;
+}
+
+.radio-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ===== Radio Icon ===== */
+.radio-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Radio Label ===== */
+.radio-label {
+  color: var(--text-default, #35313c);
+  font-family: SUIT;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 24px */
+  transition: font-weight 0.2s ease-in-out;
+  user-select: none;
+}
+
+/* ===== 상태별 스타일 ===== */
+
+/* Disabled 상태 */
+.radio-base[data-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.radio-base[data-disabled="true"] .radio-label {
+  color: var(--text-disabled, #caced6);
+}
+
+/* Checked 상태 */
+.radio-base[data-checked="true"] .radio-label {
+  font-weight: 600 !important;
+}
+
+/* Hover 상태 (disabled가 아닐 때만) */
+.radio-base:hover:not([data-disabled="true"]) .radio-icon {
+  transform: scale(1.33) !important; /* 24px -> 32px */
+}
+
+/* Hover 상태에서 특별한 SVG 표시 */
+.radio-base:hover:not([data-disabled="true"]):not([data-checked="true"])
+  .radio-icon
+  svg {
+  filter: drop-shadow(0px 0px 24px rgba(255, 135, 150, 0.75)) !important;
+  fill: #ff8796 !important;
+}
+
+/* ===== Radio Group ===== */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-group[data-orientation="horizontal"] {
+  flex-direction: row !important;
+  gap: 16px;
+  flex-wrap: wrap;
+}
