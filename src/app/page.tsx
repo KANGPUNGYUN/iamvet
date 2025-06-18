@@ -55,6 +55,10 @@ import {
   DoubleNextIcon,
   LinkIcon,
   ImageIcon,
+  WebIcon,
+  PageIcon,
+  Link2Icon,
+  DownloadIcon,
 } from "public/icons";
 
 export default function HomePage() {
@@ -114,6 +118,10 @@ export default function HomePage() {
     { name: "DoubleNextIcon", component: DoubleNextIcon },
     { name: "LinkIcon", component: LinkIcon },
     { name: "ImageIcon", component: ImageIcon },
+    { name: "WebIcon", component: WebIcon },
+    { name: "PageIcon", component: PageIcon },
+    { name: "Link2Icon", component: Link2Icon },
+    { name: "DownloadIcon", component: DownloadIcon },
   ];
 
   // 한 줄에 6개씩 그룹화 (더 많은 아이콘을 효율적으로 표시)
