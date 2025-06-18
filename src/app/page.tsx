@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { FilterBox } from "@/components/ui/FilterBox";
 import { Radio } from "@/components/ui/Radio";
 import { Tab } from "@/components/ui/Tab";
 import {
@@ -140,6 +141,7 @@ export default function HomePage() {
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([
     "",
   ]);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([""]);
 
   return (
     <div className="p-6 space-y-8">
@@ -369,9 +371,7 @@ export default function HomePage() {
       <div className="space-y-8">
         {/* 기본 라디오 그룹 */}
         <div>
-          <h3 className="mb-4 text-lg font-semibold">
-            라디오 버튼 (hover, checked 시 스타일링 추가 예정)
-          </h3>
+          <h3 className="mb-4 text-lg font-semibold">라디오 버튼</h3>
           <Radio.Group value={selectedPeriod} onChange={setSelectedPeriod}>
             <Radio.Item value="immediate">즉시 가능</Radio.Item>
             <Radio.Item value="week">1주일 내</Radio.Item>
@@ -392,6 +392,18 @@ export default function HomePage() {
           <Checkbox.Item value="pediatrics">소아과</Checkbox.Item>
           <Checkbox.Item value="dermatology">피부과</Checkbox.Item>
         </Checkbox.Group>
+      </div>
+      <div className="space-y-8">
+        <h3 className="mb-4 text-lg font-semibold">필터링 버튼</h3>
+        <FilterBox.Group
+          value={selectedFilters}
+          onChange={setSelectedFilters}
+          orientation="horizontal"
+        >
+          <FilterBox.Item value="정규직">정규직</FilterBox.Item>
+          <FilterBox.Item value="파트타임">파트타임</FilterBox.Item>
+          <FilterBox.Item value="계약직">계약직</FilterBox.Item>
+        </FilterBox.Group>
       </div>
     </div>
   );
