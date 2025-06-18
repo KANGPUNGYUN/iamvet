@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/Button";
+import { Tab } from "@/components/ui/Tab";
 import {
   ArrowLeftIcon,
   ChevronLeftIcon,
@@ -262,6 +263,97 @@ export default function HomePage() {
         >
           더보기
         </Button>
+      </div>
+
+      <div className="space-y-4">
+        {/* 1. Default 스타일 (밑줄) */}
+        <div>
+          <h3 className="mb-4 text-lg font-semibold">기본 탭</h3>
+          <Tab defaultTab="internal" variant="default">
+            <Tab.List>
+              <Tab.Item value="internal">구직정보</Tab.Item>
+              <Tab.Item value="surgery">구인정보</Tab.Item>
+            </Tab.List>
+            <Tab.Content value="internal">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">구직정보</h4>
+                <p>구직정보 관련 정보를 확인하실 수 있습니다.</p>
+              </div>
+            </Tab.Content>
+            <Tab.Content value="surgery">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">구인정보</h4>
+                <p>구인정보 관련 정보를 확인하실 수 있습니다.</p>
+              </div>
+            </Tab.Content>
+            <Tab.Content value="regular">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">정규직 정보</h4>
+                <p>정규직 채용 관련 정보를 확인하실 수 있습니다.</p>
+              </div>
+            </Tab.Content>
+          </Tab>
+        </div>
+
+        {/* 2. Rounded 스타일 */}
+        <div>
+          <h3 className="mb-4 text-lg font-semibold">라운드 탭</h3>
+          <Tab defaultTab="profile" variant="rounded">
+            <Tab.List>
+              <Tab.Item value="profile">인재 정보</Tab.Item>
+              <Tab.Item value="evaluate">인재 평가</Tab.Item>
+            </Tab.List>
+            <Tab.Content value="profile">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">인재 정보</h4>
+                <p>인재 정보 관련 정보를 안내해드립니다.</p>
+              </div>
+            </Tab.Content>
+            <Tab.Content value="evaluate">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">인재 평가</h4>
+                <p>인재 평가 관련 정보를 제공합니다.</p>
+              </div>
+            </Tab.Content>
+          </Tab>
+        </div>
+
+        {/* 3. Filled 스타일 */}
+        <div>
+          <h3 className="mb-4 text-lg font-semibold">버튼 탭</h3>
+          <Tab defaultTab="transfer" variant="filled">
+            <Tab.List>
+              <Tab.Item value="transfer">병원 양도</Tab.Item>
+              <Tab.Item value="machine">기계 장치</Tab.Item>
+              <Tab.Item value="device">의료 장비</Tab.Item>
+              <Tab.Item value="design">인테리어</Tab.Item>
+            </Tab.List>
+            <Tab.Content value="transfer">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">병원 양도</h4>
+                <p>병원 인수인계 과정과 법적 절차를 상세히 안내합니다.</p>
+              </div>
+            </Tab.Content>
+            <Tab.Content value="machine">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">기계 장치</h4>
+                <p>각종 의료 기계의 사양과 유지보수 정보를 제공합니다.</p>
+              </div>
+            </Tab.Content>
+            <Tab.Content value="device">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">의료 장비</h4>
+                <p>진단 및 치료용 의료 장비의 최신 정보를 제공합니다.</p>
+              </div>
+            </Tab.Content>
+            <Tab.Content value="design">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">인테리어</h4>
+                <p>환자 친화적인 병원 공간 설계 및 시공을 지원합니다.</p>
+              </div>
+            </Tab.Content>
+          </Tab>
+        </div>
       </div>
     </div>
   );

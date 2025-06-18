@@ -1,0 +1,305 @@
+/* src/styles/components/tab.css */
+/* Tab 컴포넌트 - 피그마 디자인시스템 완전 준수 */
+
+/* ===== 기본 Tab 구조 ===== */
+.tab-base {
+  box-sizing: border-box;
+  font-family: "SUIT";
+  font-style: normal;
+}
+
+/* ===== Tab Container ===== */
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ===== Tab List ===== */
+.tab-list {
+  display: flex;
+  position: relative;
+}
+
+/* Default 스타일 (밑줄) */
+.tab-list-default {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  border-bottom: none;
+}
+
+/* Rounded 스타일 */
+.tab-list-rounded {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* Filled 스타일 */
+.tab-list-filled {
+  display: inline-flex;
+  padding: 9px;
+  align-items: center;
+  border-radius: 9999px;
+  background: var(--Box, #f6f6f6);
+  gap: 0;
+  width: fit-content;
+}
+
+/* ===== Tab Item ===== */
+.tab-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: "SUIT";
+  text-decoration: none;
+  position: relative;
+  font-style: normal;
+  background: transparent;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.tab-item:focus-visible {
+  outline: 2px solid var(--Keycolor1);
+  outline-offset: 2px;
+}
+
+.tab-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Default 스타일 Tab Item */
+.tab-item-default {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--Guidetext, #caced6);
+  text-align: center;
+  font-family: "Gmarket Sans";
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 56px; /* 186.667% */
+  border: none;
+  background: transparent;
+  padding: 0;
+  height: 56px;
+}
+
+.tab-item-default:hover:not(:disabled):not([data-active="true"]) {
+  color: var(--Guidetext, #caced6);
+}
+
+.tab-item-default[data-active="true"] {
+  color: var(--Keycolor1, #ff8796);
+  -webkit-text-stroke-width: 0.4px;
+  -webkit-text-stroke-color: var(--Keycolor1, #ff8796);
+}
+
+/* Default 스타일 구분선 */
+.tab-item-default:not(:last-child)::after {
+  content: "";
+  display: flex;
+  height: 28px;
+  width: 2px;
+  background: var(--Guidetext, #caced6);
+  margin-left: 24px;
+}
+
+/* Rounded 스타일 Tab Item */
+.tab-item-rounded {
+  display: flex;
+  width: 150px;
+  height: 68px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 12px 12px 0px 0px;
+  background: var(--Box_Disable, rgba(234, 234, 234, 0.6));
+  color: var(--Subtext2, #9098a4);
+  font-family: SUIT;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 135%; /* 27px */
+}
+
+.tab-item-rounded:hover:not(:disabled):not([data-active="true"]) {
+  background: var(--Box_Disable, rgba(234, 234, 234, 0.8));
+  color: var(--Subtext2, #9098a4);
+}
+
+.tab-item-rounded[data-active="true"] {
+  background: #fff;
+  color: var(--Keycolor1, #ff8796);
+  font-weight: 700;
+}
+
+/* Filled 스타일 Tab Item */
+.tab-item-filled {
+  display: flex;
+  padding: 14px 50px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  background: var(--Box, #f6f6f6);
+  color: rgba(75, 85, 99, 0.4);
+  text-align: center;
+  font-family: "Gmarket Sans";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 135%; /* 27px */
+  border: none;
+  min-width: auto;
+}
+
+.tab-item-filled:first-child {
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+}
+
+.tab-item-filled:last-child {
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+}
+
+.tab-item-filled:not(:last-child) {
+  border-right: none;
+}
+
+.tab-item-filled:hover:not(:disabled):not([data-active="true"]) {
+  background: var(--Box, #f6f6f6);
+  color: rgba(75, 85, 99, 0.6);
+}
+
+.tab-item-filled[data-active="true"] {
+  padding: 14px 60px;
+  background: var(--Text, #3b394d);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* ===== Tab Content ===== */
+.tab-content {
+  color: var(--Subtext);
+  line-height: 1.6;
+  padding: 0;
+}
+
+.tab-content[data-hidden="true"] {
+  display: none;
+}
+
+/* Rounded 스타일 전용 Content */
+.tab-content-rounded {
+  display: flex;
+  padding: 50px 30px;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  border-radius: 0px 24px 24px 24px;
+  background: #fff;
+}
+
+/* Default와 Filled 스타일 Content */
+.tab-content-default,
+.tab-content-filled {
+  padding: 20px 0;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+  .tab-list {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .tab-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-item {
+    flex-shrink: 0;
+  }
+
+  .tab-item-default {
+    font-size: 24px;
+    line-height: 40px;
+    height: 56px;
+    gap: 0;
+  }
+
+  .tab-item-rounded {
+    width: 120px;
+    height: 56px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 135%; /* 21.6px */
+  }
+
+  .tab-item-rounded[data-active="true"] {
+    font-weight: 700;
+  }
+
+  .tab-content-rounded {
+    padding: 30px 16px;
+  }
+
+  /* 모바일 Filled 스타일 */
+  .tab-list-filled {
+    display: inline-flex;
+    padding: 2px;
+    align-items: center;
+    border-radius: 999px;
+    background: var(--Box, #f6f6f6);
+  }
+
+  .tab-item-filled {
+    display: flex;
+    padding: 10px 14px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+    background: var(--Box, #f6f6f6);
+    color: rgba(75, 85, 99, 0.4);
+    text-align: center;
+    font-family: "Gmarket Sans";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 135%; /* 18.9px */
+  }
+
+  .tab-item-filled[data-active="true"] {
+    display: flex;
+    padding: 10px 14px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+    background: var(--Text, #3b394d);
+    color: #fff;
+    text-align: center;
+    font-family: "Gmarket Sans";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 135%; /* 18.9px */
+  }
+}
