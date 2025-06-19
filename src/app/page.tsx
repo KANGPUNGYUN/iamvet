@@ -70,6 +70,195 @@ import {
 import { useState } from "react";
 
 export default function HomePage() {
+  // 페이지네이션을 위한 간단한 컴포넌트들
+  const PaginationButton = ({
+    children,
+    isActive = false,
+    disabled = false,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    isActive?: boolean;
+    disabled?: boolean;
+    onClick?: () => void;
+  }) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const getButtonStyle = () => {
+      let baseStyle = {
+        display: "flex",
+        width: "40px",
+        height: "40px",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: "8px",
+        fontFamily: "Pretendard, sans-serif",
+        fontSize: "14px",
+        fontWeight: 500,
+        cursor: disabled ? "not-allowed" : "pointer",
+        transition: "all 0.2s ease-in-out",
+        userSelect: "none" as const,
+        border: "1px solid #EFEFF0",
+        background: "#FFF",
+        color: "#3B394D",
+      };
+
+      if (disabled) {
+        baseStyle.color = "#9098A4";
+        baseStyle.cursor = "not-allowed";
+      } else if (isActive) {
+        baseStyle.background = "#FF8796";
+        baseStyle.color = "#FFF";
+        baseStyle.border = "1px solid #FF8796";
+      } else if (isHovered) {
+        baseStyle.background = "#FFF7F7";
+        baseStyle.border = "1px solid #FFF7F7";
+      }
+
+      return baseStyle;
+    };
+
+    return (
+      <button
+        style={getButtonStyle()}
+        onClick={onClick}
+        disabled={disabled}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {children}
+      </button>
+    );
+  };
+
+  const PrevIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M10.06 12L11 11.06L7.94667 8L11 4.94L10.06 4L6.06 8L10.06 12Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+
+  const NextIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M6.94 4L6 4.94L9.05333 8L6 11.06L6.94 12L10.94 8L6.94 4Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+
+  const MoreIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 13 2" fill="none">
+      <circle cx="1.5" cy="1" r="1" fill="currentColor" />
+      <circle cx="6.5" cy="1" r="1" fill="currentColor" />
+      <circle cx="11.5" cy="1" r="1" fill="currentColor" />
+    </svg>
+  );
+
+  const SimplePagination = ({
+    currentPage,
+    totalPages,
+    onPageChange,
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  }) => {
+    const generatePageNumbers = () => {
+      const pages: (number | "ellipsis")[] = [];
+      const maxVisiblePages = 7;
+
+      if (totalPages <= maxVisiblePages) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        const sidePages = Math.floor((maxVisiblePages - 3) / 2);
+
+        if (currentPage <= sidePages + 2) {
+          for (let i = 1; i <= maxVisiblePages - 2; i++) {
+            pages.push(i);
+          }
+          pages.push("ellipsis");
+          pages.push(totalPages);
+        } else if (currentPage >= totalPages - sidePages - 1) {
+          pages.push(1);
+          pages.push("ellipsis");
+          for (let i = totalPages - maxVisiblePages + 3; i <= totalPages; i++) {
+            pages.push(i);
+          }
+        } else {
+          pages.push(1);
+          pages.push("ellipsis");
+          for (
+            let i = currentPage - sidePages;
+            i <= currentPage + sidePages;
+            i++
+          ) {
+            pages.push(i);
+          }
+          pages.push("ellipsis");
+          pages.push(totalPages);
+        }
+      }
+
+      return pages;
+    };
+
+    const pageNumbers = generatePageNumbers();
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          justifyContent: "center",
+        }}
+      >
+        {/* 이전 버튼 */}
+        <PaginationButton
+          disabled={currentPage === 1}
+          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+        >
+          <PrevIcon />
+        </PaginationButton>
+
+        {/* 페이지 번호들 */}
+        {pageNumbers.map((page, index) => {
+          if (page === "ellipsis") {
+            return (
+              <PaginationButton key={`ellipsis-${index}`} disabled={true}>
+                <MoreIcon />
+              </PaginationButton>
+            );
+          }
+
+          return (
+            <PaginationButton
+              key={page}
+              isActive={currentPage === page}
+              onClick={() => onPageChange(page)}
+            >
+              {page}
+            </PaginationButton>
+          );
+        })}
+
+        {/* 다음 버튼 */}
+        <PaginationButton
+          disabled={currentPage === totalPages}
+          onClick={() =>
+            currentPage < totalPages && onPageChange(currentPage + 1)
+          }
+        >
+          <NextIcon />
+        </PaginationButton>
+      </div>
+    );
+  };
   const iconComponents = [
     { name: "ArrowLeftIcon", component: ArrowLeftIcon },
     { name: "ArrowRightIcon", component: ArrowRightIcon },
@@ -143,6 +332,12 @@ export default function HomePage() {
     "",
   ]);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([""]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    console.log(`페이지 ${page}로 이동`);
+  };
 
   return (
     <div className="p-6 space-y-8">
@@ -394,6 +589,7 @@ export default function HomePage() {
           <Checkbox.Item value="dermatology">피부과</Checkbox.Item>
         </Checkbox.Group>
       </div>
+
       <div className="space-y-8">
         <h3 className="mb-4 text-lg font-semibold">필터링 버튼</h3>
         <FilterBox.Group
@@ -406,6 +602,7 @@ export default function HomePage() {
           <FilterBox.Item value="계약직">계약직</FilterBox.Item>
         </FilterBox.Group>
       </div>
+
       <div className="space-y-8">
         <h3 className="mb-4 text-lg font-semibold">태그</h3>
         <Tag.Group gap="12px" orientation="horizontal">
@@ -416,6 +613,19 @@ export default function HomePage() {
           <Tag variant={5}>반투명 태그</Tag>
           <Tag variant={6}>회색 태그</Tag>
         </Tag.Group>
+      </div>
+
+      {/* 페이지네이션 */}
+      <div className="space-y-8">
+        <h3 className="mb-4 text-lg font-semibold">페이지네이션</h3>
+        <div className="text-sm text-gray-600 mb-4">
+          현재 페이지: {currentPage} / 35
+        </div>
+        <SimplePagination
+          currentPage={currentPage}
+          totalPages={35}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   );
