@@ -1,3 +1,8 @@
-export default function JobDetailPage({ params }: { params: { id: string } }) {
-  return <div>채용공고 상세: {params.id}</div>;
+export default async function JobDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <div>채용공고 상세: {id}</div>;
 }

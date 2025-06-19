@@ -1,3 +1,8 @@
-export default function EditTransferPage({ params }: { params: { id: string } }) {
-  return <div>양도양수 수정: {params.id}</div>;
+export default async function EditTransferPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <div>양도양수 수정: {id}</div>;
 }
