@@ -86,7 +86,7 @@ const FilterBoxItem: React.FC<FilterBoxProps> = ({
       gap: "10px",
       borderRadius: "8px",
       border: "1px solid",
-      fontFamily: "SUIT",
+      fontFamily: "suit",
       fontSize: "16px",
       fontStyle: "normal" as const,
       fontWeight: 500,

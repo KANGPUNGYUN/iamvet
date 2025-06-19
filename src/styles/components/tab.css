@@ -4,7 +4,7 @@
 /* ===== 기본 Tab 구조 ===== */
 .tab-base {
   box-sizing: border-box;
-  font-family: "SUIT";
+  font-family: var(--font-text);
   font-style: normal;
 }
 
@@ -58,7 +58,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  font-family: "SUIT";
+  font-family: var(--font-text);
   text-decoration: none;
   position: relative;
   font-style: normal;
@@ -86,7 +86,7 @@
   align-items: center;
   color: var(--Guidetext, #caced6);
   text-align: center;
-  font-family: "Gmarket Sans";
+  font-family: "var(--font-title)";
   font-size: 30px;
   font-style: normal;
   font-weight: 500;
@@ -129,7 +129,7 @@
   border-radius: 12px 12px 0px 0px;
   background: var(--Box_Disable, rgba(234, 234, 234, 0.6));
   color: var(--Subtext2, #9098a4);
-  font-family: SUIT;
+  font-family: var(--font-text);
   font-size: 20px;
   font-style: normal;
   font-weight: 600;
@@ -158,7 +158,7 @@
   background: var(--Box, #f6f6f6);
   color: rgba(75, 85, 99, 0.4);
   text-align: center;
-  font-family: "Gmarket Sans";
+  font-family: "var(--font-title)";
   font-size: 20px;
   font-style: normal;
   font-weight: 500;
@@ -279,7 +279,7 @@
     background: var(--Box, #f6f6f6);
     color: rgba(75, 85, 99, 0.4);
     text-align: center;
-    font-family: "Gmarket Sans";
+    font-family: "var(--font-title)";
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -296,7 +296,7 @@
     background: var(--Text, #3b394d);
     color: #fff;
     text-align: center;
-    font-family: "Gmarket Sans";
+    font-family: "var(--font-title)";
     font-size: 14px;
     font-style: normal;
     font-weight: 500;

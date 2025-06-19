@@ -8,7 +8,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-family: "SUIT";
+  font-family: var(--font-text);
   position: relative;
   box-sizing: border-box;
 }
@@ -118,7 +118,7 @@
 /* ===== Checkbox Label ===== */
 .checkbox-label {
   color: var(--text-default, #35313c);
-  font-family: SUIT;
+  font-family: var(--font-text);
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
