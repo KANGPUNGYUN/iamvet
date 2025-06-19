@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { Radio } from "@/components/ui/Radio";
 import { Tab } from "@/components/ui/Tab";
+import { Tag } from "@/components/ui/Tag";
 import {
   ArrowLeftIcon,
   ChevronLeftIcon,
@@ -404,6 +405,17 @@ export default function HomePage() {
           <FilterBox.Item value="파트타임">파트타임</FilterBox.Item>
           <FilterBox.Item value="계약직">계약직</FilterBox.Item>
         </FilterBox.Group>
+      </div>
+      <div className="space-y-8">
+        <h3 className="mb-4 text-lg font-semibold">태그</h3>
+        <Tag.Group gap="12px" orientation="horizontal">
+          <Tag variant={1}>기본 태그</Tag>
+          <Tag variant={2}>강조 태그</Tag>
+          <Tag variant={3}>라이트 태그</Tag>
+          <Tag variant={4}>다크 태그</Tag>
+          <Tag variant={5}>반투명 태그</Tag>
+          <Tag variant={6}>회색 태그</Tag>
+        </Tag.Group>
       </div>
     </div>
   );

@@ -1,0 +1,132 @@
+/* src/styles/components/tag.css */
+/* Tag 컴포넌트 - 반응형 디자인 */
+
+/* ===== 기본 Tag 구조 ===== */
+.tag-item {
+  /* 기본 스타일만 유지하고 padding, font-size는 인라인 스타일로 처리 */
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border-radius: 999px !important;
+  font-family: "Gmarket Sans", sans-serif !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 135% !important;
+  transition: all 0.2s ease-in-out !important;
+  user-select: none !important;
+  box-sizing: border-box !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* CSS에서 padding, font-size 제거 - 인라인 스타일에서 처리 */
+
+/* ===== 태그 변형별 색상 ===== */
+
+/* Variant 1 - 기본 */
+.tag-variant-1 {
+  background: var(--Keycolor5, #fff7f7) !important;
+  color: var(--Keycolor1, #ff8796) !important;
+}
+
+/* Variant 2 - 강조 */
+.tag-variant-2 {
+  background: var(--Keycolor1, #ff8796) !important;
+  color: #fff !important;
+}
+
+/* Variant 3 - 라이트 */
+.tag-variant-3 {
+  background: var(--Box_Light, #fafafa) !important;
+  color: var(--Subtext, #4f5866) !important;
+}
+
+/* Variant 4 - 다크 */
+.tag-variant-4 {
+  background: var(--Subtext, #4f5866) !important;
+  color: var(--Box_Light, #fafafa) !important;
+}
+
+/* Variant 5 - 반투명 */
+.tag-variant-5 {
+  background: rgba(79, 88, 102, 0.8) !important;
+  color: var(--Box_Light, #fafafa) !important;
+}
+
+/* Variant 6 - 회색 */
+.tag-variant-6 {
+  background: var(--Box, #f6f6f6) !important;
+  color: var(--Subtext2, #9098a4) !important;
+}
+
+/* ===== 상호작용 상태 ===== */
+
+/* Hover 효과 (클릭 가능한 태그만) */
+.tag-item[role="button"]:hover:not([data-disabled="true"]) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.tag-variant-1[role="button"]:hover:not([data-disabled="true"]) {
+  background: var(--Keycolor1, #ff8796) !important;
+  color: #fff !important;
+}
+
+.tag-variant-2[role="button"]:hover:not([data-disabled="true"]) {
+  background: var(--Keycolor5, #fff7f7) !important;
+  color: var(--Keycolor1, #ff8796) !important;
+}
+
+.tag-variant-3[role="button"]:hover:not([data-disabled="true"]) {
+  background: var(--Subtext, #4f5866) !important;
+  color: var(--Box_Light, #fafafa) !important;
+}
+
+.tag-variant-4[role="button"]:hover:not([data-disabled="true"]) {
+  background: var(--Box_Light, #fafafa) !important;
+  color: var(--Subtext, #4f5866) !important;
+}
+
+.tag-variant-5[role="button"]:hover:not([data-disabled="true"]) {
+  background: var(--Subtext, #4f5866) !important;
+}
+
+.tag-variant-6[role="button"]:hover:not([data-disabled="true"]) {
+  background: var(--Subtext2, #9098a4) !important;
+  color: var(--Box_Light, #fafafa) !important;
+}
+
+/* Focus 상태 */
+.tag-item[role="button"]:focus-visible {
+  outline: 2px solid var(--Keycolor1, #ff8796) !important;
+  outline-offset: 2px !important;
+}
+
+/* Active 상태 */
+.tag-item[role="button"]:active:not([data-disabled="true"]) {
+  transform: translateY(0) !important;
+  transition: transform 0.1s ease-in-out !important;
+}
+
+/* Disabled 상태 */
+.tag-item[data-disabled="true"] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* ===== Tag Group ===== */
+.tag-group {
+  display: flex;
+}
+
+.tag-group[data-orientation="horizontal"] {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.tag-group[data-orientation="vertical"] {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
