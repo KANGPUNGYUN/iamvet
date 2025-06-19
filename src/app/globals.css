@@ -1,4 +1,3 @@
-@import url("../styles/fonts.css");
 @import url("../styles/colors.css");
 @import url("../styles/components/index.css");
 
@@ -9,4 +8,99 @@
 
 body {
   background: var(--Box_Light, #fafafa);
+}
+
+/* CSS 변수 재정의 (기존 유틸리티 클래스 호환성 유지) */
+:root {
+  /* 기존 font-weight 변수들 유지 */
+  --title-weight-light: 400;
+  --title-weight-medium: 500;
+  --title-weight-bold: 700;
+
+  --text-weight-thin: 100;
+  --text-weight-extralight: 200;
+  --text-weight-light: 300;
+  --text-weight-regular: 400;
+  --text-weight-medium: 500;
+  --text-weight-semibold: 600;
+  --text-weight-bold: 700;
+  --text-weight-extrabold: 800;
+  --text-weight-heavy: 900;
+}
+
+/* 기존 유틸리티 클래스들 - localFont 변수 직접 사용 */
+.font-title {
+  font-family: var(--font-title), sans-serif;
+}
+
+.font-text {
+  font-family: var(--font-text), sans-serif;
+}
+
+/* 기존 폰트 weight 유틸리티 클래스들 유지 */
+.title-light {
+  font-weight: var(--title-weight-light);
+}
+.title-medium {
+  font-weight: var(--title-weight-medium);
+}
+.title-bold {
+  font-weight: var(--title-weight-bold);
+}
+
+.text-thin {
+  font-weight: var(--text-weight-thin);
+}
+.text-extralight {
+  font-weight: var(--text-weight-extralight);
+}
+.text-light {
+  font-weight: var(--text-weight-light);
+}
+.text-regular {
+  font-weight: var(--text-weight-regular);
+}
+.text-medium {
+  font-weight: var(--text-weight-medium);
+}
+.text-semibold {
+  font-weight: var(--text-weight-semibold);
+}
+.text-bold {
+  font-weight: var(--text-weight-bold);
+}
+.text-extrabold {
+  font-weight: var(--text-weight-extrabold);
+}
+.text-heavy {
+  font-weight: var(--text-weight-heavy);
+}
+
+/* Generic Font Weight Utilities */
+.font-thin {
+  font-weight: var(--text-weight-thin);
+}
+.font-extralight {
+  font-weight: var(--text-weight-extralight);
+}
+.font-light {
+  font-weight: var(--text-weight-light);
+}
+.font-regular {
+  font-weight: var(--text-weight-regular);
+}
+.font-medium {
+  font-weight: var(--text-weight-medium);
+}
+.font-semibold {
+  font-weight: var(--text-weight-semibold);
+}
+.font-bold {
+  font-weight: var(--text-weight-bold);
+}
+.font-extrabold {
+  font-weight: var(--text-weight-extrabold);
+}
+.font-heavy {
+  font-weight: var(--text-weight-heavy);
 }
