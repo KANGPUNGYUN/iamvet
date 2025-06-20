@@ -5,6 +5,8 @@ const nextConfig = {
     devToolsButton: false,
     skipMiddlewareUrlNormalize: true,
   },
+  assetPrefix: process.env.NODE_ENV === "production" ? "" : "",
+  trailingSlash: false,
   ...(process.env.NODE_ENV === "development" && {
     compiler: {
       removeConsole: false,
