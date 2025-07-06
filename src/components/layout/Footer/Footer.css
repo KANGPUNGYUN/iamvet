@@ -1,0 +1,121 @@
+/* src/components/layout/Footer/Footer.css */
+.footer {
+  width: 100%;
+  background-color: #f2f2f2;
+  padding: 70px 80px;
+  border-top: 1px solid #d2d7dc;
+  display: flex;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+.footer-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+/* 로고 스타일 */
+.footer-logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ff6b7d;
+  font-family: "suit", sans-serif;
+}
+
+.footer-logo img {
+  width: 185px;
+  height: 52px;
+  object-fit: contain; /* 이미지 비율을 유지하면서 지정된 크기에 맞춤 */
+}
+
+.footer-logo img {
+  height: 40px;
+  width: auto;
+}
+
+/* 네비게이션 스타일 */
+.footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.footer-nav-item {
+  color: var(--Subtext, #4f5866);
+  text-align: center;
+  font-family: SUIT;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 135%; /* 21.6px */
+}
+
+.footer-nav-item:focus {
+  box-shadow: 0 0 0 2px rgba(255, 107, 125, 0.2);
+}
+
+/* 연락처 정보 스타일 */
+.footer-contact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  color: var(--Subtext, #4f5866);
+  font-family: Pretendard;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 135%; /* 18.9px */
+}
+
+.footer-contact a {
+  color: var(--Subtext, #4f5866);
+  font-family: Pretendard;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 135%; /* 18.9px */
+}
+
+.footer-contact a:hover {
+  color: #ff6b7d;
+}
+
+.footer-contact a:focus {
+  outline: 2px solid rgba(255, 107, 125, 0.2);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.footer-contentwrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 27px;
+  flex-shrink: 0;
+}
+
+.footer-address {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  align-self: stretch;
+}
+
+/* 저작권 스타일 */
+.footer-copyright {
+  color: var(--Guidetext, #9ea5af);
+  font-family: Pretendard;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 135%; /* 18.9px */
+}
+
+/* 반응형 디자인 */
+@media (min-width: 768px) {
+}

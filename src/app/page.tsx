@@ -1,5 +1,6 @@
 "use client";
 
+import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { FilterBox } from "@/components/ui/FilterBox";
@@ -70,6 +71,16 @@ import {
 import { useState } from "react";
 
 export default function HomePage() {
+  const handlePrivacyClick = () => {
+    console.log("개인정보처리방침 클릭");
+    // 실제 라우팅 로직
+  };
+
+  const handleTermsClick = () => {
+    console.log("이용약관 클릭");
+    // 실제 라우팅 로직
+  };
+
   // 페이지네이션을 위한 간단한 컴포넌트들
   const PaginationButton = ({
     children,
@@ -627,6 +638,40 @@ export default function HomePage() {
           onPageChange={handlePageChange}
         />
       </div>
+
+      <Footer className="main-footer">
+        <Footer.Logo src="/images/Logo.png"></Footer.Logo>
+
+        <Footer.ContentWrap>
+          <Footer.Nav>
+            <Footer.NavItem href="/privarcy">개인정보처리방침</Footer.NavItem>
+            <Footer.NavItem href="/terms">이용약관</Footer.NavItem>
+            <Footer.NavItem href="/sitemap">오시는길</Footer.NavItem>
+          </Footer.Nav>
+          <Footer.Address>
+            <Footer.Contact>
+              <div>05029 서울특별시 광진구 능동로 120 건국대학교 1F</div>
+              {" | "}
+              <div>
+                E-mail:{" "}
+                <a href="mailto:seouledtech@konkuk.ac.kr">
+                  seouledtech@konkuk.ac.kr
+                </a>
+              </div>
+
+              {" | "}
+              <div>
+                {" "}
+                Tel: <a href="tel:02-450-0697">02-450-0697~9</a>
+              </div>
+            </Footer.Contact>
+
+            <Footer.Copyright>
+              Copyright © 2025 아이앰펫 All Right Reserved.
+            </Footer.Copyright>
+          </Footer.Address>
+        </Footer.ContentWrap>
+      </Footer>
     </div>
   );
 }
