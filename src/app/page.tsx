@@ -70,6 +70,7 @@ import {
 } from "public/icons";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/Input/Textarea";
+import { InputBox } from "@/components/ui/Input/InputBox";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -635,6 +636,11 @@ export default function HomePage() {
             placeholder="여기에 텍스트를 입력하세요..."
             defaultValue="기본값"
           />
+        </div>
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">입력박스</h3>
+          <InputBox placeholder="이메일을 입력하세요" />
+          <InputBox placeholder="이메일을 입력하세요" disabled />
         </div>
 
         {/* 페이지네이션 */}
