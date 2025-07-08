@@ -2,9 +2,9 @@
 
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Checkbox";
+import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { FilterBox } from "@/components/ui/FilterBox";
-import { Radio } from "@/components/ui/Radio";
+import { Radio } from "@/components/ui/Input/Radio";
 import { Tab } from "@/components/ui/Tab";
 import { Tag } from "@/components/ui/Tag";
 import {
@@ -69,6 +69,7 @@ import {
   DownloadIcon,
 } from "public/icons";
 import { useState } from "react";
+import { Textarea } from "@/components/ui/Input/Textarea";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -224,6 +225,7 @@ export default function HomePage() {
       <div
         style={{
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "center",
           gap: "8px",
           justifyContent: "center",
@@ -351,296 +353,308 @@ export default function HomePage() {
   };
 
   return (
-    <div className="p-6 space-y-8">
-      <h1 className="font-title title-bold">IAMVET 홈페이지</h1>
+    <>
+      <div className="p-6 space-y-8">
+        <h1 className="font-title title-bold">IAMVET 홈페이지</h1>
 
-      {/* 아이콘 컬렉션 */}
-      <div className="space-y-6">
-        <h2 className="text-xl font-bold">
-          아이콘 컬렉션 ({iconComponents.length}개)
-        </h2>
-        <div className="space-y-4">
-          {groupedIcons.map((group, groupIndex) => (
-            <div key={groupIndex} className="flex space-x-6 items-center">
-              {group.map(({ name, component: IconComponent }) => (
-                <div
-                  key={name}
-                  className="flex flex-col items-center space-y-2 min-w-0"
-                >
-                  <div className="w-14 h-14 flex items-center justify-center hover:bg-gray-50 transition-colors rounded-lg border border-gray-200">
-                    <IconComponent currentColor="#4F5866" />
-                  </div>
-                  <span
-                    className="text-xs text-gray-600 text-center max-w-20 truncate"
-                    title={name}
+        {/* 아이콘 컬렉션 */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold">
+            아이콘 컬렉션 ({iconComponents.length}개)
+          </h2>
+          <div className="space-y-4">
+            {groupedIcons.map((group, groupIndex) => (
+              <div key={groupIndex} className="flex space-x-6 items-center">
+                {group.map(({ name, component: IconComponent }) => (
+                  <div
+                    key={name}
+                    className="flex flex-col items-center space-y-2 min-w-0"
                   >
-                    {name.replace("Icon", "")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ))}
+                    <div className="w-14 h-14 flex items-center justify-center hover:bg-gray-50 transition-colors rounded-lg border border-gray-200">
+                      <IconComponent currentColor="#4F5866" />
+                    </div>
+                    <span
+                      className="text-xs text-gray-600 text-center max-w-20 truncate"
+                      title={name}
+                    >
+                      {name.replace("Icon", "")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* L 크기 버튼들 */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">L 크기 버튼</h3>
-        <div className="flex gap-4">
-          <Button size="large" variant="default">
-            Button
-          </Button>
-          <Button size="large" variant="line">
-            Button
-          </Button>
-          <Button size="large" variant="disable">
-            Button
-          </Button>
+        {/* L 크기 버튼들 */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold">L 크기 버튼</h3>
+          <div className="flex gap-4 flex-wrap">
+            <Button size="large" variant="default">
+              Button
+            </Button>
+            <Button size="large" variant="line">
+              Button
+            </Button>
+            <Button size="large" variant="disable">
+              Button
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* M 크기 버튼들 */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">M 크기 버튼</h3>
-        <div className="flex gap-4">
-          <Button size="medium" variant="keycolor">
-            Button
-          </Button>
-          <Button size="medium" variant="default">
-            Button
-          </Button>
-          <Button size="medium" variant="line">
-            Button
-          </Button>
-          <Button size="medium" variant="disable">
-            Button
-          </Button>
+        {/* M 크기 버튼들 */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold">M 크기 버튼</h3>
+          <div className="flex gap-4 flex-wrap">
+            <Button size="medium" variant="keycolor">
+              Button
+            </Button>
+            <Button size="medium" variant="default">
+              Button
+            </Button>
+            <Button size="medium" variant="line">
+              Button
+            </Button>
+            <Button size="medium" variant="disable">
+              Button
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* S 크기 버튼들 */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">S 크기 버튼</h3>
-        <div className="flex gap-4">
-          <Button size="small" variant="keycolor">
-            Button
-          </Button>
-          <Button size="small" variant="default">
-            Button
-          </Button>
-          <Button size="small" variant="line">
-            Button
-          </Button>
-          <Button size="small" variant="disable">
-            Button
-          </Button>
+        {/* S 크기 버튼들 */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold">S 크기 버튼</h3>
+          <div className="flex gap-4 flex-wrap">
+            <Button size="small" variant="keycolor">
+              Button
+            </Button>
+            <Button size="small" variant="default">
+              Button
+            </Button>
+            <Button size="small" variant="line">
+              Button
+            </Button>
+            <Button size="small" variant="disable">
+              Button
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* XS 크기 버튼들 */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">XS 크기 버튼</h3>
-        <div className="flex gap-4">
-          <Button size="xsmall" variant="default">
-            Button
-          </Button>
-          <Button size="xsmall" variant="line">
-            Button
-          </Button>
-          <Button size="xsmall" variant="weak">
-            Button
-          </Button>
+        {/* XS 크기 버튼들 */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold">XS 크기 버튼</h3>
+          <div className="flex gap-4 flex-wrap">
+            <Button size="xsmall" variant="default">
+              Button
+            </Button>
+            <Button size="xsmall" variant="line">
+              Button
+            </Button>
+            <Button size="xsmall" variant="weak">
+              Button
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* 아이콘 버튼들 */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">아이콘 버튼</h3>
-        <div className="flex gap-4 items-center">
+        {/* 아이콘 버튼들 */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold">아이콘 버튼</h3>
+          <div className="flex gap-4 items-center flex-wrap">
+            <Button
+              buttonType="icon-web"
+              device="web"
+              icon={<EditIcon currentColor="white" />}
+            >
+              Button
+            </Button>
+            <Button
+              buttonType="icon-app"
+              device="app"
+              icon={<EditIcon currentColor="white" />}
+            />
+          </div>
+        </div>
+
+        {/* 더보기 버튼 */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold">더보기 버튼</h3>
           <Button
-            buttonType="icon-web"
-            device="web"
-            icon={<EditIcon currentColor="white" />}
+            buttonType="more"
+            icon={<PlusIcon currentColor="#9098A4" />}
+            iconPosition="left"
           >
-            Button
+            더보기
           </Button>
-          <Button
-            buttonType="icon-app"
-            device="app"
-            icon={<EditIcon currentColor="white" />}
+        </div>
+
+        <div className="space-y-4">
+          {/* 1. Default 스타일 (밑줄) */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">기본 탭</h3>
+            <Tab defaultTab="internal" variant="default">
+              <Tab.List>
+                <Tab.Item value="internal">구직정보</Tab.Item>
+                <Tab.Item value="surgery">구인정보</Tab.Item>
+              </Tab.List>
+              <Tab.Content value="internal">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">구직정보</h4>
+                  <p>구직정보 관련 정보를 확인하실 수 있습니다.</p>
+                </div>
+              </Tab.Content>
+              <Tab.Content value="surgery">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">구인정보</h4>
+                  <p>구인정보 관련 정보를 확인하실 수 있습니다.</p>
+                </div>
+              </Tab.Content>
+              <Tab.Content value="regular">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">정규직 정보</h4>
+                  <p>정규직 채용 관련 정보를 확인하실 수 있습니다.</p>
+                </div>
+              </Tab.Content>
+            </Tab>
+          </div>
+
+          {/* 2. Rounded 스타일 */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">라운드 탭</h3>
+            <Tab defaultTab="profile" variant="rounded">
+              <Tab.List>
+                <Tab.Item value="profile">인재 정보</Tab.Item>
+                <Tab.Item value="evaluate">인재 평가</Tab.Item>
+              </Tab.List>
+              <Tab.Content value="profile">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">인재 정보</h4>
+                  <p>인재 정보 관련 정보를 안내해드립니다.</p>
+                </div>
+              </Tab.Content>
+              <Tab.Content value="evaluate">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">인재 평가</h4>
+                  <p>인재 평가 관련 정보를 제공합니다.</p>
+                </div>
+              </Tab.Content>
+            </Tab>
+          </div>
+
+          {/* 3. Filled 스타일 */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">버튼 탭</h3>
+            <Tab defaultTab="transfer" variant="filled">
+              <Tab.List>
+                <Tab.Item value="transfer">병원 양도</Tab.Item>
+                <Tab.Item value="machine">기계 장치</Tab.Item>
+                <Tab.Item value="device">의료 장비</Tab.Item>
+                <Tab.Item value="design">인테리어</Tab.Item>
+              </Tab.List>
+              <Tab.Content value="transfer">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">병원 양도</h4>
+                  <p>병원 인수인계 과정과 법적 절차를 상세히 안내합니다.</p>
+                </div>
+              </Tab.Content>
+              <Tab.Content value="machine">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">기계 장치</h4>
+                  <p>각종 의료 기계의 사양과 유지보수 정보를 제공합니다.</p>
+                </div>
+              </Tab.Content>
+              <Tab.Content value="device">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">의료 장비</h4>
+                  <p>진단 및 치료용 의료 장비의 최신 정보를 제공합니다.</p>
+                </div>
+              </Tab.Content>
+              <Tab.Content value="design">
+                <div className="p-4">
+                  <h4 className="font-semibold mb-2">인테리어</h4>
+                  <p>환자 친화적인 병원 공간 설계 및 시공을 지원합니다.</p>
+                </div>
+              </Tab.Content>
+            </Tab>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {/* 기본 라디오 그룹 */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">라디오 버튼</h3>
+            <Radio.Group value={selectedPeriod} onChange={setSelectedPeriod}>
+              <Radio.Item value="immediate">즉시 가능</Radio.Item>
+              <Radio.Item value="week">1주일 내</Radio.Item>
+              <Radio.Item value="month">1개월 내</Radio.Item>
+              <Radio.Item value="quarter">3개월 내</Radio.Item>
+            </Radio.Group>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">체크박스</h3>
+          <Checkbox.Group
+            value={selectedDepartments}
+            onChange={setSelectedDepartments}
+          >
+            <Checkbox.Item value="internal">내과</Checkbox.Item>
+            <Checkbox.Item value="surgery">외과</Checkbox.Item>
+            <Checkbox.Item value="pediatrics">소아과</Checkbox.Item>
+            <Checkbox.Item value="dermatology">피부과</Checkbox.Item>
+          </Checkbox.Group>
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">필터링 버튼</h3>
+          <FilterBox.Group
+            value={selectedFilters}
+            onChange={setSelectedFilters}
+            orientation="horizontal"
+          >
+            <FilterBox.Item value="정규직">정규직</FilterBox.Item>
+            <FilterBox.Item value="파트타임">파트타임</FilterBox.Item>
+            <FilterBox.Item value="계약직">계약직</FilterBox.Item>
+          </FilterBox.Group>
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">태그</h3>
+          <Tag.Group gap="12px" orientation="horizontal">
+            <Tag variant={1}>기본 태그</Tag>
+            <Tag variant={2}>강조 태그</Tag>
+            <Tag variant={3}>라이트 태그</Tag>
+            <Tag variant={4}>다크 태그</Tag>
+            <Tag variant={5}>반투명 태그</Tag>
+            <Tag variant={6}>회색 태그</Tag>
+          </Tag.Group>
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">텍스트에리아</h3>
+          <Textarea
+            placeholder="여기에 텍스트를 입력하세요..."
+            defaultValue="기본값"
+          />
+        </div>
+
+        {/* 페이지네이션 */}
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">페이지네이션</h3>
+          <div className="text-sm text-gray-600 mb-4">
+            현재 페이지: {currentPage} / 35
+          </div>
+          <SimplePagination
+            currentPage={currentPage}
+            totalPages={35}
+            onPageChange={handlePageChange}
           />
         </div>
       </div>
-
-      {/* 더보기 버튼 */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">더보기 버튼</h3>
-        <Button
-          buttonType="more"
-          icon={<PlusIcon currentColor="#9098A4" />}
-          iconPosition="left"
-        >
-          더보기
-        </Button>
-      </div>
-
-      <div className="space-y-4">
-        {/* 1. Default 스타일 (밑줄) */}
-        <div>
-          <h3 className="mb-4 text-lg font-semibold">기본 탭</h3>
-          <Tab defaultTab="internal" variant="default">
-            <Tab.List>
-              <Tab.Item value="internal">구직정보</Tab.Item>
-              <Tab.Item value="surgery">구인정보</Tab.Item>
-            </Tab.List>
-            <Tab.Content value="internal">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">구직정보</h4>
-                <p>구직정보 관련 정보를 확인하실 수 있습니다.</p>
-              </div>
-            </Tab.Content>
-            <Tab.Content value="surgery">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">구인정보</h4>
-                <p>구인정보 관련 정보를 확인하실 수 있습니다.</p>
-              </div>
-            </Tab.Content>
-            <Tab.Content value="regular">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">정규직 정보</h4>
-                <p>정규직 채용 관련 정보를 확인하실 수 있습니다.</p>
-              </div>
-            </Tab.Content>
-          </Tab>
-        </div>
-
-        {/* 2. Rounded 스타일 */}
-        <div>
-          <h3 className="mb-4 text-lg font-semibold">라운드 탭</h3>
-          <Tab defaultTab="profile" variant="rounded">
-            <Tab.List>
-              <Tab.Item value="profile">인재 정보</Tab.Item>
-              <Tab.Item value="evaluate">인재 평가</Tab.Item>
-            </Tab.List>
-            <Tab.Content value="profile">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">인재 정보</h4>
-                <p>인재 정보 관련 정보를 안내해드립니다.</p>
-              </div>
-            </Tab.Content>
-            <Tab.Content value="evaluate">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">인재 평가</h4>
-                <p>인재 평가 관련 정보를 제공합니다.</p>
-              </div>
-            </Tab.Content>
-          </Tab>
-        </div>
-
-        {/* 3. Filled 스타일 */}
-        <div>
-          <h3 className="mb-4 text-lg font-semibold">버튼 탭</h3>
-          <Tab defaultTab="transfer" variant="filled">
-            <Tab.List>
-              <Tab.Item value="transfer">병원 양도</Tab.Item>
-              <Tab.Item value="machine">기계 장치</Tab.Item>
-              <Tab.Item value="device">의료 장비</Tab.Item>
-              <Tab.Item value="design">인테리어</Tab.Item>
-            </Tab.List>
-            <Tab.Content value="transfer">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">병원 양도</h4>
-                <p>병원 인수인계 과정과 법적 절차를 상세히 안내합니다.</p>
-              </div>
-            </Tab.Content>
-            <Tab.Content value="machine">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">기계 장치</h4>
-                <p>각종 의료 기계의 사양과 유지보수 정보를 제공합니다.</p>
-              </div>
-            </Tab.Content>
-            <Tab.Content value="device">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">의료 장비</h4>
-                <p>진단 및 치료용 의료 장비의 최신 정보를 제공합니다.</p>
-              </div>
-            </Tab.Content>
-            <Tab.Content value="design">
-              <div className="p-4">
-                <h4 className="font-semibold mb-2">인테리어</h4>
-                <p>환자 친화적인 병원 공간 설계 및 시공을 지원합니다.</p>
-              </div>
-            </Tab.Content>
-          </Tab>
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        {/* 기본 라디오 그룹 */}
-        <div>
-          <h3 className="mb-4 text-lg font-semibold">라디오 버튼</h3>
-          <Radio.Group value={selectedPeriod} onChange={setSelectedPeriod}>
-            <Radio.Item value="immediate">즉시 가능</Radio.Item>
-            <Radio.Item value="week">1주일 내</Radio.Item>
-            <Radio.Item value="month">1개월 내</Radio.Item>
-            <Radio.Item value="quarter">3개월 내</Radio.Item>
-          </Radio.Group>
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        <h3 className="mb-4 text-lg font-semibold">체크박스</h3>
-        <Checkbox.Group
-          value={selectedDepartments}
-          onChange={setSelectedDepartments}
-        >
-          <Checkbox.Item value="internal">내과</Checkbox.Item>
-          <Checkbox.Item value="surgery">외과</Checkbox.Item>
-          <Checkbox.Item value="pediatrics">소아과</Checkbox.Item>
-          <Checkbox.Item value="dermatology">피부과</Checkbox.Item>
-        </Checkbox.Group>
-      </div>
-
-      <div className="space-y-8">
-        <h3 className="mb-4 text-lg font-semibold">필터링 버튼</h3>
-        <FilterBox.Group
-          value={selectedFilters}
-          onChange={setSelectedFilters}
-          orientation="horizontal"
-        >
-          <FilterBox.Item value="정규직">정규직</FilterBox.Item>
-          <FilterBox.Item value="파트타임">파트타임</FilterBox.Item>
-          <FilterBox.Item value="계약직">계약직</FilterBox.Item>
-        </FilterBox.Group>
-      </div>
-
-      <div className="space-y-8">
-        <h3 className="mb-4 text-lg font-semibold">태그</h3>
-        <Tag.Group gap="12px" orientation="horizontal">
-          <Tag variant={1}>기본 태그</Tag>
-          <Tag variant={2}>강조 태그</Tag>
-          <Tag variant={3}>라이트 태그</Tag>
-          <Tag variant={4}>다크 태그</Tag>
-          <Tag variant={5}>반투명 태그</Tag>
-          <Tag variant={6}>회색 태그</Tag>
-        </Tag.Group>
-      </div>
-
-      {/* 페이지네이션 */}
-      <div className="space-y-8">
-        <h3 className="mb-4 text-lg font-semibold">페이지네이션</h3>
-        <div className="text-sm text-gray-600 mb-4">
-          현재 페이지: {currentPage} / 35
-        </div>
-        <SimplePagination
-          currentPage={currentPage}
-          totalPages={35}
-          onPageChange={handlePageChange}
-        />
-      </div>
-
       <Footer className="main-footer">
-        <Footer.Logo src="/images/Logo.png"></Footer.Logo>
+        <Footer.Logo
+          src="/images/Logo.png"
+          mobileSrc="/images/LogoBlack.png"
+        ></Footer.Logo>
 
         <Footer.ContentWrap>
           <Footer.Nav>
@@ -650,18 +664,16 @@ export default function HomePage() {
           </Footer.Nav>
           <Footer.Address>
             <Footer.Contact>
-              <div>05029 서울특별시 광진구 능동로 120 건국대학교 1F</div>
-              {" | "}
-              <div>
+              <div className="footer-contact-item">
+                05029 서울특별시 광진구 능동로 120 건국대학교 1F
+              </div>
+              <div className="footer-contact-item">
                 E-mail:{" "}
                 <a href="mailto:seouledtech@konkuk.ac.kr">
                   seouledtech@konkuk.ac.kr
                 </a>
               </div>
-
-              {" | "}
-              <div>
-                {" "}
+              <div className="footer-contact-item">
                 Tel: <a href="tel:02-450-0697">02-450-0697~9</a>
               </div>
             </Footer.Contact>
@@ -672,6 +684,6 @@ export default function HomePage() {
           </Footer.Address>
         </Footer.ContentWrap>
       </Footer>
-    </div>
+    </>
   );
 }
