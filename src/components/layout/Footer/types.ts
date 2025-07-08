@@ -7,6 +7,7 @@ export interface FooterProps {
 export interface FooterLogoProps {
   src?: string;
   alt?: string;
+  mobileSrc?: string;
   children?: React.ReactNode;
   className?: string;
 }

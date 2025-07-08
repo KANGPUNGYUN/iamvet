@@ -10,6 +10,7 @@
 }
 
 .footer-container {
+  width: fit-content;
   display: flex;
   align-items: flex-start;
   gap: 80px;
@@ -23,24 +24,45 @@
   font-weight: bold;
   color: #ff6b7d;
   font-family: "suit", sans-serif;
+  flex-shrink: 0;
+  position: relative;
 }
 
-.footer-logo img {
+/* 기본 로고 (데스크톱용 - #FF8796) */
+.footer-logo img.logo-desktop {
   width: 185px;
   height: 52px;
-  object-fit: contain; /* 이미지 비율을 유지하면서 지정된 크기에 맞춤 */
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
 }
 
-.footer-logo img {
-  height: 40px;
-  width: auto;
+/* 모바일 로고 (#9EA5AF) - 기본적으로 숨김 */
+.footer-logo img.logo-mobile {
+  width: 185px;
+  height: 52px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: none;
 }
 
-/* 네비게이션 스타일 */
+/* 768px 이하에서 로고 교체 */
+@media (max-width: 768px) {
+  .footer-logo img.logo-desktop {
+    display: none;
+  }
+
+  .footer-logo img.logo-mobile {
+    display: block;
+  }
+}
+
+/* 네비게이션 스타일 - flex-wrap으로 자동 줄바꿈 */
 .footer-nav {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
+  flex-wrap: wrap; /* 공간이 부족하면 자동으로 줄바꿈 */
 }
 
 .footer-nav-item {
@@ -50,25 +72,64 @@
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
-  line-height: 135%; /* 21.6px */
+  line-height: 135%;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .footer-nav-item:focus {
   box-shadow: 0 0 0 2px rgba(255, 107, 125, 0.2);
 }
 
-/* 연락처 정보 스타일 */
+/* 연락처 정보 스타일 - flex-wrap으로 자동 줄바꿈 */
 .footer-contact {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 0;
   align-self: stretch;
   color: var(--Subtext, #4f5866);
   font-family: Pretendard;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 135%; /* 18.9px */
+  line-height: 135%;
+  flex-wrap: wrap; /* 공간이 부족하면 자동으로 줄바꿈 */
+}
+
+.footer-contact div {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* 연락처 정보 블록 스타일 */
+.footer-contact-item {
+  position: relative;
+  padding-right: 12px;
+}
+
+.footer-contact-item:last-child {
+  padding-right: 0;
+}
+
+.footer-contact-item:last-child::after {
+  display: none;
+}
+
+/* 구분자 스타일 */
+.footer-contact-item::after {
+  content: "|";
+  position: absolute;
+  right: 6px;
+  color: var(--Subtext, #4f5866);
+  font-weight: 300;
+}
+
+.footer-contentwrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 27px;
 }
 
 .footer-contact a {
@@ -77,7 +138,7 @@
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 135%; /* 18.9px */
+  line-height: 135%;
 }
 
 .footer-contact a:hover {
@@ -90,14 +151,6 @@
   border-radius: 2px;
 }
 
-.footer-contentwrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 27px;
-  flex-shrink: 0;
-}
-
 .footer-address {
   display: flex;
   flex-direction: column;
@@ -106,16 +159,51 @@
   align-self: stretch;
 }
 
-/* 저작권 스타일 */
 .footer-copyright {
+  width: max-content;
   color: var(--Guidetext, #9ea5af);
   font-family: Pretendard;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 135%; /* 18.9px */
+  line-height: 135%;
 }
 
-/* 반응형 디자인 */
-@media (min-width: 768px) {
+/* 작은 화면에서만 세로 정렬 강제 */
+@media (max-width: 768px) {
+  .footer {
+    display: flex;
+    width: 100%;
+    padding: 20px 16px 40px 16px;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+    gap: 40px;
+  }
+
+  .footer-container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .footer-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .footer-contact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .footer-contact-item::after {
+    display: none;
+  }
+
+  .footer-contact-item {
+    padding-right: 0;
+  }
 }
