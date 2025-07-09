@@ -1,6 +1,5 @@
 import { gmarketSans, suit } from "@/lib/fonts";
 import "./globals.css";
-import Head from "./head";
 
 export default function RootLayout({
   children,
@@ -9,10 +8,67 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className={`${gmarketSans.variable} ${suit.variable}`}>
-      <Head />
-      <body className={suit.className} style={{ 
-        fontFamily: "'SUIT', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', sans-serif" 
-      }}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/fonts/fonts.css" />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              @import url('/fonts/fonts.css');
+              
+              html, body, * {
+                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+              }
+              
+              /* 인라인 스타일 오버라이드 */
+              [style*="fontFamily"] {
+                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+              }
+              
+              [style*="font-family"] {
+                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+              }
+              
+              [style*="SUIT"] {
+                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+              }
+              
+              [style*="Gmarket"] {
+                font-family: 'Gmarket Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+              }
+            `,
+          }}
+        />
+        <link
+          rel="preload"
+          href="/fonts/text/SUIT-Regular.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/text/SUIT-Medium.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/text/SUIT-SemiBold.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/text/SUIT-Bold.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body>
         {children}
       </body>
     </html>
