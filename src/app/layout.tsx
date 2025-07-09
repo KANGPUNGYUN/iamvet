@@ -16,26 +16,14 @@ export default function RootLayout({
             __html: `
               @import url('/fonts/fonts.css');
               
-              html, body, * {
-                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+              html, body {
+                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
               }
               
-              /* 인라인 스타일 오버라이드 */
-              [style*="fontFamily"] {
-                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
-              }
+              /* 인라인 스타일 오버라이드 제거 - 문제 원인 */
+              /* [style*="fontFamily"], [style*="font-family"] 선택자 제거 */
               
-              [style*="font-family"] {
-                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
-              }
-              
-              [style*="SUIT"] {
-                font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
-              }
-              
-              [style*="Gmarket"] {
-                font-family: 'Gmarket Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
-              }
+              /* 인라인 스타일 오버라이드 제거 완료 */
             `,
           }}
         />
