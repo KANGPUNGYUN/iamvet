@@ -1,5 +1,6 @@
 @import url("../styles/colors.css");
 @import url("../styles/components/index.css");
+@import url("./fonts.css");
 
 /* Tailwind v3 방식 */
 @tailwind base;
@@ -8,6 +9,11 @@
 
 body {
   background: #fff;
+  font-family: var(--font-text), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  font-family: inherit;
 }
 
 /* CSS 변수 재정의 (기존 유틸리티 클래스 호환성 유지) */

@@ -1,0 +1,26 @@
+/* 폰트 fallback을 위한 CSS 파일 */
+@font-face {
+  font-family: 'SUIT-Fallback';
+  src: local('Apple SD Gothic Neo'), local('Malgun Gothic'), local('맑은 고딕'), local('Noto Sans KR'), local('Roboto'), local('Helvetica Neue'), local('Arial'), sans-serif;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GmarketSans-Fallback';
+  src: local('Apple SD Gothic Neo'), local('Malgun Gothic'), local('맑은 고딕'), local('Noto Sans KR'), local('Roboto'), local('Helvetica Neue'), local('Arial'), sans-serif;
+  font-display: swap;
+}
+
+/* 폰트 로딩 실패 시 fallback */
+.font-text {
+  font-family: var(--font-text), 'SUIT-Fallback', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
+}
+
+.font-title {
+  font-family: var(--font-title), 'GmarketSans-Fallback', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
+}
+
+/* 전역 폰트 적용 */
+html {
+  font-family: var(--font-text), 'SUIT-Fallback', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
+}
