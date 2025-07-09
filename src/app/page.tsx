@@ -78,6 +78,8 @@ export default function HomePage() {
     // 실제 라우팅 로직
   };
 
+  const [inputValue1, setInputValue1] = useState("");
+
   const handleTermsClick = () => {
     console.log("이용약관 클릭");
     // 실제 라우팅 로직
@@ -639,7 +641,12 @@ export default function HomePage() {
         </div>
         <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">입력박스</h3>
-          <InputBox placeholder="이메일을 입력하세요" />
+          <InputBox
+            value={inputValue1}
+            onChange={setInputValue1}
+            placeholder="이메일을 입력하세요"
+            clearable={true}
+          />
           <InputBox placeholder="이메일을 입력하세요" disabled />
         </div>
 

@@ -19,6 +19,8 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   required = false,
   state: externalState,
   guide: itemGuide,
+  clearable = true,
+  onClear,
   className = "",
   children,
 }) => {
@@ -115,67 +117,92 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
     setIsHovered(false);
   };
 
+  const handleClear = () => {
+    if (!finalDisabled && !readOnly) {
+      const newValue = "";
+
+      // 내부 상태 업데이트
+      if (contextValue === undefined && controlledValue === undefined) {
+        setInternalValue(newValue);
+      }
+
+      // onClear 콜백이 있으면 실행, 없으면 onChange 실행
+      if (onClear) {
+        onClear();
+      } else {
+        finalOnChange?.(newValue);
+      }
+    }
+  };
+
   // 기본 컨테이너 스타일 (반응형)
   const getContainerClasses = (state: InputBoxState) => {
     const baseClasses = [
       "flex",
-      "w-full max-w-[758px]", // 반응형: 최대 너비 758px
+      "w-full max-w-[758px]",
       "h-[52px]",
-      "px-5 py-4", // padding: 16px 20px
+      "px-5 py-4",
       "items-center",
-      "gap-2.5", // gap: 10px
+      "gap-2.5",
       "flex-shrink-0",
-      "rounded-md", // border-radius: 6px
+      "rounded-md",
       "transition-all duration-200",
     ];
 
-    // 상태별 스타일
+    return baseClasses.join(" ");
+  };
+
+  // 상태별 인라인 스타일
+  const getContainerStyle = (state: InputBoxState) => {
+    const baseStyle = {
+      fontFamily: "SUIT, sans-serif",
+    };
+
     switch (state) {
       case "disabled":
-        return [
-          ...baseClasses,
-          "bg-[rgba(234,234,234,0.6)]", // var(--Box_Disable)
-          "cursor-not-allowed",
-        ].join(" ");
+        return {
+          ...baseStyle,
+          backgroundColor: "rgba(234, 234, 234, 0.6)",
+          cursor: "not-allowed",
+        };
 
       case "untouched":
-        return [
-          ...baseClasses,
-          "bg-[#FAFAFA]", // var(--Box)
-        ].join(" ");
+        return {
+          ...baseStyle,
+          backgroundColor: "#FAFAFA",
+        };
 
       case "hover":
-        return [
-          ...baseClasses,
-          "bg-[#FBFBFB]", // var(--Box_Light)
-        ].join(" ");
+        return {
+          ...baseStyle,
+          backgroundColor: "#FBFBFB",
+        };
 
       case "focus":
-        return [
-          ...baseClasses,
-          "bg-[#FAFAFA]", // var(--Box)
-          "border border-[#CACAD2]", // var(--Line_Hightlight)
-        ].join(" ");
+        return {
+          ...baseStyle,
+          backgroundColor: "#FAFAFA",
+          border: "1px solid #CACAD2",
+        };
 
       case "typing":
-        return [
-          ...baseClasses,
-          "bg-[#FAFAFA]", // var(--Box)
-          "border border-[#CACAD2]", // var(--Line_Hightlight)
-          "justify-between",
-        ].join(" ");
+        return {
+          ...baseStyle,
+          backgroundColor: "#FAFAFA",
+          border: "1px solid #CACAD2",
+        };
 
       case "filled":
-        return [
-          ...baseClasses,
-          "bg-[#FBFBFB]", // var(--Box_Light)
-        ].join(" ");
+        return {
+          ...baseStyle,
+          backgroundColor: "#FBFBFB",
+        };
 
       default:
-        return [
-          ...baseClasses,
-          "bg-[#FAFAFA]", // var(--Box)
-        ].join(" ");
+        return {
+          ...baseStyle,
+          backgroundColor: "#FAFAFA",
+        };
     }
   };
 
@@ -186,78 +213,150 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
       "bg-transparent",
       "border-none",
       "outline-none",
-      "text-base", // font-size: 16px
-      "font-medium", // font-weight: 500
-      "leading-[135%]", // line-height: 135%
+      "text-base",
+      "font-medium",
+      "leading-[135%]",
     ];
 
-    // 상태별 텍스트 색상
-    const getTextColor = () => {
-      if (finalDisabled) return "text-[#9EA5AF]"; // var(--Guidetext)
-      if (state === "typing" || state === "filled") return "text-[#3B394D]"; // var(--Text)
-      return "text-[#9EA5AF]"; // var(--Guidetext)
+    return baseClasses.join(" ");
+  };
+
+  // Input 텍스트 색상 (인라인 스타일)
+  const getInputStyle = (state: InputBoxState) => {
+    const baseStyle = {
+      fontFamily: "SUIT, sans-serif",
+      fontSize: "16px",
+      fontWeight: 500,
+      lineHeight: "135%",
     };
 
-    return [
-      ...baseClasses,
-      getTextColor(),
-      "placeholder-[#9EA5AF]", // placeholder color
-      finalDisabled && "cursor-not-allowed",
-    ]
-      .filter(Boolean)
-      .join(" ");
+    if (finalDisabled) {
+      return {
+        ...baseStyle,
+        color: "#9EA5AF",
+        cursor: "not-allowed",
+      };
+    }
+
+    if (state === "typing" || state === "filled") {
+      return {
+        ...baseStyle,
+        color: "#3B394D",
+      };
+    }
+
+    return {
+      ...baseStyle,
+      color: "#9EA5AF",
+    };
   };
 
   // 에러/성공 상태 오버라이드
   const getValidationStyles = () => {
     if (finalError) {
       return {
-        containerOverride: "border border-red-500 bg-red-50",
-        inputOverride: "text-red-700",
+        containerStyle: {
+          border: "1px solid #ef4444",
+          backgroundColor: "#fef2f2",
+        },
+        inputStyle: { color: "#dc2626" },
       };
     }
     if (finalSuccess) {
       return {
-        containerOverride: "border border-green-500 bg-green-50",
-        inputOverride: "text-green-700",
+        containerStyle: {
+          border: "1px solid #22c55e",
+          backgroundColor: "#f0fdf4",
+        },
+        inputStyle: { color: "#16a34a" },
       };
     }
-    return { containerOverride: "", inputOverride: "" };
+    return {
+      containerStyle: {},
+      inputStyle: {},
+    };
   };
 
   const validationStyles = getValidationStyles();
-  const containerClasses = `${getContainerClasses(currentState)} ${
-    validationStyles.containerOverride
-  }`;
-  const inputClasses = `${getInputClasses(currentState)} ${
-    validationStyles.inputOverride
-  }`;
+  const containerClasses = getContainerClasses(currentState);
+  const containerStyle = {
+    ...getContainerStyle(currentState),
+    ...validationStyles.containerStyle,
+  };
+  const inputClasses = getInputClasses(currentState);
+  const inputStyle = {
+    ...getInputStyle(currentState),
+    ...validationStyles.inputStyle,
+  };
 
-  // 가이드 텍스트 컴포넌트 (CSS 기반)
+  // 클리어 버튼 렌더링 함수 (수정됨)
+  const renderClearButton = () => {
+    // clearable이 false이거나, 값이 없거나, 비활성화/읽기전용이면 버튼 숨김
+    if (!clearable || !finalValue || finalDisabled || readOnly) {
+      return null;
+    }
+
+    // typing이나 filled 상태일 때 표시 (수정된 부분)
+    if (currentState !== "typing" && currentState !== "filled") {
+      return null;
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={handleClear}
+        className="flex items-center justify-center w-5 h-5 ml-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 flex-shrink-0"
+        aria-label="입력 내용 지우기"
+        // 이벤트 버블링 방지 (추가됨)
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 4L4 12M4 4L12 12"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    );
+  };
+
   const renderGuide = () => {
     if (!finalGuide) return null;
 
     const getGuideClasses = () => {
-      const baseClasses = [
-        "mt-1",
-        "text-sm", // font-size: 14px
-        "font-bold", // font-weight: 700
-        "leading-[135%]", // line-height: 135%
-      ];
+      return "mt-1 text-sm font-bold leading-[135%]";
+    };
+
+    const getGuideStyle = () => {
+      const baseStyle = {
+        fontFamily: "SUIT, sans-serif",
+        fontSize: "14px",
+        fontWeight: 700,
+        lineHeight: "135%",
+      };
 
       if (finalGuide.type === "success") {
-        return [...baseClasses, "text-[#34C759]"].join(" "); // var(--Colors-Green)
+        return { ...baseStyle, color: "#34C759" };
       }
       if (finalGuide.type === "error") {
-        return [...baseClasses, "text-[#FF4A4A]"].join(" "); // var(--pointcolor-red-default)
+        return { ...baseStyle, color: "#FF4A4A" };
       }
-      return [...baseClasses, "text-[#9098A4]"].join(" "); // var(--Subtext2)
+      return { ...baseStyle, color: "#9098A4" };
     };
 
     return (
       <div
         className={`${getGuideClasses()} ${finalGuide.className || ""}`}
-        style={{ fontFamily: "SUIT, sans-serif" }}
+        style={getGuideStyle()}
       >
         {finalGuide.text}
       </div>
@@ -266,7 +365,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
 
   return (
     <div className={className}>
-      <div className={containerClasses}>
+      <div className={containerClasses} style={containerStyle}>
         <input
           type={type}
           value={finalValue}
@@ -282,13 +381,14 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           required={required}
-          className={inputClasses}
+          className={`${inputClasses} placeholder-[#9EA5AF]`}
+          style={inputStyle}
           aria-invalid={finalError}
           aria-disabled={finalDisabled}
           aria-readonly={readOnly}
           aria-required={required}
-          style={{ fontFamily: "SUIT, sans-serif" }}
         />
+        {renderClearButton()}
       </div>
 
       {renderGuide()}
