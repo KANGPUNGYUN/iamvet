@@ -75,6 +75,7 @@ import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { Header } from "../components/layout/Header";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -383,10 +384,9 @@ export default function HomePage() {
     { name: "DownloadIcon", component: DownloadIcon },
   ];
 
-  // 한 줄에 6개씩 그룹화 (더 많은 아이콘을 효율적으로 표시)
   const groupedIcons = [];
-  for (let i = 0; i < iconComponents.length; i += 6) {
-    groupedIcons.push(iconComponents.slice(i, i + 6));
+  for (let i = 0; i < iconComponents.length; i += 4) {
+    groupedIcons.push(iconComponents.slice(i, i + 4));
   }
 
   const [selectedPeriod, setSelectedPeriod] = useState("");
@@ -422,6 +422,23 @@ export default function HomePage() {
 
   return (
     <>
+      <Header
+        isLoggedIn={true}
+        user={{
+          id: "1",
+          name: "홍길동",
+          email: "hong@example.com",
+        }}
+        navigationItems={[
+          { label: "채용공고", href: "/" },
+          { label: "인재정보", href: "/" },
+          { label: "강의영상", href: "/" },
+          { label: "양수양도", href: "/" },
+          { label: "임상 포럼", href: "/" },
+        ]}
+        onLogin={() => console.log("로그인")}
+        onSignup={() => console.log("회원가입")}
+      />
       <div className="p-6 space-y-8">
         <h1 className="font-title title-bold">IAMVET 홈페이지</h1>
 
@@ -616,7 +633,6 @@ export default function HomePage() {
                 <Tab.Item value="transfer">병원 양도</Tab.Item>
                 <Tab.Item value="machine">기계 장치</Tab.Item>
                 <Tab.Item value="device">의료 장비</Tab.Item>
-                <Tab.Item value="design">인테리어</Tab.Item>
               </Tab.List>
               <Tab.Content value="transfer">
                 <div className="p-4">
@@ -634,12 +650,6 @@ export default function HomePage() {
                 <div className="p-4">
                   <h4 className="font-semibold mb-2">의료 장비</h4>
                   <p>진단 및 치료용 의료 장비의 최신 정보를 제공합니다.</p>
-                </div>
-              </Tab.Content>
-              <Tab.Content value="design">
-                <div className="p-4">
-                  <h4 className="font-semibold mb-2">인테리어</h4>
-                  <p>환자 친화적인 병원 공간 설계 및 시공을 지원합니다.</p>
                 </div>
               </Tab.Content>
             </Tab>

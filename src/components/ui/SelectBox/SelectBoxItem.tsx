@@ -137,7 +137,6 @@ export const SelectBoxItem: React.FC<SelectBoxProps> = ({
   const getStateClasses = (state: SelectBoxState) => {
     const baseClasses = `
       flex
-      w-[360px]
       h-[52px]
       px-[20px]
       py-[16px]
@@ -202,7 +201,6 @@ export const SelectBoxItem: React.FC<SelectBoxProps> = ({
   const finalClasses = finalDisabled
     ? `
       flex
-      w-[360px]
       h-[52px]
       px-[20px]
       py-[16px]
