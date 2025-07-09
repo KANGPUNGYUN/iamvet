@@ -73,6 +73,7 @@ import { Textarea } from "@/components/ui/Input/Textarea";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -88,6 +89,25 @@ export default function HomePage() {
     { value: "option2", label: "옵션 2" },
     { value: "option3", label: "옵션 3", disabled: true },
   ];
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
+  // DatePicker 핸들러 함수들
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date);
+    console.log("선택된 날짜:", date.toLocaleDateString("ko-KR"));
+  };
+
+  const handleRangeChange = (start: Date | null, end: Date | null) => {
+    setStartDate(start);
+    setEndDate(end);
+    console.log("선택된 기간:", {
+      시작일: start?.toLocaleDateString("ko-KR"),
+      종료일: end?.toLocaleDateString("ko-KR"),
+    });
+  };
 
   // 페이지네이션을 위한 간단한 컴포넌트들
   const PaginationButton = ({
@@ -656,7 +676,7 @@ export default function HomePage() {
         </div>
 
         <div className="space-y-8">
-          <h3 className="mb-4 text-lg font-semibold">텍스트에리아</h3>
+          <h3 className="mb-4 text-lg font-semibold">Textarea</h3>
           <Textarea
             placeholder="여기에 텍스트를 입력하세요..."
             defaultValue="기본값"
@@ -696,6 +716,19 @@ export default function HomePage() {
             onChange={setSearchValue}
             onSearch={handleSearch}
             placeholder="검색어를 입력하세요"
+          />
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">Date Picker</h3>
+          <DatePicker
+            placeholder="날짜를 선택하세요"
+            onChange={handleDateChange}
+          />
+
+          <DatePicker.Range
+            placeholder="시작일 ~ 종료일"
+            onChange={handleRangeChange}
           />
         </div>
 
