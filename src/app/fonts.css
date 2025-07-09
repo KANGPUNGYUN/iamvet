@@ -20,10 +20,7 @@
   font-family: var(--font-title), 'GmarketSans-Fallback', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
 }
 
-/* 전역 폰트 적용 */
-html, body {
-  font-family: var(--font-text), 'SUIT-Fallback', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
-}
+/* 전역 폰트 적용 제거 - 인라인 스타일 우선순위 보장 */
 
 /* 인라인 스타일로 SUIT 폰트 강제 적용 */
 .force-suit-font {
