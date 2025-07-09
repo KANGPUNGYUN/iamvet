@@ -311,16 +311,22 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
         onMouseDown={(e) => e.preventDefault()}
       >
         <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
         >
+          <rect
+            width="20"
+            height="20"
+            rx="10"
+            fill="#3B394D"
+            fillOpacity="0.2"
+          />
           <path
-            d="M12 4L4 12M4 4L12 12"
-            stroke="currentColor"
-            strokeWidth="1.5"
+            d="M12.5 7.5L7.5 12.5M7.5 7.5L12.5 12.5"
+            stroke="white"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
