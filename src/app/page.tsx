@@ -74,7 +74,7 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { TimePicker } from "@/components/ui/TimePicker";
+import { TimePicker, TimeValue } from "@/components/ui/TimePicker";
 import { Header } from "../components/layout/Header";
 
 export default function HomePage() {
@@ -95,7 +95,7 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedTime, setSelectedTime] = useState<TimeValue | null>(null);
 
   // DatePicker 핸들러 함수들
   const handleDateChange = (date: Date) => {
@@ -112,7 +112,7 @@ export default function HomePage() {
     });
   };
 
-  const handleTimeChange = (time) => {
+  const handleTimeChange = (time: TimeValue) => {
     setSelectedTime(time);
     console.log("선택된 시간:", {
       시간: time.hour,
@@ -426,8 +426,8 @@ export default function HomePage() {
         isLoggedIn={true}
         user={{
           id: "1",
-          name: "홍길동",
-          email: "hong@example.com",
+          name: "박보검",
+          email: "park@example.com",
         }}
         navigationItems={[
           { label: "채용공고", href: "/" },
@@ -440,8 +440,6 @@ export default function HomePage() {
         onSignup={() => console.log("회원가입")}
       />
       <div className="p-6 space-y-8">
-        <h1 className="font-title title-bold">IAMVET 홈페이지</h1>
-
         {/* 아이콘 컬렉션 */}
         <div className="space-y-6">
           <h2 className="text-xl font-bold">
