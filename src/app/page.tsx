@@ -74,6 +74,7 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { TimePicker } from "@/components/ui/TimePicker";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -93,6 +94,7 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState(null);
 
   // DatePicker 핸들러 함수들
   const handleDateChange = (date: Date) => {
@@ -107,6 +109,26 @@ export default function HomePage() {
       시작일: start?.toLocaleDateString("ko-KR"),
       종료일: end?.toLocaleDateString("ko-KR"),
     });
+  };
+
+  const handleTimeChange = (time) => {
+    setSelectedTime(time);
+    console.log("선택된 시간:", {
+      시간: time.hour,
+      분: time.minute,
+      오전오후: time.period || "24시간 형식",
+    });
+
+    // 시간을 문자열로 포맷팅하여 로그 출력
+    const formattedTime = time.period
+      ? `${time.hour.toString().padStart(2, "0")}:${time.minute
+          .toString()
+          .padStart(2, "0")} ${time.period}`
+      : `${time.hour.toString().padStart(2, "0")}:${time.minute
+          .toString()
+          .padStart(2, "0")}`;
+
+    console.log("포맷된 시간:", formattedTime);
   };
 
   // 페이지네이션을 위한 간단한 컴포넌트들
@@ -729,6 +751,14 @@ export default function HomePage() {
           <DatePicker.Range
             placeholder="시작일 ~ 종료일"
             onChange={handleRangeChange}
+          />
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">Time Picker</h3>
+          <TimePicker
+            placeholder="시간을 선택하세요"
+            onChange={handleTimeChange}
           />
         </div>
 
