@@ -79,6 +79,7 @@ export default function HomePage() {
   };
 
   const [inputValue1, setInputValue1] = useState("");
+  const [price, setPrice] = useState("");
 
   const handleTermsClick = () => {
     console.log("이용약관 클릭");
@@ -646,6 +647,13 @@ export default function HomePage() {
             onChange={setInputValue1}
             placeholder="이메일을 입력하세요"
             clearable={true}
+          />
+          <InputBox
+            value={price}
+            onChange={setPrice}
+            placeholder="가격을 입력하세요"
+            type="number"
+            suffix="원"
           />
           <InputBox placeholder="이메일을 입력하세요" disabled />
         </div>

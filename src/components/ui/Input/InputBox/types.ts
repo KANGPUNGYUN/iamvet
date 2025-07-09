@@ -39,6 +39,7 @@ export interface InputBoxProps {
   autoFocus?: boolean;
   required?: boolean;
   state?: InputBoxState;
+  suffix?: string;
   guide?: InputBoxGuideProps;
   className?: string;
   children?: React.ReactNode;

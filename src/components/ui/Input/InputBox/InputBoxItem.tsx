@@ -21,6 +21,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   guide: itemGuide,
   clearable = true,
   onClear,
+  suffix, // 새로 추가된 prop
   className = "",
   children,
 }) => {
@@ -251,6 +252,31 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
     };
   };
 
+  // Suffix 스타일
+  const getSuffixStyle = (state: InputBoxState) => {
+    const baseStyle = {
+      fontFamily: "SUIT, sans-serif",
+      fontSize: "16px",
+      fontWeight: 500,
+      lineHeight: "135%",
+      flexShrink: 0,
+      marginLeft: "8px",
+    };
+
+    if (finalDisabled) {
+      return {
+        ...baseStyle,
+        color: "#4F5866",
+      };
+    }
+
+    // suffix는 항상 회색으로 표시
+    return {
+      ...baseStyle,
+      color: "#4F5866",
+    };
+  };
+
   // 에러/성공 상태 오버라이드
   const getValidationStyles = () => {
     if (finalError) {
@@ -289,14 +315,14 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
     ...validationStyles.inputStyle,
   };
 
-  // 클리어 버튼 렌더링 함수 (수정됨)
+  // 클리어 버튼 렌더링 함수
   const renderClearButton = () => {
     // clearable이 false이거나, 값이 없거나, 비활성화/읽기전용이면 버튼 숨김
     if (!clearable || !finalValue || finalDisabled || readOnly) {
       return null;
     }
 
-    // typing이나 filled 상태일 때 표시 (수정된 부분)
+    // typing이나 filled 상태일 때 표시
     if (currentState !== "typing" && currentState !== "filled") {
       return null;
     }
@@ -307,7 +333,6 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
         onClick={handleClear}
         className="flex items-center justify-center w-5 h-5 ml-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 flex-shrink-0"
         aria-label="입력 내용 지우기"
-        // 이벤트 버블링 방지 (추가됨)
         onMouseDown={(e) => e.preventDefault()}
       >
         <svg
@@ -333,6 +358,13 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
         </svg>
       </button>
     );
+  };
+
+  // Suffix 렌더링 함수
+  const renderSuffix = () => {
+    if (!suffix) return null;
+
+    return <span style={getSuffixStyle(currentState)}>{suffix}</span>;
   };
 
   const renderGuide = () => {
@@ -394,6 +426,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
           aria-readonly={readOnly}
           aria-required={required}
         />
+        {renderSuffix()}
         {renderClearButton()}
       </div>
 
