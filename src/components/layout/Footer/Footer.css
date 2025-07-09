@@ -180,6 +180,8 @@
     align-items: flex-start;
     flex-shrink: 0;
     gap: 40px;
+    background-color: transparent;
+    border-top: none;
   }
 
   .footer-container {
@@ -193,10 +195,23 @@
     gap: 12px;
   }
 
+  .footer-nav-item {
+    color: var(--Guidetext, #9ea5af);
+  }
+
   .footer-contact {
+    color: var(--Guidetext, #9ea5af);
+    font-size: 14px;
+    font-weight: 400;
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
+  }
+
+  .footer-contact a {
+    color: var(--Guidetext, #9ea5af);
+    font-size: 14px;
+    font-weight: 400;
   }
 
   .footer-contact-item::after {
