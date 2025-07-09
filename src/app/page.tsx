@@ -71,6 +71,8 @@ import {
 import { useState } from "react";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import { InputBox } from "@/components/ui/Input/InputBox";
+import { SelectBox } from "@/components/ui/SelectBox";
+import { SearchBar } from "@/components/ui/SearchBar";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -81,10 +83,11 @@ export default function HomePage() {
   const [inputValue1, setInputValue1] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleTermsClick = () => {
-    console.log("이용약관 클릭");
-    // 실제 라우팅 로직
-  };
+  const options = [
+    { value: "option1", label: "옵션 1" },
+    { value: "option2", label: "옵션 2" },
+    { value: "option3", label: "옵션 3", disabled: true },
+  ];
 
   // 페이지네이션을 위한 간단한 컴포넌트들
   const PaginationButton = ({
@@ -351,9 +354,28 @@ export default function HomePage() {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([""]);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [searchValue, setSearchValue] = useState("");
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+
+  const handleSearch = (value: string) => {
+    console.log("검색:", value);
+    setSearchResults([
+      `"${value}" 검색 결과 1`,
+      `"${value}" 검색 결과 2`,
+      `"${value}" 검색 결과 3`,
+    ]);
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     console.log(`페이지 ${page}로 이동`);
+  };
+
+  const [selectedValue, setSelectedValue] = useState("");
+
+  const handleSelectChange = (value: string) => {
+    setSelectedValue(value);
+    console.log("Selected value:", value);
   };
 
   return (
@@ -656,6 +678,25 @@ export default function HomePage() {
             suffix="원"
           />
           <InputBox placeholder="이메일을 입력하세요" disabled />
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">선택박스</h3>
+          <SelectBox
+            options={options}
+            placeholder="선택하세요"
+            onChange={handleSelectChange}
+          />
+        </div>
+
+        <div className="space-y-8">
+          <h3 className="mb-4 text-lg font-semibold">검색바</h3>
+          <SearchBar
+            value={searchValue}
+            onChange={setSearchValue}
+            onSearch={handleSearch}
+            placeholder="검색어를 입력하세요"
+          />
         </div>
 
         {/* 페이지네이션 */}
