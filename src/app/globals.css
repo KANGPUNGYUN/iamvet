@@ -9,11 +9,20 @@
 
 body {
   background: #fff;
-  font-family: var(--font-text), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-text), 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
 }
 
 * {
   font-family: inherit;
+}
+
+/* 컴포넌트에서 inline style로 SUIT 폰트 사용 시 강제 적용 */
+[style*="SUIT"] {
+  font-family: var(--font-text), 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+}
+
+[style*="Gmarket Sans"] {
+  font-family: var(--font-title), 'Gmarket Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
 }
 
 /* CSS 변수 재정의 (기존 유틸리티 클래스 호환성 유지) */
