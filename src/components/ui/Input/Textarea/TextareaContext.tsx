@@ -5,6 +5,7 @@ export interface TextareaContextType {
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: boolean;
+  success?: boolean;
 }
 
 export const TextareaContext = createContext<TextareaContextType | null>(null);

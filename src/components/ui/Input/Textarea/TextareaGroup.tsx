@@ -8,6 +8,7 @@ export const TextareaGroup: React.FC<TextareaGroupProps> = ({
   onChange,
   disabled = false,
   error = false,
+  success = false,
   className,
   children,
 }) => {
@@ -28,13 +29,12 @@ export const TextareaGroup: React.FC<TextareaGroupProps> = ({
     onChange: handleChange,
     disabled,
     error,
+    success,
   };
 
   return (
     <TextareaContext.Provider value={contextValue}>
-      <div className={className}>
-        {children}
-      </div>
+      <div className={className}>{children}</div>
     </TextareaContext.Provider>
   );
 };

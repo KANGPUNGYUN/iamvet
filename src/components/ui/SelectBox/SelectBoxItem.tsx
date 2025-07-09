@@ -22,12 +22,12 @@ export const SelectBoxItem: React.FC<SelectBoxProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Context에서 상태 가져오기 (Group 내부에서 사용될 때)
-  let contextValue,
-    contextOnChange,
-    contextDisabled,
-    contextError,
-    contextSuccess;
+  let contextValue: string | undefined;
+  let contextOnChange: ((value: string) => void) | undefined;
+  let contextDisabled: boolean | undefined;
+  let contextError: boolean | undefined;
+  let contextSuccess: boolean | undefined;
+
   try {
     const context = useSelectBoxContext();
     contextValue = context.value;
@@ -36,7 +36,11 @@ export const SelectBoxItem: React.FC<SelectBoxProps> = ({
     contextError = context.error;
     contextSuccess = context.success;
   } catch {
-    // Context 없이 독립적으로 사용
+    contextValue = undefined;
+    contextOnChange = undefined;
+    contextDisabled = undefined;
+    contextError = undefined;
+    contextSuccess = undefined;
   }
 
   // 실제 사용할 값들 결정
