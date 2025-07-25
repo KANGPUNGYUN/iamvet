@@ -19,11 +19,7 @@ export const GET = withAuth(async (request: NextRequest) => {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
-    const bookmarks = await getUserBookmarks(user.userId, {
-      type,
-      page,
-      limit,
-    });
+    const bookmarks = await getUserBookmarks(user.userId);
 
     return NextResponse.json(
       createApiResponse("success", "북마크 목록 조회 성공", bookmarks)
