@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { unlinkSocialAccount, getUserById } from "@/lib/database";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     provider: string;
-  };
+  }>;
 }
 
 export const DELETE = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const { provider } = params;
 
       // Validate provider

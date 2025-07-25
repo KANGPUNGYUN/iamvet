@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import {
   getLectureCommentById,
   updateLectureComment,
@@ -8,13 +8,13 @@ import {
 } from "@/lib/database";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     id: string;
     commentId: string;
   };
 }
 
-export const GET = async (request: NextRequest, { params }: RouteContext) => {
+export const GET = async (request: NextRequest, context: RouteContext) => {
   try {
     const { commentId } = params;
 
@@ -38,7 +38,7 @@ export const GET = async (request: NextRequest, { params }: RouteContext) => {
 };
 
 export const PUT = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
       const { commentId } = params;
@@ -94,7 +94,7 @@ export const PUT = withAuth(
 );
 
 export const DELETE = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
       const { commentId } = params;

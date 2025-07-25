@@ -1,5 +1,5 @@
 export const PUT = withAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
       const user = (request as any).user;
       const jobId = params.id;

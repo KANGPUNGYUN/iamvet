@@ -1,5 +1,5 @@
 export const POST = withAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
       const veterinarianId = params.id;
       const user = (request as any).user;
@@ -41,7 +41,7 @@ export const POST = withAuth(
 );
 
 export const DELETE = withAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
       const veterinarianId = params.id;
       const user = (request as any).user;

@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse, createErrorResponse } from "@/src/lib/utils";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import { 
+  findDeletedAccount, 
+  restoreAccount, 
+  restoreUserData, 
+  generateTokens 
+} from "@/lib/database";
+import { verifyPassword } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -133,44 +140,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function findDeletedAccount(phone: string) {
-  // 실제 구현에서는 데이터베이스 연결 사용
-  // return await db.users.findFirst({
-  //   where: {
-  //     phone,
-  //     deletedAt: { not: null },
-  //     isActive: false
-  //   }
-  // });
-  return null;
-}
-
-async function restoreAccount(userId: string) {
-  // 계정 복구 (deleted_at을 null로 설정, isActive를 true로 설정)
-  // return await db.users.update({
-  //   where: { id: userId },
-  //   data: {
-  //     deletedAt: null,
-  //     withdrawReason: null,
-  //     isActive: true,
-  //     restoredAt: new Date()
-  //   }
-  // });
-  return {};
-}
-
-async function restoreUserData(userId: string) {
-  // 관련 데이터들도 복구
-  // await db.resumes.updateMany({
-  //   where: { userId, deletedAt: { not: null } },
-  //   data: { deletedAt: null }
-  // });
-  // await db.jobs.updateMany({
-  //   where: { userId, deletedAt: { not: null } },
-  //   data: { deletedAt: null }
-  // });
-}
-
 function maskEmail(email: string): string {
   const [username, domain] = email.split("@");
   const maskedUsername =
@@ -178,20 +147,4 @@ function maskEmail(email: string): string {
       ? username.slice(0, 2) + "*".repeat(username.length - 2)
       : username;
   return `${maskedUsername}@${domain}`;
-}
-
-async function verifyPassword(
-  password: string,
-  hash: string
-): Promise<boolean> {
-  // 실제 구현에서는 bcrypt 등을 사용
-  return true;
-}
-
-async function generateTokens(user: any) {
-  // JWT 토큰 생성
-  return {
-    accessToken: "sample_access_token",
-    refreshToken: "sample_refresh_token",
-  };
 }

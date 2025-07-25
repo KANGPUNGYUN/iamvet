@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import {
   getForumById,
   updateForum,
@@ -10,13 +10,14 @@ import {
 } from "@/lib/database";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const params = await context.params;
     const forumId = params.id;
 
     // 임상포럼 게시글 조회
@@ -55,9 +56,10 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 }
 
 export const PUT = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const forumId = params.id;
       const updateData = await request.json();
 
@@ -98,9 +100,10 @@ export const PUT = withAuth(
 );
 
 export const DELETE = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const forumId = params.id;
 
       // 임상포럼 게시글 존재 및 권한 확인

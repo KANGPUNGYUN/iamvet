@@ -260,3 +260,28 @@ export interface HospitalProfile extends User {
 export type UserType = "veterinarian" | "hospital";
 export type LoginType = "normal" | "naver" | "kakao" | "google";
 export type SortOrder = "latest" | "oldest" | "deadline";
+
+// API 응답 생성 함수들
+export function createApiResponse(status: string, message: string, data?: any) {
+  return {
+    status,
+    message,
+    data,
+    timestamp: new Date().toISOString()
+  };
+}
+
+export function createErrorResponse(message: string, data?: any) {
+  return {
+    status: "error",
+    message,
+    data,
+    timestamp: new Date().toISOString()
+  };
+}
+
+// 이메일 검증 함수
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}

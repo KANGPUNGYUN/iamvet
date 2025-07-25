@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import {
   getHospitalById,
   updateHospitalProfile,
@@ -8,13 +8,14 @@ import {
 } from "@/lib/database";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const params = await context.params;
     const hospitalId = params.id;
 
     // 병원 정보 조회
@@ -47,10 +48,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 }
 
 export const PUT = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
-      const hospitalId = params.id;
+      const params = await context.params;
+      const params = await context.params;
+    const hospitalId = params.id;
       const updateData = await request.json();
 
       if (user.userType !== "hospital") {

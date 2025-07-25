@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { updateUserPassword, verifyPassword } from "@/lib/database";
 
 export const PUT = withAuth(async (request: NextRequest) => {

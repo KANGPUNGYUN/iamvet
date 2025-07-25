@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import {
   getResumeEvaluationById,
   updateResumeEvaluation,
@@ -8,14 +8,14 @@ import {
 } from "@/lib/database";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     id: string;
     evaluationId: string;
   };
 }
 
 export const PUT = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
       const { evaluationId } = params;
@@ -61,7 +61,7 @@ export const PUT = withAuth(
 );
 
 export const DELETE = withAuth(
-  async (request: NextRequest, { params }: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
       const { evaluationId } = params;

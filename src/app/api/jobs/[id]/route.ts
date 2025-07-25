@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import {
   getJobById,
   incrementJobViewCount,
@@ -13,7 +13,7 @@ import {
 // src/app/api/jobs/[id]/route.ts - 채용공고 상세
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const jobId = params.id;
@@ -55,7 +55,7 @@ export async function GET(
 }
 
 export const PUT = withAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
       const user = (request as any).user;
       const jobId = params.id;
@@ -103,7 +103,7 @@ export const PUT = withAuth(
 );
 
 export const DELETE = withAuth(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
       const user = (request as any).user;
       const jobId = params.id;
