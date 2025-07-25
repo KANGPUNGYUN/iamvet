@@ -1,7 +1,7 @@
 // src/app/api/docs/openapi.json/route.ts
 // OpenAPI JSON 스펙을 제공하는 API route
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { API_SCHEMAS, COMMON_RESPONSES } from "../../../../../lib/swagger";
 
 const openApiSpec = {
@@ -2352,59 +2352,6 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
     },
 
     // Unified Auth APIs
-    "/auth/login": {
-      post: {
-        tags: ["Authentication"],
-        summary: "통합 로그인",
-        description: "수의사/병원 통합 로그인 엔드포인트",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["username", "password", "userType"],
-                properties: {
-                  username: { type: "string", example: "user@example.com" },
-                  password: { type: "string", example: "password123" },
-                  userType: {
-                    type: "string",
-                    enum: ["veterinarian", "hospital"],
-                    example: "veterinarian",
-                  },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "로그인 성공",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    status: { type: "string", example: "success" },
-                    message: { type: "string", example: "로그인 성공" },
-                    data: {
-                      type: "object",
-                      properties: {
-                        user: { type: "object" },
-                        tokens: { type: "object" },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          "400": { $ref: "#/components/responses/BadRequest" },
-          "401": { $ref: "#/components/responses/Unauthorized" },
-          "500": { $ref: "#/components/responses/InternalError" },
-        },
-      },
-    },
     "/auth/logout": {
       post: {
         tags: ["Authentication"],
@@ -2426,64 +2373,6 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
             },
           },
           "401": { $ref: "#/components/responses/Unauthorized" },
-          "500": { $ref: "#/components/responses/InternalError" },
-        },
-      },
-    },
-    "/auth/register": {
-      post: {
-        tags: ["Authentication"],
-        summary: "통합 회원가입",
-        description: "수의사/병원 통합 회원가입 엔드포인트",
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                required: ["username", "password", "userType"],
-                properties: {
-                  username: { type: "string" },
-                  password: { type: "string", minLength: 6 },
-                  userType: {
-                    type: "string",
-                    enum: ["veterinarian", "hospital"],
-                  },
-                  email: { type: "string", format: "email" },
-                  phone: { type: "string" },
-                  profileImage: { type: "string", format: "binary" },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "회원가입 성공",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    status: { type: "string", example: "success" },
-                    message: {
-                      type: "string",
-                      example: "회원가입이 완료되었습니다",
-                    },
-                    data: {
-                      type: "object",
-                      properties: {
-                        user: { type: "object" },
-                        tokens: { type: "object" },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          "400": { $ref: "#/components/responses/BadRequest" },
-          "409": { $ref: "#/components/responses/Conflict" },
           "500": { $ref: "#/components/responses/InternalError" },
         },
       },
@@ -3540,7 +3429,8 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
       post: {
         tags: ["Authentication"],
         summary: "회원 탈퇴",
-        description: "계정을 soft delete 처리합니다. 계정은 3개월간 보관되며, 같은 휴대폰번호로 재가입 시 복구할 수 있습니다.",
+        description:
+          "계정을 soft delete 처리합니다. 계정은 3개월간 보관되며, 같은 휴대폰번호로 재가입 시 복구할 수 있습니다.",
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: false,
@@ -3552,12 +3442,12 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                   reason: {
                     type: "string",
                     example: "서비스 이용 불만족",
-                    description: "탈퇴 사유 (선택사항)"
-                  }
-                }
-              }
-            }
-          }
+                    description: "탈퇴 사유 (선택사항)",
+                  },
+                },
+              },
+            },
+          },
         },
         responses: {
           "200": {
@@ -3568,26 +3458,30 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                   type: "object",
                   properties: {
                     status: { type: "string", example: "success" },
-                    message: { type: "string", example: "회원 탈퇴가 완료되었습니다" },
+                    message: {
+                      type: "string",
+                      example: "회원 탈퇴가 완료되었습니다",
+                    },
                     data: {
                       type: "object",
                       properties: {
                         deletedAt: { type: "string", format: "date-time" },
-                        message: { 
-                          type: "string", 
-                          example: "계정은 3개월간 보관되며, 같은 휴대폰번호로 재가입 시 복구할 수 있습니다" 
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                        message: {
+                          type: "string",
+                          example:
+                            "계정은 3개월간 보관되며, 같은 휴대폰번호로 재가입 시 복구할 수 있습니다",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": { $ref: "#/components/responses/Unauthorized" },
-          "500": { $ref: "#/components/responses/InternalError" }
-        }
-      }
+          "500": { $ref: "#/components/responses/InternalError" },
+        },
+      },
     },
     // 계정 복구 API
     "/auth/recover": {
@@ -3602,8 +3496,8 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
             required: true,
             schema: { type: "string" },
             example: "010-1234-5678",
-            description: "휴대폰번호"
-          }
+            description: "휴대폰번호",
+          },
         ],
         responses: {
           "200": {
@@ -3623,28 +3517,38 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                           type: "object",
                           nullable: true,
                           properties: {
-                            email: { type: "string", example: "te***@example.com" },
-                            userType: { type: "string", enum: ["veterinarian", "hospital"] },
-                            provider: { type: "string", enum: ["normal", "google", "kakao", "naver"] },
+                            email: {
+                              type: "string",
+                              example: "te***@example.com",
+                            },
+                            userType: {
+                              type: "string",
+                              enum: ["veterinarian", "hospital"],
+                            },
+                            provider: {
+                              type: "string",
+                              enum: ["normal", "google", "kakao", "naver"],
+                            },
                             deletedAt: { type: "string", format: "date-time" },
-                            daysUntilExpiry: { type: "integer", example: 45 }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                            daysUntilExpiry: { type: "integer", example: 45 },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": { $ref: "#/components/responses/BadRequest" },
-          "500": { $ref: "#/components/responses/InternalError" }
-        }
+          "500": { $ref: "#/components/responses/InternalError" },
+        },
       },
       post: {
         tags: ["Authentication"],
         summary: "계정 복구",
-        description: "탈퇴한 계정을 복구합니다. 소셜 로그인 계정의 경우 비밀번호가 필요하지 않습니다.",
+        description:
+          "탈퇴한 계정을 복구합니다. 소셜 로그인 계정의 경우 비밀번호가 필요하지 않습니다.",
         requestBody: {
           required: true,
           content: {
@@ -3656,17 +3560,17 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                   phone: {
                     type: "string",
                     example: "010-1234-5678",
-                    description: "휴대폰번호"
+                    description: "휴대폰번호",
                   },
                   password: {
                     type: "string",
                     example: "password123",
-                    description: "비밀번호 (일반 계정의 경우 필수)"
-                  }
-                }
-              }
-            }
-          }
+                    description: "비밀번호 (일반 계정의 경우 필수)",
+                  },
+                },
+              },
+            },
+          },
         },
         responses: {
           "200": {
@@ -3677,7 +3581,10 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                   type: "object",
                   properties: {
                     status: { type: "string", example: "success" },
-                    message: { type: "string", example: "계정이 성공적으로 복구되었습니다" },
+                    message: {
+                      type: "string",
+                      example: "계정이 성공적으로 복구되었습니다",
+                    },
                     data: {
                       type: "object",
                       properties: {
@@ -3687,29 +3594,35 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                             id: { type: "string" },
                             username: { type: "string" },
                             email: { type: "string" },
-                            userType: { type: "string", enum: ["veterinarian", "hospital"] },
-                            provider: { type: "string", enum: ["normal", "google", "kakao", "naver"] }
-                          }
+                            userType: {
+                              type: "string",
+                              enum: ["veterinarian", "hospital"],
+                            },
+                            provider: {
+                              type: "string",
+                              enum: ["normal", "google", "kakao", "naver"],
+                            },
+                          },
                         },
                         tokens: {
                           type: "object",
                           properties: {
                             accessToken: { type: "string" },
                             refreshToken: { type: "string" },
-                            expiresIn: { type: "integer" }
-                          }
+                            expiresIn: { type: "integer" },
+                          },
                         },
-                        restoredAt: { type: "string", format: "date-time" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                        restoredAt: { type: "string", format: "date-time" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
-          "404": { 
+          "404": {
             description: "복구 가능한 계정이 없음",
             content: {
               "application/json": {
@@ -3717,11 +3630,14 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                   type: "object",
                   properties: {
                     status: { type: "string", example: "error" },
-                    message: { type: "string", example: "복구 가능한 계정이 없습니다" }
-                  }
-                }
-              }
-            }
+                    message: {
+                      type: "string",
+                      example: "복구 가능한 계정이 없습니다",
+                    },
+                  },
+                },
+              },
+            },
           },
           "410": {
             description: "계정 보관 기간 만료",
@@ -3731,16 +3647,19 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                   type: "object",
                   properties: {
                     status: { type: "string", example: "error" },
-                    message: { type: "string", example: "계정 보관 기간이 만료되어 복구할 수 없습니다" }
-                  }
-                }
-              }
-            }
+                    message: {
+                      type: "string",
+                      example: "계정 보관 기간이 만료되어 복구할 수 없습니다",
+                    },
+                  },
+                },
+              },
+            },
           },
-          "500": { $ref: "#/components/responses/InternalError" }
-        }
-      }
-    }
+          "500": { $ref: "#/components/responses/InternalError" },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -4346,11 +4265,31 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
   },
 };
 
-export async function GET() {
-  return NextResponse.json(openApiSpec, {
+export async function GET(request: NextRequest) {
+  // 배포환경에 맞는 서버 URL 동적 설정
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : request.nextUrl.origin;
+
+  // 동적으로 서버 URL 업데이트
+  const dynamicOpenApiSpec = {
+    ...openApiSpec,
+    servers: [
+      {
+        url: `${baseUrl}/api`,
+        description: "API Server",
+      },
+    ],
+  };
+
+  return NextResponse.json(dynamicOpenApiSpec, {
     headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-cache, no-store, must-revalidate", // 캐시 비활성화
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     },
   });
 }
