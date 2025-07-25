@@ -1124,8 +1124,10 @@ export const getVeterinarianEvaluations = async (veterinarianId: string) => {
   return {
     averageRating:
       result.rows.length > 0
-        ? result.rows.reduce((acc, eval) => acc + eval.overall_rating, 0) /
-          result.rows.length
+        ? result.rows.reduce(
+            (acc, evaluation) => acc + evaluation.overall_rating,
+            0
+          ) / result.rows.length
         : 0,
     evaluations: result.rows,
   };
