@@ -1,4 +1,4 @@
-import { gmarketSans, suit } from "@/lib/fonts";
+import { gmarketSans, suit } from "@/src/lib/fonts";
 import "./globals.css";
 
 export default function RootLayout({
@@ -56,9 +56,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
