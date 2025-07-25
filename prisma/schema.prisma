@@ -8,10 +8,447 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 기본 사용자 모델
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+  id              String    @id @default(cuid())
+  username        String    @unique
+  email           String    @unique
+  phone           String    @unique
+  passwordHash    String?   // 소셜 로그인 사용자는 null 가능
+  profileImage    String?
+  userType        UserType
+  provider        Provider  @default(NORMAL)
+  isActive        Boolean   @default(true)
+  
+  // 약관 동의 정보
+  termsAgreedAt     DateTime?
+  privacyAgreedAt   DateTime?
+  marketingAgreedAt DateTime?
+  
+  // Soft delete 및 복구 관련
+  deletedAt       DateTime?
+  withdrawReason  String?
+  restoredAt      DateTime?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // 관계
+  veterinarianProfile VeterinarianProfile?
+  hospitalProfile     HospitalProfile?
+  socialAccounts      SocialAccount[]
+  jobs                Job[]
+  resumes             Resume[]
+  applications        Application[]
+  jobBookmarks        JobBookmark[]
+  resumeBookmarks     ResumeBookmark[]
+  lectureBookmarks    LectureBookmark[]
+  transferBookmarks   TransferBookmark[]
+  hospitalEvaluations HospitalEvaluation[]
+  resumeEvaluations   ResumeEvaluation[]
+  lectureComments     LectureComment[]
+  commentReplies      CommentReply[]
+  forumPosts          ForumPost[]
+  transfers           Transfer[]
+  sentMessages        Message[] @relation("SentMessages")
+  receivedMessages    Message[] @relation("ReceivedMessages")
+
+  @@map("users")
+}
+
+// 수의사 프로필
+model VeterinarianProfile {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  nickname     String
+  birthDate    DateTime?
+  licenseImage String
+  experience   String?
+  specialty    String?
+  introduction String?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("veterinarian_profiles")
+}
+
+// 병원 프로필
+model HospitalProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  hospitalName     String
+  businessNumber   String   @unique
+  address          String
+  phone            String
+  website          String?
+  description      String?
+  businessLicense  String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_profiles")
+}
+
+// 소셜 계정 연동
+model SocialAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     Provider
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("social_accounts")
+}
+
+// 채용공고
+model Job {
+  id            String      @id @default(cuid())
+  hospitalId    String
+  title         String
+  description   String
+  location      String
+  salaryType    SalaryType
+  salaryMin     Int?
+  salaryMax     Int?
+  experienceMin Int?
+  workType      WorkType
+  benefits      String?
+  requirements  String?
+  status        JobStatus   @default(ACTIVE)
+  deadline      DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  hospital     User          @relation(fields: [hospitalId], references: [id])
+  applications Application[]
+  bookmarks    JobBookmark[]
+
+  @@map("jobs")
+}
+
+// 인재정보 (이력서)
+model Resume {
+  id              String   @id @default(cuid())
+  veterinarianId  String
+  title           String
+  introduction    String?
+  experience      String?
+  education       String?
+  certifications  String?
+  skills          String?
+  preferredSalary Int?
+  preferredLocation String?
+  availableFrom   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  veterinarian User              @relation(fields: [veterinarianId], references: [id])
+  bookmarks    ResumeBookmark[]
+  evaluations  ResumeEvaluation[]
+
+  @@map("resumes")
+}
+
+// 지원서
+model Application {
+  id              String            @id @default(cuid())
+  jobId           String
+  veterinarianId  String
+  coverLetter     String?
+  status          ApplicationStatus @default(PENDING)
+  appliedAt       DateTime          @default(now())
+  reviewedAt      DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job          Job  @relation(fields: [jobId], references: [id])
+  veterinarian User @relation(fields: [veterinarianId], references: [id])
+
+  @@unique([jobId, veterinarianId])
+  @@map("applications")
+}
+
+// 강의영상
+model Lecture {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  videoUrl    String
+  thumbnail   String?
+  duration    Int? // 초 단위
+  category    String?
+  tags        String[]
+  viewCount   Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  bookmarks LectureBookmark[]
+  comments  LectureComment[]
+
+  @@map("lectures")
+}
+
+// 강의 댓글
+model LectureComment {
+  id        String   @id @default(cuid())
+  lectureId String
+  userId    String
+  content   String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  lecture User            @relation(fields: [userId], references: [id])
+  user    Lecture         @relation(fields: [lectureId], references: [id])
+  replies CommentReply[]
+
+  @@map("lecture_comments")
+}
+
+// 댓글 답글
+model CommentReply {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  content   String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  comment LectureComment @relation(fields: [commentId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
+
+  @@map("comment_replies")
+}
+
+// 양도양수
+model Transfer {
+  id          String        @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  location    String
+  price       Int?
+  category    String
+  images      String[]
+  status      TransferStatus @default(ACTIVE)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  user      User                @relation(fields: [userId], references: [id])
+  bookmarks TransferBookmark[]
+
+  @@map("transfers")
+}
+
+// 포럼 게시글
+model ForumPost {
+  id       String   @id @default(cuid())
+  userId   String
+  title    String
+  content  String
+  category String?
+  tags     String[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("forum_posts")
+}
+
+// 메시지
+model Message {
+  id         String      @id @default(cuid())
+  senderId   String
+  receiverId String
+  subject    String?
+  content    String
+  status     MessageStatus @default(UNREAD)
+  readAt     DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@map("messages")
+}
+
+// 북마크 모델들
+model JobBookmark {
+  id     String @id @default(cuid())
+  userId String
+  jobId  String
+  
+  createdAt DateTime @default(now())
+  deletedAt DateTime? // Soft delete
+
+  user User @relation(fields: [userId], references: [id])
+  job  Job  @relation(fields: [jobId], references: [id])
+
+  @@unique([userId, jobId])
+  @@map("job_bookmarks")
+}
+
+model ResumeBookmark {
+  id       String @id @default(cuid())
+  userId   String
+  resumeId String
+  
+  createdAt DateTime @default(now())
+  deletedAt DateTime? // Soft delete
+
+  user   User   @relation(fields: [userId], references: [id])
+  resume Resume @relation(fields: [resumeId], references: [id])
+
+  @@unique([userId, resumeId])
+  @@map("resume_bookmarks")
+}
+
+model LectureBookmark {
+  id        String @id @default(cuid())
+  userId    String
+  lectureId String
+  
+  createdAt DateTime @default(now())
+  deletedAt DateTime? // Soft delete
+
+  user    User    @relation(fields: [userId], references: [id])
+  lecture Lecture @relation(fields: [lectureId], references: [id])
+
+  @@unique([userId, lectureId])
+  @@map("lecture_bookmarks")
+}
+
+model TransferBookmark {
+  id         String @id @default(cuid())
+  userId     String
+  transferId String
+  
+  createdAt DateTime @default(now())
+  deletedAt DateTime? // Soft delete
+
+  user     User     @relation(fields: [userId], references: [id])
+  transfer Transfer @relation(fields: [transferId], references: [id])
+
+  @@unique([userId, transferId])
+  @@map("transfer_bookmarks")
+}
+
+// 평가 모델들
+model HospitalEvaluation {
+  id         String @id @default(cuid())
+  hospitalId String
+  userId     String
+  rating     Int    // 1-5
+  comment    String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  hospital User @relation(fields: [hospitalId], references: [id])
+  user     User @relation(fields: [userId], references: [id])
+
+  @@unique([hospitalId, userId])
+  @@map("hospital_evaluations")
+}
+
+model ResumeEvaluation {
+  id       String @id @default(cuid())
+  resumeId String
+  userId   String
+  rating   Int    // 1-5
+  comment  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  resume Resume @relation(fields: [resumeId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([resumeId, userId])
+  @@map("resume_evaluations")
+}
+
+// Enum 정의
+enum UserType {
+  VETERINARIAN
+  HOSPITAL
+}
+
+enum Provider {
+  NORMAL
+  GOOGLE
+  KAKAO
+  NAVER
+}
+
+enum JobStatus {
+  ACTIVE
+  CLOSED
+  DRAFT
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  ACCEPTED
+  REJECTED
+}
+
+enum SalaryType {
+  HOURLY
+  MONTHLY
+  YEARLY
+  NEGOTIABLE
+}
+
+enum WorkType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum TransferStatus {
+  ACTIVE
+  SOLD
+  RESERVED
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
 }

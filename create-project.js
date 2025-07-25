@@ -2271,7 +2271,6 @@ src/
 ## 페이지 구조
 
 ### 인증
-- \`/member-select\` - 회원 유형 선택
 - \`/login/veterinarian\` - 수의사 로그인
 - \`/login/hospital\` - 병원 로그인
 - \`/register/veterinarian\` - 수의사 회원가입

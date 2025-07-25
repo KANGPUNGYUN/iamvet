@@ -632,6 +632,7 @@ export default function HomePage() {
                 <Tab.Item value="machine">기계 장치</Tab.Item>
                 <Tab.Item value="device">의료 장비</Tab.Item>
               </Tab.List>
+
               <Tab.Content value="transfer">
                 <div className="p-4">
                   <h4 className="font-semibold mb-2">병원 양도</h4>
