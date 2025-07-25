@@ -1,5 +1,18 @@
+import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/lib/middleware";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import { getApplicationWithJobAndHospital, updateApplicationStatus, createNotification } from "@/lib/database";
+
+function getStatusNotificationTitle(status: string): string {
+  switch (status) {
+    case "accepted": return "지원 승인";
+    case "rejected": return "지원 거절";
+    default: return "지원 결과";
+  }
+}
+
 export const PUT = withAuth(
-  async (request: NextRequest, { params }: { params: Promise<{ id: string }>> }) => {
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
       const user = (request as any).user;
       const resolvedParams = await params;
@@ -20,7 +33,7 @@ export const PUT = withAuth(
       // 지원자에게 알림 발송
       await createNotification({
         userId: application.veterinarian.userId,
-        type: "application_result",
+        type: "application_status",
         title: getStatusNotificationTitle(status),
         description: `${application.job.title} 공고의 지원 결과가 업데이트되었습니다`,
         applicationId,

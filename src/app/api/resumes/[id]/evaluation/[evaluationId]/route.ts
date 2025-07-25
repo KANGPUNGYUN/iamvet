@@ -11,7 +11,7 @@ interface RouteContext {
   params: Promise<{
     id: string;
     evaluationId: string;
-  };
+  }>;
 }
 
 export const PUT = withAuth(

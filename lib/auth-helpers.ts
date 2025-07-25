@@ -25,7 +25,7 @@ export async function checkUserExists(email: string, phone: string, username: st
     // });
 
     // 임시로 빈 응답 반환 (실제로는 데이터베이스 조회)
-    const existingUser = null;
+    const existingUser: any = null;
 
     if (!existingUser) {
       return { exists: false };

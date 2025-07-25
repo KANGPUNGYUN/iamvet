@@ -43,8 +43,7 @@ export const POST = withAuth(
     try {
       const user = (request as any).user;
       const params = await context.params;
-      const params = await context.params;
-    const hospitalId = params.id;
+      const hospitalId = params.id;
       const evaluationData = await request.json();
 
       // Only veterinarians can evaluate hospitals

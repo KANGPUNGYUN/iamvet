@@ -52,8 +52,7 @@ export const PUT = withAuth(
     try {
       const user = (request as any).user;
       const params = await context.params;
-      const params = await context.params;
-    const hospitalId = params.id;
+      const hospitalId = params.id;
       const updateData = await request.json();
 
       if (user.userType !== "hospital") {

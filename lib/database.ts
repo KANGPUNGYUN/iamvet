@@ -1030,8 +1030,8 @@ export const updateVeterinarianProfile = async (
   userId: string,
   profileData: any
 ) => {
-  const fields = [];
-  const values = [];
+  const fields: string[] = [];
+  const values: any[] = [];
   let paramCount = 0;
 
   // 동적으로 업데이트할 필드 구성
@@ -1047,8 +1047,8 @@ export const updateVeterinarianProfile = async (
 
   // users 테이블 업데이트 (email, phone 등)
   const userFields = ["email", "phone", "profile_image"];
-  const userUpdateFields = [];
-  const userUpdateValues = [];
+  const userUpdateFields: string[] = [];
+  const userUpdateValues: any[] = [];
   let userParamCount = 0;
 
   userFields.forEach((field) => {
@@ -1175,7 +1175,7 @@ export const getBookmarkedJobs = async (userId: string, limit?: number) => {
 
   if (limit) {
     query += ` LIMIT $2`;
-    params.push(limit);
+    params.push(limit.toString());
   }
 
   const result = await pool.query(query, params);
@@ -1260,7 +1260,7 @@ export const getActiveJobs = async (userId: string, limit?: number) => {
 
   if (limit) {
     query += ` LIMIT $2`;
-    params.push(limit);
+    params.push(limit.toString());
   }
 
   const result = await pool.query(query, params);
@@ -1339,8 +1339,8 @@ export const createJobPosting = async (jobData: any) => {
 };
 
 export const updateJobPosting = async (jobId: string, jobData: any) => {
-  const fields = [];
-  const values = [];
+  const fields: string[] = [];
+  const values: any[] = [];
   let paramCount = 0;
 
   // 동적으로 업데이트할 필드 구성
@@ -1949,7 +1949,7 @@ export const setCachedData = <T>(
 
 export const clearCache = (pattern?: string): void => {
   if (pattern) {
-    for (const key of cache.keys()) {
+    for (const key of Array.from(cache.keys())) {
       if (key.includes(pattern)) {
         cache.delete(key);
       }
@@ -2662,7 +2662,7 @@ export const getSocialUserInfo = async (provider: string, accessToken: string) =
 export const unlinkSocialAccount = async (userId: string, provider: string) => {
   const query = `DELETE FROM social_accounts WHERE user_id = $1 AND provider = $2`;
   const result = await pool.query(query, [userId, provider]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getUserById = async (userId: string) => {
@@ -2703,7 +2703,7 @@ export const verifyPassword = async (password: string, hash: string) => {
 export const updateUserPassword = async (userId: string, newPasswordHash: string) => {
   const query = `UPDATE users SET password_hash = $1 WHERE id = $2`;
   const result = await pool.query(query, [newPasswordHash, userId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getUserBookmarks = async (userId: string) => {
@@ -2729,7 +2729,7 @@ export const checkJobBookmarkExists = async (userId: string, jobId: string) => {
 export const removeJobBookmark = async (userId: string, jobId: string) => {
   const query = `UPDATE job_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND job_id = $2`;
   const result = await pool.query(query, [userId, jobId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const checkLectureBookmarkExists = async (userId: string, lectureId: string) => {
@@ -2747,7 +2747,7 @@ export const createLectureBookmark = async (userId: string, lectureId: string) =
 export const removeLectureBookmark = async (userId: string, lectureId: string) => {
   const query = `UPDATE lecture_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND lecture_id = $2`;
   const result = await pool.query(query, [userId, lectureId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getLectureCommentById = async (commentId: string) => {
@@ -2776,13 +2776,13 @@ export const createLectureComment = async (commentData: any) => {
 export const updateLectureComment = async (commentId: string, content: string) => {
   const query = `UPDATE lecture_comments SET content = $1 WHERE id = $2`;
   const result = await pool.query(query, [content, commentId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const deleteLectureComment = async (commentId: string) => {
   const query = `UPDATE lecture_comments SET deleted_at = NOW() WHERE id = $1`;
   const result = await pool.query(query, [commentId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getForumById = async (forumId: string) => {
@@ -2794,7 +2794,7 @@ export const getForumById = async (forumId: string) => {
 export const incrementForumViewCount = async (forumId: string) => {
   const query = `UPDATE forum_posts SET view_count = view_count + 1 WHERE id = $1`;
   const result = await pool.query(query, [forumId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getForumComments = async (forumId: string) => {
@@ -2806,13 +2806,13 @@ export const getForumComments = async (forumId: string) => {
 export const updateForum = async (forumId: string, updateData: any) => {
   const query = `UPDATE forum_posts SET title = $1, content = $2 WHERE id = $3`;
   const result = await pool.query(query, [updateData.title, updateData.content, forumId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const deleteForum = async (forumId: string) => {
   const query = `UPDATE forum_posts SET deleted_at = NOW() WHERE id = $1`;
   const result = await pool.query(query, [forumId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getForumsWithPagination = async (page = 1, limit = 10) => {
@@ -2869,13 +2869,13 @@ export const getHospitalEvaluationById = async (evaluationId: string) => {
 export const updateHospitalEvaluation = async (evaluationId: string, updateData: any) => {
   const query = `UPDATE hospital_evaluations SET rating = $1, comment = $2 WHERE id = $3`;
   const result = await pool.query(query, [updateData.rating, updateData.comment, evaluationId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const deleteHospitalEvaluation = async (evaluationId: string) => {
   const query = `UPDATE hospital_evaluations SET deleted_at = NOW() WHERE id = $1`;
   const result = await pool.query(query, [evaluationId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getHospitalEvaluations = async (hospitalId: string) => {
@@ -2908,7 +2908,7 @@ export const getHospitalById = async (hospitalId: string) => {
 export const updateHospitalProfile = async (hospitalId: string, updateData: any) => {
   const query = `UPDATE hospital_profiles SET hospital_name = $1, description = $2 WHERE user_id = $3`;
   const result = await pool.query(query, [updateData.hospitalName, updateData.description, hospitalId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getHospitalsWithPagination = async (page = 1, limit = 10) => {
@@ -2926,7 +2926,7 @@ export const getHospitalsWithPagination = async (page = 1, limit = 10) => {
 export const deleteJobPosting = async (jobId: string) => {
   const query = `UPDATE jobs SET deleted_at = NOW() WHERE id = $1`;
   const result = await pool.query(query, [jobId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getResumeEvaluationById = async (evaluationId: string) => {
@@ -2938,13 +2938,13 @@ export const getResumeEvaluationById = async (evaluationId: string) => {
 export const updateResumeEvaluation = async (evaluationId: string, updateData: any) => {
   const query = `UPDATE resume_evaluations SET rating = $1, comment = $2 WHERE id = $3`;
   const result = await pool.query(query, [updateData.rating, updateData.comment, evaluationId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const deleteResumeEvaluation = async (evaluationId: string) => {
   const query = `UPDATE resume_evaluations SET deleted_at = NOW() WHERE id = $1`;
   const result = await pool.query(query, [evaluationId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getResumeEvaluations = async (resumeId: string) => {
@@ -2985,13 +2985,13 @@ export const createTransferBookmark = async (userId: string, transferId: string)
 export const removeTransferBookmark = async (userId: string, transferId: string) => {
   const query = `UPDATE transfer_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND transfer_id = $2`;
   const result = await pool.query(query, [userId, transferId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const incrementTransferViewCount = async (transferId: string) => {
   const query = `UPDATE transfers SET view_count = view_count + 1 WHERE id = $1`;
   const result = await pool.query(query, [transferId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getRelatedTransfers = async (transferId: string, limit = 5) => {
@@ -3008,13 +3008,13 @@ export const getRelatedTransfers = async (transferId: string, limit = 5) => {
 export const updateTransfer = async (transferId: string, updateData: any) => {
   const query = `UPDATE transfers SET title = $1, description = $2, price = $3 WHERE id = $4`;
   const result = await pool.query(query, [updateData.title, updateData.description, updateData.price, transferId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const deleteTransfer = async (transferId: string) => {
   const query = `UPDATE transfers SET deleted_at = NOW() WHERE id = $1`;
   const result = await pool.query(query, [transferId]);
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const getTransfersWithPagination = async (page = 1, limit = 10) => {

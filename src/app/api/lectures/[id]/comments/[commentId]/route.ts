@@ -11,7 +11,7 @@ interface RouteContext {
   params: Promise<{
     id: string;
     commentId: string;
-  };
+  }>;
 }
 
 export const GET = async (request: NextRequest, context: RouteContext) => {

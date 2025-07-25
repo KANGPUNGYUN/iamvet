@@ -6,7 +6,7 @@ import { createResumeEvaluation, getResumeEvaluations } from "@/lib/database";
 interface RouteContext {
   params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {

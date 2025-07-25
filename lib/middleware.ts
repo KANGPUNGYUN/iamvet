@@ -1,7 +1,8 @@
 // src/lib/middleware.ts - API 미들웨어
 import { NextRequest, NextResponse } from "next/server";
 import type { BaseResponse } from "./types";
-import { createApiResponse, createErrorResponse } from "./types";
+import { createApiResponse, createErrorResponse, validateEmail } from "./types";
+import { verifyToken } from "./auth";
 
 export const withAuth = (handler: Function) => {
   return async (request: NextRequest, ...args: any[]) => {

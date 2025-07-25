@@ -11,13 +11,14 @@ import {
 interface RouteContext {
   params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export const POST = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const lectureId = params.id;
 
       // 강의 존재 확인

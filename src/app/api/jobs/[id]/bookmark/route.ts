@@ -11,7 +11,7 @@ import {
 interface RouteContext {
   params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export const POST = withAuth(

@@ -29,12 +29,7 @@ export const GET = withAuth(async (request: NextRequest) => {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
-    const applicants = await getHospitalApplicants(hospital.id, {
-      status,
-      jobId,
-      page,
-      limit,
-    });
+    const applicants = await getHospitalApplicants(hospital.id);
 
     return NextResponse.json(
       createApiResponse("success", "지원자 목록 조회 성공", applicants)

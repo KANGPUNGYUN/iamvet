@@ -5,6 +5,7 @@ import {
   linkSocialAccount,
   getUserBySocialProvider,
   getSocialUserInfo,
+  getUserById,
 } from "@/lib/database";
 
 export const POST = withAuth(async (request: NextRequest) => {
@@ -39,7 +40,7 @@ export const POST = withAuth(async (request: NextRequest) => {
     // Check if this social account is already linked to another user
     const existingUser = await getUserBySocialProvider(
       provider,
-      socialUserInfo.providerId
+      socialUserInfo.id
     );
 
     if (existingUser && existingUser.id !== user.userId) {
@@ -52,10 +53,10 @@ export const POST = withAuth(async (request: NextRequest) => {
     // Link social account to current user
     await linkSocialAccount(user.userId, {
       provider,
-      providerId: socialUserInfo.providerId,
+      providerId: socialUserInfo.id,
       email: socialUserInfo.email,
-      name: socialUserInfo.name,
-      profileImage: socialUserInfo.profileImage,
+      name: "",
+      profileImage: "",
     });
 
     // Get updated user with social accounts

@@ -1,10 +1,14 @@
 // src/lib/auth.ts - JWT 인증 관련 유틸리티
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import type { User } from "./types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
 
 export interface JwtPayload {
   userId: string;
@@ -19,10 +23,10 @@ export const generateTokens = async (user: User) => {
     email: user.email,
   };
 
-  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
-  const refreshToken = jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  const accessToken = jwt.sign(payload, JWT_SECRET as string, { expiresIn: "1h" } as SignOptions);
+  const refreshToken = jwt.sign(payload, JWT_SECRET as string, {
+    expiresIn: JWT_EXPIRES_IN as string,
+  } as SignOptions);
 
   return {
     accessToken,
@@ -33,7 +37,7 @@ export const generateTokens = async (user: User) => {
 
 export const verifyToken = (token: string): JwtPayload | null => {
   try {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+    return jwt.verify(token, JWT_SECRET as string) as JwtPayload;
   } catch (error) {
     return null;
   }
