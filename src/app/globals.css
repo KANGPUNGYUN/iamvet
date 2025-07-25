@@ -1,6 +1,5 @@
 @import url("../styles/colors.css");
 @import url("../styles/components/index.css");
-@import url("./fonts.css");
 
 /* Tailwind v3 방식 */
 @tailwind base;
@@ -9,7 +8,9 @@
 
 body {
   background: #fff;
-  font-family: var(--font-text), 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
+  font-family: var(--font-text), "SUIT", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "맑은 고딕", sans-serif;
 }
 
 * {

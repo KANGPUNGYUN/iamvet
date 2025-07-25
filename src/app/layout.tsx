@@ -10,12 +10,9 @@ export default function RootLayout({
     <html lang="ko" className={`${gmarketSans.variable} ${suit.variable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" href="/fonts/fonts.css" />
         <style
           dangerouslySetInnerHTML={{
-            __html: `
-              @import url('/fonts/fonts.css');
-              
+            __html: `              
               html, body {
                 font-family: 'SUIT', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
               }
