@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/lib/api";
+import { createApiResponse, createErrorResponse } from "@/src/lib/api";
 import { updateUserPassword, verifyPassword } from "@/lib/database";
 
 export const PUT = withAuth(async (request: NextRequest) => {
@@ -32,7 +32,10 @@ export const PUT = withAuth(async (request: NextRequest) => {
         );
       }
 
-      const isValidPassword = await verifyPassword(currentPassword, user.passwordHash);
+      const isValidPassword = await verifyPassword(
+        currentPassword,
+        user.passwordHash
+      );
       if (!isValidPassword) {
         return NextResponse.json(
           createErrorResponse("현재 비밀번호가 올바르지 않습니다"),

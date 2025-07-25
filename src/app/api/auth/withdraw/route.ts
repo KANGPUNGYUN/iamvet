@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
-import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import { createApiResponse, createErrorResponse } from "@/src/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    
+
     if (!token) {
-      return NextResponse.json(
-        createErrorResponse("인증이 필요합니다"),
-        { status: 401 }
-      );
+      return NextResponse.json(createErrorResponse("인증이 필요합니다"), {
+        status: 401,
+      });
     }
 
     const decoded = await verifyToken(token);
@@ -32,10 +31,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       createApiResponse("success", "회원 탈퇴가 완료되었습니다", {
         deletedAt: deletedUser.deletedAt,
-        message: "계정은 3개월간 보관되며, 같은 휴대폰번호로 재가입 시 복구할 수 있습니다"
+        message:
+          "계정은 3개월간 보관되며, 같은 휴대폰번호로 재가입 시 복구할 수 있습니다",
       })
     );
-
   } catch (error) {
     console.error("Withdraw error:", error);
     return NextResponse.json(
@@ -48,11 +47,11 @@ export async function POST(request: NextRequest) {
 async function softDeleteUser(userId: string, reason?: string) {
   // 실제 구현에서는 데이터베이스 연결 사용
   const deletedAt = new Date();
-  
+
   // 사용자 테이블에 deleted_at, withdraw_reason 업데이트
   // await db.users.update({
   //   where: { id: userId },
-  //   data: { 
+  //   data: {
   //     deletedAt,
   //     withdrawReason: reason,
   //     isActive: false
@@ -68,12 +67,10 @@ async function softDeleteUserData(userId: string) {
   // - 채용공고
   // - 북마크
   // - 댓글 등
-  
   // await db.resumes.updateMany({
   //   where: { userId },
   //   data: { deletedAt: new Date() }
   // });
-  
   // await db.jobs.updateMany({
   //   where: { userId },
   //   data: { deletedAt: new Date() }

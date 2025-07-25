@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse, createErrorResponse } from "@/lib/api";
-import { 
+import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import {
   getUserByEmail,
   getUserBySocialProvider,
   createSocialUser,
   linkSocialAccount,
-  generateTokens
+  generateTokens,
 } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
     try {
       stateData = JSON.parse(Buffer.from(state, "base64").toString());
     } catch (e) {
-      return createErrorPage("Google 로그인 실패", "유효하지 않은 상태값입니다");
+      return createErrorPage(
+        "Google 로그인 실패",
+        "유효하지 않은 상태값입니다"
+      );
     }
 
     const { userType } = stateData;
@@ -41,7 +44,10 @@ export async function GET(request: NextRequest) {
     const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
     if (!googleClientId || !googleClientSecret) {
-      return createErrorPage("Google OAuth 설정 오류", "클라이언트 설정이 누락되었습니다");
+      return createErrorPage(
+        "Google OAuth 설정 오류",
+        "클라이언트 설정이 누락되었습니다"
+      );
     }
 
     // Get access token from Google
@@ -62,7 +68,10 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json();
 
     if (!tokenResponse.ok) {
-      return createErrorPage("Google 로그인 실패", tokenData.error_description || "토큰 교환 실패");
+      return createErrorPage(
+        "Google 로그인 실패",
+        tokenData.error_description || "토큰 교환 실패"
+      );
     }
 
     // Get user info from Google
@@ -83,7 +92,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       // Check if user exists with same email
       const existingUser = await getUserByEmail(googleUser.email);
-      
+
       if (existingUser) {
         // Link Google account to existing user
         await linkSocialAccount(existingUser.id, {
@@ -130,7 +139,6 @@ export async function GET(request: NextRequest) {
 
     // Return success page that posts message to parent window
     return createSuccessPage("Google 로그인 성공", responseData);
-
   } catch (error) {
     console.error("Google callback error:", error);
     return createErrorPage("Google 로그인 실패", "서버 오류가 발생했습니다");
@@ -162,8 +170,14 @@ function createSuccessPage(message: string, data: any) {
           // If not in popup, redirect to dashboard
           localStorage.setItem('accessToken', '${data.tokens.accessToken}');
           localStorage.setItem('refreshToken', '${data.tokens.refreshToken}');
-          localStorage.setItem('user', JSON.stringify(${JSON.stringify(data.user)}));
-          window.location.href = '/${data.user.userType === "hospital" ? "dashboard/hospital" : "dashboard/veterinarian"}';
+          localStorage.setItem('user', JSON.stringify(${JSON.stringify(
+            data.user
+          )}));
+          window.location.href = '/${
+            data.user.userType === "hospital"
+              ? "dashboard/hospital"
+              : "dashboard/veterinarian"
+          }';
         }
       </script>
     </body>

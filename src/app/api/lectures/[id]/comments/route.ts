@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/lib/api";
-import { 
+import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import {
   getLectureComments,
   createLectureComment,
-  getLectureById
+  getLectureById,
 } from "@/lib/database";
 
 interface RouteContext {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
     const lectureId = params.id;
     const { searchParams } = new URL(request.url);
-    
+
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const sort = searchParams.get("sort") || "latest"; // "latest" | "oldest" | "likes"
@@ -25,10 +25,9 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     // 강의 존재 확인
     const lecture = await getLectureById(lectureId);
     if (!lecture) {
-      return NextResponse.json(
-        createErrorResponse("강의를 찾을 수 없습니다"),
-        { status: 404 }
-      );
+      return NextResponse.json(createErrorResponse("강의를 찾을 수 없습니다"), {
+        status: 404,
+      });
     }
 
     const comments = await getLectureComments(lectureId, {
@@ -49,52 +48,54 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-export const POST = withAuth(async (request: NextRequest, { params }: RouteContext) => {
-  try {
-    const user = (request as any).user;
-    const lectureId = params.id;
-    const { content, parentCommentId } = await request.json();
+export const POST = withAuth(
+  async (request: NextRequest, { params }: RouteContext) => {
+    try {
+      const user = (request as any).user;
+      const lectureId = params.id;
+      const { content, parentCommentId } = await request.json();
 
-    // 입력 검증
-    if (!content || content.trim().length === 0) {
+      // 입력 검증
+      if (!content || content.trim().length === 0) {
+        return NextResponse.json(
+          createErrorResponse("댓글 내용을 입력해주세요"),
+          { status: 400 }
+        );
+      }
+
+      if (content.length > 1000) {
+        return NextResponse.json(
+          createErrorResponse("댓글은 1000자 이내로 작성해주세요"),
+          { status: 400 }
+        );
+      }
+
+      // 강의 존재 확인
+      const lecture = await getLectureById(lectureId);
+      if (!lecture) {
+        return NextResponse.json(
+          createErrorResponse("강의를 찾을 수 없습니다"),
+          { status: 404 }
+        );
+      }
+
+      // 댓글 생성
+      const comment = await createLectureComment({
+        lectureId,
+        userId: user.userId,
+        content: content.trim(),
+        parentCommentId: parentCommentId || null,
+      });
+
       return NextResponse.json(
-        createErrorResponse("댓글 내용을 입력해주세요"),
-        { status: 400 }
+        createApiResponse("success", "댓글이 등록되었습니다", comment)
+      );
+    } catch (error) {
+      console.error("Lecture comment create error:", error);
+      return NextResponse.json(
+        createErrorResponse("댓글 등록 중 오류가 발생했습니다"),
+        { status: 500 }
       );
     }
-
-    if (content.length > 1000) {
-      return NextResponse.json(
-        createErrorResponse("댓글은 1000자 이내로 작성해주세요"),
-        { status: 400 }
-      );
-    }
-
-    // 강의 존재 확인
-    const lecture = await getLectureById(lectureId);
-    if (!lecture) {
-      return NextResponse.json(
-        createErrorResponse("강의를 찾을 수 없습니다"),
-        { status: 404 }
-      );
-    }
-
-    // 댓글 생성
-    const comment = await createLectureComment({
-      lectureId,
-      userId: user.userId,
-      content: content.trim(),
-      parentCommentId: parentCommentId || null,
-    });
-
-    return NextResponse.json(
-      createApiResponse("success", "댓글이 등록되었습니다", comment)
-    );
-  } catch (error) {
-    console.error("Lecture comment create error:", error);
-    return NextResponse.json(
-      createErrorResponse("댓글 등록 중 오류가 발생했습니다"),
-      { status: 500 }
-    );
   }
-});
+);

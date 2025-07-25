@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/lib/api";
-import { getJobsWithPagination, createJobPosting, getHospitalByUserId, getAdvertisements } from "@/lib/database";
+import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import {
+  getJobsWithPagination,
+  createJobPosting,
+  getHospitalByUserId,
+  getAdvertisements,
+} from "@/lib/database";
 
 export async function GET(request: NextRequest) {
   try {

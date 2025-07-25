@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse, createErrorResponse } from "@/lib/api";
+import { createApiResponse, createErrorResponse } from "@/src/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Build Google OAuth URL
-    const googleAuthUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    const googleAuthUrl = new URL(
+      "https://accounts.google.com/o/oauth2/v2/auth"
+    );
     googleAuthUrl.searchParams.set("client_id", googleClientId);
     googleAuthUrl.searchParams.set("redirect_uri", redirectUri);
     googleAuthUrl.searchParams.set("response_type", "code");

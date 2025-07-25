@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/lib/api";
-import { 
+import { createApiResponse, createErrorResponse } from "@/src/lib/api";
+import {
   linkSocialAccount,
   getUserBySocialProvider,
-  getSocialUserInfo
+  getSocialUserInfo,
 } from "@/lib/database";
 
 export const POST = withAuth(async (request: NextRequest) => {
@@ -21,15 +21,14 @@ export const POST = withAuth(async (request: NextRequest) => {
     }
 
     if (!authCode) {
-      return NextResponse.json(
-        createErrorResponse("인증 코드가 필요합니다"),
-        { status: 400 }
-      );
+      return NextResponse.json(createErrorResponse("인증 코드가 필요합니다"), {
+        status: 400,
+      });
     }
 
     // Get social user info using auth code
     const socialUserInfo = await getSocialUserInfo(provider, authCode);
-    
+
     if (!socialUserInfo) {
       return NextResponse.json(
         createErrorResponse("소셜 계정 정보를 가져올 수 없습니다"),
@@ -38,8 +37,11 @@ export const POST = withAuth(async (request: NextRequest) => {
     }
 
     // Check if this social account is already linked to another user
-    const existingUser = await getUserBySocialProvider(provider, socialUserInfo.providerId);
-    
+    const existingUser = await getUserBySocialProvider(
+      provider,
+      socialUserInfo.providerId
+    );
+
     if (existingUser && existingUser.id !== user.userId) {
       return NextResponse.json(
         createErrorResponse("이미 다른 계정에 연결된 소셜 계정입니다"),
@@ -61,7 +63,9 @@ export const POST = withAuth(async (request: NextRequest) => {
 
     return NextResponse.json(
       createApiResponse("success", "소셜 계정이 연결되었습니다", {
-        linkedProviders: updatedUser.socialAccounts.map((acc: any) => acc.provider),
+        linkedProviders: updatedUser.socialAccounts.map(
+          (acc: any) => acc.provider
+        ),
         user: {
           id: updatedUser.id,
           email: updatedUser.email,

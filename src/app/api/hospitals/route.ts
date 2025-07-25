@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createApiResponse, createErrorResponse } from "@/lib/api";
+import { createApiResponse, createErrorResponse } from "@/src/lib/api";
 import { getHospitalsWithPagination } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
