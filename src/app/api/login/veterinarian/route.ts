@@ -10,7 +10,7 @@ import {
   validateEmail,
 } from "@/lib/types";
 import { generateTokens, comparePassword } from "@/lib/auth";
-import { getUserByEmail } from "@/lib/database"; // 데이터베이스 함수
+import { getUserByEmail, updateLastLogin } from "@/lib/database"; // 데이터베이스 함수
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,6 +1,8 @@
 // src/app/api/resumes/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import type { ResumesQueryParams } from "@/lib/types";
+import { getResumesWithPagination } from "@/lib/database";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {

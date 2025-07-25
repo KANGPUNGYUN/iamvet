@@ -1,6 +1,10 @@
 // src/app/api/login/hospital/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import type { HospitalLoginRequest } from "@/lib/types";
+import { getUserByEmail, updateLastLogin } from "@/lib/database";
+import { createErrorResponse } from "@/lib/utils";
+import { comparePassword } from "@/lib/auth";
+import { createApiResponse, generateTokens } from "@/lib/auth-helpers";
 
 export async function POST(request: NextRequest) {
   try {

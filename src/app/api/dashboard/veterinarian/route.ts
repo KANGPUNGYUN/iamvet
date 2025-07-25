@@ -1,3 +1,16 @@
+import {
+  generateHashtags,
+  getAdvertisements,
+  getApplicationStatus,
+  getBookmarkedJobs,
+  getNotifications,
+  getRecentApplications,
+  getVeterinarianProfile,
+} from "@/lib/database";
+import { withAuth } from "@/lib/middleware";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import { NextRequest, NextResponse } from "next/server";
+
 export const GET = withAuth(async (request: NextRequest) => {
   try {
     const user = (request as any).user;

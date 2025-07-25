@@ -1,8 +1,20 @@
-import { NextRequest } from "next/server";
+import {
+  createApplication,
+  createNotification,
+  getApplication,
+  getJobById,
+  incrementJobApplicantCount,
+} from "@/lib/database";
+import { withAuth } from "@/lib/middleware";
+import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import { NextRequest, NextResponse } from "next/server";
 
 // src/app/api/jobs/[id]/apply/route.ts - 채용공고 지원
 export const POST = withAuth(
-  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+  async (
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+  ) => {
     try {
       const jobId = params.id;
       const user = (request as any).user;

@@ -1,5 +1,18 @@
+import { createErrorResponse } from "@/lib/auth-helpers";
+import {
+  createResumeBookmark,
+  deleteResumeBookmark,
+  getResumeBookmark,
+} from "@/lib/database";
+import { withAuth } from "@/lib/middleware";
+import { createApiResponse } from "@/lib/utils";
+import { NextRequest, NextResponse } from "next/server";
+
 export const POST = withAuth(
-  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+  async (
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+  ) => {
     try {
       const veterinarianId = params.id;
       const user = (request as any).user;
@@ -41,7 +54,10 @@ export const POST = withAuth(
 );
 
 export const DELETE = withAuth(
-  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+  async (
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+  ) => {
     try {
       const veterinarianId = params.id;
       const user = (request as any).user;
