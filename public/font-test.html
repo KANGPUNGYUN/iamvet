@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @font-face {
+            font-family: "GmarketSans";
+            src: url("/fonts/title/GmarketSansLight.woff2") format("woff2");
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: "GmarketSans";
+            src: url("/fonts/title/GmarketSansMedium.woff2") format("woff2");
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        .test-gmarket {
+            font-family: "GmarketSans", sans-serif;
+            font-weight: 300;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        
+        .test-gmarket-medium {
+            font-family: "GmarketSans", sans-serif;
+            font-weight: 500;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        
+        .test-fallback {
+            font-family: "Apple SD Gothic Neo", sans-serif;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Font Test</h1>
+    <div class="test-gmarket">GmarketSans Light (300) - 테스트 텍스트</div>
+    <div class="test-gmarket-medium">GmarketSans Medium (500) - 테스트 텍스트</div>
+    <div class="test-fallback">Apple SD Gothic Neo - 테스트 텍스트</div>
+    
+    <script>
+        // Check if fonts are loaded
+        document.fonts.ready.then(() => {
+            console.log('All fonts loaded');
+            document.fonts.forEach(font => {
+                console.log(`Font: ${font.family}, Status: ${font.status}`);
+            });
+        });
+        
+        // Test font loading
+        const testFont = new FontFace('GmarketSans', 'url(/fonts/title/GmarketSansLight.woff2)', {
+            weight: '300'
+        });
+        
+        testFont.load().then(() => {
+            console.log('GmarketSans loaded successfully');
+        }).catch(err => {
+            console.error('GmarketSans failed to load:', err);
+        });
+    </script>
+</body>
+</html>
