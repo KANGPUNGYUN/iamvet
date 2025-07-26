@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { HeaderLogo } from "./HeaderLogo";
 import { HeaderNavigation } from "./HeaderNavigation";

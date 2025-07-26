@@ -9,7 +9,7 @@
 
   /* 라인 색상 */
   --Line: #efeff0;
-  --Line_Highlight: #dcdce3;
+  --Line_Highlight: #cacad2;
 
   /* 박스 색상 */
   --Box: #f6f6f6;
@@ -40,7 +40,7 @@
 .text-sub {
   color: var(--Subtext);
 }
-.text-sub2 {
+.text-subtext2 {
   color: var(--Subtext2);
 }
 .text-guide {
@@ -62,6 +62,10 @@
 }
 .text-key5 {
   color: var(--Keycolor5);
+}
+
+.line-highlight {
+  background-color: var(--Line_Highlight);
 }
 
 /* 배경 색상 클래스 */

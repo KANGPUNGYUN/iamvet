@@ -813,7 +813,7 @@ export default function HomePage() {
             </Footer.Contact>
 
             <Footer.Copyright>
-              Copyright © 2025 아이앰펫 All Right Reserved.
+              Copyright © 2025 아이엠벳 All Right Reserved.
             </Footer.Copyright>
           </Footer.Address>
         </Footer.ContentWrap>

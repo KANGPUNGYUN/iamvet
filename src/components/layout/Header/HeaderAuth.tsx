@@ -9,7 +9,7 @@ export const HeaderAuth: React.FC<HeaderAuthProps> = ({
   return (
     <div className={`flex items-center space-x-4 ${className}`}>
       <a
-        href="/login"
+        href="/member-select"
         style={{
           display: "flex",
           height: "36px",

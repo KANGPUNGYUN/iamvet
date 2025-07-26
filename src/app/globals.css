@@ -19,7 +19,7 @@
 /* CSS 변수 재정의 (기존 유틸리티 클래스 호환성 유지) */
 :root {
   /* 기존 font-weight 변수들 유지 */
-  --title-weight-light: 300;
+  --title-weight-light: 400;
   --title-weight-medium: 500;
   --title-weight-bold: 700;
 
