@@ -120,7 +120,7 @@
     sans-serif;
 
   /* 기존 font-weight 변수들 유지 */
-  --title-weight-light: 400;
+  --title-weight-light: 300;
   --title-weight-medium: 500;
   --title-weight-bold: 700;
 
