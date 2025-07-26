@@ -16,7 +16,8 @@ export const POST = withAuth(
     { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const jobId = params.id;
+      const resolvedParams = await params;
+      const jobId = resolvedParams.id;
       const user = (request as any).user;
 
       // 수의사만 지원 가능
@@ -65,7 +66,7 @@ export const POST = withAuth(
       // 알림 발송 (병원에게)
       await createNotification({
         userId: job.hospital.userId,
-        type: "application_result",
+        type: "application_status",
         title: "새로운 지원자가 있습니다",
         description: `${job.title} 공고에 새로운 지원자가 지원했습니다`,
         applicationId: application.id,

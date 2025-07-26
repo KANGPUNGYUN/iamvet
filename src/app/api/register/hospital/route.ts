@@ -1,4 +1,4 @@
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, generateTokens } from "@/lib/auth";
 import { checkUserExists, createUser } from "@/lib/auth-helpers";
 import {
   checkBusinessNumberExists,

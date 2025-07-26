@@ -7,22 +7,15 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const params = {
-      keyword: searchParams.get("keyword") || undefined,
-      page: parseInt(searchParams.get("page") || "1"),
-      limit: parseInt(searchParams.get("limit") || "20"),
-      sort: searchParams.get("sort") || "latest",
-      category: searchParams.get("category") || undefined, // "discussion" | "question" | "case_study" | "research"
-      medicalField: searchParams.get("medicalField") || undefined,
-      animal: searchParams.get("animal") || undefined,
-    };
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
 
-    const result = await getForumsWithPagination(params);
+    const result = await getForumsWithPagination(page, limit);
 
     return NextResponse.json(
       createApiResponse("success", "임상포럼 목록 조회 성공", {
-        forums: result.forums,
-        totalCount: result.totalCount,
+        forums: result,
+        totalCount: result.length,
       })
     );
   } catch (error) {

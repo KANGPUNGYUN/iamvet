@@ -16,6 +16,7 @@ interface RouteContext {
 
 export const GET = async (request: NextRequest, context: RouteContext) => {
   try {
+    const params = await context.params;
     const { commentId } = params;
 
     const comment = await getLectureCommentById(commentId);
@@ -41,6 +42,7 @@ export const PUT = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const { commentId } = params;
       const { content } = await request.json();
 
@@ -76,9 +78,7 @@ export const PUT = withAuth(
       }
 
       // 댓글 수정
-      const updatedComment = await updateLectureComment(commentId, {
-        content: content.trim(),
-      });
+      const updatedComment = await updateLectureComment(commentId, content.trim());
 
       return NextResponse.json(
         createApiResponse("success", "댓글이 수정되었습니다", updatedComment)
@@ -97,6 +97,7 @@ export const DELETE = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const { commentId } = params;
 
       // 댓글 존재 및 권한 확인

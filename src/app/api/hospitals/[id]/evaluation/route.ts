@@ -18,13 +18,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const hospitalId = params.id;
     const { searchParams } = new URL(request.url);
 
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-
-    const evaluations = await getHospitalEvaluations(hospitalId, {
-      page,
-      limit,
-    });
+    const evaluations = await getHospitalEvaluations(hospitalId);
 
     return NextResponse.json(
       createApiResponse("success", "병원 평가 목록 조회 성공", evaluations)

@@ -18,6 +18,7 @@ export const PUT = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const { evaluationId } = params;
       const updateData = await request.json();
 
@@ -64,6 +65,7 @@ export const DELETE = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const { evaluationId } = params;
 
       // 평가 존재 및 권한 확인

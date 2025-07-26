@@ -6,7 +6,6 @@ import {
   getRecentResumes,
   getRecentTransfers,
   getHomepageBanners,
-  getNotifications,
 } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
@@ -18,19 +17,16 @@ export async function GET(request: NextRequest) {
       recentResumes,
       recentTransfers,
       banners,
-      notifications,
     ] = await Promise.all([
       getRecentJobs(8), // 최근 채용공고 8개
       getRecentLectures(6), // 최근 강의 6개
       getRecentResumes(6), // 최근 인재정보 6개
       getRecentTransfers(6), // 최근 양도양수 6개
       getHomepageBanners(), // 홈페이지 배너
-      getNotifications(5), // 공지사항 5개
     ]);
 
     const homepageData = {
       banners,
-      notifications,
       recentJobs,
       recentLectures,
       recentResumes,

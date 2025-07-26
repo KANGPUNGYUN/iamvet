@@ -11,10 +11,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const veterinarianId = params.id;
+    const resolvedParams = await params;
+    const veterinarianId = resolvedParams.id;
     const userIp =
       request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip");
+      request.headers.get("x-real-ip") ||
+      "unknown";
 
     // 인재정보 조회
     const resume = await getResumeById(veterinarianId);

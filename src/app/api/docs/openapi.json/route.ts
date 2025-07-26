@@ -2,7 +2,7 @@
 // OpenAPI JSON 스펙을 제공하는 API route
 
 import { NextRequest, NextResponse } from "next/server";
-import { API_SCHEMAS, COMMON_RESPONSES } from "../../../../../lib/swagger";
+import { API_SCHEMAS, COMMON_RESPONSES } from "@/lib/swagger";
 
 const openApiSpec = {
   openapi: "3.0.3",

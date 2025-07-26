@@ -14,7 +14,8 @@ export const POST = withAuth(
     { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const veterinarianId = params.id;
+      const resolvedParams = await params;
+      const veterinarianId = resolvedParams.id;
       const user = (request as any).user;
 
       // 병원만 북마크 가능
@@ -59,7 +60,8 @@ export const DELETE = withAuth(
     { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const veterinarianId = params.id;
+      const resolvedParams = await params;
+      const veterinarianId = resolvedParams.id;
       const user = (request as any).user;
 
       await deleteResumeBookmark(user.userId, veterinarianId);

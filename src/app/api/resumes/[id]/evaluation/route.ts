@@ -11,13 +11,14 @@ interface RouteContext {
 
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const params = await context.params;
     const resumeId = params.id;
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
-    const evaluations = await getResumeEvaluations(resumeId, { page, limit });
+    const evaluations = await getResumeEvaluations(resumeId);
 
     return NextResponse.json(
       createApiResponse("success", "인재 평가 목록 조회 성공", evaluations)
@@ -35,6 +36,7 @@ export const POST = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const resumeId = params.id;
       const evaluationData = await request.json();
 

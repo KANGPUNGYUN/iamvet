@@ -6,22 +6,15 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const params = {
-      keyword: searchParams.get("keyword") || undefined,
-      page: parseInt(searchParams.get("page") || "1"),
-      limit: parseInt(searchParams.get("limit") || "20"),
-      sort: searchParams.get("sort") || "latest",
-      region: searchParams.get("region") || undefined,
-      medicalField: searchParams.get("medicalField") || undefined,
-      treatableAnimal: searchParams.get("treatableAnimal") || undefined,
-    };
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
 
-    const result = await getHospitalsWithPagination(params);
+    const result = await getHospitalsWithPagination(page, limit);
 
     return NextResponse.json(
       createApiResponse("success", "병원 목록 조회 성공", {
-        hospitals: result.hospitals,
-        totalCount: result.totalCount,
+        hospitals: result,
+        totalCount: result.length,
       })
     );
   } catch (error) {

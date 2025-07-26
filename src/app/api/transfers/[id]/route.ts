@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import { createApiResponse, createErrorResponse, generateUserIdentifier } from "@/lib/utils";
 import {
   getTransferById,
   updateTransfer,
   deleteTransfer,
-  incrementTransferViewCount,
+  incrementViewCount,
   getRelatedTransfers,
 } from "@/lib/database";
+import { verifyToken } from "@/lib/auth";
 
 interface RouteContext {
   params: Promise<{
@@ -17,6 +18,7 @@ interface RouteContext {
 
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const params = await context.params;
     const transferId = params.id;
 
     // 양도양수 게시글 조회
@@ -28,18 +30,23 @@ export async function GET(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // 조회수 증가 (IP 기반)
-    const userIp =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip");
-    await incrementTransferViewCount(transferId, userIp);
+    // 사용자 정보 확인 (선택적)
+    let userId: string | undefined;
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
+    }
+
+    // 조회수 증가 (회원/비회원 모두 처리, 24시간 중복 방지)
+    const userIdentifier = generateUserIdentifier(request, userId);
+    await incrementViewCount('transfer', transferId, userIdentifier, userId);
 
     // 관련 양도양수 게시글
-    const relatedTransfers = await getRelatedTransfers(
-      transferId,
-      transfer.transferType,
-      5
-    );
+    const relatedTransfers = await getRelatedTransfers(transferId, 5);
 
     const transferDetail = {
       ...transfer,
@@ -62,6 +69,7 @@ export const PUT = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const transferId = params.id;
       const updateData = await request.json();
 
@@ -105,6 +113,7 @@ export const DELETE = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const transferId = params.id;
 
       // 양도양수 게시글 존재 및 권한 확인

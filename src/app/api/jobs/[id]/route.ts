@@ -75,7 +75,8 @@ export const PUT = withAuth(
   ) => {
     try {
       const user = (request as any).user;
-      const jobId = params.id;
+      const resolvedParams = await params;
+      const jobId = resolvedParams.id;
       const jobData = await request.json();
 
       if (user.userType !== "hospital") {
@@ -126,7 +127,8 @@ export const DELETE = withAuth(
   ) => {
     try {
       const user = (request as any).user;
-      const jobId = params.id;
+      const resolvedParams = await params;
+      const jobId = resolvedParams.id;
 
       if (user.userType !== "hospital") {
         return NextResponse.json(

@@ -16,6 +16,7 @@ interface RouteContext {
 
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const params = await context.params;
     const { commentId } = params;
     const { searchParams } = new URL(request.url);
 
@@ -31,11 +32,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
-    const replies = await getLectureCommentReplies(commentId, {
-      page,
-      limit,
-      sort,
-    });
+    const replies = await getLectureCommentReplies(commentId);
 
     return NextResponse.json(
       createApiResponse("success", "대댓글 목록 조회 성공", replies)
@@ -53,6 +50,7 @@ export const POST = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const { id: lectureId, commentId } = params;
       const { content } = await request.json();
 

@@ -7,22 +7,15 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const params = {
-      keyword: searchParams.get("keyword") || undefined,
-      page: parseInt(searchParams.get("page") || "1"),
-      limit: parseInt(searchParams.get("limit") || "20"),
-      sort: searchParams.get("sort") || "latest",
-      transferType: searchParams.get("transferType") || undefined, // "sale" | "purchase"
-      region: searchParams.get("region") || undefined,
-      priceRange: searchParams.get("priceRange") || undefined,
-    };
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
 
-    const result = await getTransfersWithPagination(params);
+    const result = await getTransfersWithPagination(page, limit);
 
     return NextResponse.json(
       createApiResponse("success", "양도양수 목록 조회 성공", {
-        transfers: result.transfers,
-        totalCount: result.totalCount,
+        transfers: result,
+        totalCount: result.length,
       })
     );
   } catch (error) {

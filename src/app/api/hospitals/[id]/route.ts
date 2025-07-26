@@ -27,12 +27,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     // 병원의 채용공고 조회
-    const jobPostings = await getHospitalJobPostings(hospitalId, { limit: 10 });
+    const jobPostings = await getHospitalJobPostings(hospitalId);
 
     const hospitalDetail = {
       ...hospital,
-      jobPostings: jobPostings.jobs,
-      jobCount: jobPostings.totalCount,
+      jobPostings: jobPostings.slice(0, 10), // 최대 10개로 제한
+      jobCount: jobPostings.length,
     };
 
     return NextResponse.json(

@@ -1,12 +1,12 @@
 "use client";
 
-import { Footer } from "@/src/components/layout/Footer";
-import { Button } from "@/src/components/ui/Button";
-import { Checkbox } from "@/src/components/ui/Input/Checkbox";
-import { FilterBox } from "@/src/components/ui/FilterBox";
-import { Radio } from "@/src/components/ui/Input/Radio";
-import { Tab } from "@/src/components/ui/Tab";
-import { Tag } from "@/src/components/ui/Tag";
+import { Footer } from "@/components/layout/Footer";
+import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Input/Checkbox";
+import { FilterBox } from "@/components/ui/FilterBox";
+import { Radio } from "@/components/ui/Input/Radio";
+import { Tab } from "@/components/ui/Tab";
+import { Tag } from "@/components/ui/Tag";
 import {
   ArrowLeftIcon,
   ChevronLeftIcon,
@@ -69,13 +69,13 @@ import {
   DownloadIcon,
 } from "public/icons";
 import { useState } from "react";
-import { Textarea } from "@/src/components/ui/Input/Textarea";
-import { InputBox } from "@/src/components/ui/Input/InputBox";
-import { SelectBox } from "@/src/components/ui/SelectBox";
-import { SearchBar } from "@/src/components/ui/SearchBar";
-import { DatePicker } from "@/src/components/ui/DatePicker";
-import { TimePicker, TimeValue } from "@/src/components/ui/TimePicker";
-import { Header } from "../components/layout/Header";
+import { Textarea } from "@/components/ui/Input/Textarea";
+import { InputBox } from "@/components/ui/Input/InputBox";
+import { SelectBox } from "@/components/ui/SelectBox";
+import { SearchBar } from "@/components/ui/SearchBar";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { TimePicker, TimeValue } from "@/components/ui/TimePicker";
+import { Header } from "@/components/layout/Header";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {

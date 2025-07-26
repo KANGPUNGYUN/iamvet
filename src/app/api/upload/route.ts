@@ -1,6 +1,7 @@
 import { uploadFile } from "@/lib/upload";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { withAuth } from "@/lib/middleware";
 
 export const POST = withAuth(async (request: NextRequest) => {
   try {

@@ -18,6 +18,7 @@ export const POST = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const transferId = params.id;
 
       // 양도양수 게시글 존재 확인
@@ -58,6 +59,7 @@ export const DELETE = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const transferId = params.id;
 
       // 북마크 존재 확인

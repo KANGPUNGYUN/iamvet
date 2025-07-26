@@ -18,6 +18,7 @@ export const POST = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const jobId = params.id;
 
       // 채용공고 존재 확인
@@ -58,6 +59,7 @@ export const DELETE = withAuth(
   async (request: NextRequest, context: RouteContext) => {
     try {
       const user = (request as any).user;
+      const params = await context.params;
       const jobId = params.id;
 
       // 북마크 존재 확인

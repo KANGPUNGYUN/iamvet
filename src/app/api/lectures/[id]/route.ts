@@ -12,10 +12,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const lectureId = params.id;
+    const resolvedParams = await params;
+    const lectureId = resolvedParams.id;
     const userIp =
       request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip");
+      request.headers.get("x-real-ip") ||
+      "unknown";
 
     const lecture = await getLectureById(lectureId);
     if (!lecture || !lecture.isPublic) {
