@@ -191,7 +191,7 @@ const CheckboxItem: React.FC<CheckboxProps> = ({
 
   const labelStyle = {
     color: isDisabled ? "#CACED6" : "#35313C",
-    fontFamily: "suit",
+    fontFamily: "SUIT",
     fontSize: "16px",
     fontWeight: isChecked ? 600 : 500,
     lineHeight: "150%",
