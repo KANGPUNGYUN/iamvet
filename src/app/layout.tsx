@@ -1,4 +1,4 @@
-import { gmarketSans, suit } from "@/src/lib/fonts";
+import { gmarketSans, suit } from "@/lib/fonts";
 import "./globals.css";
 
 export default function RootLayout({

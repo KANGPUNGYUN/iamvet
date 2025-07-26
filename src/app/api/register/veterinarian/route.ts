@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import type { VeterinarianRegisterRequest } from "@/lib/types";
 import { hashPassword } from "@/lib/auth";
 import { uploadFile } from "@/lib/upload"; // S3 업로드 함수
-import { 
-  checkUserExists, 
-  createUser, 
-  createVeterinarianProfile, 
+import {
+  checkUserExists,
+  createUser,
+  createVeterinarianProfile,
   generateTokens,
   createApiResponse,
-  createErrorResponse 
+  createErrorResponse,
 } from "@/lib/auth-helpers";
 
 export async function POST(request: NextRequest) {

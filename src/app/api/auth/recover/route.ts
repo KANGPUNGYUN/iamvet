@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
-import { 
-  findDeletedAccount, 
-  restoreAccount, 
-  restoreUserData, 
-  generateTokens 
+import {
+  findDeletedAccount,
+  restoreAccount,
+  restoreUserData,
+  generateTokens,
 } from "@/lib/database";
 import { verifyPassword } from "@/lib/auth";
 

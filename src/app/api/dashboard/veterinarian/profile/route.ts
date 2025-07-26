@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
-import { getVeterinarianProfile, updateVeterinarianProfile } from "@/lib/database";
+import {
+  getVeterinarianProfile,
+  updateVeterinarianProfile,
+} from "@/lib/database";
 
 export const GET = withAuth(async (request: NextRequest) => {
   try {

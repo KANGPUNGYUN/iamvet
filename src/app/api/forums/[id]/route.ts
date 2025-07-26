@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
-import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import {
+  createApiResponse,
+  createErrorResponse,
+  generateUserIdentifier,
+} from "@/lib/utils";
 import {
   getForumById,
   updateForum,
@@ -8,6 +12,7 @@ import {
   incrementForumViewCount,
   getForumComments,
 } from "@/lib/database";
+import { verifyToken } from "@/lib/auth";
 
 interface RouteContext {
   params: Promise<{
@@ -29,11 +34,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // 조회수 증가 (IP 기반)
-    const userIp =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip");
-    await incrementForumViewCount(forumId, userIp);
+    // 사용자 정보 확인 (선택적)
+    let userId: string | undefined;
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
+    }
+
+    // 조회수 증가 (회원/비회원 모두 처리, 24시간 중복 방지)
+    const userIdentifier = generateUserIdentifier(request, userId);
+    await incrementForumViewCount(forumId, userIdentifier, userId);
 
     // 댓글 조회
     const comments = await getForumComments(forumId);
