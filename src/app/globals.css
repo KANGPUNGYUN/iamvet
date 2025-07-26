@@ -8,7 +8,7 @@
   src: url("/fonts/title/GmarketSansLight.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -16,7 +16,7 @@
   src: url("/fonts/title/GmarketSansMedium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -24,7 +24,7 @@
   src: url("/fonts/title/GmarketSansBold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -32,7 +32,7 @@
   src: url("/fonts/text/SUIT-Thin.woff2") format("woff2");
   font-weight: 100;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -40,7 +40,7 @@
   src: url("/fonts/text/SUIT-ExtraLight.woff2") format("woff2");
   font-weight: 200;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -48,7 +48,7 @@
   src: url("/fonts/text/SUIT-Light.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -56,7 +56,7 @@
   src: url("/fonts/text/SUIT-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -64,7 +64,7 @@
   src: url("/fonts/text/SUIT-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -72,7 +72,7 @@
   src: url("/fonts/text/SUIT-SemiBold.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -80,7 +80,7 @@
   src: url("/fonts/text/SUIT-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -88,7 +88,7 @@
   src: url("/fonts/text/SUIT-ExtraBold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -96,7 +96,7 @@
   src: url("/fonts/text/SUIT-Heavy.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* Tailwind v3 방식 */

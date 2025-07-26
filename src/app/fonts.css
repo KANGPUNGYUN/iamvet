@@ -7,7 +7,7 @@
   src: local("Apple SD Gothic Neo"), local("Malgun Gothic"), local("맑은 고딕"),
     local("Noto Sans KR"), local("Roboto"), local("Helvetica Neue"),
     local("Arial"), sans-serif;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -15,7 +15,7 @@
   src: local("Apple SD Gothic Neo"), local("Malgun Gothic"), local("맑은 고딕"),
     local("Noto Sans KR"), local("Roboto"), local("Helvetica Neue"),
     local("Arial"), sans-serif;
-  font-display: swap;
+  font-display: block;
 }
 
 /* 폰트 로딩 실패 시 fallback */
