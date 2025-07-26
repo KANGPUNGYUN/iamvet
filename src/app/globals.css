@@ -105,13 +105,9 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    font-family: inherit;
-  }
-  
   body {
     background: #fff;
-    font-family: var(--font-text) !important;
+    font-family: var(--font-text);
   }
 }
 
@@ -141,11 +137,11 @@
 
 /* 기존 유틸리티 클래스들 */
 .font-title {
-  font-family: var(--font-title);
+  font-family: var(--font-title) !important;
 }
 
 .font-text {
-  font-family: var(--font-text);
+  font-family: var(--font-text) !important;
 }
 
 /* 기존 폰트 weight 유틸리티 클래스들 유지 */
