@@ -62,9 +62,7 @@ const TagItem: React.FC<TagProps> = ({
       alignItems: "center" as const,
       gap: "10px",
       borderRadius: "999px",
-      fontFamily: 'var(--font-title)',
       fontStyle: "normal" as const,
-      fontWeight: 400,
       lineHeight: "135%",
       cursor: onClick && !disabled ? "pointer" : "default",
       transition: "all 0.2s ease-in-out",
@@ -125,7 +123,7 @@ const TagItem: React.FC<TagProps> = ({
 
   return (
     <span
-      className={`tag-item tag-variant-${variant} ${className}`}
+      className={`tag-item font-title title-light tag-variant-${variant} ${className}`}
       data-variant={variant}
       data-disabled={disabled}
       onClick={handleClick}
