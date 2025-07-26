@@ -23,7 +23,9 @@ const TabItem: React.FC<TabItemProps> = ({
   };
 
   const getTabItemClass = () => {
-    return `tab-item tab-item-${variant}`;
+    return `tab-item tab-item-${variant} ${
+      variant !== "rounded" && "font-title title-light"
+    }`;
   };
 
   return (

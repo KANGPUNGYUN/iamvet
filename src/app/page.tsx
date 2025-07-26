@@ -560,7 +560,7 @@ export default function HomePage() {
 
         {/* 더보기 버튼 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-bold">더보기 버튼</h3>
+          <h3 className="font-title title-medium">더보기 버튼</h3>
           <Button
             buttonType="more"
             icon={<PlusIcon currentColor="#9098A4" />}
