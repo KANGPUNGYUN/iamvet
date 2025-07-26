@@ -62,7 +62,7 @@ const TagItem: React.FC<TagProps> = ({
       alignItems: "center" as const,
       gap: "10px",
       borderRadius: "999px",
-      fontFamily: 'var("GmarketSans", sans-serif)',
+      fontFamily: 'var(--font-title)',
       fontStyle: "normal" as const,
       fontWeight: 400,
       lineHeight: "135%",
