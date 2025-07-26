@@ -104,13 +104,15 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background: #fff;
-  font-family: var(--font-text);
-}
-
-* {
-  font-family: inherit;
+@layer base {
+  * {
+    font-family: inherit;
+  }
+  
+  body {
+    background: #fff;
+    font-family: var(--font-text) !important;
+  }
 }
 
 /* CSS 변수 재정의 (기존 유틸리티 클래스 호환성 유지) */
