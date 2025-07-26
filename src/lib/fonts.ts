@@ -23,26 +23,26 @@ export const gmarketSans = localFont({
   display: "swap",
 });
 
-// SUIT는 새로 다운로드한 정상 파일 사용
-export const SUIT = localFont({
+// SUIT TTF 파일 사용 (woff2 decode 문제로 인해)
+export const suit = localFont({
   src: [
     {
-      path: "../app/fonts/text/SUIT-Light.woff2",
+      path: "../app/fonts/text/SUIT-Light.ttf",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../app/fonts/text/SUIT-Regular.woff2",
+      path: "../app/fonts/text/SUIT-Regular.ttf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../app/fonts/text/SUIT-Medium.woff2",
+      path: "../app/fonts/text/SUIT-Medium.ttf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../app/fonts/text/SUIT-Bold.woff2",
+      path: "../app/fonts/text/SUIT-Bold.ttf",
       weight: "700",
       style: "normal",
     },
