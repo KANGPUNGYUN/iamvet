@@ -66,7 +66,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             background: "var(--Keycolor1, #FF8796)",
             color: "var(--Keycolor5, #FFF7F7)",
             textAlign: "center",
-            fontFamily: '"Gmarket Sans"',
+            fontFamily: '"GmarketSans"',
             fontSize: "15px",
             fontStyle: "normal",
             fontWeight: "400",

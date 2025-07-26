@@ -9,7 +9,7 @@
   align-items: center !important;
   gap: 10px !important;
   border-radius: 999px !important;
-  font-family: "var(--font-title, 'GmarketSans', 'Gmarket Sans', sans-serif)" !important;
+  font-family: "var(--font-title, 'GmarketSans', 'GmarketSans', sans-serif)" !important;
   font-style: normal !important;
   font-weight: 400 !important;
   line-height: 135% !important;

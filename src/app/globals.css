@@ -4,7 +4,7 @@
 
 /* 폰트 로딩 */
 @font-face {
-  font-family: "Gmarket Sans";
+  font-family: "GmarketSans";
   src: url("/fonts/title/GmarketSansLight.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
@@ -12,7 +12,7 @@
 }
 
 @font-face {
-  font-family: "Gmarket Sans";
+  font-family: "GmarketSans";
   src: url("/fonts/title/GmarketSansMedium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
@@ -20,7 +20,7 @@
 }
 
 @font-face {
-  font-family: "Gmarket Sans";
+  font-family: "GmarketSans";
   src: url("/fonts/title/GmarketSansBold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
@@ -113,13 +113,10 @@ body {
   font-family: inherit;
 }
 
-/* 인라인 스타일 오버라이드 제거 - 문제 원인이었던 선택자들 */
-/* [style*="SUIT"], [style*="Gmarket Sans"] 선택자 제거 */
-
 /* CSS 변수 재정의 (기존 유틸리티 클래스 호환성 유지) */
 :root {
   /* 폰트 패밀리 변수 */
-  --font-title: "Gmarket Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --font-title: "GmarketSans", -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, sans-serif;
   --font-text: "SUIT", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
