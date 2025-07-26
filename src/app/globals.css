@@ -1,6 +1,103 @@
 @import url("../styles/colors.css");
 @import url("../styles/components/index.css");
 
+/* 폰트 로딩 */
+@font-face {
+  font-family: 'Gmarket Sans';
+  src: url('/fonts/title/GmarketSansLight.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gmarket Sans';
+  src: url('/fonts/title/GmarketSansMedium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gmarket Sans';
+  src: url('/fonts/title/GmarketSansBold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SUIT';
+  src: url('/fonts/text/SUIT-Heavy.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Tailwind v3 방식 */
 @tailwind base;
 @tailwind components;
@@ -8,9 +105,7 @@
 
 body {
   background: #fff;
-  font-family: var(--font-text), "SUIT", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
-    "맑은 고딕", sans-serif;
+  font-family: var(--font-text);
 }
 
 * {
@@ -22,6 +117,10 @@ body {
 
 /* CSS 변수 재정의 (기존 유틸리티 클래스 호환성 유지) */
 :root {
+  /* 폰트 패밀리 변수 */
+  --font-title: "Gmarket Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-text: "SUIT", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
   /* 기존 font-weight 변수들 유지 */
   --title-weight-light: 400;
   --title-weight-medium: 500;
@@ -38,13 +137,13 @@ body {
   --text-weight-heavy: 900;
 }
 
-/* 기존 유틸리티 클래스들 - localFont 변수 직접 사용 */
+/* 기존 유틸리티 클래스들 */
 .font-title {
-  font-family: var(--font-title), sans-serif;
+  font-family: var(--font-title);
 }
 
 .font-text {
-  font-family: var(--font-text), sans-serif;
+  font-family: var(--font-text);
 }
 
 /* 기존 폰트 weight 유틸리티 클래스들 유지 */
