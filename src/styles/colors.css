@@ -64,6 +64,10 @@
   color: var(--Keycolor5);
 }
 
+.line-primary {
+  background-color: var(--Line);
+}
+
 .line-highlight {
   background-color: var(--Line_Highlight);
 }
@@ -72,6 +76,11 @@
 .bg-box {
   background-color: var(--Box);
 }
+
+.bg-box-light {
+  background-color: var(--Box_Light);
+}
+
 .bg-box-disable {
   background-color: var(--Box_Disable);
 }

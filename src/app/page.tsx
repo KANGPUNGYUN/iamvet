@@ -68,6 +68,11 @@ import {
   Link2Icon,
   DownloadIcon,
 } from "public/icons";
+import banner1Img from "@/assets/images/banner1.png";
+import banner2Img from "@/assets/images/banner2.png";
+import banner3Img from "@/assets/images/banner3.png";
+import lightbombImg from "@/assets/images/lightbomb.png";
+import hospitalImg from "@/assets/images/hospital.png";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import { InputBox } from "@/components/ui/Input/InputBox";
@@ -75,6 +80,13 @@ import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker, TimeValue } from "@/components/ui/TimePicker";
+import BannerSlider, {
+  BannerItem,
+} from "@/components/features/main/BannerSlider";
+import AITalentButton from "@/components/features/main/AITalentButton";
+import JobFamousList from "@/components/features/main/JobFamousList";
+import JobInfoCard from "@/components/ui/JobInfoCard";
+import Link from "next/link";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -419,12 +431,216 @@ export default function HomePage() {
     console.log("Selected value:", value);
   };
 
+  const handleAITalentSearch = () => {
+    console.log("AI로 인재 찾기 클릭");
+    // AI 인재 검색 로직 또는 페이지 이동
+  };
+
+  const sampleBanners: BannerItem[] = [
+    {
+      id: "1",
+      imageUrl: banner1Img,
+      alt: "첫 번째 배너",
+      buttonText: "확인하러 가기",
+      buttonLink: "/member-select",
+    },
+    {
+      id: "2",
+      imageUrl: banner2Img,
+      alt: "두 번째 배너",
+      buttonText: "확인하러 가기",
+      buttonLink: "/member-select",
+    },
+    {
+      id: "3",
+      imageUrl: banner3Img,
+      alt: "세 번째 배너",
+      buttonText: "확인하러 가기",
+      buttonLink: "/member-select",
+    },
+  ];
+
   return (
     <>
       <Header isLoggedIn={false} />
-      <div className="p-6 space-y-8">
-        {/* 아이콘 컬렉션 */}
-        <div className="space-y-6">
+
+      <div className="w-full">
+        <div className="max-w-[1320px] mx-auto md:px-[60px] py-[30px] px-[15px]">
+          {/* 데스크톱: 가로 배치, 모바일: 세로 배치 */}
+          <div className="flex flex-col xl:flex-row xl:items-start xl:gap-[30px] gap-8">
+            <div className="flex-1">
+              <BannerSlider
+                banners={sampleBanners}
+                autoSlideInterval={4000}
+                showButton={true}
+              />
+            </div>
+
+            <div className="flex items-center xl:items-start gap-[12px] xl:flex-shrink-0 xl:flex-col flex-col-reverse xl:w-auto w-full">
+              <div className="flex flex-col gap-[12px] xl:w-auto w-full">
+                <AITalentButton
+                  title="AI로 인재 찾기"
+                  description="AI로 인재를 찾아 고용해보세요!"
+                  variant="lightbomb"
+                  imageSrc={lightbombImg.src}
+                  onClick={handleAITalentSearch}
+                />
+
+                <AITalentButton
+                  title="AI로 병원 찾기"
+                  description="필요한 병원을 빠르고 신속하게!"
+                  variant="hospital"
+                  imageSrc={hospitalImg.src}
+                  onClick={handleAITalentSearch}
+                />
+              </div>
+              <JobFamousList />
+            </div>
+          </div>
+
+          <Tab
+            defaultTab="internal"
+            variant="default"
+            className="bg-box-light xl:px-[32px] py-[36px] px-[16px] rounded-[16px] mt-[30px]"
+          >
+            <Tab.List className="flex justify-between items-center">
+              <div className="flex gap-4">
+                <Tab.Item value="internal">구직정보</Tab.Item>
+                <Tab.Item value="surgery">구인정보</Tab.Item>
+              </div>
+              <Link
+                className="flex font-title title-light text-[16px] text-sub hover:underline"
+                href="/jobs"
+              >
+                {<PlusIcon />} 전체보기
+              </Link>
+            </Tab.List>
+            <Tab.Content value="internal">
+              <div
+                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar"
+                style={{ alignSelf: "stretch" }}
+              >
+                <JobInfoCard
+                  hospital="서울대학교 동물병원"
+                  dDay="D-15"
+                  position="수의사(정규직)"
+                  location="서울 관악구"
+                  jobType="경력 3년"
+                  tags={["내과", "외과", "정규직", "파트타임"]}
+                  isBookmarked={true}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="건국대학교 동물병원"
+                  dDay="D-7"
+                  position="수의사(정규직)"
+                  location="서울 광진구"
+                  jobType="경력 5년"
+                  tags={["내과", "외과", "정규직"]}
+                  isBookmarked={false}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="연세 동물병원"
+                  dDay="D-20"
+                  position="간호사(정규직)"
+                  location="서울 서대문구"
+                  jobType="경력 2년"
+                  tags={["간호", "정규직"]}
+                  isBookmarked={true}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="강남점 동물병원"
+                  dDay="D-30"
+                  position="수의사(정규직)"
+                  location="서울 강남구"
+                  jobType="신입"
+                  tags={["내과", "외과", "신입"]}
+                  isBookmarked={false}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="까꽁 동물보호센터"
+                  dDay="D-5"
+                  position="수의사(계약직)"
+                  location="경기 성남시"
+                  jobType="경력 1년"
+                  tags={["보호소", "계약직"]}
+                  isBookmarked={true}
+                  onClick={() => console.log("Job card clicked")}
+                />
+              </div>
+            </Tab.Content>
+            <Tab.Content value="surgery">
+              <div
+                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar"
+                style={{ alignSelf: "stretch" }}
+              >
+                <JobInfoCard
+                  hospital="메디컬센터 동물병원"
+                  dDay="D-10"
+                  position="수의사 모집(정규직)"
+                  location="서울 강남구"
+                  jobType="신입~경력 5년"
+                  tags={["내과", "외과", "수술", "정규직"]}
+                  isBookmarked={false}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="24시간 응급동물병원"
+                  dDay="D-3"
+                  position="응급의료 수의사"
+                  location="서울 마포구"
+                  jobType="경력 2년 이상"
+                  tags={["응급", "24시간", "정규직", "파트타임"]}
+                  isBookmarked={true}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="반려동물 전문클리닉"
+                  dDay="D-25"
+                  position="동물간호사 채용"
+                  location="경기 수원시"
+                  jobType="신입 가능"
+                  tags={["간호", "신입", "교육지원"]}
+                  isBookmarked={false}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="펫케어 동물병원"
+                  dDay="D-14"
+                  position="원장급 수의사"
+                  location="부산 해운대구"
+                  jobType="경력 10년 이상"
+                  tags={["원장급", "고연봉", "정규직"]}
+                  isBookmarked={true}
+                  onClick={() => console.log("Job card clicked")}
+                />
+                <JobInfoCard
+                  hospital="동물보호센터"
+                  dDay="D-8"
+                  position="보호소 수의사"
+                  location="인천 남동구"
+                  jobType="경력 1년 이상"
+                  tags={["보호소", "봉사", "계약직"]}
+                  isBookmarked={false}
+                  onClick={() => console.log("Job card clicked")}
+                />
+              </div>
+            </Tab.Content>
+            <Tab.Content value="regular">
+              <div className="p-4">
+                <h4 className="font-semibold mb-2">정규직 정보</h4>
+                <p>정규직 채용 관련 정보를 확인하실 수 있습니다.</p>
+              </div>
+            </Tab.Content>
+          </Tab>
+        </div>
+      </div>
+
+      {/* 아이콘 컬렉션 */}
+      {/* <div className="space-y-6">
           <h2 className="text-xl font-bold">
             아이콘 컬렉션 ({iconComponents.length}개)
           </h2>
@@ -450,10 +666,10 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
-        {/* L 크기 버튼들 */}
-        <div className="space-y-4">
+      {/* L 크기 버튼들 */}
+      {/* <div className="space-y-4">
           <h3 className="text-lg font-bold">L 크기 버튼</h3>
           <div className="flex gap-4 flex-wrap">
             <Button size="large" variant="default">
@@ -466,10 +682,10 @@ export default function HomePage() {
               Button
             </Button>
           </div>
-        </div>
+        </div> */}
 
-        {/* M 크기 버튼들 */}
-        <div className="space-y-4">
+      {/* M 크기 버튼들 */}
+      {/* <div className="space-y-4">
           <h3 className="text-lg font-bold">M 크기 버튼</h3>
           <div className="flex gap-4 flex-wrap">
             <Button size="medium" variant="keycolor">
@@ -485,10 +701,10 @@ export default function HomePage() {
               Button
             </Button>
           </div>
-        </div>
+        </div> */}
 
-        {/* S 크기 버튼들 */}
-        <div className="space-y-4">
+      {/* S 크기 버튼들 */}
+      {/* <div className="space-y-4">
           <h3 className="text-lg font-bold">S 크기 버튼</h3>
           <div className="flex gap-4 flex-wrap">
             <Button size="small" variant="keycolor">
@@ -504,10 +720,10 @@ export default function HomePage() {
               Button
             </Button>
           </div>
-        </div>
+        </div> */}
 
-        {/* XS 크기 버튼들 */}
-        <div className="space-y-4">
+      {/* XS 크기 버튼들 */}
+      {/* <div className="space-y-4">
           <h3 className="text-lg font-bold">XS 크기 버튼</h3>
           <div className="flex gap-4 flex-wrap">
             <Button size="xsmall" variant="default">
@@ -520,10 +736,10 @@ export default function HomePage() {
               Button
             </Button>
           </div>
-        </div>
+        </div> */}
 
-        {/* 아이콘 버튼들 */}
-        <div className="space-y-4">
+      {/* 아이콘 버튼들 */}
+      {/* <div className="space-y-4">
           <h3 className="text-lg font-bold">아이콘 버튼</h3>
           <div className="flex gap-4 items-center flex-wrap">
             <Button
@@ -539,10 +755,10 @@ export default function HomePage() {
               icon={<EditIcon currentColor="white" />}
             />
           </div>
-        </div>
+        </div> */}
 
-        {/* 더보기 버튼 */}
-        <div className="space-y-4">
+      {/* 더보기 버튼 */}
+      {/* <div className="space-y-4">
           <h3 className="font-title title-medium">더보기 버튼</h3>
           <Button
             buttonType="more"
@@ -551,11 +767,11 @@ export default function HomePage() {
           >
             더보기
           </Button>
-        </div>
+        </div> */}
 
-        <div className="space-y-4">
-          {/* 1. Default 스타일 (밑줄) */}
-          <div>
+      <div className="space-y-4">
+        {/* 1. Default 스타일 (밑줄) */}
+        {/* <div>
             <h3 className="mb-4 text-lg font-semibold">기본 탭</h3>
             <Tab defaultTab="internal" variant="default">
               <Tab.List>
@@ -581,10 +797,10 @@ export default function HomePage() {
                 </div>
               </Tab.Content>
             </Tab>
-          </div>
+          </div> */}
 
-          {/* 2. Rounded 스타일 */}
-          <div>
+        {/* 2. Rounded 스타일 */}
+        {/* <div>
             <h3 className="mb-4 text-lg font-semibold">라운드 탭</h3>
             <Tab defaultTab="profile" variant="rounded">
               <Tab.List>
@@ -604,10 +820,10 @@ export default function HomePage() {
                 </div>
               </Tab.Content>
             </Tab>
-          </div>
+          </div> */}
 
-          {/* 3. Filled 스타일 */}
-          <div>
+        {/* 3. Filled 스타일 */}
+        {/* <div>
             <h3 className="mb-4 text-lg font-semibold">버튼 탭</h3>
             <Tab defaultTab="transfer" variant="filled">
               <Tab.List>
@@ -635,12 +851,12 @@ export default function HomePage() {
                 </div>
               </Tab.Content>
             </Tab>
-          </div>
-        </div>
+          </div> */}
+      </div>
 
-        <div className="space-y-8">
-          {/* 기본 라디오 그룹 */}
-          <div>
+      <div className="space-y-8">
+        {/* 기본 라디오 그룹 */}
+        {/* <div>
             <h3 className="mb-4 text-lg font-semibold">라디오 버튼</h3>
             <Radio.Group value={selectedPeriod} onChange={setSelectedPeriod}>
               <Radio.Item value="immediate">즉시 가능</Radio.Item>
@@ -648,10 +864,10 @@ export default function HomePage() {
               <Radio.Item value="month">1개월 내</Radio.Item>
               <Radio.Item value="quarter">3개월 내</Radio.Item>
             </Radio.Group>
-          </div>
-        </div>
+          </div> */}
+      </div>
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">체크박스</h3>
           <Checkbox.Group
             value={selectedDepartments}
@@ -662,9 +878,9 @@ export default function HomePage() {
             <Checkbox.Item value="pediatrics">소아과</Checkbox.Item>
             <Checkbox.Item value="dermatology">피부과</Checkbox.Item>
           </Checkbox.Group>
-        </div>
+        </div> */}
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">필터링 버튼</h3>
           <FilterBox.Group
             value={selectedFilters}
@@ -675,9 +891,9 @@ export default function HomePage() {
             <FilterBox.Item value="파트타임">파트타임</FilterBox.Item>
             <FilterBox.Item value="계약직">계약직</FilterBox.Item>
           </FilterBox.Group>
-        </div>
+        </div> */}
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">태그</h3>
           <Tag.Group gap="12px" orientation="horizontal">
             <Tag variant={1}>기본 태그</Tag>
@@ -687,16 +903,16 @@ export default function HomePage() {
             <Tag variant={5}>반투명 태그</Tag>
             <Tag variant={6}>회색 태그</Tag>
           </Tag.Group>
-        </div>
+        </div> */}
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">Textarea</h3>
           <Textarea
             placeholder="여기에 텍스트를 입력하세요..."
             defaultValue="기본값"
           />
-        </div>
-        <div className="space-y-8">
+        </div> */}
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">입력박스</h3>
           <InputBox
             value={inputValue1}
@@ -712,18 +928,18 @@ export default function HomePage() {
             suffix="원"
           />
           <InputBox placeholder="이메일을 입력하세요" disabled />
-        </div>
+        </div> */}
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">선택박스</h3>
           <SelectBox
             options={options}
             placeholder="선택하세요"
             onChange={handleSelectChange}
           />
-        </div>
+        </div> */}
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">검색바</h3>
           <SearchBar
             value={searchValue}
@@ -731,9 +947,9 @@ export default function HomePage() {
             onSearch={handleSearch}
             placeholder="검색어를 입력하세요"
           />
-        </div>
+        </div> */}
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">Date Picker</h3>
           <DatePicker
             placeholder="날짜를 선택하세요"
@@ -744,18 +960,18 @@ export default function HomePage() {
             placeholder="시작일 ~ 종료일"
             onChange={handleRangeChange}
           />
-        </div>
+        </div> */}
 
-        <div className="space-y-8">
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">Time Picker</h3>
           <TimePicker
             placeholder="시간을 선택하세요"
             onChange={handleTimeChange}
           />
-        </div>
+        </div> */}
 
-        {/* 페이지네이션 */}
-        <div className="space-y-8">
+      {/* 페이지네이션 */}
+      {/* <div className="space-y-8">
           <h3 className="mb-4 text-lg font-semibold">페이지네이션</h3>
           <div className="text-sm text-gray-600 mb-4">
             현재 페이지: {currentPage} / 35
@@ -765,8 +981,8 @@ export default function HomePage() {
             totalPages={35}
             onPageChange={handlePageChange}
           />
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
       <Footer />
     </>
   );

@@ -34,11 +34,14 @@ export const ChevronLeftIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const ChevronRightIcon = ({ currentColor = "currentColor" }) => (
+export const ChevronRightIcon = ({
+  size = "size",
+  currentColor = "currentColor",
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="32"
-    height="32"
+    width={size}
+    height={size}
     viewBox="0 0 32 32"
     fill="none"
   >
@@ -1080,11 +1083,11 @@ export const PrevIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const NextIcon = ({ currentColor = "currentColor" }) => (
+export const NextIcon = ({ size = "size", currentColor = "currentColor" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
+    width={size}
+    height={size}
     viewBox="0 0 16 16"
     fill="none"
   >

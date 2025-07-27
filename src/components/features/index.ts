@@ -6,3 +6,4 @@ export * from "./lecture";
 export * from "./profile";
 export * from "./resume";
 export * from "./transfer";
+export * from "./main";

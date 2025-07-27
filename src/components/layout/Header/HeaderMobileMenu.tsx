@@ -19,28 +19,28 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
     if (isOpen) {
       // 현재 스크롤 위치 저장
       const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
+      document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
     } else {
       // 스크롤 위치 복원
       const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = '';
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
       if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
       }
     }
 
     // 컴포넌트 언마운트 시 정리
     return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = '';
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
   const MenuIcon = () => (
@@ -104,12 +104,12 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
 
       {/* 모바일 메뉴 오버레이 */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50"
           style={{
-            height: '100dvh', // 동적 뷰포트 높이 지원
-            width: '100vw',
-            overflow: 'hidden', // 외부 스크롤 방지
+            height: "100dvh", // 동적 뷰포트 높이 지원
+            width: "100vw",
+            overflow: "hidden", // 외부 스크롤 방지
           }}
         >
           {/* 배경 오버레이 */}
@@ -117,19 +117,19 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-200"
             onClick={onToggle}
             style={{
-              height: '100dvh',
-              width: '100vw',
+              height: "100dvh",
+              width: "100vw",
             }}
           />
 
           {/* 메뉴 패널 */}
-          <div 
+          <div
             className="absolute right-0 top-0 w-80 max-w-sm bg-white shadow-xl transform transition-transform duration-300 ease-out"
             style={{
-              height: '100dvh',
-              maxHeight: '100dvh',
-              transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-              willChange: 'transform',
+              height: "100dvh",
+              maxHeight: "100dvh",
+              transform: isOpen ? "translateX(0)" : "translateX(100%)",
+              willChange: "transform",
             }}
           >
             <div className="flex flex-col h-full">
@@ -145,14 +145,14 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
               </div>
 
               {/* 네비게이션 메뉴 - 스크롤 가능 영역 */}
-              <nav 
+              <nav
                 className="flex-1 px-4 py-6 space-y-2"
                 style={{
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
-                  WebkitOverflowScrolling: 'touch', // iOS 부드러운 스크롤
-                  scrollbarWidth: 'thin', // Firefox 스크롤바
-                  msOverflowStyle: 'scrollbar', // IE/Edge 스크롤바
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  WebkitOverflowScrolling: "touch", // iOS 부드러운 스크롤
+                  scrollbarWidth: "thin", // Firefox 스크롤바
+                  msOverflowStyle: "scrollbar", // IE/Edge 스크롤바
                 }}
               >
                 {navigationItems.map((item, index) => (
@@ -222,7 +222,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                         onSignup?.();
                         onToggle();
                       }}
-                      className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200"
+                      className="w-full px-4 py-2 text-sm font-medium text-white bg-key1 rounded-md hover:bg-blue-700 transition-colors duration-200"
                     >
                       회원가입
                     </button>
