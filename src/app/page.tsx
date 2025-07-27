@@ -1,6 +1,6 @@
 "use client";
 
-import { Footer } from "@/components/layout/Footer";
+import { Header, Footer } from "@/components";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { FilterBox } from "@/components/ui/FilterBox";
@@ -75,7 +75,6 @@ import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker, TimeValue } from "@/components/ui/TimePicker";
-import { Header } from "@/components/layout/Header";
 
 export default function HomePage() {
   const handlePrivacyClick = () => {
@@ -429,15 +428,11 @@ export default function HomePage() {
           name: "박보검",
           email: "park@example.com",
         }}
-        navigationItems={[
-          { label: "채용공고", href: "/" },
-          { label: "인재정보", href: "/" },
-          { label: "강의영상", href: "/" },
-          { label: "양수양도", href: "/" },
-          { label: "임상 포럼", href: "/" },
-        ]}
         onLogin={() => console.log("로그인")}
         onSignup={() => console.log("회원가입")}
+        onLogout={() => console.log("로그아웃")}
+        onProfileClick={() => console.log("프로필 클릭")}
+        onNotificationClick={() => console.log("알림 클릭")}
       />
       <div className="p-6 space-y-8">
         {/* 아이콘 컬렉션 */}
@@ -784,40 +779,7 @@ export default function HomePage() {
           />
         </div>
       </div>
-      <Footer className="main-footer">
-        <Footer.Logo
-          src="/images/Logo.png"
-          mobileSrc="/images/LogoBlack.png"
-        ></Footer.Logo>
-
-        <Footer.ContentWrap>
-          <Footer.Nav>
-            <Footer.NavItem href="/privarcy">개인정보처리방침</Footer.NavItem>
-            <Footer.NavItem href="/terms">이용약관</Footer.NavItem>
-            <Footer.NavItem href="/sitemap">오시는길</Footer.NavItem>
-          </Footer.Nav>
-          <Footer.Address>
-            <Footer.Contact>
-              <div className="footer-contact-item">
-                05029 서울특별시 광진구 능동로 120 건국대학교 1F
-              </div>
-              <div className="footer-contact-item">
-                E-mail:{" "}
-                <a href="mailto:seouledtech@konkuk.ac.kr">
-                  seouledtech@konkuk.ac.kr
-                </a>
-              </div>
-              <div className="footer-contact-item">
-                Tel: <a href="tel:02-450-0697">02-450-0697~9</a>
-              </div>
-            </Footer.Contact>
-
-            <Footer.Copyright>
-              Copyright © 2025 아이엠벳 All Right Reserved.
-            </Footer.Copyright>
-          </Footer.Address>
-        </Footer.ContentWrap>
-      </Footer>
+      <Footer />
     </>
   );
 }

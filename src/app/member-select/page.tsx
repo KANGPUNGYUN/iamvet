@@ -9,18 +9,7 @@ import veterinarianImg from "@/assets/images/veterinarian.png";
 export default function MemberSelectPage() {
   return (
     <>
-      <Header
-        isLoggedIn={false}
-        navigationItems={[
-          { label: "채용공고", href: "/" },
-          { label: "인재정보", href: "/" },
-          { label: "강의영상", href: "/" },
-          { label: "양수양도", href: "/" },
-          { label: "임상 포럼", href: "/" },
-        ]}
-        onLogin={() => console.log("로그인")}
-        onSignup={() => console.log("회원가입")}
-      />
+      <Header isLoggedIn={false} />
       <main>
         <h2 className="font-title title-medium text-[32px] text-primary mt-[85px] flex justify-center">
           회원 유형 선택
@@ -58,40 +47,7 @@ export default function MemberSelectPage() {
           </Link>
         </div>
       </main>
-      <Footer className="main-footer">
-        <Footer.Logo
-          src="/images/Logo.png"
-          mobileSrc="/images/LogoBlack.png"
-        ></Footer.Logo>
-
-        <Footer.ContentWrap>
-          <Footer.Nav>
-            <Footer.NavItem href="/privarcy">개인정보처리방침</Footer.NavItem>
-            <Footer.NavItem href="/terms">이용약관</Footer.NavItem>
-            <Footer.NavItem href="/sitemap">오시는길</Footer.NavItem>
-          </Footer.Nav>
-          <Footer.Address>
-            <Footer.Contact>
-              <div className="footer-contact-item">
-                05029 서울특별시 광진구 능동로 120 건국대학교 1F
-              </div>
-              <div className="footer-contact-item">
-                E-mail:{" "}
-                <a href="mailto:seouledtech@konkuk.ac.kr">
-                  seouledtech@konkuk.ac.kr
-                </a>
-              </div>
-              <div className="footer-contact-item">
-                Tel: <a href="tel:02-450-0697">02-450-0697~9</a>
-              </div>
-            </Footer.Contact>
-
-            <Footer.Copyright>
-              Copyright © 2025 아이엠벳 All Right Reserved.
-            </Footer.Copyright>
-          </Footer.Address>
-        </Footer.ContentWrap>
-      </Footer>
+      <Footer />
     </>
   );
 }
