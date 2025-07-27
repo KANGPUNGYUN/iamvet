@@ -421,19 +421,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Header
-        isLoggedIn={true}
-        user={{
-          id: "1",
-          name: "박보검",
-          email: "park@example.com",
-        }}
-        onLogin={() => console.log("로그인")}
-        onSignup={() => console.log("회원가입")}
-        onLogout={() => console.log("로그아웃")}
-        onProfileClick={() => console.log("프로필 클릭")}
-        onNotificationClick={() => console.log("알림 클릭")}
-      />
+      <Header isLoggedIn={false} />
       <div className="p-6 space-y-8">
         {/* 아이콘 컬렉션 */}
         <div className="space-y-6">

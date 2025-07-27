@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { HeaderMobileMenuProps } from "./types";
 
@@ -14,6 +14,35 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   onProfileClick,
   className = "",
 }) => {
+  // 메뉴가 열렸을 때 body 스크롤 방지
+  useEffect(() => {
+    if (isOpen) {
+      // 현재 스크롤 위치 저장
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // 스크롤 위치 복원
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+
+    // 컴포넌트 언마운트 시 정리
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
   const MenuIcon = () => (
     <svg
       className="w-6 h-6"
@@ -75,18 +104,37 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
 
       {/* 모바일 메뉴 오버레이 */}
       {isOpen && (
-        <div className="fixed inset-0 z-50">
+        <div 
+          className="fixed inset-0 z-50"
+          style={{
+            height: '100dvh', // 동적 뷰포트 높이 지원
+            width: '100vw',
+            overflow: 'hidden', // 외부 스크롤 방지
+          }}
+        >
           {/* 배경 오버레이 */}
           <div
-            className="fixed inset-0 bg-black bg-opacity-50"
+            className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-200"
             onClick={onToggle}
+            style={{
+              height: '100dvh',
+              width: '100vw',
+            }}
           />
 
           {/* 메뉴 패널 */}
-          <div className="fixed right-0 top-0 h-full w-80 max-w-sm bg-white shadow-xl">
+          <div 
+            className="absolute right-0 top-0 w-80 max-w-sm bg-white shadow-xl transform transition-transform duration-300 ease-out"
+            style={{
+              height: '100dvh',
+              maxHeight: '100dvh',
+              transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+              willChange: 'transform',
+            }}
+          >
             <div className="flex flex-col h-full">
-              {/* 헤더 */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              {/* 헤더 - 고정 영역 */}
+              <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900">메뉴</h2>
                 <button
                   onClick={onToggle}
@@ -96,8 +144,17 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                 </button>
               </div>
 
-              {/* 네비게이션 메뉴 */}
-              <nav className="flex-1 px-4 py-6 space-y-2">
+              {/* 네비게이션 메뉴 - 스크롤 가능 영역 */}
+              <nav 
+                className="flex-1 px-4 py-6 space-y-2"
+                style={{
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  WebkitOverflowScrolling: 'touch', // iOS 부드러운 스크롤
+                  scrollbarWidth: 'thin', // Firefox 스크롤바
+                  msOverflowStyle: 'scrollbar', // IE/Edge 스크롤바
+                }}
+              >
                 {navigationItems.map((item, index) => (
                   <Link
                     key={index}
@@ -132,10 +189,13 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                     </button>
                   </>
                 )}
+
+                {/* 추가 여백을 위한 패딩 */}
+                <div className="h-4"></div>
               </nav>
 
-              {/* 하단 액션 버튼 */}
-              <div className="p-4 border-t border-gray-200">
+              {/* 하단 액션 버튼 - 고정 영역 */}
+              <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
                 {isLoggedIn ? (
                   <button
                     onClick={() => {
