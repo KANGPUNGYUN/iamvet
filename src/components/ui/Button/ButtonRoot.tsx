@@ -16,6 +16,7 @@ const ButtonRoot = React.forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       className = "",
       asChild = false,
+      fullWidth = false,
       ...props
     },
     ref
@@ -48,6 +49,9 @@ const ButtonRoot = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return baseClass;
     };
 
+    // fullWidth 옵션에 따른 클래스 추가
+    const fullWidthClass = fullWidth ? "w-full" : "";
+
     // 데이터 속성으로 스타일 정보 전달
     const dataAttributes = {
       "data-variant": variant,
@@ -59,13 +63,14 @@ const ButtonRoot = React.forwardRef<HTMLButtonElement, ButtonProps>(
       "data-icon-position": iconPosition,
       "data-has-icon": !!icon,
       "data-has-text": !!children,
+      "data-full-width": fullWidth,
     };
 
     return (
       <Component
         ref={ref as any}
         disabled={disabled || loading || variant === "disable"}
-        className={`${getButtonClass()} ${className}`}
+        className={`${getButtonClass()} ${fullWidthClass} ${className}`}
         {...dataAttributes}
         {...props}
       >

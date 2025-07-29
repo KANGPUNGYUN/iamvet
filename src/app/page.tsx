@@ -516,7 +516,7 @@ export default function HomePage() {
             variant="default"
             className="bg-box-light xl:px-[32px] py-[36px] px-[16px] rounded-[16px] mt-[30px]"
           >
-            <Tab.List className="flex md:justify-between md:items-center flex-col-reverse md:flex-row gap-[16px] md:gap-0">
+            <Tab.List className="flex md:justify-between md:items-center flex-col md:flex-row gap-[16px] md:gap-0">
               <div className="flex gap-4">
                 <Tab.Item value="internal">구직정보</Tab.Item>
                 <Tab.Item value="surgery">구인정보</Tab.Item>

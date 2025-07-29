@@ -28,6 +28,7 @@ export interface ButtonProps
   iconPosition?: "left" | "right";
   children?: React.ReactNode;
   asChild?: boolean;
+  fullWidth?: boolean; // 모바일에서 100% 너비 유지 옵션
 }
 
 export interface ButtonIconProps {

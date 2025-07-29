@@ -537,6 +537,12 @@
     width: 100%;
     max-width: 160px;
   }
+  
+  /* fullWidth 옵션이 있는 버튼은 모바일에서 100% 너비 유지 */
+  .button-base[data-full-width="true"] {
+    width: 100% !important;
+    max-width: none !important;
+  }
 
   .button-more {
     width: 100%;
