@@ -77,6 +77,8 @@ import lecture1Img from "@/assets/images/lecture/lecture1.png";
 import lecture2Img from "@/assets/images/lecture/lecture2.png";
 import lecture3Img from "@/assets/images/lecture/lecture3.png";
 import lecture4Img from "@/assets/images/lecture/lecture4.png";
+import lecture5Img from "@/assets/images/lecture/lecture5.png";
+import lecture6Img from "@/assets/images/lecture/lecture6.png";
 import transfer1Img from "@/assets/images/transfer/transfer1.jpg";
 import transfer2Img from "@/assets/images/transfer/transfer2.jpg";
 import transfer3Img from "@/assets/images/transfer/transfer3.jpg";
@@ -689,7 +691,7 @@ export default function HomePage() {
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
                 <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
+                  title="강아지와 유치열 종합 치석 제거 방법"
                   date="2025-04-09"
                   views={127}
                   category="수술 강의"
@@ -702,7 +704,7 @@ export default function HomePage() {
                   date="2025-04-09"
                   views={127}
                   category="수술 강의"
-                  imageUrl={lecture2Img.src}
+                  imageUrl={lecture5Img.src}
                   isLiked={true}
                   onClick={() => console.log("Lecture card clicked")}
                 />
@@ -752,38 +754,38 @@ export default function HomePage() {
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
                 <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture1Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture2Img.src}
-                  isLiked={true}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture3Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
+                  title="강아지와 유치열 종합 치석 제거 방법"
                   date="2025-04-09"
                   views={127}
                   category="행동/심리학"
                   imageUrl={lecture4Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치열 종합 치석 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture6Img.src}
+                  isLiked={true}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치열 종합 치석 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture2Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치열 종합 치석 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture1Img.src}
                   isLiked={false}
                   onClick={() => console.log("Lecture card clicked")}
                 />
@@ -818,7 +820,25 @@ export default function HomePage() {
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
                 <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
+                  title="강아지와 유치열 종합 치석 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture2Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치열 종합 치석 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture3Img.src}
+                  isLiked={true}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치열 종합 치석 제거 방법"
                   date="2025-04-09"
                   views={127}
                   category="행동/심리학"
@@ -827,25 +847,7 @@ export default function HomePage() {
                   onClick={() => console.log("Lecture card clicked")}
                 />
                 <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture2Img.src}
-                  isLiked={true}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture3Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치원 종합 지식 제거 방법"
+                  title="강아지와 유치열 종합 치석 제거 방법"
                   date="2025-04-09"
                   views={127}
                   category="행동/심리학"
