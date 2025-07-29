@@ -216,9 +216,12 @@
 }
 
 /* Default와 Filled 스타일 Content */
-.tab-content-default,
-.tab-content-filled {
+.tab-content-default {
   padding: 20px 0;
+}
+
+.tab-content-filled {
+  padding: 70px 0;
 }
 
 /* ===== 반응형 ===== */

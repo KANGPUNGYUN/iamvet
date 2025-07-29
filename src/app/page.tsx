@@ -73,6 +73,18 @@ import banner2Img from "@/assets/images/banner2.png";
 import banner3Img from "@/assets/images/banner3.png";
 import lightbombImg from "@/assets/images/lightbomb.png";
 import hospitalImg from "@/assets/images/hospital.png";
+import lecture1Img from "@/assets/images/lecture/lecture1.png";
+import lecture2Img from "@/assets/images/lecture/lecture2.png";
+import lecture3Img from "@/assets/images/lecture/lecture3.png";
+import lecture4Img from "@/assets/images/lecture/lecture4.png";
+import transfer1Img from "@/assets/images/transfer/transfer1.jpg";
+import transfer2Img from "@/assets/images/transfer/transfer2.jpg";
+import transfer3Img from "@/assets/images/transfer/transfer3.jpg";
+import transfer4Img from "@/assets/images/transfer/transfer4.jpg";
+import transfer5Img from "@/assets/images/transfer/transfer5.jpg";
+import transfer6Img from "@/assets/images/transfer/transfer6.jpg";
+import transfer7Img from "@/assets/images/transfer/transfer7.jpg";
+import transfer8Img from "@/assets/images/transfer/transfer8.jpg";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import { InputBox } from "@/components/ui/Input/InputBox";
@@ -86,6 +98,8 @@ import BannerSlider, {
 import AITalentButton from "@/components/features/main/AITalentButton";
 import JobFamousList from "@/components/features/main/JobFamousList";
 import JobInfoCard from "@/components/ui/JobInfoCard";
+import TransferCard from "@/components/ui/TransferCard/TransferCard";
+import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -497,19 +511,18 @@ export default function HomePage() {
               <JobFamousList />
             </div>
           </div>
-
           <Tab
             defaultTab="internal"
             variant="default"
             className="bg-box-light xl:px-[32px] py-[36px] px-[16px] rounded-[16px] mt-[30px]"
           >
-            <Tab.List className="flex justify-between items-center">
+            <Tab.List className="flex md:justify-between md:items-center flex-col-reverse md:flex-row gap-[16px] md:gap-0">
               <div className="flex gap-4">
                 <Tab.Item value="internal">구직정보</Tab.Item>
                 <Tab.Item value="surgery">구인정보</Tab.Item>
               </div>
               <Link
-                className="flex font-title title-light text-[16px] text-sub hover:underline"
+                className="flex font-title title-light text-[16px] text-sub hover:underline self-end md:self-auto"
                 href="/jobs"
               >
                 {<PlusIcon />} 전체보기
@@ -636,6 +649,467 @@ export default function HomePage() {
               </div>
             </Tab.Content>
           </Tab>
+
+          {/* 기존 강의 섹션을 이 코드로 교체 */}
+          <section className="py-[60px]">
+            <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-[16px] md:gap-0 mb-[30px]">
+              <h3 className="font-title text-[28px] md:text-[44px] title-medium">
+                주요 분야 인기 강좌
+              </h3>
+              <Link
+                className="flex font-title title-light text-[16px] text-sub hover:underline items-center gap-1 self-end md:self-auto"
+                href="/lectures"
+              >
+                <PlusIcon /> 전체보기
+              </Link>
+            </div>
+
+            {/* 수술 강의 섹션 */}
+            <div className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
+              {/* 카테고리 카드 - 핑크 */}
+              <div
+                className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-[#FF8796] md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
+                onClick={() => console.log("수술 강의 전체보기")}
+              >
+                <div className="flex flex-col gap-[12px]">
+                  <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-white mb-[px] leading-[135%]">
+                    수술 강의
+                  </h4>
+                  <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-white opacity-90">
+                    수술 전 준비부터 고급 수술까지
+                    <br />
+                    수술분야 종합적인 역량을 쌓습니다
+                  </p>
+                </div>
+                <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] border border-white bg-white bg-opacity-20 rounded-full items-center justify-center hover:bg-opacity-30 transition-all duration-200">
+                  <ArrowRightIcon currentColor="white" size="16px" />
+                </button>
+              </div>
+
+              {/* 강의 리스트 */}
+              <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="수술 강의"
+                  imageUrl={lecture1Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="고양이 응급처치 및 심폐소생술 실무"
+                  date="2025-04-09"
+                  views={127}
+                  category="수술 강의"
+                  imageUrl={lecture2Img.src}
+                  isLiked={true}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="반려동물 외과수술 기초부터 고급까지"
+                  date="2025-04-09"
+                  views={127}
+                  category="수술 강의"
+                  imageUrl={lecture3Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="영상진단학 - X-ray 판독의 모든 것"
+                  date="2025-04-09"
+                  views={127}
+                  category="수술 강의"
+                  imageUrl={lecture4Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+              </div>
+            </div>
+
+            {/* 행동/심리학 섹션 */}
+            <div className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
+              {/* 카테고리 카드 - 흰색 */}
+              <div
+                className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-box md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
+                onClick={() => console.log("행동/심리학 전체보기")}
+              >
+                <div className="flex flex-col gap-[12px]">
+                  <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-black mb-[px] leading-[135%]">
+                    행동/심리학
+                  </h4>
+                  <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-[#6B6B6B]">
+                    반려동물의 행동/심리학 관련 다양한
+                    <br />
+                    강의가 준비되어 있습니다
+                  </p>
+                </div>
+                <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] bg-[#F8F8F9] border border-[#FF8796] rounded-full items-center justify-center hover:bg-[#EFEFF0] transition-all duration-200">
+                  <ArrowRightIcon currentColor="#3B394D" size="16px" />
+                </button>
+              </div>
+
+              {/* 강의 리스트 */}
+              <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture1Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture2Img.src}
+                  isLiked={true}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture3Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture4Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+              </div>
+            </div>
+
+            {/* 행동/심리학 섹션 (세 번째) */}
+            <div className="relative h-auto md:h-[400px]">
+              {/* 카테고리 카드 - 핑크 */}
+              <div
+                className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-[#FF8796] md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
+                onClick={() => console.log("행동/심리학 전체보기")}
+              >
+                <div className="flex flex-col gap-[12px]">
+                  <h4
+                    className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-white mb-[px] leading-[135%]"
+                    style={{ fontFamily: "Gmarket Sans" }}
+                  >
+                    행동/심리학
+                  </h4>
+                  <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-white opacity-90">
+                    반려동물의 행동/심리학 관련 다양한
+                    <br />
+                    강의가 준비되어 있습니다
+                  </p>
+                </div>
+                <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] border border-white bg-white bg-opacity-20 rounded-full items-center justify-center hover:bg-opacity-30 transition-all duration-200">
+                  <ArrowRightIcon currentColor="white" size="16px" />
+                </button>
+              </div>
+
+              {/* 강의 리스트 */}
+              <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture1Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture2Img.src}
+                  isLiked={true}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture3Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+                <LectureCard
+                  title="강아지와 유치원 종합 지식 제거 방법"
+                  date="2025-04-09"
+                  views={127}
+                  category="행동/심리학"
+                  imageUrl={lecture4Img.src}
+                  isLiked={false}
+                  onClick={() => console.log("Lecture card clicked")}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="py-[60px]">
+            <h3 className="font-title text-[28px] md:text-[44px] title-medium mb-[47px] text-center">
+              인기 양도 매물
+            </h3>
+
+            <Tab
+              defaultTab="transfer"
+              variant="filled"
+              className="items-center"
+            >
+              <Tab.List className="flex justify-center">
+                <Tab.Item value="transfer">병원 양도</Tab.Item>
+                <Tab.Item value="machine">기계 장치</Tab.Item>
+                <Tab.Item value="device">의료 장비</Tab.Item>
+                <Tab.Item value="Interior">인테리어</Tab.Item>
+              </Tab.List>
+
+              <Tab.Content value="transfer">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
+                  <TransferCard
+                    title="[양도] 강남 소재 내과 병원 양도합니다"
+                    location="서울 강남구"
+                    hospitalType="내과"
+                    area={100}
+                    price="3억 양도"
+                    categories={["병원양도"]}
+                    isAd={true}
+                    date="2025-04-09"
+                    views={127}
+                    imageUrl={transfer1Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[양도] 분당 소재 종합 동물병원 급매"
+                    location="경기 성남시"
+                    hospitalType="종합병원"
+                    area={150}
+                    price="5억 양도"
+                    categories={["병원양도"]}
+                    isAd={false}
+                    date="2025-04-08"
+                    views={234}
+                    imageUrl={transfer2Img.src}
+                    isLiked={true}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[양도] 홍대 인근 24시간 응급병원"
+                    location="서울 마포구"
+                    hospitalType="응급병원"
+                    area={120}
+                    price="4억 양도"
+                    categories={["병원양도"]}
+                    isAd={false}
+                    date="2025-04-07"
+                    views={156}
+                    imageUrl={transfer3Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[양도] 일산 신도시 소형 동물병원"
+                    location="경기 고양시"
+                    hospitalType="소형병원"
+                    area={80}
+                    price="2억 양도"
+                    categories={["병원양도"]}
+                    isAd={false}
+                    date="2025-04-06"
+                    views={89}
+                    imageUrl={transfer4Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[양도] 수원 영통구 동물병원 양도"
+                    location="경기 수원시"
+                    hospitalType="일반병원"
+                    area={110}
+                    price="3.5억 양도"
+                    categories={["병원양도"]}
+                    isAd={false}
+                    date="2025-04-05"
+                    views={167}
+                    imageUrl={transfer5Img.src}
+                    isLiked={true}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[양도] 부산 해운대 동물병원 급매"
+                    location="부산 해운대구"
+                    hospitalType="일반병원"
+                    area={95}
+                    price="2.8억 양도"
+                    categories={["병원양도"]}
+                    isAd={false}
+                    date="2025-04-04"
+                    views={201}
+                    imageUrl={transfer6Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[양도] 대전 중구 소재 동물병원"
+                    location="대전 중구"
+                    hospitalType="일반병원"
+                    area={85}
+                    price="2.2억 양도"
+                    categories={["병원양도"]}
+                    isAd={false}
+                    date="2025-04-03"
+                    views={145}
+                    imageUrl={transfer7Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[양도] 광주 북구 동물병원 양도"
+                    location="광주 북구"
+                    hospitalType="일반병원"
+                    area={75}
+                    price="1.8억 양도"
+                    categories={["병원양도"]}
+                    isAd={false}
+                    date="2025-04-02"
+                    views={123}
+                    imageUrl={transfer8Img.src}
+                    isLiked={true}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <Link
+                    className="flex font-title title-light text-[16px] text-primary hover:underline items-center justfy-center px-[30px] py-[8px] border border-[1px] border-[#35313C] rounded-full"
+                    href="/transfers"
+                  >
+                    {<PlusIcon />} 전체보기
+                  </Link>
+                </div>
+              </Tab.Content>
+              <Tab.Content value="machine">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
+                  <TransferCard
+                    title="[판매] X-ray 촬영 장비 판매합니다"
+                    location="서울 강남구"
+                    hospitalType="의료장비"
+                    area={0}
+                    price="500만원"
+                    categories={["기계장치"]}
+                    isAd={false}
+                    date="2025-04-09"
+                    views={78}
+                    imageUrl={transfer1Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[판매] 초음파 진단기 급매"
+                    location="경기 성남시"
+                    hospitalType="의료장비"
+                    area={0}
+                    price="800만원"
+                    categories={["기계장치"]}
+                    isAd={false}
+                    date="2025-04-08"
+                    views={92}
+                    imageUrl={transfer2Img.src}
+                    isLiked={true}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[판매] 수술대 및 수술등 세트"
+                    location="서울 마포구"
+                    hospitalType="의료장비"
+                    area={0}
+                    price="300만원"
+                    categories={["기계장치"]}
+                    isAd={false}
+                    date="2025-04-07"
+                    views={156}
+                    imageUrl={transfer3Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                </div>
+              </Tab.Content>
+              <Tab.Content value="device">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
+                  <TransferCard
+                    title="[판매] 혈액검사기 판매"
+                    location="서울 강남구"
+                    hospitalType="의료장비"
+                    area={0}
+                    price="1200만원"
+                    categories={["의료장비"]}
+                    isAd={true}
+                    date="2025-04-09"
+                    views={145}
+                    imageUrl={transfer1Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                  <TransferCard
+                    title="[판매] 내시경 장비 일체"
+                    location="경기 성남시"
+                    hospitalType="의료장비"
+                    area={0}
+                    price="2000만원"
+                    categories={["의료장비"]}
+                    isAd={false}
+                    date="2025-04-08"
+                    views={234}
+                    imageUrl={transfer2Img.src}
+                    isLiked={true}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                </div>
+              </Tab.Content>
+              <Tab.Content value="Interior">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
+                  <TransferCard
+                    title="[판매] 병원 인테리어 가구 일체"
+                    location="서울 강남구"
+                    hospitalType="인테리어"
+                    area={0}
+                    price="800만원"
+                    categories={["인테리어"]}
+                    isAd={false}
+                    date="2025-04-09"
+                    views={89}
+                    imageUrl={transfer1Img.src}
+                    isLiked={false}
+                    onLike={() => console.log("좋아요 클릭")}
+                    onClick={() => console.log("카드 클릭")}
+                  />
+                </div>
+              </Tab.Content>
+            </Tab>
+          </section>
         </div>
       </div>
 
