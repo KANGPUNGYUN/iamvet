@@ -14,7 +14,7 @@ interface LectureCardProps {
   onClick?: () => void;
 }
 
-export const LectureCard: React.FC<LectureCardProps> = ({
+const LectureCard: React.FC<LectureCardProps> = ({
   title = "강아지와 유치원 종합 지식 제거 방법",
   date = "2025-04-09",
   views = 127,

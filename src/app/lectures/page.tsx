@@ -6,7 +6,7 @@ import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
-import { LectureCard } from "@/components/ui/LectureCard";
+import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import { useState, useEffect } from "react";
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
