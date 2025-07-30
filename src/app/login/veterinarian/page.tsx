@@ -31,7 +31,7 @@ export default function VeterinarianLoginPage() {
             <Link href="/member-select" className="mr-4">
               <ArrowLeftIcon currentColor="#000" />
             </Link>
-            <h1 className="font-title text-[28px] titie-light text-[#3B394D]">
+            <h1 className="font-title text-[36px] titie-light text-primary">
               수의사 로그인
             </h1>
           </div>

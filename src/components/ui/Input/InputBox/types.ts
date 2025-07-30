@@ -43,6 +43,13 @@ export interface InputBoxProps {
   guide?: InputBoxGuideProps;
   className?: string;
   children?: React.ReactNode;
+  // 중복확인 버튼 관련 props
+  duplicateCheck?: {
+    buttonText: string;
+    onCheck: () => void;
+    isChecking?: boolean;
+    isValid?: boolean;
+  };
 }
 
 export interface InputBoxGroupProps {

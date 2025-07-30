@@ -28,6 +28,12 @@ const CheckboxItem: React.FC<CheckboxProps> = ({
   const isDisabled = (context?.disabled || itemDisabled) ?? itemDisabled;
 
   const handleClick = (e: React.MouseEvent) => {
+    // 링크나 버튼이 클릭된 경우 체크박스 토글을 방지
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'A' || target.closest('a') || target.tagName === 'BUTTON' || target.closest('button')) {
+      return;
+    }
+    
     e.preventDefault();
     e.stopPropagation();
     if (!isDisabled) {

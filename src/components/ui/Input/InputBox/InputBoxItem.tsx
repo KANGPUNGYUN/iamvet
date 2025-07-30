@@ -24,6 +24,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   suffix, // 새로 추가된 prop
   className = "",
   children,
+  duplicateCheck, // 중복확인 버튼 설정
 }) => {
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [internalState, setInternalState] =
@@ -367,6 +368,49 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
     return <span style={getSuffixStyle(currentState)}>{suffix}</span>;
   };
 
+  // 중복확인 버튼 렌더링 함수
+  const renderDuplicateCheckButton = () => {
+    if (!duplicateCheck) return null;
+
+    const buttonStyle = {
+      display: "flex",
+      height: "36px",
+      padding: "7px 15px",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "10px",
+      flexShrink: 0,
+      borderRadius: "4px",
+      fontSize: "16px",
+      fontStyle: "normal",
+      fontWeight: 700,
+      lineHeight: "135%",
+      fontFamily: "SUIT, sans-serif",
+      border: "1px solid #CACAD2",
+      backgroundColor: "#FAFAFA",
+      color: "#4F5866",
+      cursor: duplicateCheck.isChecking ? "not-allowed" : "pointer",
+      transition: "all 0.2s ease-in-out",
+    };
+
+    const handleCheckClick = () => {
+      if (!duplicateCheck.isChecking) {
+        duplicateCheck.onCheck();
+      }
+    };
+
+    return (
+      <button
+        type="button"
+        onClick={handleCheckClick}
+        disabled={duplicateCheck.isChecking}
+        style={buttonStyle}
+      >
+        {duplicateCheck.isChecking ? "확인중..." : duplicateCheck.buttonText}
+      </button>
+    );
+  };
+
   const renderGuide = () => {
     if (!finalGuide) return null;
 
@@ -427,6 +471,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
           aria-required={required}
         />
         {renderSuffix()}
+        {renderDuplicateCheckButton()}
         {renderClearButton()}
       </div>
 
