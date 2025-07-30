@@ -1,0 +1,211 @@
+import lecture1Img from "@/assets/images/lecture/lecture1.png";
+import lecture2Img from "@/assets/images/lecture/lecture2.png";
+import lecture3Img from "@/assets/images/lecture/lecture3.png";
+import lecture4Img from "@/assets/images/lecture/lecture4.png";
+import lecture5Img from "@/assets/images/lecture/lecture5.png";
+import lecture6Img from "@/assets/images/lecture/lecture6.png";
+
+export interface LectureData {
+  id: string;
+  title: string;
+  description: string;
+  instructor: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  medicalField: string;
+  animalType?: string;
+  difficulty: string;
+  viewCount: number;
+  rating: number;
+  uploadDate: Date;
+  category: string;
+  isLiked?: boolean;
+  isPublic: boolean;
+  isActive: boolean;
+}
+
+export const allLecturesData: LectureData[] = [
+  {
+    id: "1",
+    title: "반려동물 기본 수술 가이드",
+    description: "반려동물의 기본적인 수술 절차와 주의사항에 대해 배웁니다.",
+    instructor: "김수의 교수",
+    videoUrl: "/videos/lecture1.mp4",
+    thumbnailUrl: lecture1Img.src,
+    medicalField: "surgery",
+    animalType: "dog",
+    difficulty: "beginner",
+    viewCount: 1250,
+    rating: 4.8,
+    uploadDate: new Date("2024-01-20"),
+    category: "수술 강의",
+    isLiked: false,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "2",
+    title: "고양이 행동학 심화 과정",
+    description:
+      "고양이의 행동 패턴을 이해하고 문제 행동을 교정하는 방법을 학습합니다.",
+    instructor: "박동물 박사",
+    videoUrl: "/videos/lecture2.mp4",
+    thumbnailUrl: lecture2Img.src,
+    medicalField: "behavior",
+    animalType: "cat",
+    difficulty: "advanced",
+    viewCount: 890,
+    rating: 4.6,
+    uploadDate: new Date("2024-01-18"),
+    category: "행동/심리학",
+    isLiked: true,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "3",
+    title: "응급처치 실습 워크샵",
+    description:
+      "반려동물 응급상황 대처 방법과 실습을 통한 응급처치 기법을 배웁니다.",
+    instructor: "이응급 원장",
+    videoUrl: "/videos/lecture3.mp4",
+    thumbnailUrl: lecture3Img.src,
+    medicalField: "emergency",
+    animalType: "dog",
+    difficulty: "intermediate",
+    viewCount: 2150,
+    rating: 4.9,
+    uploadDate: new Date("2024-01-15"),
+    category: "응급의학",
+    isLiked: false,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "4",
+    title: "피부과 진단학 기초",
+    description:
+      "반려동물 피부질환의 진단과 치료에 대한 기초적인 내용을 다룹니다.",
+    instructor: "최피부 교수",
+    videoUrl: "/videos/lecture4.mp4",
+    thumbnailUrl: lecture4Img.src,
+    medicalField: "dermatology",
+    animalType: "dog",
+    difficulty: "beginner",
+    viewCount: 1680,
+    rating: 4.7,
+    uploadDate: new Date("2024-01-12"),
+    category: "피부과",
+    isLiked: true,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "5",
+    title: "내과 진료 실무",
+    description: "반려동물 내과 질환의 진단과 치료 방법에 대해 학습합니다.",
+    instructor: "정내과 원장",
+    videoUrl: "/videos/lecture5.mp4",
+    thumbnailUrl: lecture5Img.src,
+    medicalField: "internal",
+    animalType: "cat",
+    difficulty: "intermediate",
+    viewCount: 1420,
+    rating: 4.5,
+    uploadDate: new Date("2024-01-10"),
+    category: "내과",
+    isLiked: false,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "6",
+    title: "영상진단학 마스터 클래스",
+    description: "X-ray, 초음파 등 영상진단 기법의 활용법을 심화 학습합니다.",
+    instructor: "한영상 박사",
+    videoUrl: "/videos/lecture6.mp4",
+    thumbnailUrl: lecture6Img.src,
+    medicalField: "radiology",
+    animalType: "dog",
+    difficulty: "advanced",
+    viewCount: 950,
+    rating: 4.8,
+    uploadDate: new Date("2024-01-08"),
+    category: "영상진단",
+    isLiked: true,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "7",
+    title: "마취학 실무 가이드",
+    description: "안전한 마취 절차와 마취 중 모니터링에 대해 배웁니다.",
+    instructor: "조마취 교수",
+    videoUrl: "/videos/lecture7.mp4",
+    thumbnailUrl: lecture2Img.src,
+    medicalField: "anesthesia",
+    animalType: "dog",
+    difficulty: "intermediate",
+    viewCount: 1320,
+    rating: 4.6,
+    uploadDate: new Date("2024-01-05"),
+    category: "마취학",
+    isLiked: false,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "8",
+    title: "치과 진료의 기초와 실제",
+    description: "반려동물 치과 질환의 진단, 치료 및 예방에 대해 학습합니다.",
+    instructor: "김치과 원장",
+    videoUrl: "/videos/lecture8.mp4",
+    thumbnailUrl: lecture3Img.src,
+    medicalField: "dentistry",
+    animalType: "cat",
+    difficulty: "beginner",
+    viewCount: 1140,
+    rating: 4.4,
+    uploadDate: new Date("2024-01-03"),
+    category: "치과",
+    isLiked: true,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "9",
+    title: "외과 수술 고급 테크닉",
+    description: "복잡한 외과 수술 절차와 고급 테크닉을 상세히 다룹니다.",
+    instructor: "신외과 교수",
+    videoUrl: "/videos/lecture9.mp4",
+    thumbnailUrl: lecture4Img.src,
+    medicalField: "surgery",
+    animalType: "dog",
+    difficulty: "advanced",
+    viewCount: 780,
+    rating: 4.9,
+    uploadDate: new Date("2024-01-01"),
+    category: "수술 강의",
+    isLiked: false,
+    isPublic: true,
+    isActive: true,
+  },
+  {
+    id: "10",
+    title: "영상진단학 마스터 클래스",
+    description: "X-ray, 초음파 등 영상진단 기법의 활용법을 심화 학습합니다.",
+    instructor: "한영상 박사",
+    videoUrl: "/videos/lecture6.mp4",
+    thumbnailUrl: lecture6Img.src,
+    medicalField: "radiology",
+    animalType: "dog",
+    difficulty: "advanced",
+    viewCount: 950,
+    rating: 4.8,
+    uploadDate: new Date("2024-01-08"),
+    category: "영상진단",
+    isLiked: true,
+    isPublic: true,
+    isActive: true,
+  },
+];
