@@ -6,7 +6,6 @@ export * from "./Card";
 export * from "./Badge";
 export * from "./Alert";
 export * from "./Pagination";
-export * from "./SearchInput";
 export * from "./FilterDropdown";
 export * from "./JobInfoCard";
 export * from "./LectureCard";

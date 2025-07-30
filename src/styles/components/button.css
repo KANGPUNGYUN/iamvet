@@ -80,6 +80,23 @@
   cursor: not-allowed;
 }
 
+/* L - Text (밑줄 스타일) */
+.button-large-text {
+  border: none;
+  background: transparent;
+  color: var(--Subtext2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-weight: 700;
+}
+
+.button-large-text:hover:not(:disabled) {
+  border: none;
+  background: transparent;
+  color: var(--Subtext);
+  text-decoration: underline;
+}
+
 /* ===== M 크기 버튼 ===== */
 .button-medium {
   display: flex;
@@ -144,6 +161,22 @@
   cursor: not-allowed;
 }
 
+/* M - Text (밑줄 스타일) */
+.button-medium-text {
+  border: none;
+  background: transparent;
+  color: var(--Subtext2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.button-medium-text:hover:not(:disabled) {
+  border: none;
+  background: transparent;
+  color: var(--Subtext);
+  text-decoration: underline;
+}
+
 /* ===== S 크기 버튼 ===== */
 .button-small {
   display: flex;
@@ -202,6 +235,22 @@
   cursor: not-allowed;
 }
 
+/* S - Text (밑줄 스타일) */
+.button-small-text {
+  border: none;
+  background: transparent;
+  color: var(--Subtext2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.button-small-text:hover:not(:disabled) {
+  border: none;
+  background: transparent;
+  color: var(--Subtext);
+  text-decoration: underline;
+}
+
 /* ===== XS 크기 버튼 ===== */
 .button-xsmall {
   display: inline-flex;
@@ -251,6 +300,22 @@
   border: none;
   background: var(--Box_Light);
   color: var(--Subtext);
+}
+
+/* XS - Text (밑줄 스타일) */
+.button-xsmall-text {
+  border: none;
+  background: transparent;
+  color: var(--Subtext2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.button-xsmall-text:hover:not(:disabled) {
+  border: none;
+  background: transparent;
+  color: var(--Subtext);
+  text-decoration: underline;
 }
 
 /* ===== 아이콘 버튼 ===== */

@@ -4,6 +4,7 @@ export type ButtonVariant =
   | "keycolor" // 키컬러 배경
   | "line" // 테두리만 있는 스타일
   | "weak" // 약한 스타일 (XS만)
+  | "text" // 텍스트만 있고 밑줄 스타일
   | "disable"; // 비활성화
 
 export type ButtonSize = "large" | "medium" | "small" | "xsmall";
