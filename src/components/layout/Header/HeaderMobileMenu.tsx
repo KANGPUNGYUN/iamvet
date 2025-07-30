@@ -161,7 +161,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                     href={item.href}
                     onClick={onToggle}
                     className={`
-                      block px-4 py-3 text-base font-medium rounded-lg transition-colors duration-200
+                      block px-4 py-3 font-title text-base font-medium rounded-lg transition-colors duration-200 
                       ${
                         item.active
                           ? "text-blue-600 bg-blue-50"
@@ -207,25 +207,17 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                     로그아웃
                   </button>
                 ) : (
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => {
-                        onLogin?.();
-                        onToggle();
-                      }}
-                      className="w-full px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      로그인
-                    </button>
-                    <button
-                      onClick={() => {
-                        onSignup?.();
-                        onToggle();
-                      }}
-                      className="w-full px-4 py-2 text-sm font-medium text-white bg-key1 rounded-md hover:bg-blue-700 transition-colors duration-200"
-                    >
-                      회원가입
-                    </button>
+                  <div className="flex flex-col gap-[10px]">
+                    <Link href="/member-select" onClick={onToggle}>
+                      <button className="font-title title-light w-full px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                        로그인
+                      </button>
+                    </Link>
+                    <Link href="/member-select" onClick={onToggle}>
+                      <button className="font-title title-light w-full px-4 py-2 text-sm font-medium text-white bg-key1 rounded-md hover:bg-key2 transition-colors duration-200">
+                        회원가입
+                      </button>
+                    </Link>
                   </div>
                 )}
               </div>
