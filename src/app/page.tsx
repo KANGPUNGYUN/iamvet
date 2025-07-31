@@ -79,6 +79,8 @@ import lecture3Img from "@/assets/images/lecture/lecture3.png";
 import lecture4Img from "@/assets/images/lecture/lecture4.png";
 import lecture5Img from "@/assets/images/lecture/lecture5.png";
 import lecture6Img from "@/assets/images/lecture/lecture6.png";
+import AdvertisementSlider from "@/components/ui/AdvertisementSlider";
+import { advertisementsData } from "@/data/advertisementsData";
 import transfer1Img from "@/assets/images/transfer/transfer1.jpg";
 import transfer2Img from "@/assets/images/transfer/transfer2.jpg";
 import transfer3Img from "@/assets/images/transfer/transfer3.jpg";
@@ -651,6 +653,15 @@ export default function HomePage() {
               </div>
             </Tab.Content>
           </Tab>
+
+          {/* 광고 슬라이더 섹션 */}
+          <section className="pt-[40px] md:pt-[42px]">
+            <AdvertisementSlider
+              advertisements={advertisementsData}
+              autoPlay={true}
+              autoPlayInterval={5000}
+            />
+          </section>
 
           {/* 기존 강의 섹션을 이 코드로 교체 */}
           <section className="py-[60px]">
