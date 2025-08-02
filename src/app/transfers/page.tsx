@@ -930,7 +930,7 @@ export default function TransfersPage() {
               href={"/transfers/create"}
               className="w-[140px] bg-subtext hover:bg-[#3b394d] p-[10px] gap-[10px] flex items-center justify-center text-[white] rounded-[6px] font-text text-semibold text-[18px] self-end mb-[20px]"
             >
-              <EditIcon /> 글쓰기
+              <EditIcon size="20" /> 글쓰기
             </Link>
           </div>
 

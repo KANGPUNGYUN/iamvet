@@ -11,3 +11,4 @@ export * from "./JobInfoCard";
 export * from "./LectureCard";
 export * from "./TransferCard";
 export * from "./ResumeCard/ResumeCard";
+export * from "./ForumCard";
