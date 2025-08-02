@@ -149,12 +149,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
     ];
 
     if (variant === "compact") {
-      baseClasses.push(
-        "w-[160px]",
-        "h-auto",
-        "px-[10px] py-[6px]",
-        "gap-[6px]"
-      );
+      baseClasses.push("w-[160px]", "h-auto", "px-[10px] py-[6px]");
     } else {
       baseClasses.push(
         "w-full max-w-[758px]",

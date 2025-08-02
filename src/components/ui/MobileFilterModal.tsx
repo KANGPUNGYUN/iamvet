@@ -114,7 +114,7 @@ export default function MobileFilterModal({
                         key={sido}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-[6px] cursor-pointer transition-colors text-left ${
                           showActive
-                            ? "bg-[#FFF5F5] text-[#FF6B6B] border border-[#FF6B6B]"
+                            ? "bg-[#FFF5F5] text-[#FF6B6B]"
                             : "hover:bg-white"
                         }`}
                         onClick={() => {

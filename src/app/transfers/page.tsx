@@ -256,7 +256,6 @@ export default function TransfersPage() {
   // 필터 적용 처리 (버튼 클릭시만)
   const handleFilterApply = () => {
     setAppliedFilters(tempFilters);
-    generateFilterTags(tempFilters);
     setCurrentPage(1);
     updateURL(tempFilters, 1);
   };
@@ -347,24 +346,24 @@ export default function TransfersPage() {
     setAppliedFilterTags(tags);
   };
 
-  // 적용된 필터 변경 시 자동으로 태그 생성
+  // 임시 필터 변경 시 자동으로 태그 생성 (선택하자마자 표시)
   useEffect(() => {
-    generateFilterTags(appliedFilters);
+    generateFilterTags(tempFilters);
   }, [
-    appliedFilters.category,
-    appliedFilters.regions,
-    appliedFilters.minPrice,
-    appliedFilters.maxPrice,
-    appliedFilters.minArea,
-    appliedFilters.maxArea,
+    tempFilters.category,
+    tempFilters.regions,
+    tempFilters.minPrice,
+    tempFilters.maxPrice,
+    tempFilters.minArea,
+    tempFilters.maxArea,
   ]);
 
-  // 개별 필터 태그 삭제
+  // 개별 필터 태그 삭제 (임시 필터에서 제거)
   const handleRemoveFilterTag = (tagId: string) => {
     const tag = appliedFilterTags.find((t) => t.id === tagId);
     if (!tag) return;
 
-    let newFilters = { ...appliedFilters };
+    let newFilters = { ...tempFilters };
 
     if (tag.type === "category") {
       const categoryValue = tagId.replace("category-", "");
@@ -398,10 +397,7 @@ export default function TransfersPage() {
       newFilters.maxArea = "";
     }
 
-    setAppliedFilters(newFilters);
     setTempFilters(newFilters);
-    updateURL(newFilters, 1);
-    setCurrentPage(1);
   };
 
   // 검색어 변경 (즉시 적용)
