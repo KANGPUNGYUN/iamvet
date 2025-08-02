@@ -389,6 +389,20 @@ export default function ForumsPage() {
           <div className="hidden xl:flex xl:gap-[30px] xl:py-8">
             {/* 왼쪽: 필터링 영역 */}
             <div className="flex-shrink-0 w-[308px] sticky top-[70px] h-fit flex p-[20px] gap-[32px] flex-col border border-[1px] border-[#EFEFF0] rounded-[8px]">
+              {/* 분야 */}
+              <div>
+                <h3 className="text-[18px] font-bold text-[#3B394D] mb-4">
+                  진료 과목
+                </h3>
+                <FilterBox.Group
+                  value={filters.field}
+                  onChange={(value) => handleFilterChange("field", value)}
+                >
+                  <FilterBox value="내과">내과</FilterBox>
+                  <FilterBox value="외과">외과</FilterBox>
+                </FilterBox.Group>
+              </div>
+
               {/* 동물 */}
               <div>
                 <h3 className="text-[18px] font-bold text-[#3B394D] mb-4">
@@ -400,24 +414,8 @@ export default function ForumsPage() {
                 >
                   <FilterBox value="개">개</FilterBox>
                   <FilterBox value="고양이">고양이</FilterBox>
+                  <FilterBox value="대동물">대동물</FilterBox>
                   <FilterBox value="특수동물">특수동물</FilterBox>
-                </FilterBox.Group>
-              </div>
-
-              {/* 분야 */}
-              <div>
-                <h3 className="text-[18px] font-bold text-[#3B394D] mb-4">
-                  분야
-                </h3>
-                <FilterBox.Group
-                  value={filters.field}
-                  onChange={(value) => handleFilterChange("field", value)}
-                >
-                  <FilterBox value="내과">내과</FilterBox>
-                  <FilterBox value="외과">외과</FilterBox>
-                  <FilterBox value="피부과">피부과</FilterBox>
-                  <FilterBox value="응급의학">응급의학</FilterBox>
-                  <FilterBox value="예방의학">예방의학</FilterBox>
                 </FilterBox.Group>
               </div>
 
@@ -630,6 +628,20 @@ export default function ForumsPage() {
 
                   {/* 필터 내용 */}
                   <div className="space-y-6">
+                    {/* 분야 */}
+                    <div>
+                      <h3 className="text-[18px] font-bold text-[#3B394D] mb-4">
+                        진료 과목
+                      </h3>
+                      <FilterBox.Group
+                        value={filters.field}
+                        onChange={(value) => handleFilterChange("field", value)}
+                      >
+                        <FilterBox value="내과">내과</FilterBox>
+                        <FilterBox value="외과">외과</FilterBox>
+                      </FilterBox.Group>
+                    </div>
+
                     {/* 동물 */}
                     <div>
                       <h3 className="text-[18px] font-bold text-[#3B394D] mb-4">
@@ -643,24 +655,8 @@ export default function ForumsPage() {
                       >
                         <FilterBox value="개">개</FilterBox>
                         <FilterBox value="고양이">고양이</FilterBox>
+                        <FilterBox value="대동물">대동물</FilterBox>
                         <FilterBox value="특수동물">특수동물</FilterBox>
-                      </FilterBox.Group>
-                    </div>
-
-                    {/* 분야 */}
-                    <div>
-                      <h3 className="text-[18px] font-bold text-[#3B394D] mb-4">
-                        분야
-                      </h3>
-                      <FilterBox.Group
-                        value={filters.field}
-                        onChange={(value) => handleFilterChange("field", value)}
-                      >
-                        <FilterBox value="내과">내과</FilterBox>
-                        <FilterBox value="외과">외과</FilterBox>
-                        <FilterBox value="피부과">피부과</FilterBox>
-                        <FilterBox value="응급의학">응급의학</FilterBox>
-                        <FilterBox value="예방의학">예방의학</FilterBox>
                       </FilterBox.Group>
                     </div>
 
