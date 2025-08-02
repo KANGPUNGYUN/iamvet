@@ -10,3 +10,4 @@ export * from "./FilterDropdown";
 export * from "./JobInfoCard";
 export * from "./LectureCard";
 export * from "./TransferCard";
+export * from "./ResumeCard/ResumeCard";
