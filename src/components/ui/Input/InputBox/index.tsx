@@ -10,4 +10,4 @@ const InputBox = Object.assign(InputBoxItem, {
 });
 
 export { InputBox };
-export type { InputBoxProps, InputBoxGroupProps, InputBoxGuideProps, InputBoxState, InputBoxType } from "./types";
+export type { InputBoxProps, InputBoxGroupProps, InputBoxGuideProps, InputBoxState, InputBoxType, InputBoxVariant } from "./types";

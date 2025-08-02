@@ -22,6 +22,8 @@ export interface InputBoxGuideProps {
   className?: string;
 }
 
+export type InputBoxVariant = "default" | "compact";
+
 export interface InputBoxProps {
   value?: string;
   defaultValue?: string;
@@ -43,6 +45,7 @@ export interface InputBoxProps {
   guide?: InputBoxGuideProps;
   className?: string;
   children?: React.ReactNode;
+  variant?: InputBoxVariant;
   // 중복확인 버튼 관련 props
   duplicateCheck?: {
     buttonText: string;

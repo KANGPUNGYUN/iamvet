@@ -120,7 +120,7 @@ const FilterBoxItem: React.FC<FilterBoxProps> = ({
       ...baseStyle,
       padding: "6px 16px",
       borderColor: "var(--Line, #EFEFF0)",
-      background: "transparent",
+      background: "#FFFFFF",
       color: isDisabled ? "#CACED6" : "var(--text-sub, #707687)",
     };
   };

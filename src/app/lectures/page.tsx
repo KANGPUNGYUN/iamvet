@@ -470,8 +470,8 @@ export default function LecturesPage() {
                 />
               </div>
 
-              {/* 강의 목록 - 모바일 2열 그리드 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 강의 목록 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
                 {lectureData.map((lecture) => (
                   <LectureCard
                     key={lecture.id}
@@ -619,6 +619,7 @@ export default function LecturesPage() {
                         size="medium"
                         onClick={handleFilterApply}
                         fullWidth
+                        className="max-w-none"
                       >
                         필터 적용
                       </Button>

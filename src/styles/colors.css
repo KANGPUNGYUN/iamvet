@@ -118,3 +118,11 @@
 .bg-sub5 {
   background-color: var(--Subcolor5);
 }
+
+/* 텍스트 컬러 배경 */
+.bg-text {
+  background-color: var(--Text);
+}
+.bg-subtext {
+  background-color: var(--Subtext);
+}

@@ -138,8 +138,6 @@ const TransferCard: React.FC<TransferCardProps> = ({
       style={{
         display: "flex",
         width: "100%",
-        minWidth: "280px",
-        maxWidth: "343px",
         height: "130px",
         alignItems: "flex-start",
       }}
@@ -203,7 +201,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
             ))}
           </div>
 
-          <h3 className="text-[11px] min-[400px]:text-[14px] text-semibold text-gray-900 leading-tight line-clamp-2 mb-1">
+          <h3 className="text-[11px] min-[400px]:text-[14px] text-semibold text-gray-900 leading-tight line-clamp-1 mb-1">
             {title}
           </h3>
 

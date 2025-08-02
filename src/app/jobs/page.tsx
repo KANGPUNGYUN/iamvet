@@ -38,7 +38,6 @@ export default function JobsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-
   // URL에서 필터 파라미터 파싱
   const parseFiltersFromURL = () => {
     const workType =
@@ -173,7 +172,6 @@ export default function JobsPage() {
   // 페이지네이션
   const startIndex = (currentPage - 1) * 8;
   const jobData = filteredData.slice(startIndex, startIndex + 8);
-
 
   const handleFilterChange = (type: keyof typeof filters, value: any) => {
     setFilters((prev) => ({ ...prev, [type]: value }));
@@ -685,6 +683,7 @@ export default function JobsPage() {
                         size="medium"
                         onClick={handleFilterApply}
                         fullWidth
+                        className="max-w-none"
                       >
                         필터 적용
                       </Button>

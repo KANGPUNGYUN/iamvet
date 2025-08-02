@@ -24,6 +24,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   suffix, // 새로 추가된 prop
   className = "",
   children,
+  variant = "default",
   duplicateCheck, // 중복확인 버튼 설정
 }) => {
   const [internalValue, setInternalValue] = useState(defaultValue);
@@ -141,15 +142,27 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   const getContainerClasses = (state: InputBoxState) => {
     const baseClasses = [
       "flex",
-      "w-full max-w-[758px]",
-      "h-[52px]",
-      "px-5 py-4",
       "items-center",
-      "gap-2.5",
       "flex-shrink-0",
       "rounded-md",
       "transition-all duration-200",
     ];
+
+    if (variant === "compact") {
+      baseClasses.push(
+        "w-[160px]",
+        "h-auto",
+        "px-[10px] py-[6px]",
+        "gap-[6px]"
+      );
+    } else {
+      baseClasses.push(
+        "w-full max-w-[758px]",
+        "h-[52px]",
+        "px-5 py-4",
+        "gap-2.5"
+      );
+    }
 
     return baseClasses.join(" ");
   };
@@ -171,39 +184,39 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
       case "untouched":
         return {
           ...baseStyle,
-          backgroundColor: "#FAFAFA",
+          backgroundColor: "#FFFFFF",
         };
 
       case "hover":
         return {
           ...baseStyle,
-          backgroundColor: "#FBFBFB",
+          backgroundColor: "#FFFFFF",
         };
 
       case "focus":
         return {
           ...baseStyle,
-          backgroundColor: "#FAFAFA",
+          backgroundColor: "#FFFFFF",
           border: "1px solid #CACAD2",
         };
 
       case "typing":
         return {
           ...baseStyle,
-          backgroundColor: "#FAFAFA",
+          backgroundColor: "#FFFFFF",
           border: "1px solid #CACAD2",
         };
 
       case "filled":
         return {
           ...baseStyle,
-          backgroundColor: "#FBFBFB",
+          backgroundColor: "#FFFFFF",
         };
 
       default:
         return {
           ...baseStyle,
-          backgroundColor: "#FAFAFA",
+          backgroundColor: "#FFFFFF",
         };
     }
   };
@@ -463,7 +476,9 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           required={required}
-          className={`${inputClasses} placeholder-[#9EA5AF]`}
+          className={`${inputClasses} placeholder-[#9EA5AF] ${
+            variant === "compact" && "text-right"
+          }`}
           style={inputStyle}
           aria-invalid={finalError}
           aria-disabled={finalDisabled}
