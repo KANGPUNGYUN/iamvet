@@ -569,7 +569,7 @@ export default function TransfersPage() {
                   flex: "1 0 0",
                   flexWrap: "wrap",
                   overflowY: "auto",
-                  border: "1px solid #EFEFF0",
+                  outline: "1px solid #EFEFF0",
                   backgroundColor: "white",
                 }}
               >
