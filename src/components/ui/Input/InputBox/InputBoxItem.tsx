@@ -166,6 +166,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   const getContainerStyle = (state: InputBoxState) => {
     const baseStyle = {
       fontFamily: "SUIT, sans-serif",
+      border: "1px solid #CACAD2",
     };
 
     switch (state) {
@@ -192,7 +193,7 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
         return {
           ...baseStyle,
           backgroundColor: "#FFFFFF",
-          border: "1px solid #CACAD2",
+          border: "1px solid #525252",
         };
 
       case "typing":
