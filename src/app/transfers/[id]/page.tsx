@@ -27,7 +27,7 @@ import transfer7Img from "@/assets/images/transfer/transfer7.jpg";
 import transfer8Img from "@/assets/images/transfer/transfer8.jpg";
 import profileImg from "@/assets/images/profile.png";
 import { Footer, Header } from "@/components";
-import GoogleMap from "@/components/GoogleMap";
+import NaverMap from "@/components/NaverMap";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
 
 // 이미지 슬라이더 컴포넌트
@@ -316,8 +316,7 @@ export default function TransferDetailPage({
               <h2 className="font-title text-[20px] title-light text-primary mb-[20px]">
                 위치 정보
               </h2>
-              {/* <GoogleMap location={transferData.location} height="265px" /> */}
-              <div className="w-full h-[265px] rounded-[8px] bg-box"></div>
+              <NaverMap location={transferData.location} height="265px" />
               <p className="font-text text-[16px] text-light mt-[20px] text-sub">
                 서울특별시 강남구 테헤란로 123-45, 메디컬빌딩 3층
               </p>
