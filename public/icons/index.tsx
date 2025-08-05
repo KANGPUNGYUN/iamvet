@@ -16,11 +16,14 @@ export const ArrowLeftIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const ChevronLeftIcon = ({ currentColor = "currentColor" }) => (
+export const ChevronLeftIcon = ({
+  size = "size",
+  currentColor = "currentColor",
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="32"
-    height="32"
+    width={size}
+    height={size}
     viewBox="0 0 32 32"
     fill="none"
   >
@@ -425,11 +428,14 @@ export const MoreIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const MoreVerticalIcon = ({ currentColor = "currentColor" }) => (
+export const MoreVerticalIcon = ({
+  size = "size",
+  currentColor = "currentColor",
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width={size}
+    height={size}
     viewBox="0 0 20 20"
     fill="none"
   >

@@ -886,6 +886,7 @@ export default function TransfersPage() {
               {transferData.map((transfer) => (
                 <TransferCard
                   key={transfer.id}
+                  id={transfer.id}
                   title={transfer.title}
                   location={transfer.location}
                   hospitalType={transfer.hospitalType}
@@ -898,7 +899,6 @@ export default function TransfersPage() {
                   isAd={false}
                   isLiked={transfer.isLiked}
                   onLike={() => console.log("좋아요 클릭")}
-                  onClick={() => console.log("카드 클릭")}
                 />
               ))}
 

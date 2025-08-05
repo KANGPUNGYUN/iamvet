@@ -890,6 +890,7 @@ export default function HomePage() {
               <Tab.Content value="transfer">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   <TransferCard
+                    id={1}
                     title="[양도] 강남 소재 내과 병원 양도합니다"
                     location="서울 강남구"
                     hospitalType="내과"
@@ -902,9 +903,9 @@ export default function HomePage() {
                     imageUrl={transfer1Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={2}
                     title="[양도] 분당 소재 종합 동물병원 급매"
                     location="경기 성남시"
                     hospitalType="종합병원"
@@ -917,9 +918,9 @@ export default function HomePage() {
                     imageUrl={transfer2Img.src}
                     isLiked={true}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={3}
                     title="[양도] 홍대 인근 24시간 응급병원"
                     location="서울 마포구"
                     hospitalType="응급병원"
@@ -932,9 +933,9 @@ export default function HomePage() {
                     imageUrl={transfer3Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={5}
                     title="[양도] 일산 신도시 소형 동물병원"
                     location="경기 고양시"
                     hospitalType="소형병원"
@@ -947,9 +948,9 @@ export default function HomePage() {
                     imageUrl={transfer4Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={5}
                     title="[양도] 수원 영통구 동물병원 양도"
                     location="경기 수원시"
                     hospitalType="일반병원"
@@ -962,9 +963,9 @@ export default function HomePage() {
                     imageUrl={transfer5Img.src}
                     isLiked={true}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={6}
                     title="[양도] 부산 해운대 동물병원 급매"
                     location="부산 해운대구"
                     hospitalType="일반병원"
@@ -977,9 +978,9 @@ export default function HomePage() {
                     imageUrl={transfer6Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={7}
                     title="[양도] 대전 중구 소재 동물병원"
                     location="대전 중구"
                     hospitalType="일반병원"
@@ -992,9 +993,9 @@ export default function HomePage() {
                     imageUrl={transfer7Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={8}
                     title="[양도] 광주 북구 동물병원 양도"
                     location="광주 북구"
                     hospitalType="일반병원"
@@ -1007,7 +1008,6 @@ export default function HomePage() {
                     imageUrl={transfer8Img.src}
                     isLiked={true}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                 </div>
                 <div className="flex justify-center">
@@ -1022,6 +1022,7 @@ export default function HomePage() {
               <Tab.Content value="machine">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   <TransferCard
+                    id={9}
                     title="[판매] X-ray 촬영 장비 판매합니다"
                     location="서울 강남구"
                     hospitalType="의료장비"
@@ -1034,9 +1035,9 @@ export default function HomePage() {
                     imageUrl={transfer1Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={10}
                     title="[판매] 초음파 진단기 급매"
                     location="경기 성남시"
                     hospitalType="의료장비"
@@ -1049,9 +1050,9 @@ export default function HomePage() {
                     imageUrl={transfer2Img.src}
                     isLiked={true}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={11}
                     title="[판매] 수술대 및 수술등 세트"
                     location="서울 마포구"
                     hospitalType="의료장비"
@@ -1064,13 +1065,13 @@ export default function HomePage() {
                     imageUrl={transfer3Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                 </div>
               </Tab.Content>
               <Tab.Content value="device">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   <TransferCard
+                    id={13}
                     title="[판매] 혈액검사기 판매"
                     location="서울 강남구"
                     hospitalType="의료장비"
@@ -1083,9 +1084,9 @@ export default function HomePage() {
                     imageUrl={transfer1Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                   <TransferCard
+                    id={14}
                     title="[판매] 내시경 장비 일체"
                     location="경기 성남시"
                     hospitalType="의료장비"
@@ -1098,13 +1099,13 @@ export default function HomePage() {
                     imageUrl={transfer2Img.src}
                     isLiked={true}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                 </div>
               </Tab.Content>
               <Tab.Content value="Interior">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   <TransferCard
+                    id={17}
                     title="[판매] 병원 인테리어 가구 일체"
                     location="서울 강남구"
                     hospitalType="인테리어"
@@ -1117,7 +1118,6 @@ export default function HomePage() {
                     imageUrl={transfer1Img.src}
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
-                    onClick={() => console.log("카드 클릭")}
                   />
                 </div>
               </Tab.Content>
