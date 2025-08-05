@@ -15,7 +15,11 @@ declare global {
   }
 }
 
-const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps) => {
+const NaverMap = ({
+  location,
+  width = "100%",
+  height = "265px",
+}: NaverMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,14 +56,18 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
               </svg>
             </div>
             <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px; color: #495057;">위치 정보</div>
-            <div style="font-size: 14px; color: #6c757d;">서울 관악구 신림동 산56-1</div>
+            <div style="font-size: 14px; color: #6c757d;">대한수의학회</div>
           </div>
         `;
       }
     };
 
     // API 키가 없는 경우를 대비해 기본 UI 표시
-    if (!process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID || process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID === 'your_naver_map_client_id_here') {
+    if (
+      !process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ||
+      process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID ===
+        "your_naver_map_client_id_here"
+    ) {
       showFallbackUI();
       return;
     }
@@ -68,9 +76,9 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
       try {
         // 네이버 지도 API 로드
         if (!window.naver || !window.naver.maps) {
-          const script = document.createElement('script');
-          script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`;
-          
+          const script = document.createElement("script");
+          script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`;
+
           await new Promise((resolve, reject) => {
             script.onload = resolve;
             script.onerror = reject;
@@ -84,8 +92,8 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
           showFallbackUI();
         };
 
-        // 고정 위치: 서울 관악구 신림동 산56-1
-        const fixedCoords = { lat: 37.4844107, lng: 126.9291389 };
+        // 고정 위치: 대한수의학회
+        const fixedCoords = { lat: 37.4675986079, lng: 126.9538284887057 };
         const coords = fixedCoords;
 
         if (mapRef.current && window.naver && window.naver.maps) {
@@ -95,13 +103,13 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
             mapTypeControl: true,
             mapTypeControlOptions: {
               style: window.naver.maps.MapTypeControlStyle.BUTTON,
-              position: window.naver.maps.Position.TOP_RIGHT
+              position: window.naver.maps.Position.TOP_RIGHT,
             },
             zoomControl: true,
             zoomControlOptions: {
               style: window.naver.maps.ZoomControlStyle.SMALL,
-              position: window.naver.maps.Position.TOP_LEFT
-            }
+              position: window.naver.maps.Position.TOP_LEFT,
+            },
           };
 
           const map = new window.naver.maps.Map(mapRef.current, mapOptions);
@@ -110,15 +118,14 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
           const marker = new window.naver.maps.Marker({
             position: new window.naver.maps.LatLng(coords.lat, coords.lng),
             map: map,
-            title: "서울 관악구 신림동 산56-1"
+            title: "대한수의학회",
           });
 
           // 정보창 추가
           const infoWindow = new window.naver.maps.InfoWindow({
             content: `
               <div style="padding: 15px; font-size: 14px; max-width: 200px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                <strong style="color: #333; font-size: 16px;">서울 관악구 신림동 산56-1</strong><br/>
-                <span style="color: #666; font-size: 13px;">동물병원 위치</span>
+                <strong style="color: #333; font-size: 16px;">대한수의학회</strong>
               </div>
             `,
             maxWidth: 200,
@@ -128,11 +135,11 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
             anchorSize: new window.naver.maps.Size(10, 10),
             anchorSkew: true,
             anchorColor: "#fff",
-            pixelOffset: new window.naver.maps.Point(0, -10)
+            pixelOffset: new window.naver.maps.Point(0, -10),
           });
 
           // 마커 클릭 시 정보창 표시
-          window.naver.maps.Event.addListener(marker, 'click', () => {
+          window.naver.maps.Event.addListener(marker, "click", () => {
             if (infoWindow.getMap()) {
               infoWindow.close();
             } else {
@@ -141,7 +148,7 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
           });
 
           // 지도 클릭 시 정보창 닫기
-          window.naver.maps.Event.addListener(map, 'click', () => {
+          window.naver.maps.Event.addListener(map, "click", () => {
             infoWindow.close();
           });
 
@@ -149,7 +156,10 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
           infoWindow.open(map, marker);
         }
       } catch (error) {
-        console.warn("네이버 지도를 불러올 수 없어 기본 UI를 표시합니다:", error);
+        console.warn(
+          "네이버 지도를 불러올 수 없어 기본 UI를 표시합니다:",
+          error
+        );
         showFallbackUI();
       }
     };
@@ -158,14 +168,14 @@ const NaverMap = ({ location, width = "100%", height = "400px" }: NaverMapProps)
   }, [location]);
 
   return (
-    <div 
+    <div
       ref={mapRef}
-      style={{ 
-        width, 
+      style={{
+        width,
         height,
         borderRadius: "8px",
         overflow: "hidden",
-        border: "1px solid #e0e0e0"
+        border: "1px solid #e0e0e0",
       }}
       className="mt-4"
     />

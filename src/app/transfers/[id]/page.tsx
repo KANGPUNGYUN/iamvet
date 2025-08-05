@@ -318,7 +318,7 @@ export default function TransferDetailPage({
               </h2>
               <NaverMap location={transferData.location} height="265px" />
               <p className="font-text text-[16px] text-light mt-[20px] text-sub">
-                서울특별시 강남구 테헤란로 123-45, 메디컬빌딩 3층
+                서울 관악구 관악로 1 서울대학교 수의과대학 85동 401-1호
               </p>
             </div>
           </section>
