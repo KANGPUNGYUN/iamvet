@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useInputBoxContext } from "./InputBoxContext";
 import { InputBoxGuide } from "./InputBoxGuide";
 import { InputBoxProps, InputBoxState } from "./types";
@@ -28,8 +28,6 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   duplicateCheck, // 중복확인 버튼 설정
 }) => {
   const [internalValue, setInternalValue] = useState(defaultValue);
-  const [internalState, setInternalState] =
-    useState<InputBoxState>("untouched");
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [hasBeenTouched, setHasBeenTouched] = useState(false);
@@ -87,10 +85,6 @@ export const InputBoxItem: React.FC<InputBoxProps> = ({
   };
 
   const currentState = calculateState();
-
-  useEffect(() => {
-    setInternalState(currentState);
-  }, [currentState]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;

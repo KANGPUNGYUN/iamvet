@@ -22,15 +22,31 @@ export const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    // 기존 파일들의 미리보기 URL 생성
-    const urls = value.map((file) => URL.createObjectURL(file));
-    setPreviewUrls(urls);
+    // 파일이 실제로 변경된 경우만 URL 재생성
+    if (value.length !== previewUrls.length) {
+      // 기존 URL들 정리
+      previewUrls.forEach((url) => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+      
+      // 새 파일들의 미리보기 URL 생성
+      const urls = value.map((file) => URL.createObjectURL(file));
+      setPreviewUrls(urls);
+    }
+  }, [value.length, previewUrls.length]);
 
-    // 클린업 함수
+  // 컴포넌트 언마운트 시 URL 정리
+  React.useEffect(() => {
     return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url));
+      previewUrls.forEach((url) => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
     };
-  }, [value]);
+  }, []);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(event.target.files || []);

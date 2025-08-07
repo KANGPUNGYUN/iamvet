@@ -223,8 +223,8 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                     <path
                       d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5"
                       stroke="white"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </svg>
                 </button>
