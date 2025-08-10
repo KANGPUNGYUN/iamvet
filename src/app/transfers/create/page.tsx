@@ -29,8 +29,9 @@ interface FormData {
 
 const categoryOptions = [
   { value: "병원양도", label: "병원양도" },
-  { value: "개업자", label: "개업자" },
-  { value: "기타", label: "기타" },
+  { value: "기계장치", label: "기계장치" },
+  { value: "의료장비", label: "의료장비" },
+  { value: "인테리어", label: "인테리어" },
 ];
 
 export default function CreateTransferPage() {
@@ -159,7 +160,7 @@ export default function CreateTransferPage() {
     <>
       <Header isLoggedIn={true} />
       <div className="min-h-screen bg-white">
-        <div className="max-w-[1095px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
+        <div className="max-w-[878px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
           {/* 헤더 */}
           <div className="flex lg:flex-col gap-[10px] lg:mb-[30px] lg:py-[0px] py-[17px] items-center lg:items-start">
             <Link
@@ -175,11 +176,12 @@ export default function CreateTransferPage() {
 
           <div className="bg-white border border-[#EFEFF0] rounded-[20px] p-6 lg:p-[60px]">
             {/* 제목 */}
-            <div className="mb-8">
-              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
+            <div className="mb-8 flex flex-col lg:flex-row lg:justify-between lg:items-center w-full lg:gap-[9px] gap-[15px]">
+              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary w-fit">
                 제목
               </label>
               <InputBox
+                className="w-full max-w-[649px]"
                 value={formData.title}
                 onChange={handleInputChange("title")}
                 placeholder="제목을 입력해주세요"
@@ -291,17 +293,21 @@ export default function CreateTransferPage() {
               <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
                 주소 검색
               </label>
-              <AddressSearch
-                address={formData.address}
-                detailAddress={formData.detailAddress}
-                onAddressChange={handleInputChange("address")}
-                onDetailAddressChange={handleInputChange("detailAddress")}
-              />
-              {errors.address && (
-                <p className="mt-2 text-sm text-red-500">{errors.address}</p>
-              )}
+              <div className="w-full max-w-[649px]">
+                <AddressSearch
+                  address={formData.address}
+                  detailAddress={formData.detailAddress}
+                  onAddressChange={handleInputChange("address")}
+                  onDetailAddressChange={handleInputChange("detailAddress")}
+                />
+                {errors.address && (
+                  <p className="mt-2 text-sm text-red-500">{errors.address}</p>
+                )}
+              </div>
             </div>
+          </div>
 
+          <div className="bg-white border border-[#EFEFF0] rounded-[20px] p-6 lg:p-[60px] mt-[40px]">
             {/* 이미지/파일 첨부 */}
             <div className="mb-8">
               <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
@@ -309,7 +315,7 @@ export default function CreateTransferPage() {
               </label>
 
               {/* 파일 업로드 */}
-              <div className="mb-6">
+              <div className="mb-6 max-w-[758px]">
                 <DocumentUpload
                   value={formData.documents}
                   onChange={handleDocumentUpload}
@@ -326,26 +332,26 @@ export default function CreateTransferPage() {
                 />
               </div>
             </div>
+          </div>
 
-            {/* 버튼 영역 */}
-            <div className="flex flex-col md:flex-row gap-4 md:justify-end">
-              <Button
-                variant="line"
-                size="large"
-                onClick={() => handleSubmit(true)}
-                disabled={isLoading}
-              >
-                임시저장
-              </Button>
-              <Button
-                variant="default"
-                size="large"
-                onClick={() => handleSubmit(false)}
-                loading={isLoading}
-              >
-                등록하기
-              </Button>
-            </div>
+          {/* 버튼 영역 */}
+          <div className="flex flex-row gap-4 justify-center mt-[40px]">
+            <Button
+              variant="line"
+              size="large"
+              onClick={() => handleSubmit(true)}
+              disabled={isLoading}
+            >
+              임시저장
+            </Button>
+            <Button
+              variant="default"
+              size="large"
+              onClick={() => handleSubmit(false)}
+              loading={isLoading}
+            >
+              등록하기
+            </Button>
           </div>
         </div>
       </div>

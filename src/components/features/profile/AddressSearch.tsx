@@ -26,7 +26,6 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   disabled = false,
   className = "",
 }) => {
-
   // Daum Postcode API 스크립트 로드
   const loadDaumPostcodeScript = () => {
     return new Promise<boolean>((resolve) => {
@@ -111,7 +110,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
       {/* 주소 검색 */}
       <div>
         <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-          주소 <span className="text-[#FF4A4A]">*</span>
+          주소
         </label>
         <InputBox
           value={address}
