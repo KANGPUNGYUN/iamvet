@@ -112,9 +112,7 @@ export default function ResumesPage() {
     // 근무 형태 필터
     if (appliedFilters.workType.length > 0) {
       filtered = filtered.filter((resume) =>
-        appliedFilters.workType.some((type) =>
-          resume.keywords.includes(type)
-        )
+        appliedFilters.workType.some((type) => resume.keywords.includes(type))
       );
     }
 
@@ -193,7 +191,7 @@ export default function ResumesPage() {
     setAppliedFilters(tempFilters);
     setCurrentPage(1);
     updateURL(tempFilters, 1);
-    
+
     // 모바일에서 필터 닫기
     setIsMobileFilterOpen(false);
   };
@@ -231,12 +229,20 @@ export default function ResumesPage() {
 
     // 자격증 태그
     if (filterData.certificate && filterData.certificate !== "all") {
-      tags.push({ id: `certificate-${filterData.certificate}`, label: filterData.certificate, type: "certificate" });
+      tags.push({
+        id: `certificate-${filterData.certificate}`,
+        label: filterData.certificate,
+        type: "certificate",
+      });
     }
 
     // 지역 태그
     if (filterData.location && filterData.location !== "all") {
-      tags.push({ id: `location-${filterData.location}`, label: filterData.location, type: "location" });
+      tags.push({
+        id: `location-${filterData.location}`,
+        label: filterData.location,
+        type: "location",
+      });
     }
 
     setAppliedFilterTags(tags);
@@ -245,8 +251,12 @@ export default function ResumesPage() {
   // 임시 필터 변경 시 자동으로 태그 생성 (선택하자마자 표시)
   useEffect(() => {
     generateFilterTags(tempFilters);
-  }, [tempFilters.workType, tempFilters.experience, tempFilters.certificate, tempFilters.location]);
-
+  }, [
+    tempFilters.workType,
+    tempFilters.experience,
+    tempFilters.certificate,
+    tempFilters.location,
+  ]);
 
   // 검색어 변경 (즉시 적용)
   const handleSearchChange = (searchKeyword: string) => {
@@ -275,6 +285,11 @@ export default function ResumesPage() {
   const handleBookmarkClick = (resumeId: string) => {
     console.log(`북마크 클릭: ${resumeId}`);
     // 실제 북마크 기능 구현
+  };
+
+  // 이력서 클릭 처리
+  const handleResumeClick = (resumeId: string) => {
+    router.push(`/resumes/${resumeId}`);
   };
 
   return (
@@ -328,7 +343,9 @@ export default function ResumesPage() {
                 </h3>
                 <SelectBox
                   value={tempFilters.certificate}
-                  onChange={(value) => handleTempFilterChange("certificate", value)}
+                  onChange={(value) =>
+                    handleTempFilterChange("certificate", value)
+                  }
                   placeholder="자격증 선택"
                   options={[
                     { value: "all", label: "전체" },
@@ -348,7 +365,9 @@ export default function ResumesPage() {
                 </h3>
                 <SelectBox
                   value={tempFilters.location}
-                  onChange={(value) => handleTempFilterChange("location", value)}
+                  onChange={(value) =>
+                    handleTempFilterChange("location", value)
+                  }
                   placeholder="지역 선택"
                   options={[
                     { value: "all", label: "전체" },
@@ -432,11 +451,13 @@ export default function ResumesPage() {
                     preferredLocation={resume.preferredLocation}
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
-                    profileImage={resume.profileImage}
-                    isNew={resume.isNew}
                     isBookmarked={resume.isBookmarked}
-                    onClick={() => console.log(`이력서 클릭: ${resume.id}`)}
-                    onBookmarkClick={() => handleBookmarkClick(resume.id)}
+                    onClick={() => {
+                      window.location.href = `/resumes/${resume.id}`;
+                    }}
+                    onBookmarkClick={() => {
+                      console.log("북마크:", resume.id);
+                    }}
                   />
                 ))}
               </div>
@@ -525,11 +546,13 @@ export default function ResumesPage() {
                     preferredLocation={resume.preferredLocation}
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
-                    profileImage={resume.profileImage}
-                    isNew={resume.isNew}
                     isBookmarked={resume.isBookmarked}
-                    onClick={() => console.log(`이력서 클릭: ${resume.id}`)}
-                    onBookmarkClick={() => handleBookmarkClick(resume.id)}
+                    onClick={() => {
+                      window.location.href = `/resumes/${resume.id}`;
+                    }}
+                    onBookmarkClick={() => {
+                      console.log("북마크:", resume.id);
+                    }}
                   />
                 ))}
               </div>

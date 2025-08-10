@@ -11,7 +11,7 @@ const Tab = Object.assign(TabContainer, {
   Content: TabContent,
 });
 
-export { Tab };
+export { Tab, TabContainer, TabList, TabItem, TabContent };
 export type {
   TabContainerProps,
   TabListProps,
