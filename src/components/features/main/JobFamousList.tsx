@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface JobPosting {
   id: number;
@@ -8,6 +9,8 @@ interface JobPosting {
 }
 
 const JobFamousList: React.FC = () => {
+  const router = useRouter();
+  
   const jobPostings: JobPosting[] = [
     {
       id: 1,
@@ -52,6 +55,7 @@ const JobFamousList: React.FC = () => {
           <div
             key={job.id}
             className="flex items-center space-x-4 p-[8px] hover:bg-gray-50 transition-colors duration-200 cursor-pointer group"
+            onClick={() => router.push(`/jobs/${job.id}`)}
           >
             <div
               className={`text-2xl font-bold min-w-[24px] flex items-center justify-center font-title ${

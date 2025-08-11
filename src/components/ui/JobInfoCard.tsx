@@ -20,6 +20,7 @@ interface JobInfoCardProps {
   variant?: "default" | "wide"; // 기본 스타일과 넓은 스타일 선택
   showDeadline?: boolean; // 마감일 표시 여부
   isNew?: boolean; // 신규 공고 여부
+  id?: number; // 채용공고 ID 추가
 }
 
 const JobInfoCard: React.FC<JobInfoCardProps> = ({

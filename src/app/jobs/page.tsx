@@ -364,6 +364,7 @@ export default function JobsPage() {
                     variant="wide"
                     showDeadline={true}
                     isNew={job.isNew}
+                    onClick={() => router.push(`/jobs/${job.id}`)}
                   />
                 ))}
               </div>
@@ -504,6 +505,7 @@ export default function JobsPage() {
                     variant="wide"
                     showDeadline={false}
                     isNew={job.isNew}
+                    onClick={() => router.push(`/jobs/${job.id}`)}
                   />
                 ))}
               </div>
@@ -559,6 +561,7 @@ export default function JobsPage() {
                     variant="wide"
                     showDeadline={false}
                     isNew={job.isNew}
+                    onClick={() => router.push(`/jobs/${job.id}`)}
                   />
                 ))}
               </div>
