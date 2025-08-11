@@ -389,8 +389,7 @@ export default function LecturesPage() {
                       console.log("Like clicked for lecture:", lecture.id);
                     }}
                     onClick={() => {
-                      // 강의 상세 페이지로 이동
-                      console.log("Lecture clicked:", lecture.id);
+                      window.location.href = `/lectures/${lecture.id}`;
                     }}
                   />
                 ))}
@@ -488,7 +487,7 @@ export default function LecturesPage() {
                       console.log("Like clicked for lecture:", lecture.id);
                     }}
                     onClick={() => {
-                      console.log("Lecture clicked:", lecture.id);
+                      window.location.href = `/lectures/${lecture.id}`;
                     }}
                   />
                 ))}

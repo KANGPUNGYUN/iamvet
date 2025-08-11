@@ -104,9 +104,20 @@ import JobFamousList from "@/components/features/main/JobFamousList";
 import JobInfoCard from "@/components/ui/JobInfoCard";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
 import LectureCard from "@/components/ui/LectureCard/LectureCard";
+import { allLecturesData } from "@/data/lecturesData";
 import Link from "next/link";
 
 export default function HomePage() {
+  // 수술 강의 필터링
+  const surgeryLectures = allLecturesData
+    .filter(lecture => lecture.medicalField === "surgery")
+    .slice(0, 4);
+  
+  // 행동/심리학 강의 필터링
+  const behaviorLectures = allLecturesData
+    .filter(lecture => lecture.medicalField === "behavior")
+    .slice(0, 4);
+
   const handlePrivacyClick = () => {
     console.log("개인정보처리방침 클릭");
     // 실제 라우팅 로직
@@ -701,42 +712,18 @@ export default function HomePage() {
 
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="수술 강의"
-                  imageUrl={lecture1Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="고양이 응급처치 및 심폐소생술 실무"
-                  date="2025-04-09"
-                  views={127}
-                  category="수술 강의"
-                  imageUrl={lecture5Img.src}
-                  isLiked={true}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="반려동물 외과수술 기초부터 고급까지"
-                  date="2025-04-09"
-                  views={127}
-                  category="수술 강의"
-                  imageUrl={lecture3Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="영상진단학 - X-ray 판독의 모든 것"
-                  date="2025-04-09"
-                  views={127}
-                  category="수술 강의"
-                  imageUrl={lecture4Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
+                {surgeryLectures.map((lecture) => (
+                  <LectureCard
+                    key={lecture.id}
+                    title={lecture.title}
+                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
+                    views={lecture.viewCount}
+                    category={lecture.category}
+                    imageUrl={lecture.thumbnailUrl || lecture1Img.src}
+                    isLiked={lecture.isLiked}
+                    onClick={() => window.location.href = `/lectures/${lecture.id}`}
+                  />
+                ))}
               </div>
             </div>
 
@@ -764,42 +751,18 @@ export default function HomePage() {
 
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture4Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture6Img.src}
-                  isLiked={true}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture2Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture1Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
+                {behaviorLectures.map((lecture) => (
+                  <LectureCard
+                    key={lecture.id}
+                    title={lecture.title}
+                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
+                    views={lecture.viewCount}
+                    category={lecture.category}
+                    imageUrl={lecture.thumbnailUrl || lecture1Img.src}
+                    isLiked={lecture.isLiked}
+                    onClick={() => window.location.href = `/lectures/${lecture.id}`}
+                  />
+                ))}
               </div>
             </div>
 
@@ -830,42 +793,18 @@ export default function HomePage() {
 
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture2Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture3Img.src}
-                  isLiked={true}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture1Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
-                <LectureCard
-                  title="강아지와 유치열 종합 치석 제거 방법"
-                  date="2025-04-09"
-                  views={127}
-                  category="행동/심리학"
-                  imageUrl={lecture4Img.src}
-                  isLiked={false}
-                  onClick={() => console.log("Lecture card clicked")}
-                />
+                {behaviorLectures.map((lecture) => (
+                  <LectureCard
+                    key={lecture.id}
+                    title={lecture.title}
+                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
+                    views={lecture.viewCount}
+                    category={lecture.category}
+                    imageUrl={lecture.thumbnailUrl || lecture1Img.src}
+                    isLiked={lecture.isLiked}
+                    onClick={() => window.location.href = `/lectures/${lecture.id}`}
+                  />
+                ))}
               </div>
             </div>
           </section>
