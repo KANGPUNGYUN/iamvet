@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   LocationIcon,
   PhoneIcon,
-  MailIcon,
+  WebIcon,
   ChevronRightIcon,
 } from "public/icons";
 import { Tag } from "./Tag";
@@ -26,9 +26,7 @@ interface HospitalCardProps {
 
 const HospitalCard: React.FC<HospitalCardProps> = ({ hospital }) => {
   return (
-    <div
-      className="relative rounded-[16px] border border-[#EFEFF0] flex flex-col lg:flex-row items-start gap-[20px] lg:gap-[30px] p-[20px] lg:p-[28px]"
-    >
+    <div className="relative rounded-[16px] border border-[#EFEFF0] flex flex-col lg:flex-row items-start gap-[20px] lg:gap-[30px] p-[20px] lg:p-[28px]">
       {/* 병원 이미지 */}
       <div className="w-[80px] h-[80px] rounded-full bg-[#EFEFF0] flex items-center justify-center flex-shrink-0">
         {hospital.image ? (
@@ -63,7 +61,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({ hospital }) => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <MailIcon currentColor="#4F5866" />
+            <WebIcon currentColor="#4F5866" />
             <span className="font-text text-[14px] text-sub">
               {hospital.website}
             </span>
