@@ -13,7 +13,7 @@ export const HeaderLogo: React.FC<HeaderLogoProps> = ({
       {children || (
         <div className="text-xl font-bold text-gray-900">
           <img
-            className="w-[185px] h-[52px]"
+            className="w-[185px] h-[32px]"
             src="/images/Logo.png"
             alt="아이엠벳 메인 로고"
           />
