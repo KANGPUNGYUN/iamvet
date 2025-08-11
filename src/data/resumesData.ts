@@ -77,7 +77,7 @@ export interface DetailedResumeData {
     hospitals: Array<{
       id: number;
       hospitalName: string;
-      evaluationPeriod: string;
+      evaluationDate: string;
       overallRating: number;
       ratings: {
         stressManagement: number;
@@ -362,7 +362,7 @@ export const detailedResumeData: DetailedResumeData[] = [
         {
           id: 1,
           hospitalName: "단국대학교 동물병원",
-          evaluationPeriod: "2022.03 - 2024.06",
+          evaluationDate: "2024.06.15",
           overallRating: 4.5,
           ratings: {
             stressManagement: 4.2,
@@ -380,14 +380,19 @@ export const detailedResumeData: DetailedResumeData[] = [
             {
               category: "협업 능력",
               rating: 4.3,
-              comment: "팀워크가 좋고 후배 교육에 적극적임",
+              comment: "",
+            },
+            {
+              category: "스트레스 관리",
+              rating: 4.2,
+              comment: "압박상황에서도 침착하게 대응함",
             },
           ],
         },
         {
           id: 2,
           hospitalName: "건국대학교 동물병원",
-          evaluationPeriod: "2021.02 - 2022.02",
+          evaluationDate: "2022.02.28",
           overallRating: 3.9,
           ratings: {
             stressManagement: 3.8,
@@ -509,7 +514,7 @@ export const detailedResumeData: DetailedResumeData[] = [
         {
           id: 1,
           hospitalName: "서울대학교 동물병원",
-          evaluationPeriod: "2021.08 - 2024.10",
+          evaluationDate: "2024.10.20",
           overallRating: 4.7,
           ratings: {
             stressManagement: 4.5,
@@ -642,7 +647,7 @@ export const detailedResumeData: DetailedResumeData[] = [
         {
           id: 1,
           hospitalName: "이화여자대학교 동물병원",
-          evaluationPeriod: "2022.02 - 2024.10",
+          evaluationDate: "2024.10.15",
           overallRating: 4.4,
           ratings: {
             stressManagement: 4.1,
@@ -764,7 +769,7 @@ export const detailedResumeData: DetailedResumeData[] = [
         {
           id: 1,
           hospitalName: "서울 중앙 동물병원",
-          evaluationPeriod: "2020.01 - 2024.01",
+          evaluationDate: "2024.01.30",
           overallRating: 4.6,
           ratings: {
             stressManagement: 4.5,

@@ -571,18 +571,20 @@ export default function ResumeDetailPage({
                   ) : (
                     <div className="w-full flex flex-col gap-[40px]">
                       {/* 전체 평균 섹션 */}
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4">
                         <h3 className="font-text text-[18px] lg:text-[20px] text-semibold text-primary">
                           인재 평가
                         </h3>
-                        <div className="flex items-center gap-[12px]">
-                          <span className="font-text text-[18px] lg:text-[20px] text-semibold text-primary">
-                            {calculateOverallAverage()}
-                          </span>
-                          <StarRating
-                            rating={parseFloat(calculateOverallAverage())}
-                            size={20}
-                          />
+                        <div className="flex flex-col lg:flex-row items-center lg:gap-[12px] gap-3">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="font-text text-[18px] lg:text-[20px] text-semibold text-primary">
+                              {calculateOverallAverage()}
+                            </span>
+                            <StarRating
+                              rating={parseFloat(calculateOverallAverage())}
+                              size={20}
+                            />
+                          </div>
                           <Button
                             variant="keycolor"
                             size="medium"
@@ -602,32 +604,32 @@ export default function ResumeDetailPage({
                           >
                             {/* 병원 헤더 */}
                             <div
-                              className="flex justify-between items-center p-[20px] cursor-pointer hover:bg-gray-50"
+                              className="flex justify-between items-center p-[16px] lg:p-[20px] cursor-pointer hover:bg-gray-50"
                               onClick={() => toggleEvaluation(evaluation.id)}
                             >
-                              <div className="flex items-center gap-[16px]">
-                                <div className="w-[40px] h-[40px] rounded-full bg-gray-100 flex items-center justify-center">
-                                  <span className="font-text text-[16px] font-semibold text-sub">
+                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-1 min-w-0">
+                                <div className="w-[32px] h-[32px] lg:w-[40px] lg:h-[40px] rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                  <span className="font-text text-[14px] lg:text-[16px] font-semibold text-sub">
                                     {evaluation.hospitalName.charAt(0)}
                                   </span>
                                 </div>
-                                <div className="flex flex-col">
-                                  <span className="font-text text-[16px] lg:text-[18px] font-semibold text-primary">
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <span className="font-text text-[14px] lg:text-[18px] font-semibold text-primary truncate">
                                     {evaluation.hospitalName}
                                   </span>
-                                  <span className="font-text text-[14px] text-subtext2">
-                                    {evaluation.evaluationPeriod}
+                                  <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
+                                    {evaluation.evaluationDate}
                                   </span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-[16px]">
-                                <div className="flex items-center gap-[8px]">
-                                  <span className="font-text text-[18px] lg:text-[20px] font-bold text-primary">
+                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
+                                <div className="flex items-center gap-[6px] lg:gap-[8px]">
+                                  <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
                                     {evaluation.overallRating.toFixed(1)}
                                   </span>
                                   <StarRating
                                     rating={evaluation.overallRating}
-                                    size={16}
+                                    size={14}
                                   />
                                 </div>
                                 {expandedEvaluations.includes(evaluation.id) ? (
@@ -663,17 +665,26 @@ export default function ResumeDetailPage({
                                       </div>
                                     </div>
                                     <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations.map(
-                                        (detail, index) =>
-                                          detail.category ===
-                                            "스트레스 관리" && (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment}
-                                            </p>
-                                          )
+                                      {evaluation.detailedEvaluations
+                                        .filter(
+                                          (detail) =>
+                                            detail.category === "스트레스 관리"
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
+                                          </p>
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "스트레스 관리"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
                                       )}
                                     </div>
                                   </div>
@@ -695,16 +706,26 @@ export default function ResumeDetailPage({
                                       </div>
                                     </div>
                                     <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations.map(
-                                        (detail, index) =>
-                                          detail.category === "성장 잠재력" && (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment}
-                                            </p>
-                                          )
+                                      {evaluation.detailedEvaluations
+                                        .filter(
+                                          (detail) =>
+                                            detail.category === "성장 잠재력"
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
+                                          </p>
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "성장 잠재력"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
                                       )}
                                     </div>
                                   </div>
@@ -726,16 +747,26 @@ export default function ResumeDetailPage({
                                       </div>
                                     </div>
                                     <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations.map(
-                                        (detail, index) =>
-                                          detail.category === "소통 능력" && (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment}
-                                            </p>
-                                          )
+                                      {evaluation.detailedEvaluations
+                                        .filter(
+                                          (detail) =>
+                                            detail.category === "소통 능력"
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
+                                          </p>
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "소통 능력"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
                                       )}
                                     </div>
                                   </div>
@@ -761,16 +792,26 @@ export default function ResumeDetailPage({
                                       </div>
                                     </div>
                                     <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations.map(
-                                        (detail, index) =>
-                                          detail.category === "업무 역량" && (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment}
-                                            </p>
-                                          )
+                                      {evaluation.detailedEvaluations
+                                        .filter(
+                                          (detail) =>
+                                            detail.category === "업무 역량"
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
+                                          </p>
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "업무 역량"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
                                       )}
                                     </div>
                                   </div>
@@ -796,16 +837,26 @@ export default function ResumeDetailPage({
                                       </div>
                                     </div>
                                     <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations.map(
-                                        (detail, index) =>
-                                          detail.category === "협업 능력" && (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment}
-                                            </p>
-                                          )
+                                      {evaluation.detailedEvaluations
+                                        .filter(
+                                          (detail) =>
+                                            detail.category === "협업 능력"
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
+                                          </p>
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "협업 능력"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
                                       )}
                                     </div>
                                   </div>
