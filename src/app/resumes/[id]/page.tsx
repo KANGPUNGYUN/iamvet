@@ -51,6 +51,54 @@ const StarRating = ({
   return <div className="flex gap-1">{stars}</div>;
 };
 
+// 인터랙티브 별점 컴포넌트
+const InteractiveStarRating = ({
+  rating,
+  onRatingChange,
+  size = 20,
+}: {
+  rating: number;
+  onRatingChange: (rating: number) => void;
+  size?: number;
+}) => {
+  const [hoveredRating, setHoveredRating] = useState(0);
+
+  const handleStarClick = (starRating: number) => {
+    onRatingChange(starRating);
+  };
+
+  const handleStarHover = (starRating: number) => {
+    setHoveredRating(starRating);
+  };
+
+  const handleStarLeave = () => {
+    setHoveredRating(0);
+  };
+
+  const displayRating = hoveredRating > 0 ? hoveredRating : rating;
+
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((starNumber) => (
+        <button
+          key={starNumber}
+          type="button"
+          className="cursor-pointer hover:scale-110 transition-transform"
+          onClick={() => handleStarClick(starNumber)}
+          onMouseEnter={() => handleStarHover(starNumber)}
+          onMouseLeave={handleStarLeave}
+        >
+          {starNumber <= displayRating ? (
+            <StarFilledIcon size={size} />
+          ) : (
+            <StarEmptyIcon size={size} />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 // 관련 인재 정보 (임시 데이터)
 const relatedResumes = [
   {
@@ -90,6 +138,21 @@ export default function ResumeDetailPage({
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [expandedEvaluations, setExpandedEvaluations] = useState<number[]>([]);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratings, setRatings] = useState({
+    stressManagement: 0,
+    growth: 0,
+    care: 0,
+    documentation: 0,
+    contribution: 0,
+  });
+  const [comments, setComments] = useState({
+    stressManagement: "",
+    growth: "",
+    care: "",
+    documentation: "",
+    contribution: "",
+  });
   const { id } = use(params);
 
   const resumeData = getResumeById(id);
@@ -123,6 +186,48 @@ export default function ResumeDetailPage({
   // 전체 평균 계산
   const calculateOverallAverage = () => {
     return resumeData.evaluations.overallAverage.toFixed(1);
+  };
+
+  // 평가 모달 관련 함수들
+  const handleRatingChange = (
+    category: keyof typeof ratings,
+    rating: number
+  ) => {
+    setRatings((prev) => ({ ...prev, [category]: rating }));
+  };
+
+  const handleCommentChange = (
+    category: keyof typeof comments,
+    comment: string
+  ) => {
+    setComments((prev) => ({ ...prev, [category]: comment }));
+  };
+
+  const handleModalClose = () => {
+    setShowRatingModal(false);
+  };
+
+  const handleRatingSubmit = () => {
+    // 평가 제출 로직 (나중에 구현)
+    console.log("평가 제출:", { ratings, comments });
+    setShowRatingModal(false);
+  };
+
+  const resetRatingForm = () => {
+    setRatings({
+      stressManagement: 0,
+      growth: 0,
+      care: 0,
+      documentation: 0,
+      contribution: 0,
+    });
+    setComments({
+      stressManagement: "",
+      growth: "",
+      care: "",
+      documentation: "",
+      contribution: "",
+    });
   };
 
   return (
@@ -589,6 +694,7 @@ export default function ResumeDetailPage({
                             variant="keycolor"
                             size="medium"
                             className="bg-key1 text-white px-[16px] py-[8px] rounded-[8px]"
+                            onClick={() => setShowRatingModal(true)}
                           >
                             평가하기
                           </Button>
@@ -930,6 +1036,456 @@ export default function ResumeDetailPage({
         </div>
       </div>
       <Footer />
+
+      {/* 평가하기 모달 */}
+      {showRatingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          {/* 데스크톱 모달 */}
+          <div className="hidden lg:block relative bg-white rounded-[16px] w-[968px] max-h-[80vh] overflow-y-auto">
+            {/* 모달 헤더 */}
+            <div className="flex justify-between items-center p-[24px] border-b border-[#EFEFF0]">
+              <h2 className="font-title text-[24px] font-light text-primary">
+                수의사 평가하기
+              </h2>
+              <button
+                onClick={handleModalClose}
+                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="#3B394D"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* 모달 콘텐츠 */}
+            <div className="p-[24px] space-y-[32px]">
+              {/* 스트레스 관리 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    스트레스 관리
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    응급 상황, 과중 업무에서의 대응력, 긴박한 상황에서 침착함
+                    유지 정도
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.stressManagement}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("stressManagement", rating)
+                    }
+                    size={24}
+                  />
+                </div>
+                <textarea
+                  value={comments.stressManagement}
+                  onChange={(e) =>
+                    handleCommentChange("stressManagement", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.stressManagement.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 성장 의지 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    성장 의지
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    피드백 수용, 학습 태도, 신규 기술 및 지식에 대한 학습 관심도
+                    등
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.growth}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("growth", rating)
+                    }
+                    size={24}
+                  />
+                </div>
+                <textarea
+                  value={comments.growth}
+                  onChange={(e) =>
+                    handleCommentChange("growth", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.growth.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 고객 케어 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    고객 케어
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    질병 동물, 응급환자 대처, 보호자와의 소통 역량 등
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.care}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("care", rating)
+                    }
+                    size={24}
+                  />
+                </div>
+                <textarea
+                  value={comments.care}
+                  onChange={(e) => handleCommentChange("care", e.target.value)}
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.care.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 기록 및 문서화 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    기록 및 문서화
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    SOAP Chart, 의뢰서 등 의료 기록 정확 작성, 기록의 정리와
+                    체계적인 구성도
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.documentation}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("documentation", rating)
+                    }
+                    size={24}
+                  />
+                </div>
+                <textarea
+                  value={comments.documentation}
+                  onChange={(e) =>
+                    handleCommentChange("documentation", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.documentation.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 조직 기여도 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    조직 기여도
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    업무 성과, 조직 문화 형성, 구성원 동기 부여 등
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.contribution}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("contribution", rating)
+                    }
+                    size={24}
+                  />
+                </div>
+                <textarea
+                  value={comments.contribution}
+                  onChange={(e) =>
+                    handleCommentChange("contribution", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.contribution.length}/500
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 모달 푸터 */}
+            <div className="flex justify-end gap-[12px] p-[24px] border-t border-[#EFEFF0]">
+              <Button
+                variant="text"
+                size="medium"
+                onClick={() => {
+                  resetRatingForm();
+                  handleModalClose();
+                }}
+              >
+                취소
+              </Button>
+              <Button
+                variant="keycolor"
+                size="medium"
+                onClick={handleRatingSubmit}
+                className="bg-[#4F5866] text-white"
+              >
+                등록하기
+              </Button>
+            </div>
+          </div>
+
+          {/* 모바일 모달 (전체 화면) */}
+          <div className="lg:hidden fixed inset-0 bg-white z-50 overflow-y-auto">
+            {/* 모바일 헤더 */}
+            <div className="flex items-center justify-between p-[16px] border-b border-[#EFEFF0]">
+              <button
+                onClick={handleModalClose}
+                className="flex items-center justify-center w-8 h-8"
+              >
+                <ArrowLeftIcon currentColor="currentColor" />
+              </button>
+              <h2 className="font-title text-[16px] font-light text-primary">
+                수의사 평가하기
+              </h2>
+              <div className="w-8 h-8"></div>
+            </div>
+
+            {/* 모바일 콘텐츠 */}
+            <div className="p-[16px] pb-[120px] space-y-[24px]">
+              {/* 스트레스 관리 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    스트레스 관리
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    응급 상황, 과중 업무에서의 대응력, 긴박한 상황에서 침착함
+                    유지 정도
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.stressManagement}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("stressManagement", rating)
+                    }
+                    size={20}
+                  />
+                </div>
+                <textarea
+                  value={comments.stressManagement}
+                  onChange={(e) =>
+                    handleCommentChange("stressManagement", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.stressManagement.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 성장 의지 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    성장 의지
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    피드백 수용, 학습 태도, 신규 기술 및 지식에 대한 학습 관심도
+                    등
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.growth}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("growth", rating)
+                    }
+                    size={20}
+                  />
+                </div>
+                <textarea
+                  value={comments.growth}
+                  onChange={(e) =>
+                    handleCommentChange("growth", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.growth.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 고객 케어 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    고객 케어
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    질병 동물, 응급환자 대처, 보호자와의 소통 역량 등
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.care}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("care", rating)
+                    }
+                    size={20}
+                  />
+                </div>
+                <textarea
+                  value={comments.care}
+                  onChange={(e) => handleCommentChange("care", e.target.value)}
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.care.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 기록 및 문서화 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    기록 및 문서화
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    SOAP Chart, 의뢰서 등 의료 기록 정확 작성, 기록의 정리와
+                    체계적인 구성도
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.documentation}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("documentation", rating)
+                    }
+                    size={20}
+                  />
+                </div>
+                <textarea
+                  value={comments.documentation}
+                  onChange={(e) =>
+                    handleCommentChange("documentation", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.documentation.length}/500
+                  </span>
+                </div>
+              </div>
+
+              {/* 조직 기여도 */}
+              <div>
+                <div className="mb-[12px]">
+                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
+                    조직 기여도
+                  </h3>
+                  <p className="font-text text-[16px] text-subtext2">
+                    업무 성과, 조직 문화 형성, 구성원 동기 부여 등
+                  </p>
+                </div>
+                <div className="mb-[16px]">
+                  <InteractiveStarRating
+                    rating={ratings.contribution}
+                    onRatingChange={(rating) =>
+                      handleRatingChange("contribution", rating)
+                    }
+                    size={20}
+                  />
+                </div>
+                <textarea
+                  value={comments.contribution}
+                  onChange={(e) =>
+                    handleCommentChange("contribution", e.target.value)
+                  }
+                  placeholder="placeholder"
+                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
+                  maxLength={500}
+                />
+                <div className="text-right mt-[8px]">
+                  <span className="font-text text-[12px] text-guide">
+                    {comments.contribution.length}/500
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 모바일 푸터 */}
+            <div className="fixed bottom-0 left-0 right-0 flex gap-[12px] p-[16px] bg-white border-t border-[#EFEFF0]">
+              <Button
+                variant="text"
+                size="medium"
+                fullWidth
+                onClick={() => {
+                  resetRatingForm();
+                  handleModalClose();
+                }}
+              >
+                취소
+              </Button>
+              <Button
+                variant="keycolor"
+                size="medium"
+                fullWidth
+                onClick={handleRatingSubmit}
+                className="bg-[#4F5866] text-white"
+              >
+                등록하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
