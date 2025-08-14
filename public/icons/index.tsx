@@ -1322,3 +1322,45 @@ export const StarHalfIcon = ({ size = 24, currentColor = "#FF8796" }) => (
     />
   </svg>
 );
+
+export const UpIcon = ({ 
+  size = "24", 
+  currentColor = "#FF8796" 
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+  >
+    <path
+      d="M7 14L12 9L17 14"
+      stroke={currentColor}
+      strokeWidth="1.875"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const DownIcon = ({ 
+  size = "24", 
+  currentColor = "#FF8796" 
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+  >
+    <path
+      d="M17 10L12 15L7 10"
+      stroke={currentColor}
+      strokeWidth="1.875"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);

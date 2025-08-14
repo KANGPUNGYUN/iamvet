@@ -15,6 +15,8 @@ import {
   ExcelIcon,
   WordIcon,
   PdfIcon,
+  UpIcon,
+  DownIcon,
 } from "public/icons";
 import Image from "next/image";
 
@@ -30,6 +32,9 @@ export default function LectureDetailPage({
   const [showMoreComments, setShowMoreComments] = useState(false);
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
+  const [expandedReplies, setExpandedReplies] = useState<
+    Record<string, boolean>
+  >({});
 
   const currentLecture = allLecturesData.find((lecture) => lecture.id === id);
 
@@ -96,6 +101,15 @@ export default function LectureDetailPage({
 
     setReplyInputs((prev) => ({ ...prev, [parentId]: "" }));
     setActiveReplyId(null);
+    // 답글을 추가한 후 자동으로 답글 목록을 펼침
+    setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
+  };
+
+  const toggleReplies = (commentId: string) => {
+    setExpandedReplies((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
   };
 
   const displayedComments = showMoreComments ? comments : comments.slice(0, 5);
@@ -302,51 +316,86 @@ export default function LectureDetailPage({
                           <p className="text-[14px] text-[#4F5866] leading-relaxed mb-2">
                             {comment.content}
                           </p>
-                          <button
-                            onClick={() =>
-                              setActiveReplyId(
-                                activeReplyId === comment.id ? null : comment.id
-                              )
-                            }
-                            className="text-[12px] text-[#9098A4] hover:text-[#FF8796] transition-colors"
-                          >
-                            답글 달기
-                          </button>
+                          <div className="flex items-center gap-4">
+                            {/* 답글 토글 버튼 */}
+                            {comment.replies.length > 0 ? (
+                              <button
+                                onClick={() => toggleReplies(comment.id)}
+                                className="flex items-center gap-1 text-[14px] text-[#FF8796] hover:text-[#FF7A8A] transition-colors"
+                              >
+                                {expandedReplies[comment.id] ? (
+                                  <>
+                                    답글 {comment.replies.length}개
+                                    <UpIcon size="14" currentColor="#FF8796" />
+                                  </>
+                                ) : (
+                                  <>
+                                    답글 {comment.replies.length}개
+                                    <DownIcon
+                                      size="14"
+                                      currentColor="#FF8796"
+                                    />
+                                  </>
+                                )}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => toggleReplies(comment.id)}
+                                className="flex items-center gap-1 text-[14px] text-[#9098A4] hover:text-[#FF8796] transition-colors"
+                              >
+                                {expandedReplies[comment.id] ? (
+                                  <>
+                                    답글 달기
+                                    <UpIcon size="14" currentColor="#9098A4" />
+                                  </>
+                                ) : (
+                                  <>
+                                    답글 달기
+                                    <DownIcon
+                                      size="14"
+                                      currentColor="#9098A4"
+                                    />
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {/* 답글 목록 */}
-                      {comment.replies.length > 0 && (
-                        <div className="ml-[53px] space-y-4">
-                          {comment.replies.map((reply) => (
-                            <div key={reply.id} className="flex gap-3">
-                              <Image
-                                src={reply.authorProfile || profileImg}
-                                alt={reply.author}
-                                width={36}
-                                height={36}
-                                className="w-[36px] h-[36px] rounded-full object-cover"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-[14px] font-semibold text-[#3B394D]">
-                                    {reply.author}
-                                  </span>
-                                  <span className="text-[12px] text-[#9098A4]">
-                                    {reply.date}
-                                  </span>
+                      {comment.replies.length > 0 &&
+                        expandedReplies[comment.id] && (
+                          <div className="ml-[53px] space-y-4">
+                            {comment.replies.map((reply) => (
+                              <div key={reply.id} className="flex gap-3">
+                                <Image
+                                  src={reply.authorProfile || profileImg}
+                                  alt={reply.author}
+                                  width={36}
+                                  height={36}
+                                  className="w-[36px] h-[36px] rounded-full object-cover"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[14px] font-semibold text-[#3B394D]">
+                                      {reply.author}
+                                    </span>
+                                    <span className="text-[12px] text-[#9098A4]">
+                                      {reply.date}
+                                    </span>
+                                  </div>
+                                  <p className="text-[14px] text-[#4F5866] leading-relaxed">
+                                    {reply.content}
+                                  </p>
                                 </div>
-                                <p className="text-[14px] text-[#4F5866] leading-relaxed">
-                                  {reply.content}
-                                </p>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        )}
 
                       {/* 답글 작성 */}
-                      {activeReplyId === comment.id && (
+                      {expandedReplies[comment.id] && (
                         <div className="ml-[53px]">
                           <div className="flex gap-3">
                             <Image
@@ -370,7 +419,7 @@ export default function LectureDetailPage({
                               />
                               <div className="flex justify-end gap-2 mt-2">
                                 <button
-                                  onClick={() => setActiveReplyId(null)}
+                                  onClick={() => toggleReplies(comment.id)}
                                   className="px-3 py-1 text-[12px] text-[#9098A4] hover:text-[#4F5866] transition-colors"
                                 >
                                   취소

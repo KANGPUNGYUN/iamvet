@@ -11,186 +11,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { EditIcon } from "public/icons";
-
-// 더미 포럼 데이터
-const forumData = [
-  {
-    id: 1,
-    title: "마성 신부진 고양이 식이요법 관련 최신 연구",
-    tags: ["내과", "고양이"],
-    viewCount: 234,
-    commentCount: 3,
-    createdAt: new Date("2025-04-14"),
-  },
-  {
-    id: 2,
-    title: "강아지 슬개골 탈구 수술 후 재활 치료법",
-    tags: ["외과", "개"],
-    viewCount: 189,
-    commentCount: 12,
-    createdAt: new Date("2025-04-13"),
-  },
-  {
-    id: 3,
-    title: "토끼 위장관 울혈증 응급처치 가이드라인",
-    tags: ["응급의학", "특수동물"],
-    viewCount: 156,
-    commentCount: 7,
-    createdAt: new Date("2025-04-12"),
-  },
-  {
-    id: 4,
-    title: "고양이 아토피성 피부염 치료 경험 공유",
-    tags: ["피부과", "고양이"],
-    viewCount: 312,
-    commentCount: 18,
-    createdAt: new Date("2025-04-11"),
-  },
-  {
-    id: 5,
-    title: "강아지 파보바이러스 예방접종 프로토콜",
-    tags: ["예방의학", "개"],
-    viewCount: 278,
-    commentCount: 9,
-    createdAt: new Date("2025-04-10"),
-  },
-  {
-    id: 6,
-    title: "페럿 인슐린종 진단과 치료 사례",
-    tags: ["내과", "특수동물"],
-    viewCount: 145,
-    commentCount: 5,
-    createdAt: new Date("2025-04-09"),
-  },
-  {
-    id: 7,
-    title: "고양이 치과 질환 스케일링 테크닉",
-    tags: ["외과", "고양이"],
-    viewCount: 203,
-    commentCount: 14,
-    createdAt: new Date("2025-04-08"),
-  },
-  {
-    id: 8,
-    title: "강아지 심장사상충 예방과 치료",
-    tags: ["내과", "개"],
-    viewCount: 267,
-    commentCount: 11,
-    createdAt: new Date("2025-04-07"),
-  },
-  {
-    id: 9,
-    title: "햄스터 습성 피부염 관리법",
-    tags: ["피부과", "특수동물"],
-    viewCount: 98,
-    commentCount: 4,
-    createdAt: new Date("2025-04-06"),
-  },
-  {
-    id: 10,
-    title: "고양이 응급 기도확보 술기",
-    tags: ["응급의학", "고양이"],
-    viewCount: 334,
-    commentCount: 22,
-    createdAt: new Date("2025-04-05"),
-  },
-  {
-    id: 11,
-    title: "강아지 백내장 수술 후 관리",
-    tags: ["외과", "개"],
-    viewCount: 156,
-    commentCount: 8,
-    createdAt: new Date("2025-04-04"),
-  },
-  {
-    id: 12,
-    title: "조류 호흡기 감염 치료 프로토콜",
-    tags: ["내과", "특수동물"],
-    viewCount: 87,
-    commentCount: 3,
-    createdAt: new Date("2025-04-03"),
-  },
-  {
-    id: 13,
-    title: "고양이 만성 신부전 영양 관리",
-    tags: ["내과", "고양이"],
-    viewCount: 245,
-    commentCount: 16,
-    createdAt: new Date("2025-04-02"),
-  },
-  {
-    id: 14,
-    title: "강아지 아나필락시스 응급처치",
-    tags: ["응급의학", "개"],
-    viewCount: 298,
-    commentCount: 19,
-    createdAt: new Date("2025-04-01"),
-  },
-  {
-    id: 15,
-    title: "기니피그 비타민C 결핍증 예방",
-    tags: ["예방의학", "특수동물"],
-    viewCount: 134,
-    commentCount: 6,
-    createdAt: new Date("2025-03-31"),
-  },
-  {
-    id: 16,
-    title: "고양이 외이염 진단과 치료",
-    tags: ["내과", "고양이"],
-    viewCount: 178,
-    commentCount: 10,
-    createdAt: new Date("2025-03-30"),
-  },
-  {
-    id: 17,
-    title: "강아지 십자인대 파열 수술법",
-    tags: ["외과", "개"],
-    viewCount: 412,
-    commentCount: 25,
-    createdAt: new Date("2025-03-29"),
-  },
-  {
-    id: 18,
-    title: "파충류 탈수증 응급치료",
-    tags: ["응급의학", "특수동물"],
-    viewCount: 76,
-    commentCount: 2,
-    createdAt: new Date("2025-03-28"),
-  },
-  {
-    id: 19,
-    title: "고양이 알레르기성 천식 관리",
-    tags: ["내과", "고양이"],
-    viewCount: 189,
-    commentCount: 13,
-    createdAt: new Date("2025-03-27"),
-  },
-  {
-    id: 20,
-    title: "강아지 종양 조기 발견법",
-    tags: ["예방의학", "개"],
-    viewCount: 356,
-    commentCount: 21,
-    createdAt: new Date("2025-03-26"),
-  },
-  {
-    id: 21,
-    title: "고양이 구내염 치료 경험담",
-    tags: ["내과", "고양이"],
-    viewCount: 223,
-    commentCount: 15,
-    createdAt: new Date("2025-03-25"),
-  },
-  {
-    id: 22,
-    title: "강아지 피부 종양 제거술",
-    tags: ["외과", "개"],
-    viewCount: 167,
-    commentCount: 9,
-    createdAt: new Date("2025-03-24"),
-  },
-];
+import { allForumsData } from "@/data/forumsData";
 
 export default function ForumsPage() {
   const router = useRouter();
@@ -267,6 +88,16 @@ export default function ForumsPage() {
 
     router.replace(newPath);
   };
+
+  // forumsData를 ForumCard 형식에 맞게 변환
+  const forumData = allForumsData.map(forum => ({
+    id: parseInt(forum.id),
+    title: forum.title,
+    tags: forum.tags,
+    viewCount: forum.viewCount,
+    commentCount: forum.comments.length,
+    createdAt: forum.createdAt,
+  }));
 
   // 필터링 및 정렬 로직 (검색과 정렬은 즉시 적용, 나머지는 appliedFilters 사용)
   const getFilteredData = () => {

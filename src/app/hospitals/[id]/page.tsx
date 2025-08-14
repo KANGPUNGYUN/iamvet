@@ -71,8 +71,8 @@ export default function HospitalDetailPage({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">병원을 찾을 수 없습니다</h1>
-          <Link href="/hospitals" className="text-blue-600 hover:underline">
-            병원 목록으로 돌아가기
+          <Link href="/jobs" className="text-blue-600 hover:underline">
+            채용공고 목록으로 돌아가기
           </Link>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function HospitalDetailPage({
           {/* 헤더 */}
           <div className="flex items-center justify-between mb-6">
             <Link
-              href="/hospitals"
+              href="/jobs"
               className="flex items-center text-gray-600 hover:text-gray-800"
             >
               <ArrowLeftIcon currentColor="currentColor" />
@@ -260,7 +260,7 @@ export default function HospitalDetailPage({
                       <h3 className="font-text text-[18px] lg:text-[20px] text-semibold title-light text-primary mb-[16px]">
                         병원 이미지
                       </h3>
-                      
+
                       {/* 데스크톱 그리드 */}
                       <div className="hidden lg:grid lg:grid-cols-3 gap-4">
                         {hospitalData.facilityImages.map((image, index) => (
@@ -329,7 +329,8 @@ export default function HospitalDetailPage({
                                 )
                               }
                               disabled={
-                                currentJobIndex >= hospitalData.jobPostings.length - 3
+                                currentJobIndex >=
+                                hospitalData.jobPostings.length - 3
                               }
                               className="p-2 rounded-lg border border-[#EFEFF0] disabled:opacity-50 hover:bg-gray-100 w-[32px] h-[32px] rounded-[30px]"
                             >
@@ -440,174 +441,192 @@ export default function HospitalDetailPage({
 
                       {/* 평가자별 평가 목록 */}
                       <div className="w-full flex flex-col">
-                        {hospitalData.evaluations.hospitals.map((evaluation) => (
-                          <div
-                            key={evaluation.id}
-                            className="w-full bg-white overflow-hidden border-b border-[#EFEFF0]"
-                          >
-                            {/* 평가자 헤더 */}
+                        {hospitalData.evaluations.hospitals.map(
+                          (evaluation) => (
                             <div
-                              className="flex justify-between items-center p-[16px] lg:p-[20px] cursor-pointer hover:bg-gray-50"
-                              onClick={() => toggleEvaluation(evaluation.id)}
+                              key={evaluation.id}
+                              className="w-full bg-white overflow-hidden border-b border-[#EFEFF0]"
                             >
-                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-1 min-w-0">
-                                <div className="w-[32px] h-[32px] lg:w-[40px] lg:h-[40px] rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                  <span className="font-text text-[14px] lg:text-[16px] font-semibold text-sub">
-                                    {evaluation.evaluatorName.charAt(0)}
-                                  </span>
+                              {/* 평가자 헤더 */}
+                              <div
+                                className="flex justify-between items-center p-[16px] lg:p-[20px] cursor-pointer hover:bg-gray-50"
+                                onClick={() => toggleEvaluation(evaluation.id)}
+                              >
+                                <div className="flex items-center gap-[12px] lg:gap-[16px] flex-1 min-w-0">
+                                  <div className="w-[32px] h-[32px] lg:w-[40px] lg:h-[40px] rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <span className="font-text text-[14px] lg:text-[16px] font-semibold text-sub">
+                                      {evaluation.evaluatorName.charAt(0)}
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="font-text text-[14px] lg:text-[18px] font-semibold text-primary truncate">
+                                      {evaluation.evaluatorName}
+                                    </span>
+                                    <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
+                                      {evaluation.evaluationDate}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <span className="font-text text-[14px] lg:text-[18px] font-semibold text-primary truncate">
-                                    {evaluation.evaluatorName}
-                                  </span>
-                                  <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
-                                    {evaluation.evaluationDate}
-                                  </span>
+                                <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
+                                  <div className="flex items-center gap-[6px] lg:gap-[8px]">
+                                    <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
+                                      {evaluation.overallRating.toFixed(1)}
+                                    </span>
+                                    <StarRating
+                                      rating={evaluation.overallRating}
+                                      size={14}
+                                    />
+                                  </div>
+                                  {expandedEvaluations.includes(
+                                    evaluation.id
+                                  ) ? (
+                                    <ChevronUpIcon currentColor="#9098A4" />
+                                  ) : (
+                                    <ChevronDownIcon currentColor="#9098A4" />
+                                  )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
-                                <div className="flex items-center gap-[6px] lg:gap-[8px]">
-                                  <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
-                                    {evaluation.overallRating.toFixed(1)}
-                                  </span>
-                                  <StarRating
-                                    rating={evaluation.overallRating}
-                                    size={14}
-                                  />
+
+                              {/* 상세 평가 내용 */}
+                              {expandedEvaluations.includes(evaluation.id) && (
+                                <div className="pl-[55px] pb-[20px] border-t border-[#EFEFF0]">
+                                  <div className="flex flex-col gap-[24px] pt-[20px]">
+                                    {/* 시설 및 장비 */}
+                                    <div>
+                                      <div className="flex justify-between items-center mb-[12px]">
+                                        <span className="font-text text-[16px] font-semibold text-primary">
+                                          시설 및 장비
+                                        </span>
+                                        <div className="flex items-center gap-[8px]">
+                                          <span className="font-text text-[16px] font-bold text-primary">
+                                            {evaluation.ratings.facilities.toFixed(
+                                              1
+                                            )}
+                                          </span>
+                                          <StarRating
+                                            rating={
+                                              evaluation.ratings.facilities
+                                            }
+                                            size={14}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
+                                        {evaluation.detailedEvaluations
+                                          .filter(
+                                            (detail) =>
+                                              detail.category === "시설 및 장비"
+                                          )
+                                          .map((detail, index) => (
+                                            <p
+                                              key={index}
+                                              className="font-text text-[16px] text-sub"
+                                            >
+                                              {detail.comment || "-"}
+                                            </p>
+                                          ))}
+                                        {!evaluation.detailedEvaluations.some(
+                                          (detail) =>
+                                            detail.category === "시설 및 장비"
+                                        ) && (
+                                          <p className="font-text text-[16px] text-sub">
+                                            -
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* 직원 전문성 */}
+                                    <div>
+                                      <div className="flex justify-between items-center mb-[12px]">
+                                        <span className="font-text text-[16px] font-semibold text-primary">
+                                          직원 전문성
+                                        </span>
+                                        <div className="flex items-center gap-[8px]">
+                                          <span className="font-text text-[16px] font-bold text-primary">
+                                            {evaluation.ratings.staff.toFixed(
+                                              1
+                                            )}
+                                          </span>
+                                          <StarRating
+                                            rating={evaluation.ratings.staff}
+                                            size={14}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
+                                        {evaluation.detailedEvaluations
+                                          .filter(
+                                            (detail) =>
+                                              detail.category === "직원 전문성"
+                                          )
+                                          .map((detail, index) => (
+                                            <p
+                                              key={index}
+                                              className="font-text text-[16px] text-sub"
+                                            >
+                                              {detail.comment || "-"}
+                                            </p>
+                                          ))}
+                                        {!evaluation.detailedEvaluations.some(
+                                          (detail) =>
+                                            detail.category === "직원 전문성"
+                                        ) && (
+                                          <p className="font-text text-[16px] text-sub">
+                                            -
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* 서비스 품질 */}
+                                    <div>
+                                      <div className="flex justify-between items-center mb-[12px]">
+                                        <span className="font-text text-[16px] font-semibold text-primary">
+                                          서비스 품질
+                                        </span>
+                                        <div className="flex items-center gap-[8px]">
+                                          <span className="font-text text-[16px] font-bold text-primary">
+                                            {evaluation.ratings.service.toFixed(
+                                              1
+                                            )}
+                                          </span>
+                                          <StarRating
+                                            rating={evaluation.ratings.service}
+                                            size={14}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
+                                        {evaluation.detailedEvaluations
+                                          .filter(
+                                            (detail) =>
+                                              detail.category === "서비스 품질"
+                                          )
+                                          .map((detail, index) => (
+                                            <p
+                                              key={index}
+                                              className="font-text text-[16px] text-sub"
+                                            >
+                                              {detail.comment || "-"}
+                                            </p>
+                                          ))}
+                                        {!evaluation.detailedEvaluations.some(
+                                          (detail) =>
+                                            detail.category === "서비스 품질"
+                                        ) && (
+                                          <p className="font-text text-[16px] text-sub">
+                                            -
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                                {expandedEvaluations.includes(evaluation.id) ? (
-                                  <ChevronUpIcon currentColor="#9098A4" />
-                                ) : (
-                                  <ChevronDownIcon currentColor="#9098A4" />
-                                )}
-                              </div>
+                              )}
                             </div>
-
-                            {/* 상세 평가 내용 */}
-                            {expandedEvaluations.includes(evaluation.id) && (
-                              <div className="pl-[55px] pb-[20px] border-t border-[#EFEFF0]">
-                                <div className="flex flex-col gap-[24px] pt-[20px]">
-                                  {/* 시설 및 장비 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        시설 및 장비
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.facilities.toFixed(1)}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.facilities}
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) => detail.category === "시설 및 장비"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) => detail.category === "시설 및 장비"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 직원 전문성 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        직원 전문성
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.staff.toFixed(1)}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.staff}
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) => detail.category === "직원 전문성"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) => detail.category === "직원 전문성"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 서비스 품질 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        서비스 품질
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.service.toFixed(1)}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.service}
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) => detail.category === "서비스 품질"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) => detail.category === "서비스 품질"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                          )
+                        )}
                       </div>
                     </div>
                   )}
