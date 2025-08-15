@@ -15,7 +15,6 @@ import {
 } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
-import { Footer, Header } from "@/components";
 import JobInfoCard from "@/components/ui/JobInfoCard";
 import HospitalCard from "@/components/ui/HospitalCard";
 import { getJobById, relatedJobsData } from "@/data/jobsData";
@@ -57,7 +56,6 @@ export default function JobDetailPage({
 
   return (
     <>
-      <Header isLoggedIn={false} />
       <div className="min-h-screen bg-[#FBFBFB]">
         <div className="max-w-[1095px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
           {/* 헤더 */}
@@ -315,7 +313,6 @@ export default function JobDetailPage({
           </section>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

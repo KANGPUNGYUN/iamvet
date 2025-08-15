@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer, Header } from "@/components";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { SelectBox } from "@/components/ui/SelectBox";
@@ -213,7 +212,6 @@ export default function ForumsPage() {
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
@@ -517,8 +515,6 @@ export default function ForumsPage() {
           )}
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer, Header } from "@/components";
 import Link from "next/link";
 import Image from "next/image";
 import hospitalImg from "@/assets/images/hospital.png";
@@ -9,7 +8,6 @@ import veterinarianImg from "@/assets/images/veterinarian.png";
 export default function MemberSelectPage() {
   return (
     <>
-      <Header isLoggedIn={false} />
       <main>
         <h2 className="font-title title-medium text-[32px] text-primary mt-[85px] flex justify-center">
           회원 유형 선택
@@ -47,7 +45,6 @@ export default function MemberSelectPage() {
           </Link>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

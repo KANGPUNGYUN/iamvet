@@ -24,7 +24,6 @@ import {
 } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
-import { Footer, Header } from "@/components";
 import { Tab } from "@/components/ui/Tab";
 import JobInfoCard from "@/components/ui/JobInfoCard";
 import { getHospitalById, HospitalDetailData } from "@/data/hospitalsData";
@@ -99,7 +98,6 @@ export default function HospitalDetailPage({
 
   return (
     <>
-      <Header isLoggedIn={false} />
       <div className="min-h-screen bg-[#FBFBFB]">
         <div className="max-w-[1095px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
           {/* 헤더 */}
@@ -636,7 +634,6 @@ export default function HospitalDetailPage({
           </section>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

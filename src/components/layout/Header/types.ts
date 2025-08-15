@@ -5,12 +5,21 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  type?: "veterinarian" | "hospital";
 }
 
 export interface NavigationItem {
   label: string;
   href: string;
   active?: boolean;
+}
+
+export interface DashboardMenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ currentColor?: string }>;
+  href: string;
+  badge?: number;
 }
 
 export interface HeaderProps {
@@ -59,6 +68,7 @@ export interface HeaderMobileMenuProps {
   navigationItems?: NavigationItem[];
   isLoggedIn?: boolean;
   user?: User;
+  userType?: "veterinarian" | "hospital";
   onLogin?: () => void;
   onSignup?: () => void;
   onLogout?: () => void;

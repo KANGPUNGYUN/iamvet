@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { HeaderLogo } from "./HeaderLogo";
 import { HeaderNavigation } from "./HeaderNavigation";
 import { HeaderAuth } from "./HeaderAuth";
@@ -22,6 +23,9 @@ export const Header: React.FC<HeaderProps> = ({
   children,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // 사용자 타입 직접 추출 (로그인된 경우에만)
+  const userType = user?.type;
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -79,6 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
                   navigationItems={navigationItems}
                   isLoggedIn={isLoggedIn}
                   user={user}
+                  userType={userType}
                   onLogout={onLogout}
                   onProfileClick={onProfileClick}
                   className="lg:hidden"
@@ -99,6 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onToggle={handleMobileMenuToggle}
                   navigationItems={navigationItems}
                   isLoggedIn={isLoggedIn}
+                  userType={userType}
                   onLogin={onLogin}
                   onSignup={onSignup}
                   className="lg:hidden"

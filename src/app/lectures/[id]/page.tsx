@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Header, Footer } from "@/components";
 import { Tag } from "@/components/ui/Tag";
 import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import { allLecturesData, Comment, ReferenceFile } from "@/data/lecturesData";
@@ -116,7 +115,6 @@ export default function LectureDetailPage({
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
@@ -520,8 +518,6 @@ export default function LectureDetailPage({
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

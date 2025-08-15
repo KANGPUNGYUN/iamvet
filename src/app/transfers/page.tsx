@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer, Header } from "@/components";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
@@ -425,7 +424,6 @@ export default function TransfersPage() {
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="bg-white">
         <div className="max-w-[1320px] mx-auto px-4 xl:px-[60px] py-[30px]">
@@ -944,8 +942,6 @@ export default function TransfersPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       {/* Mobile Filter Modal */}
       <MobileFilterModal

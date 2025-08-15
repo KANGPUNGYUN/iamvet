@@ -1,4 +1,5 @@
 import { gmarketSans, suit } from "@/lib/fonts";
+import { ClientLayout } from "@/components/layout/ClientLayout";
 import "./globals.css";
 import "./fonts.css";
 
@@ -12,7 +13,11 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="font-text">{children}</body>
+      <body className="font-text">
+        <ClientLayout>
+          {children}
+        </ClientLayout>
+      </body>
     </html>
   );
 }

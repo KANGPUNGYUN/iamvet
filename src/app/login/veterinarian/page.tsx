@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer, Header } from "@/components";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Button } from "@/components/ui/Button";
 import { SocialLoginButton } from "@/components/ui/SocialLoginButton";
@@ -22,7 +21,6 @@ export default function VeterinarianLoginPage() {
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="pt-[50px] pb-[224px] px-[16px] bg-white flex flex-col">
         <div className="flex-1 max-w-md mx-auto w-full">
@@ -116,8 +114,6 @@ export default function VeterinarianLoginPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

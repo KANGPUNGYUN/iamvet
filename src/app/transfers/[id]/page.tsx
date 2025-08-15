@@ -27,7 +27,6 @@ import transfer6Img from "@/assets/images/transfer/transfer6.jpg";
 import transfer7Img from "@/assets/images/transfer/transfer7.jpg";
 import transfer8Img from "@/assets/images/transfer/transfer8.jpg";
 import profileImg from "@/assets/images/profile.png";
-import { Footer, Header } from "@/components";
 import NaverMap from "@/components/NaverMap";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
 import { Button } from "@/components/ui/Button";
@@ -188,7 +187,6 @@ export default function TransferDetailPage({
 
   return (
     <>
-      <Header isLoggedIn={false} />
       <div className="min-h-screen bg-white">
         <div className="max-w-[1095px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
           {/* 헤더 */}
@@ -560,7 +558,6 @@ export default function TransferDetailPage({
           </section>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

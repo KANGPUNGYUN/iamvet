@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Header, Footer } from "@/components";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { Button } from "@/components/ui/Button";
@@ -114,7 +113,6 @@ export default function ForumEditPage({
   if (isLoading) {
     return (
       <>
-        <Header isLoggedIn={false} />
         <main className="pt-[50px] pb-[100px] px-[16px] bg-white">
           <div className="max-w-[800px] mx-auto">
             <div className="animate-pulse">
@@ -124,14 +122,12 @@ export default function ForumEditPage({
             </div>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="pt-[50px] pb-[100px] px-[16px] bg-white">
         <div className="max-w-[800px] mx-auto">
@@ -239,8 +235,6 @@ export default function ForumEditPage({
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

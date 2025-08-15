@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer, Header } from "@/components";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { SearchBar } from "@/components/ui/SearchBar";
@@ -260,7 +259,6 @@ export default function LecturesPage() {
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
@@ -638,7 +636,6 @@ export default function LecturesPage() {
         </div>
       </main>
 
-      <Footer />
     </>
   );
 }

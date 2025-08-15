@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useState } from "react";
-import { Footer, Header } from "@/components";
 import { Tag } from "@/components/ui/Tag";
 import dynamic from "next/dynamic";
 
@@ -123,8 +122,6 @@ export default function ForumDetailPage({
 
   return (
     <>
-      <Header isLoggedIn={false} />
-
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
           {/* 헤더 영역 */}
@@ -411,8 +408,6 @@ export default function ForumDetailPage({
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

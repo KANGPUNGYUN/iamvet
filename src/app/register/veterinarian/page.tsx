@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer, Header } from "@/components";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
@@ -139,7 +138,6 @@ export default function VeterinarianRegisterPage() {
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="pt-[50px] pb-[262px] px-[16px] bg-white">
         <div className="max-w-[1155px] mx-auto w-full flex flex-col mb-[100px] gap-[10px]">
@@ -407,7 +405,6 @@ export default function VeterinarianRegisterPage() {
         </div>
       </main>
 
-      <Footer />
     </>
   );
 }

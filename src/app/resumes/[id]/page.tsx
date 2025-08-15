@@ -21,7 +21,6 @@ import {
 } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
-import { Footer, Header } from "@/components";
 import ResumeCard from "@/components/ui/ResumeCard/ResumeCard";
 import { Tab } from "@/components/ui/Tab";
 import { getResumeById, DetailedResumeData } from "@/data/resumesData";
@@ -232,7 +231,6 @@ export default function ResumeDetailPage({
 
   return (
     <>
-      <Header isLoggedIn={false} />
       <div className="min-h-screen bg-[#FBFBFB]">
         <div className="max-w-[1095px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
           {/* 헤더 */}
@@ -1035,7 +1033,6 @@ export default function ResumeDetailPage({
           </section>
         </div>
       </div>
-      <Footer />
 
       {/* 평가하기 모달 */}
       {showRatingModal && (

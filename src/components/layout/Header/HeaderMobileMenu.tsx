@@ -1,6 +1,16 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { HeaderMobileMenuProps } from "./types";
+import { usePathname } from "next/navigation";
+import { HeaderMobileMenuProps, DashboardMenuItem } from "./types";
+import {
+  HomeIcon,
+  UserPlusIcon,
+  ListIcon,
+  BellOutlineIcon,
+  UsersIcon,
+  HeartMenuIcon,
+  SettingsIcon,
+} from "public/icons";
 
 export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   isOpen,
@@ -8,12 +18,115 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   navigationItems = [],
   isLoggedIn = false,
   user,
+  userType,
   onLogin,
   onSignup,
   onLogout,
   onProfileClick,
   className = "",
 }) => {
+  const pathname = usePathname();
+
+  // active 상태 확인 함수 (Sidebar와 동일한 로직)
+  const isActive = (href: string, userType: "veterinarian" | "hospital") => {
+    if (href === `/dashboard/${userType}`) {
+      return pathname === href;
+    }
+    return pathname.startsWith(href);
+  };
+
+  // 사용자 타입에 따른 마이페이지 메뉴 데이터
+  const getDashboardMenuItems = (
+    type: "veterinarian" | "hospital"
+  ): DashboardMenuItem[] => {
+    if (type === "veterinarian") {
+      return [
+        {
+          id: "dashboard",
+          label: "대시보드 홈",
+          icon: HomeIcon,
+          href: "/dashboard/veterinarian",
+        },
+        {
+          id: "resume",
+          label: "나의 이력서",
+          icon: UserPlusIcon,
+          href: "/dashboard/veterinarian/resume",
+        },
+        {
+          id: "bookmarks",
+          label: "찜한 공고 목록",
+          icon: HeartMenuIcon,
+          href: "/dashboard/veterinarian/bookmarks",
+        },
+        {
+          id: "applications",
+          label: "지원 내역 관리",
+          icon: ListIcon,
+          href: "/dashboard/veterinarian/applications",
+        },
+        {
+          id: "messages",
+          label: "알림/메시지 관리",
+          icon: BellOutlineIcon,
+          href: "/dashboard/veterinarian/messages",
+        },
+        {
+          id: "profile",
+          label: "프로필 설정",
+          icon: SettingsIcon,
+          href: "/dashboard/veterinarian/profile",
+        },
+      ];
+    } else {
+      return [
+        {
+          id: "dashboard",
+          label: "대시보드 홈",
+          icon: HomeIcon,
+          href: "/dashboard/hospital",
+        },
+        {
+          id: "transfer-bookmarks",
+          label: "양수양도 찜 목록",
+          icon: HeartMenuIcon,
+          href: "/dashboard/hospital/transfer-bookmarks",
+        },
+        {
+          id: "my-jobs",
+          label: "올린 공고 관리",
+          icon: ListIcon,
+          href: "/dashboard/hospital/my-jobs",
+        },
+        {
+          id: "favorite-talents",
+          label: "관심 인재 목록",
+          icon: UsersIcon,
+          href: "/dashboard/hospital/favorite-talents",
+        },
+        {
+          id: "messages",
+          label: "알림/메시지 관리",
+          icon: BellOutlineIcon,
+          href: "/dashboard/hospital/messages",
+          badge: 3,
+        },
+        {
+          id: "profile",
+          label: "프로필 설정",
+          icon: SettingsIcon,
+          href: "/dashboard/hospital/profile",
+        },
+      ];
+    }
+  };
+
+  // userType이 undefined일 때 user.type을 직접 사용
+  const actualUserType = userType || user?.type;
+  const dashboardItems = actualUserType
+    ? getDashboardMenuItems(actualUserType)
+    : [];
+
   // 메뉴가 열렸을 때 body 스크롤 방지
   useEffect(() => {
     if (isOpen) {
@@ -75,22 +188,6 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
     </svg>
   );
 
-  const UserIcon = () => (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-      />
-    </svg>
-  );
-
   return (
     <>
       {/* 모바일 메뉴 토글 버튼 */}
@@ -134,8 +231,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           >
             <div className="flex flex-col h-full">
               {/* 헤더 - 고정 영역 */}
-              <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">메뉴</h2>
+              <div className="flex-shrink-0 flex items-center justify-end p-4">
                 <button
                   onClick={onToggle}
                   className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -164,7 +260,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                       block px-4 py-3 font-title text-base font-medium rounded-lg transition-colors duration-200 
                       ${
                         item.active
-                          ? "text-blue-600 bg-blue-50"
+                          ? "text-[#FF8796] bg-[#FFF7F7]"
                           : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                       }
                     `}
@@ -173,20 +269,50 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                   </Link>
                 ))}
 
-                {/* 로그인된 경우 추가 메뉴 */}
+                {/* 로그인된 경우 마이페이지 섹션 */}
                 {isLoggedIn && (
                   <>
-                    <hr className="my-4" />
-                    <button
-                      onClick={() => {
-                        onProfileClick?.();
-                        onToggle();
-                      }}
-                      className="flex items-center w-full px-4 py-3 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                    >
-                      <UserIcon />
-                      <span className="ml-3">마이페이지</span>
-                    </button>
+                    <h3 className="text-gray-700 block px-4 py-3 font-title text-base font-medium rounded-lg transition-colors duration-200">
+                      마이페이지
+                    </h3>
+
+                    <div className="space-y-1">
+                      {dashboardItems.length > 0 ? (
+                        dashboardItems.map((item) => {
+                          const IconComponent = item.icon;
+                          const active =
+                            actualUserType &&
+                            isActive(item.href, actualUserType);
+
+                          return (
+                            <Link
+                              key={item.id}
+                              href={item.href}
+                              onClick={onToggle}
+                              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative ${
+                                active
+                                  ? "text-[#FF8796] bg-[#FFF7F7]"
+                                  : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                              }`}
+                            >
+                              <IconComponent
+                                currentColor={active ? "#FF8796" : "#4F5866"}
+                              />
+                              <span className="ml-3">{item.label}</span>
+                              {item.badge && item.badge > 0 && (
+                                <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </Link>
+                          );
+                        })
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-gray-500">
+                          사용자 타입이 설정되지 않았습니다.
+                        </div>
+                      )}
+                    </div>
                   </>
                 )}
 

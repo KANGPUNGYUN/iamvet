@@ -1,6 +1,5 @@
 "use client";
 
-import { Header, Footer } from "@/components";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { FilterBox } from "@/components/ui/FilterBox";
@@ -500,7 +499,6 @@ export default function HomePage() {
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <div className="w-full">
         <div className="max-w-[1320px] mx-auto md:px-[60px] py-[30px] px-[15px]">
@@ -871,7 +869,6 @@ export default function HomePage() {
           </section>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

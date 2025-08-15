@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer, Header } from "@/components";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeftIcon } from "public/icons";
@@ -17,7 +16,6 @@ export default function HospitalLoginPage() {
 
   return (
     <>
-      <Header isLoggedIn={false} />
 
       <main className="pt-[50px] pb-[224px] px-[16px] bg-white flex flex-col">
         <div className="flex-1 max-w-md mx-auto w-full">
@@ -86,8 +84,6 @@ export default function HospitalLoginPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

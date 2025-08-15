@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "public/icons";
-import { Header, Footer } from "@/components";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import { SelectBox } from "@/components/ui/SelectBox";
@@ -158,7 +157,6 @@ export default function CreateTransferPage() {
 
   return (
     <>
-      <Header isLoggedIn={true} />
       <div className="min-h-screen bg-white">
         <div className="max-w-[878px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
           {/* 헤더 */}
@@ -355,7 +353,6 @@ export default function CreateTransferPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 }
