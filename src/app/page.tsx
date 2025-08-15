@@ -74,27 +74,9 @@ import banner3Img from "@/assets/images/banner3.png";
 import lightbombImg from "@/assets/images/lightbomb.png";
 import hospitalImg from "@/assets/images/hospital.png";
 import lecture1Img from "@/assets/images/lecture/lecture1.png";
-import lecture2Img from "@/assets/images/lecture/lecture2.png";
-import lecture3Img from "@/assets/images/lecture/lecture3.png";
-import lecture4Img from "@/assets/images/lecture/lecture4.png";
-import lecture5Img from "@/assets/images/lecture/lecture5.png";
-import lecture6Img from "@/assets/images/lecture/lecture6.png";
 import AdvertisementSlider from "@/components/ui/AdvertisementSlider";
 import { advertisementsData } from "@/data/advertisementsData";
-import transfer1Img from "@/assets/images/transfer/transfer1.jpg";
-import transfer2Img from "@/assets/images/transfer/transfer2.jpg";
-import transfer3Img from "@/assets/images/transfer/transfer3.jpg";
-import transfer4Img from "@/assets/images/transfer/transfer4.jpg";
-import transfer5Img from "@/assets/images/transfer/transfer5.jpg";
-import transfer6Img from "@/assets/images/transfer/transfer6.jpg";
-import transfer7Img from "@/assets/images/transfer/transfer7.jpg";
-import transfer8Img from "@/assets/images/transfer/transfer8.jpg";
 import { useState } from "react";
-import { Textarea } from "@/components/ui/Input/Textarea";
-import { InputBox } from "@/components/ui/Input/InputBox";
-import { SelectBox } from "@/components/ui/SelectBox";
-import { SearchBar } from "@/components/ui/SearchBar";
-import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker, TimeValue } from "@/components/ui/TimePicker";
 import BannerSlider, {
   BannerItem,
@@ -105,18 +87,44 @@ import JobInfoCard from "@/components/ui/JobInfoCard";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
 import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import { allLecturesData } from "@/data/lecturesData";
+import { allJobData } from "@/data/jobsData";
+import { allResumeData } from "@/data/resumesData";
+import { allTransferData } from "@/data/transfersData";
 import Link from "next/link";
 
 export default function HomePage() {
   // 수술 강의 필터링
   const surgeryLectures = allLecturesData
-    .filter(lecture => lecture.medicalField === "surgery")
+    .filter((lecture) => lecture.medicalField === "surgery")
     .slice(0, 4);
-  
+
   // 행동/심리학 강의 필터링
   const behaviorLectures = allLecturesData
-    .filter(lecture => lecture.medicalField === "behavior")
+    .filter((lecture) => lecture.medicalField === "behavior")
     .slice(0, 4);
+
+  // 구인정보 데이터 (최신 5개)
+  const jobPostings = allJobData.slice(0, 5);
+
+  // 구직정보 데이터 (최신 5개)
+  const resumePostings = allResumeData.slice(0, 5);
+
+  // 양도매물 데이터 카테고리별 필터링
+  const hospitalTransfers = allTransferData
+    .filter((item) => item.category === "hospital")
+    .slice(0, 8);
+  
+  const machineTransfers = allTransferData
+    .filter((item) => item.category === "machine")
+    .slice(0, 8);
+    
+  const deviceTransfers = allTransferData
+    .filter((item) => item.category === "device")
+    .slice(0, 8);
+    
+  const interiorTransfers = allTransferData
+    .filter((item) => item.category === "interior")
+    .slice(0, 8);
 
   const handlePrivacyClick = () => {
     console.log("개인정보처리방침 클릭");
@@ -362,6 +370,7 @@ export default function HomePage() {
       </div>
     );
   };
+
   const iconComponents = [
     { name: "ArrowLeftIcon", component: ArrowLeftIcon },
     { name: "ArrowRightIcon", component: ArrowRightIcon },
@@ -548,56 +557,19 @@ export default function HomePage() {
                 className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar"
                 style={{ alignSelf: "stretch" }}
               >
-                <JobInfoCard
-                  hospital="서울대학교 동물병원"
-                  dDay="D-15"
-                  position="수의사(정규직)"
-                  location="서울 관악구"
-                  jobType="경력 3년"
-                  tags={["내과", "외과", "정규직", "파트타임"]}
-                  isBookmarked={true}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="건국대학교 동물병원"
-                  dDay="D-7"
-                  position="수의사(정규직)"
-                  location="서울 광진구"
-                  jobType="경력 5년"
-                  tags={["내과", "외과", "정규직"]}
-                  isBookmarked={false}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="연세 동물병원"
-                  dDay="D-20"
-                  position="간호사(정규직)"
-                  location="서울 서대문구"
-                  jobType="경력 2년"
-                  tags={["간호", "정규직"]}
-                  isBookmarked={true}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="강남점 동물병원"
-                  dDay="D-30"
-                  position="수의사(정규직)"
-                  location="서울 강남구"
-                  jobType="신입"
-                  tags={["내과", "외과", "신입"]}
-                  isBookmarked={false}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="까꽁 동물보호센터"
-                  dDay="D-5"
-                  position="수의사(계약직)"
-                  location="경기 성남시"
-                  jobType="경력 1년"
-                  tags={["보호소", "계약직"]}
-                  isBookmarked={true}
-                  onClick={() => console.log("Job card clicked")}
-                />
+                {jobPostings.map((job) => (
+                  <JobInfoCard
+                    key={job.id}
+                    hospital={job.hospital}
+                    dDay={job.dDay}
+                    position={job.position}
+                    location={job.location}
+                    jobType={job.jobType}
+                    tags={job.tags}
+                    isBookmarked={job.isBookmarked}
+                    onClick={() => window.location.href = `/jobs/${job.id}`}
+                  />
+                ))}
               </div>
             </Tab.Content>
             <Tab.Content value="surgery">
@@ -605,56 +577,19 @@ export default function HomePage() {
                 className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar"
                 style={{ alignSelf: "stretch" }}
               >
-                <JobInfoCard
-                  hospital="메디컬센터 동물병원"
-                  dDay="D-10"
-                  position="수의사 모집(정규직)"
-                  location="서울 강남구"
-                  jobType="신입~경력 5년"
-                  tags={["내과", "외과", "수술", "정규직"]}
-                  isBookmarked={false}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="24시간 응급동물병원"
-                  dDay="D-3"
-                  position="응급의료 수의사"
-                  location="서울 마포구"
-                  jobType="경력 2년 이상"
-                  tags={["응급", "24시간", "정규직", "파트타임"]}
-                  isBookmarked={true}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="반려동물 전문클리닉"
-                  dDay="D-25"
-                  position="동물간호사 채용"
-                  location="경기 수원시"
-                  jobType="신입 가능"
-                  tags={["간호", "신입", "교육지원"]}
-                  isBookmarked={false}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="펫케어 동물병원"
-                  dDay="D-14"
-                  position="원장급 수의사"
-                  location="부산 해운대구"
-                  jobType="경력 10년 이상"
-                  tags={["원장급", "고연봉", "정규직"]}
-                  isBookmarked={true}
-                  onClick={() => console.log("Job card clicked")}
-                />
-                <JobInfoCard
-                  hospital="동물보호센터"
-                  dDay="D-8"
-                  position="보호소 수의사"
-                  location="인천 남동구"
-                  jobType="경력 1년 이상"
-                  tags={["보호소", "봉사", "계약직"]}
-                  isBookmarked={false}
-                  onClick={() => console.log("Job card clicked")}
-                />
+                {resumePostings.map((resume) => (
+                  <JobInfoCard
+                    key={resume.id}
+                    hospital={resume.name}
+                    dDay={resume.lastAccessDate}
+                    position={resume.experience}
+                    location={resume.preferredLocation}
+                    jobType="구직자"
+                    tags={resume.keywords}
+                    isBookmarked={resume.isBookmarked}
+                    onClick={() => window.location.href = `/resumes/${resume.id}`}
+                  />
+                ))}
               </div>
             </Tab.Content>
             <Tab.Content value="regular">
@@ -721,7 +656,9 @@ export default function HomePage() {
                     category={lecture.category}
                     imageUrl={lecture.thumbnailUrl || lecture1Img.src}
                     isLiked={lecture.isLiked}
-                    onClick={() => window.location.href = `/lectures/${lecture.id}`}
+                    onClick={() =>
+                      (window.location.href = `/lectures/${lecture.id}`)
+                    }
                   />
                 ))}
               </div>
@@ -760,7 +697,9 @@ export default function HomePage() {
                     category={lecture.category}
                     imageUrl={lecture.thumbnailUrl || lecture1Img.src}
                     isLiked={lecture.isLiked}
-                    onClick={() => window.location.href = `/lectures/${lecture.id}`}
+                    onClick={() =>
+                      (window.location.href = `/lectures/${lecture.id}`)
+                    }
                   />
                 ))}
               </div>
@@ -802,7 +741,9 @@ export default function HomePage() {
                     category={lecture.category}
                     imageUrl={lecture.thumbnailUrl || lecture1Img.src}
                     isLiked={lecture.isLiked}
-                    onClick={() => window.location.href = `/lectures/${lecture.id}`}
+                    onClick={() =>
+                      (window.location.href = `/lectures/${lecture.id}`)
+                    }
                   />
                 ))}
               </div>
@@ -828,126 +769,25 @@ export default function HomePage() {
 
               <Tab.Content value="transfer">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  <TransferCard
-                    id={1}
-                    title="[양도] 강남 소재 내과 병원 양도합니다"
-                    location="서울 강남구"
-                    hospitalType="내과"
-                    area={100}
-                    price="3억 양도"
-                    categories={["병원양도"]}
-                    isAd={true}
-                    date="2025-04-09"
-                    views={127}
-                    imageUrl={transfer1Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={2}
-                    title="[양도] 분당 소재 종합 동물병원 급매"
-                    location="경기 성남시"
-                    hospitalType="종합병원"
-                    area={150}
-                    price="5억 양도"
-                    categories={["병원양도"]}
-                    isAd={false}
-                    date="2025-04-08"
-                    views={234}
-                    imageUrl={transfer2Img.src}
-                    isLiked={true}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={3}
-                    title="[양도] 홍대 인근 24시간 응급병원"
-                    location="서울 마포구"
-                    hospitalType="응급병원"
-                    area={120}
-                    price="4억 양도"
-                    categories={["병원양도"]}
-                    isAd={false}
-                    date="2025-04-07"
-                    views={156}
-                    imageUrl={transfer3Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={5}
-                    title="[양도] 일산 신도시 소형 동물병원"
-                    location="경기 고양시"
-                    hospitalType="소형병원"
-                    area={80}
-                    price="2억 양도"
-                    categories={["병원양도"]}
-                    isAd={false}
-                    date="2025-04-06"
-                    views={89}
-                    imageUrl={transfer4Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={5}
-                    title="[양도] 수원 영통구 동물병원 양도"
-                    location="경기 수원시"
-                    hospitalType="일반병원"
-                    area={110}
-                    price="3.5억 양도"
-                    categories={["병원양도"]}
-                    isAd={false}
-                    date="2025-04-05"
-                    views={167}
-                    imageUrl={transfer5Img.src}
-                    isLiked={true}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={6}
-                    title="[양도] 부산 해운대 동물병원 급매"
-                    location="부산 해운대구"
-                    hospitalType="일반병원"
-                    area={95}
-                    price="2.8억 양도"
-                    categories={["병원양도"]}
-                    isAd={false}
-                    date="2025-04-04"
-                    views={201}
-                    imageUrl={transfer6Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={7}
-                    title="[양도] 대전 중구 소재 동물병원"
-                    location="대전 중구"
-                    hospitalType="일반병원"
-                    area={85}
-                    price="2.2억 양도"
-                    categories={["병원양도"]}
-                    isAd={false}
-                    date="2025-04-03"
-                    views={145}
-                    imageUrl={transfer7Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={8}
-                    title="[양도] 광주 북구 동물병원 양도"
-                    location="광주 북구"
-                    hospitalType="일반병원"
-                    area={75}
-                    price="1.8억 양도"
-                    categories={["병원양도"]}
-                    isAd={false}
-                    date="2025-04-02"
-                    views={123}
-                    imageUrl={transfer8Img.src}
-                    isLiked={true}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
+                  {hospitalTransfers.map((transfer) => (
+                    <TransferCard
+                      key={transfer.id}
+                      id={transfer.id}
+                      title={transfer.title}
+                      location={transfer.location}
+                      hospitalType={transfer.hospitalType}
+                      area={transfer.area}
+                      price={transfer.price}
+                      categories={transfer.categories}
+                      isAd={transfer.isAd}
+                      date={transfer.date}
+                      views={transfer.views}
+                      imageUrl={transfer.imageUrl}
+                      isLiked={transfer.isLiked}
+                      onLike={() => console.log("좋아요 클릭")}
+                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                    />
+                  ))}
                 </div>
                 <div className="flex justify-center">
                   <Link
@@ -960,104 +800,71 @@ export default function HomePage() {
               </Tab.Content>
               <Tab.Content value="machine">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  <TransferCard
-                    id={9}
-                    title="[판매] X-ray 촬영 장비 판매합니다"
-                    location="서울 강남구"
-                    hospitalType="의료장비"
-                    area={0}
-                    price="500만원"
-                    categories={["기계장치"]}
-                    isAd={false}
-                    date="2025-04-09"
-                    views={78}
-                    imageUrl={transfer1Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={10}
-                    title="[판매] 초음파 진단기 급매"
-                    location="경기 성남시"
-                    hospitalType="의료장비"
-                    area={0}
-                    price="800만원"
-                    categories={["기계장치"]}
-                    isAd={false}
-                    date="2025-04-08"
-                    views={92}
-                    imageUrl={transfer2Img.src}
-                    isLiked={true}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={11}
-                    title="[판매] 수술대 및 수술등 세트"
-                    location="서울 마포구"
-                    hospitalType="의료장비"
-                    area={0}
-                    price="300만원"
-                    categories={["기계장치"]}
-                    isAd={false}
-                    date="2025-04-07"
-                    views={156}
-                    imageUrl={transfer3Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
+                  {machineTransfers.map((transfer) => (
+                    <TransferCard
+                      key={transfer.id}
+                      id={transfer.id}
+                      title={transfer.title}
+                      location={transfer.location}
+                      hospitalType={transfer.hospitalType}
+                      area={transfer.area}
+                      price={transfer.price}
+                      categories={transfer.categories}
+                      isAd={transfer.isAd}
+                      date={transfer.date}
+                      views={transfer.views}
+                      imageUrl={transfer.imageUrl}
+                      isLiked={transfer.isLiked}
+                      onLike={() => console.log("좋아요 클릭")}
+                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                    />
+                  ))}
                 </div>
               </Tab.Content>
               <Tab.Content value="device">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  <TransferCard
-                    id={13}
-                    title="[판매] 혈액검사기 판매"
-                    location="서울 강남구"
-                    hospitalType="의료장비"
-                    area={0}
-                    price="1200만원"
-                    categories={["의료장비"]}
-                    isAd={true}
-                    date="2025-04-09"
-                    views={145}
-                    imageUrl={transfer1Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
-                  <TransferCard
-                    id={14}
-                    title="[판매] 내시경 장비 일체"
-                    location="경기 성남시"
-                    hospitalType="의료장비"
-                    area={0}
-                    price="2000만원"
-                    categories={["의료장비"]}
-                    isAd={false}
-                    date="2025-04-08"
-                    views={234}
-                    imageUrl={transfer2Img.src}
-                    isLiked={true}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
+                  {deviceTransfers.map((transfer) => (
+                    <TransferCard
+                      key={transfer.id}
+                      id={transfer.id}
+                      title={transfer.title}
+                      location={transfer.location}
+                      hospitalType={transfer.hospitalType}
+                      area={transfer.area}
+                      price={transfer.price}
+                      categories={transfer.categories}
+                      isAd={transfer.isAd}
+                      date={transfer.date}
+                      views={transfer.views}
+                      imageUrl={transfer.imageUrl}
+                      isLiked={transfer.isLiked}
+                      onLike={() => console.log("좋아요 클릭")}
+                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                    />
+                  ))}
                 </div>
               </Tab.Content>
               <Tab.Content value="Interior">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  <TransferCard
-                    id={17}
-                    title="[판매] 병원 인테리어 가구 일체"
-                    location="서울 강남구"
-                    hospitalType="인테리어"
-                    area={0}
-                    price="800만원"
-                    categories={["인테리어"]}
-                    isAd={false}
-                    date="2025-04-09"
-                    views={89}
-                    imageUrl={transfer1Img.src}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
-                  />
+                  {interiorTransfers.map((transfer) => (
+                    <TransferCard
+                      key={transfer.id}
+                      id={transfer.id}
+                      title={transfer.title}
+                      location={transfer.location}
+                      hospitalType={transfer.hospitalType}
+                      area={transfer.area}
+                      price={transfer.price}
+                      categories={transfer.categories}
+                      isAd={transfer.isAd}
+                      date={transfer.date}
+                      views={transfer.views}
+                      imageUrl={transfer.imageUrl}
+                      isLiked={transfer.isLiked}
+                      onLike={() => console.log("좋아요 클릭")}
+                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                    />
+                  ))}
                 </div>
               </Tab.Content>
             </Tab>
