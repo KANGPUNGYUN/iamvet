@@ -33,7 +33,6 @@ export default function JobDetailPage({
   if (!jobData) {
     return (
       <>
-        <Header isLoggedIn={false} />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">
@@ -44,7 +43,6 @@ export default function JobDetailPage({
             </Link>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
