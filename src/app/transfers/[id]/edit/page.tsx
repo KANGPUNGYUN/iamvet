@@ -191,14 +191,12 @@ export default function EditTransferPage({
   if (!isDataLoaded) {
     return (
       <>
-        <Header isLoggedIn={true} />
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff8796] mx-auto mb-4"></div>
             <p className="text-gray-600">게시글을 불러오는 중...</p>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
