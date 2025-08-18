@@ -111,7 +111,7 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
               <button
                 type="button"
                 onClick={handleRemove}
-                className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600 transition-colors z-10"
+                className="absolute top-1 right-1 w-6 h-6 bg-gray-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600 transition-colors z-10"
                 aria-label="이미지 제거"
               >
                 ×
