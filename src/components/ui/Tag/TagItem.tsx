@@ -71,6 +71,7 @@ const TagItem: React.FC<TagProps> = ({
       boxSizing: "border-box" as const,
       border: "none",
       outline: "none",
+      width: "max-content",
       ...responsiveStyles, // 반응형 패딩과 폰트 사이즈 적용
     };
 

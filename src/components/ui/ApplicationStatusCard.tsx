@@ -142,9 +142,9 @@ const DonutChart: React.FC<{ data: StatusData }> = ({ data }) => {
 
 const ApplicationStatusCard: React.FC<ApplicationStatusCardProps> = ({
   statusData = {
-    applying: 1,
-    documentPassed: 1,
-    finalPassed: 1,
+    applying: 5,
+    documentPassed: 2,
+    finalPassed: 2,
     rejected: 1,
   },
 }) => {
