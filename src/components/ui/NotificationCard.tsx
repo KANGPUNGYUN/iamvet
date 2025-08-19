@@ -12,6 +12,7 @@ interface NotificationCardProps {
   isRead: boolean;
   onMarkAsRead?: (id: number) => void;
   jobId?: number;
+  basePath?: string;
 }
 
 const NotificationCard: React.FC<NotificationCardProps> = ({
@@ -22,13 +23,14 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   isRead,
   onMarkAsRead,
   jobId,
+  basePath = "/dashboard/veterinarian/messages",
 }) => {
   const handleCardClick = () => {
     if (!isRead && onMarkAsRead) {
       onMarkAsRead(id);
     }
     // 모바일에서 카드 클릭 시 상세 페이지로 이동
-    window.location.href = `/dashboard/veterinarian/messages/${id}`;
+    window.location.href = `${basePath}/${id}`;
   };
 
   return (
@@ -107,7 +109,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         </div>
 
         <Link
-          href={`/dashboard/veterinarian/messages/${id}`}
+          href={`${basePath}/${id}`}
           className={`text-[12px] font-medium transition-colors ${
             isRead
               ? "text-[#CCCCCC] hover:text-[#999999]"

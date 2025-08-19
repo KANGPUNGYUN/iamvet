@@ -175,6 +175,7 @@ export default function HospitalMessagesPage() {
                 isRead={notification.isRead}
                 jobId={notification.jobId}
                 onMarkAsRead={handleMarkAsRead}
+                basePath="/dashboard/hospital/messages"
               />
             ))}
           </div>
