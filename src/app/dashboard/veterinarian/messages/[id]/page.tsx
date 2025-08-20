@@ -33,11 +33,7 @@ export default async function VeterinarianMessageDetailPage({
             href="/dashboard/veterinarian/messages"
             className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
-            <ArrowLeftIcon
-              size="24"
-              currentColor="currentColor"
-              className="rotate-180"
-            />
+            <ArrowLeftIcon currentColor="currentColor" />
           </Link>
         </div>
 
