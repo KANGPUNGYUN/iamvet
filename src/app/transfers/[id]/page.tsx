@@ -272,7 +272,9 @@ export default function TransferDetailPage({
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <span className="font-medium text-gray-900">{author.name}</span>
+                  <span className="font-medium text-gray-900">
+                    {author.name}
+                  </span>
                 </div>
                 <div className="flex items-center gap-[33px]">
                   <div className="flex items-center gap-1">
@@ -334,7 +336,9 @@ export default function TransferDetailPage({
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <span className="font-medium text-gray-900 text-[14px]">{author.name}</span>
+                  <span className="font-medium text-gray-900 text-[14px]">
+                    {author.name}
+                  </span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
@@ -547,7 +551,7 @@ export default function TransferDetailPage({
                     variant="line"
                     size="medium"
                     onClick={() => setShowMoreRecommendations(true)}
-                    icon={<PlusIcon currentColor="#9098A4" />}
+                    icon={<PlusIcon size="21" currentColor="#9098A4" />}
                     fullWidth
                   >
                     더보기

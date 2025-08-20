@@ -678,11 +678,11 @@ export const EditIcon = ({ size = "size", currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const PlusIcon = ({ currentColor = "currentColor" }) => (
+export const PlusIcon = ({ currentColor = "currentColor", size = "size" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="21"
-    height="20"
+    width={size}
+    height={size}
     viewBox="0 0 21 20"
     fill="none"
   >
@@ -690,6 +690,24 @@ export const PlusIcon = ({ currentColor = "currentColor" }) => (
       d="M10.4998 4.16675V15.8334M4.6665 10.0001H16.3332"
       stroke={currentColor}
       strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const MinusIcon = ({ currentColor = "currentColor" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="32"
+    height="4"
+    viewBox="0 0 32 4"
+    fill="none"
+  >
+    <path
+      d="M2 2H30"
+      stroke="#EFEFF0"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -1323,10 +1341,7 @@ export const StarHalfIcon = ({ size = 24, currentColor = "#FF8796" }) => (
   </svg>
 );
 
-export const UpIcon = ({ 
-  size = "24", 
-  currentColor = "#FF8796" 
-}) => (
+export const UpIcon = ({ size = "24", currentColor = "#FF8796" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -1344,10 +1359,7 @@ export const UpIcon = ({
   </svg>
 );
 
-export const DownIcon = ({ 
-  size = "24", 
-  currentColor = "#FF8796" 
-}) => (
+export const DownIcon = ({ size = "24", currentColor = "#FF8796" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}

@@ -112,15 +112,15 @@ export default function HomePage() {
   const hospitalTransfers = allTransferData
     .filter((item) => item.category === "hospital")
     .slice(0, 8);
-  
+
   const machineTransfers = allTransferData
     .filter((item) => item.category === "machine")
     .slice(0, 8);
-    
+
   const deviceTransfers = allTransferData
     .filter((item) => item.category === "device")
     .slice(0, 8);
-    
+
   const interiorTransfers = allTransferData
     .filter((item) => item.category === "interior")
     .slice(0, 8);
@@ -499,7 +499,6 @@ export default function HomePage() {
 
   return (
     <>
-
       <div className="w-full">
         <div className="max-w-[1320px] mx-auto md:px-[60px] py-[30px] px-[15px]">
           {/* 데스크톱: 가로 배치, 모바일: 세로 배치 */}
@@ -547,7 +546,7 @@ export default function HomePage() {
                 className="flex font-title title-light text-[16px] text-sub hover:underline self-end md:self-auto"
                 href="/jobs"
               >
-                {<PlusIcon />} 전체보기
+                {<PlusIcon size="21" />} 전체보기
               </Link>
             </Tab.List>
             <Tab.Content value="internal">
@@ -565,7 +564,7 @@ export default function HomePage() {
                     jobType={job.jobType}
                     tags={job.tags}
                     isBookmarked={job.isBookmarked}
-                    onClick={() => window.location.href = `/jobs/${job.id}`}
+                    onClick={() => (window.location.href = `/jobs/${job.id}`)}
                   />
                 ))}
               </div>
@@ -585,7 +584,9 @@ export default function HomePage() {
                     jobType="구직자"
                     tags={resume.keywords}
                     isBookmarked={resume.isBookmarked}
-                    onClick={() => window.location.href = `/resumes/${resume.id}`}
+                    onClick={() =>
+                      (window.location.href = `/resumes/${resume.id}`)
+                    }
                   />
                 ))}
               </div>
@@ -617,7 +618,7 @@ export default function HomePage() {
                 className="flex font-title title-light text-[16px] text-sub hover:underline items-center gap-1 self-end md:self-auto"
                 href="/lectures"
               >
-                <PlusIcon /> 전체보기
+                <PlusIcon size="21" /> 전체보기
               </Link>
             </div>
 
@@ -783,7 +784,9 @@ export default function HomePage() {
                       imageUrl={transfer.imageUrl}
                       isLiked={transfer.isLiked}
                       onLike={() => console.log("좋아요 클릭")}
-                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                      onClick={() =>
+                        (window.location.href = `/transfers/${transfer.id}`)
+                      }
                     />
                   ))}
                 </div>
@@ -792,7 +795,7 @@ export default function HomePage() {
                     className="flex font-title title-light text-[16px] text-primary hover:underline items-center justfy-center px-[30px] py-[8px] border border-[1px] border-[#35313C] rounded-full"
                     href="/transfers"
                   >
-                    {<PlusIcon />} 전체보기
+                    {<PlusIcon size="21" />} 전체보기
                   </Link>
                 </div>
               </Tab.Content>
@@ -814,7 +817,9 @@ export default function HomePage() {
                       imageUrl={transfer.imageUrl}
                       isLiked={transfer.isLiked}
                       onLike={() => console.log("좋아요 클릭")}
-                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                      onClick={() =>
+                        (window.location.href = `/transfers/${transfer.id}`)
+                      }
                     />
                   ))}
                 </div>
@@ -837,7 +842,9 @@ export default function HomePage() {
                       imageUrl={transfer.imageUrl}
                       isLiked={transfer.isLiked}
                       onLike={() => console.log("좋아요 클릭")}
-                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                      onClick={() =>
+                        (window.location.href = `/transfers/${transfer.id}`)
+                      }
                     />
                   ))}
                 </div>
@@ -860,7 +867,9 @@ export default function HomePage() {
                       imageUrl={transfer.imageUrl}
                       isLiked={transfer.isLiked}
                       onLike={() => console.log("좋아요 클릭")}
-                      onClick={() => window.location.href = `/transfers/${transfer.id}`}
+                      onClick={() =>
+                        (window.location.href = `/transfers/${transfer.id}`)
+                      }
                     />
                   ))}
                 </div>
