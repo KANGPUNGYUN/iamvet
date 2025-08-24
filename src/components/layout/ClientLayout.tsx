@@ -13,6 +13,14 @@ interface ClientLayoutProps {
 export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   const pathname = usePathname();
 
+  // 관리자 페이지인지 확인
+  const isAdminPage = pathname.startsWith("/admin");
+
+  // 관리자 페이지는 헤더/푸터 없이 렌더링
+  if (isAdminPage) {
+    return <>{children}</>;
+  }
+
   // 테스트용 로그인 상태 및 사용자 데이터
   const isLoggedIn = true; // 테스트를 위해 true로 설정
 
