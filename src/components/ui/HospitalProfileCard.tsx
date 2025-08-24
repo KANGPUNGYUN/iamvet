@@ -3,12 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { Tag } from "./Tag";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 
 interface HospitalProfileCardProps {
   name: string;
   description: string;
-  profileImage: string;
+  profileImage: string | StaticImageData;
   keywords: string[];
 }
 

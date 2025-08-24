@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/Input/Textarea";
 import { Button } from "@/components/ui/Button";
 import { ResumeImageUpload } from "@/components/features/resume/ResumeImageUpload";
 import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
+import { PlusIcon, MinusIcon } from "public/icons";
 
 // 타입 정의
 interface Experience {
@@ -75,6 +76,29 @@ interface ResumeData {
   medicalCapabilities: MedicalCapability[];
   selfIntroduction: string;
 }
+
+// IconButton 컴포넌트
+const IconButton = ({
+  isFirst,
+  onClick,
+}: {
+  isFirst: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`w-[52px] h-[52px] rounded-[8px] flex items-center justify-center ${
+      isFirst ? "bg-[#FBFBFB]" : "bg-[#3B394D]"
+    }`}
+  >
+    {isFirst ? (
+      <PlusIcon size="28" currentColor="#3B394D" />
+    ) : (
+      <MinusIcon currentColor="#EFEFF0" />
+    )}
+  </button>
+);
 
 // 옵션 데이터
 const positionOptions = [
@@ -400,7 +424,7 @@ export default function VeterinarianResumePage() {
             </div>
 
             {/* 기본 정보 폼 */}
-            <div className="lg:flex-1 flex flex-col">
+            <div className="lg:flex flex-col">
               <div className="lg:flex-row flex flex-col gap-[40px] lg:gap-[24px]">
                 <div>
                   <label className="block text-[20px] font-text text-[primary] mb-[10px]">
@@ -514,6 +538,7 @@ export default function VeterinarianResumePage() {
                   }
                   placeholder="선택"
                   options={positionOptions}
+                  className="min-w-[250px]"
                 />
               </div>
               <div className="w-full">
@@ -704,12 +729,9 @@ export default function VeterinarianResumePage() {
               경력 사항
             </h2>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                총 경력: {calculateTotalExperience(resumeData.experiences)}
+              <span className="text-[20px] text-primary font-text">
+                총 {calculateTotalExperience(resumeData.experiences)}
               </span>
-              <Button variant="line" size="xsmall" onClick={addExperience}>
-                + 추가
-              </Button>
             </div>
           </div>
 
@@ -717,102 +739,95 @@ export default function VeterinarianResumePage() {
             {resumeData.experiences.map((experience, index) => (
               <div
                 key={experience.id}
-                className="border border-[#EFEFF0] rounded-[12px] p-[24px] bg-[#FAFAFA]"
+                className="flex flex-col xl:flex-row xl:items-center gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
               >
-                <div className="flex items-center justify-between mb-[20px]">
-                  <h3 className="text-[16px] font-medium text-primary">
-                    경력 사항 {index + 1}
-                  </h3>
-                  {resumeData.experiences.length > 1 && (
-                    <Button
-                      variant="text"
-                      size="xsmall"
-                      onClick={() => removeExperience(experience.id)}
-                    >
-                      삭제
-                    </Button>
-                  )}
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    병원명
+                  </label>
+                  <InputBox
+                    value={experience.hospitalName}
+                    onChange={(value) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        experiences: prev.experiences.map((exp) =>
+                          exp.id === experience.id
+                            ? { ...exp, hospitalName: value }
+                            : exp
+                        ),
+                      }));
+                    }}
+                    placeholder="병원명 입력"
+                  />
                 </div>
-
-                <div className="flex flex-col lg:flex-row gap-[40px]">
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      병원명
-                    </label>
-                    <InputBox
-                      value={experience.hospitalName}
-                      onChange={(value) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          experiences: prev.experiences.map((exp) =>
-                            exp.id === experience.id
-                              ? { ...exp, hospitalName: value }
-                              : exp
-                          ),
-                        }));
-                      }}
-                      placeholder="병원명 입력"
-                    />
-                  </div>
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      주요 업무
-                    </label>
-                    <InputBox
-                      value={experience.mainTasks}
-                      onChange={(value) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          experiences: prev.experiences.map((exp) =>
-                            exp.id === experience.id
-                              ? { ...exp, mainTasks: value }
-                              : exp
-                          ),
-                        }));
-                      }}
-                      placeholder="주요 업무 입력"
-                    />
-                  </div>
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    주요 업무
+                  </label>
+                  <InputBox
+                    value={experience.mainTasks}
+                    onChange={(value) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        experiences: prev.experiences.map((exp) =>
+                          exp.id === experience.id
+                            ? { ...exp, mainTasks: value }
+                            : exp
+                        ),
+                      }));
+                    }}
+                    placeholder="주요 업무 입력"
+                  />
                 </div>
-                <div className="flex flex-col lg:flex-row gap-[40px] mt-[40px]">
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      입사일
-                    </label>
-                    <DatePicker
-                      value={experience.startDate}
-                      onChange={(date) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          experiences: prev.experiences.map((exp) =>
-                            exp.id === experience.id
-                              ? { ...exp, startDate: date }
-                              : exp
-                          ),
-                        }));
-                      }}
-                      placeholder="YYYY-MM-DD"
-                    />
-                  </div>
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      퇴사일
-                    </label>
-                    <DatePicker
-                      value={experience.endDate}
-                      onChange={(date) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          experiences: prev.experiences.map((exp) =>
-                            exp.id === experience.id
-                              ? { ...exp, endDate: date }
-                              : exp
-                          ),
-                        }));
-                      }}
-                      placeholder="YYYY-MM-DD"
-                    />
-                  </div>
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    입사일
+                  </label>
+                  <DatePicker
+                    value={experience.startDate}
+                    onChange={(date) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        experiences: prev.experiences.map((exp) =>
+                          exp.id === experience.id
+                            ? { ...exp, startDate: date }
+                            : exp
+                        ),
+                      }));
+                    }}
+                    placeholder="YYYY-MM-DD"
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    퇴사일
+                  </label>
+                  <DatePicker
+                    value={experience.endDate}
+                    onChange={(date) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        experiences: prev.experiences.map((exp) =>
+                          exp.id === experience.id
+                            ? { ...exp, endDate: date }
+                            : exp
+                        ),
+                      }));
+                    }}
+                    placeholder="YYYY-MM-DD"
+                  />
+                </div>
+                <div>
+                  <IconButton
+                    isFirst={index === 0}
+                    onClick={() => {
+                      if (index === 0) {
+                        addExperience();
+                      } else {
+                        removeExperience(experience.id);
+                      }
+                    }}
+                  />
                 </div>
               </div>
             ))}
@@ -825,110 +840,98 @@ export default function VeterinarianResumePage() {
             <h2 className="font-text text-[20px] font-medium text-primary">
               자격증/면허
             </h2>
-            <Button variant="line" size="xsmall" onClick={addLicense}>
-              + 추가
-            </Button>
           </div>
 
           <div className="space-y-[20px]">
             {resumeData.licenses.map((license, index) => (
               <div
                 key={license.id}
-                className="border border-[#EFEFF0] rounded-[12px] p-[24px] bg-[#FAFAFA]"
+                className="flex flex-col xl:flex-row xl:items-center gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
               >
-                <div className="flex items-center justify-between mb-[20px]">
-                  <h3 className="text-[16px] font-medium text-primary">
-                    자격증/면허 {index + 1}
-                  </h3>
-                  {resumeData.licenses.length > 1 && (
-                    <Button
-                      variant="text"
-                      size="xsmall"
-                      onClick={() => removeLicense(license.id)}
-                    >
-                      삭제
-                    </Button>
-                  )}
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    자격증/면허명
+                  </label>
+                  <InputBox
+                    value={license.name}
+                    onChange={(value) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        licenses: prev.licenses.map((lic) =>
+                          lic.id === license.id ? { ...lic, name: value } : lic
+                        ),
+                      }));
+                    }}
+                    placeholder="자격증/면허명 입력"
+                  />
                 </div>
-
-                <div className="flex flex-col lg:flex-row gap-[40px]">
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      자격증/면허명
-                    </label>
-                    <InputBox
-                      value={license.name}
-                      onChange={(value) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          licenses: prev.licenses.map((lic) =>
-                            lic.id === license.id
-                              ? { ...lic, name: value }
-                              : lic
-                          ),
-                        }));
-                      }}
-                      placeholder="자격증/면허명 입력"
-                    />
-                  </div>
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      등급
-                    </label>
-                    <SelectBox
-                      value={license.grade}
-                      onChange={(value) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          licenses: prev.licenses.map((lic) =>
-                            lic.id === license.id
-                              ? { ...lic, grade: value }
-                              : lic
-                          ),
-                        }));
-                      }}
-                      placeholder="등급 선택"
-                      options={gradeOptions}
-                    />
-                  </div>
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      발급기관
-                    </label>
-                    <InputBox
-                      value={license.issuer}
-                      onChange={(value) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          licenses: prev.licenses.map((lic) =>
-                            lic.id === license.id
-                              ? { ...lic, issuer: value }
-                              : lic
-                          ),
-                        }));
-                      }}
-                      placeholder="발급기관 입력"
-                    />
-                  </div>
-                  <div className="w-full">
-                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                      취득일
-                    </label>
-                    <DatePicker
-                      value={license.acquiredDate}
-                      onChange={(date) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          licenses: prev.licenses.map((lic) =>
-                            lic.id === license.id
-                              ? { ...lic, acquiredDate: date }
-                              : lic
-                          ),
-                        }));
-                      }}
-                      placeholder="YYYY-MM-DD"
-                    />
-                  </div>
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    등급
+                  </label>
+                  <SelectBox
+                    value={license.grade}
+                    onChange={(value) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        licenses: prev.licenses.map((lic) =>
+                          lic.id === license.id ? { ...lic, grade: value } : lic
+                        ),
+                      }));
+                    }}
+                    placeholder="등급 선택"
+                    options={gradeOptions}
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    발급기관
+                  </label>
+                  <InputBox
+                    value={license.issuer}
+                    onChange={(value) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        licenses: prev.licenses.map((lic) =>
+                          lic.id === license.id
+                            ? { ...lic, issuer: value }
+                            : lic
+                        ),
+                      }));
+                    }}
+                    placeholder="발급기관 입력"
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                    취득일
+                  </label>
+                  <DatePicker
+                    value={license.acquiredDate}
+                    onChange={(date) => {
+                      setResumeData((prev) => ({
+                        ...prev,
+                        licenses: prev.licenses.map((lic) =>
+                          lic.id === license.id
+                            ? { ...lic, acquiredDate: date }
+                            : lic
+                        ),
+                      }));
+                    }}
+                    placeholder="YYYY-MM-DD"
+                  />
+                </div>
+                <div>
+                  <IconButton
+                    isFirst={index === 0}
+                    onClick={() => {
+                      if (index === 0) {
+                        addLicense();
+                      } else {
+                        removeLicense(license.id);
+                      }
+                    }}
+                  />
                 </div>
               </div>
             ))}
@@ -941,34 +944,16 @@ export default function VeterinarianResumePage() {
             <h2 className="font-text text-[20px] font-medium text-primary">
               학력
             </h2>
-            <Button variant="line" size="xsmall" onClick={addEducation}>
-              + 추가
-            </Button>
           </div>
 
           <div className="space-y-[20px]">
             {resumeData.educations.map((education, index) => (
               <div
                 key={education.id}
-                className="border border-[#EFEFF0] rounded-[12px] p-[24px] bg-[#FAFAFA]"
+                className="flex flex-col xl:items-start gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
               >
-                <div className="flex items-center justify-between mb-[20px]">
-                  <h3 className="text-[16px] font-medium text-primary">
-                    학력 {index + 1}
-                  </h3>
-                  {resumeData.educations.length > 1 && (
-                    <Button
-                      variant="text"
-                      size="xsmall"
-                      onClick={() => removeEducation(education.id)}
-                    >
-                      삭제
-                    </Button>
-                  )}
-                </div>
-
-                <div className="flex flex-col lg:flex-row gap-[40px]">
-                  <div>
+                <div className="flex flex-col xl:flex-row gap-[10px]">
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       학위
                     </label>
@@ -988,7 +973,7 @@ export default function VeterinarianResumePage() {
                       options={degreeOptions}
                     />
                   </div>
-                  <div>
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       졸업여부
                     </label>
@@ -1008,51 +993,9 @@ export default function VeterinarianResumePage() {
                       options={graduationStatusOptions}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                        학점
-                      </label>
-                      <InputBox
-                        value={education.gpa}
-                        onChange={(value) => {
-                          setResumeData((prev) => ({
-                            ...prev,
-                            educations: prev.educations.map((edu) =>
-                              edu.id === education.id
-                                ? { ...edu, gpa: value }
-                                : edu
-                            ),
-                          }));
-                        }}
-                        placeholder="3.5"
-                        type="number"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                        총점
-                      </label>
-                      <InputBox
-                        value={education.totalGpa}
-                        onChange={(value) => {
-                          setResumeData((prev) => ({
-                            ...prev,
-                            educations: prev.educations.map((edu) =>
-                              edu.id === education.id
-                                ? { ...edu, totalGpa: value }
-                                : edu
-                            ),
-                          }));
-                        }}
-                        placeholder="4.0"
-                        type="number"
-                      />
-                    </div>
-                  </div>
                 </div>
-                <div className="flex flex-col lg:flex-row gap-[40px] mt-[24px]">
-                  <div>
+                <div className="flex flex-col xl:flex-row gap-[10px]">
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       학교명
                     </label>
@@ -1071,7 +1014,7 @@ export default function VeterinarianResumePage() {
                       placeholder="학교명 입력"
                     />
                   </div>
-                  <div>
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       전공명
                     </label>
@@ -1090,25 +1033,97 @@ export default function VeterinarianResumePage() {
                       placeholder="전공명 입력"
                     />
                   </div>
+                  <div className="w-full">
+                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                      학점
+                    </label>
+                    <InputBox
+                      value={education.gpa}
+                      onChange={(value) => {
+                        setResumeData((prev) => ({
+                          ...prev,
+                          educations: prev.educations.map((edu) =>
+                            edu.id === education.id
+                              ? { ...edu, gpa: value }
+                              : edu
+                          ),
+                        }));
+                      }}
+                      placeholder="3.5"
+                      type="number"
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                      총점
+                    </label>
+                    <InputBox
+                      value={education.totalGpa}
+                      onChange={(value) => {
+                        setResumeData((prev) => ({
+                          ...prev,
+                          educations: prev.educations.map((edu) =>
+                            edu.id === education.id
+                              ? { ...edu, totalGpa: value }
+                              : edu
+                          ),
+                        }));
+                      }}
+                      placeholder="4.0"
+                      type="number"
+                    />
+                  </div>
                 </div>
-                <div className="mt-[24px]">
-                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                    재학기간
-                  </label>
-                  <DatePicker.Range
-                    startDate={education.startDate}
-                    endDate={education.endDate}
-                    onChange={(start, end) => {
-                      setResumeData((prev) => ({
-                        ...prev,
-                        educations: prev.educations.map((edu) =>
-                          edu.id === education.id
-                            ? { ...edu, startDate: start, endDate: end }
-                            : edu
-                        ),
-                      }));
+                <div className="flex flex-col xl:flex-row gap-[10px]">
+                  <div className="w-full">
+                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                      입학일
+                    </label>
+                    <DatePicker
+                      value={education.startDate}
+                      onChange={(date) => {
+                        setResumeData((prev) => ({
+                          ...prev,
+                          educations: prev.educations.map((edu) =>
+                            edu.id === education.id
+                              ? { ...edu, startDate: date }
+                              : edu
+                          ),
+                        }));
+                      }}
+                      placeholder="YYYY-MM-DD"
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                      졸업일
+                    </label>
+                    <DatePicker
+                      value={education.endDate}
+                      onChange={(date) => {
+                        setResumeData((prev) => ({
+                          ...prev,
+                          educations: prev.educations.map((edu) =>
+                            edu.id === education.id
+                              ? { ...edu, endDate: date }
+                              : edu
+                          ),
+                        }));
+                      }}
+                      placeholder="YYYY-MM-DD"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <IconButton
+                    isFirst={index === 0}
+                    onClick={() => {
+                      if (index === 0) {
+                        addEducation();
+                      } else {
+                        removeEducation(education.id);
+                      }
                     }}
-                    placeholder="재학기간 선택"
                   />
                 </div>
               </div>
@@ -1122,34 +1137,16 @@ export default function VeterinarianResumePage() {
             <h2 className="font-text text-[20px] font-medium text-primary">
               진료상세역량
             </h2>
-            <Button variant="line" size="xsmall" onClick={addMedicalCapability}>
-              + 추가
-            </Button>
           </div>
 
           <div className="space-y-[20px]">
             {resumeData.medicalCapabilities.map((capability, index) => (
               <div
                 key={capability.id}
-                className="border border-[#EFEFF0] rounded-[12px] p-[24px] bg-[#FAFAFA]"
+                className="flex flex-col xl:items-start gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
               >
-                <div className="flex items-center justify-between mb-[20px]">
-                  <h3 className="text-[16px] font-medium text-primary">
-                    진료상세역량 {index + 1}
-                  </h3>
-                  {resumeData.medicalCapabilities.length > 1 && (
-                    <Button
-                      variant="text"
-                      size="xsmall"
-                      onClick={() => removeMedicalCapability(capability.id)}
-                    >
-                      삭제
-                    </Button>
-                  )}
-                </div>
-
-                <div className="flex flex-col lg:flex-row gap-[40px]">
-                  <div>
+                <div className="flex flex-col xl:flex-row gap-[10px]">
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       분야
                     </label>
@@ -1170,7 +1167,7 @@ export default function VeterinarianResumePage() {
                       options={medicalFieldOptions}
                     />
                   </div>
-                  <div>
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       숙련도
                     </label>
@@ -1191,11 +1188,13 @@ export default function VeterinarianResumePage() {
                       options={proficiencyOptions}
                     />
                   </div>
-                  <div>
+                </div>
+                <div className="flex flex-col gap-[10px]">
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       역량 설명
                     </label>
-                    <InputBox
+                    <Textarea
                       value={capability.description}
                       onChange={(value) => {
                         setResumeData((prev) => ({
@@ -1209,13 +1208,15 @@ export default function VeterinarianResumePage() {
                         }));
                       }}
                       placeholder="역량 설명 입력"
+                      rows={3}
+                      className="w-full"
                     />
                   </div>
-                  <div>
+                  <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       기타
                     </label>
-                    <InputBox
+                    <Textarea
                       value={capability.others}
                       onChange={(value) => {
                         setResumeData((prev) => ({
@@ -1229,8 +1230,22 @@ export default function VeterinarianResumePage() {
                         }));
                       }}
                       placeholder="기타 사항 입력"
+                      rows={3}
+                      className="w-full"
                     />
                   </div>
+                </div>
+                <div>
+                  <IconButton
+                    isFirst={index === 0}
+                    onClick={() => {
+                      if (index === 0) {
+                        addMedicalCapability();
+                      } else {
+                        removeMedicalCapability(capability.id);
+                      }
+                    }}
+                  />
                 </div>
               </div>
             ))}

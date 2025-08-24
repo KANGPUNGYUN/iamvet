@@ -1,5 +1,6 @@
 "use client";
 
+import hospitalPlaceholder from "@/assets/images/transfer/transfer1.jpg";
 import HospitalProfileCard from "@/components/ui/HospitalProfileCard";
 import RecruitmentStatusCard from "@/components/ui/RecruitmentStatusCard";
 import UrgentJobsCard from "@/components/ui/UrgentJobsCard";
@@ -23,7 +24,7 @@ export default function HospitalDashboardPage() {
             <HospitalProfileCard
               name="서울 강남 동물병원"
               description="내 동물병원 지료하는 반려동물 종양병원입니다. 반려인과 고양이 내과병원"
-              profileImage="/hospital-placeholder.png"
+              profileImage={hospitalPlaceholder}
               keywords={["반려견", "고양이", "소동물", "내과", "외과", "행동 교정"]}
             />
 
