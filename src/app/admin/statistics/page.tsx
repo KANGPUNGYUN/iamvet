@@ -279,7 +279,7 @@ export default function StatisticsPage() {
           font: {
             family: "inherit",
             size: 12,
-            weight: "normal",
+            weight: "normal" as const,
           },
           color: "#3b394d",
           usePointStyle: true,
@@ -322,7 +322,7 @@ export default function StatisticsPage() {
           font: {
             family: "inherit",
             size: 11,
-            weight: "normal",
+            weight: "normal" as const,
           },
           color: "#9098a4",
         },
@@ -333,13 +333,12 @@ export default function StatisticsPage() {
         position: "left" as const,
         grid: {
           color: "rgba(239, 239, 240, 0.5)",
-          drawBorder: false,
         },
         ticks: {
           font: {
             family: "inherit",
             size: 11,
-            weight: "normal",
+            weight: "normal" as const,
           },
           color: "#9098a4",
           callback: (value: any) => value.toLocaleString(),
@@ -356,7 +355,7 @@ export default function StatisticsPage() {
           font: {
             family: "inherit",
             size: 11,
-            weight: "normal",
+            weight: "normal" as const,
           },
           color: "#9098a4",
           callback: (value: any) => `${value}%`,
@@ -738,7 +737,7 @@ export default function StatisticsPage() {
                           font: {
                             family: "inherit",
                             size: 12,
-                            weight: "normal",
+                            weight: "normal" as const,
                           },
                           color: "#3b394d",
                           usePointStyle: true,
@@ -764,7 +763,7 @@ export default function StatisticsPage() {
                           font: {
                             family: "inherit",
                             size: 11,
-                            weight: "normal",
+                            weight: "normal" as const,
                           },
                           color: "#9098a4",
                         },
@@ -772,13 +771,12 @@ export default function StatisticsPage() {
                       y: {
                         grid: {
                           color: "rgba(239, 239, 240, 0.5)",
-                          drawBorder: false,
                         },
                         ticks: {
                           font: {
                             family: "inherit",
                             size: 11,
-                            weight: "normal",
+                            weight: "normal" as const,
                           },
                           color: "#9098a4",
                         },
@@ -844,7 +842,7 @@ export default function StatisticsPage() {
                           font: {
                             family: "inherit",
                             size: 12,
-                            weight: "normal",
+                            weight: "normal" as const,
                           },
                           color: "#3b394d",
                           usePointStyle: true,
