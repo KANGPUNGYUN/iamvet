@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -280,7 +279,7 @@ export default function StatisticsPage() {
           font: {
             family: "inherit",
             size: 12,
-            weight: "500" as const,
+            weight: "normal",
           },
           color: "#3b394d",
           usePointStyle: true,
@@ -323,7 +322,7 @@ export default function StatisticsPage() {
           font: {
             family: "inherit",
             size: 11,
-            weight: "500" as const,
+            weight: "normal",
           },
           color: "#9098a4",
         },
@@ -340,7 +339,7 @@ export default function StatisticsPage() {
           font: {
             family: "inherit",
             size: 11,
-            weight: "500" as const,
+            weight: "normal",
           },
           color: "#9098a4",
           callback: (value: any) => value.toLocaleString(),
@@ -357,7 +356,7 @@ export default function StatisticsPage() {
           font: {
             family: "inherit",
             size: 11,
-            weight: "500" as const,
+            weight: "normal",
           },
           color: "#9098a4",
           callback: (value: any) => `${value}%`,
@@ -451,9 +450,9 @@ export default function StatisticsPage() {
       </Box>
 
       {/* Ultra Modern Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
         {statsCards.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Box key={index} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
             <Card
               sx={{
                 position: "relative",
@@ -567,9 +566,9 @@ export default function StatisticsPage() {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       {/* Main Chart */}
       <Card
@@ -665,9 +664,9 @@ export default function StatisticsPage() {
       </Card>
 
       {/* Performance Charts */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
         {/* Performance Comparison Chart */}
-        <Grid item xs={12} lg={8}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(67% - 12px)' } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -739,7 +738,7 @@ export default function StatisticsPage() {
                           font: {
                             family: "inherit",
                             size: 12,
-                            weight: "500" as const,
+                            weight: "normal",
                           },
                           color: "#3b394d",
                           usePointStyle: true,
@@ -765,7 +764,7 @@ export default function StatisticsPage() {
                           font: {
                             family: "inherit",
                             size: 11,
-                            weight: "500" as const,
+                            weight: "normal",
                           },
                           color: "#9098a4",
                         },
@@ -779,7 +778,7 @@ export default function StatisticsPage() {
                           font: {
                             family: "inherit",
                             size: 11,
-                            weight: "500" as const,
+                            weight: "normal",
                           },
                           color: "#9098a4",
                         },
@@ -790,10 +789,10 @@ export default function StatisticsPage() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Success Rate Donut Chart */}
-        <Grid item xs={12} lg={4}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(33.33% - 16px)' } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -845,7 +844,7 @@ export default function StatisticsPage() {
                           font: {
                             family: "inherit",
                             size: 12,
-                            weight: "500" as const,
+                            weight: "normal",
                           },
                           color: "#3b394d",
                           usePointStyle: true,
@@ -874,13 +873,13 @@ export default function StatisticsPage() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Top Performers */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
         {/* Top Hospitals */}
-        <Grid item xs={12} lg={6}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(50% - 12px)' } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -1020,10 +1019,10 @@ export default function StatisticsPage() {
               </Table>
             </TableContainer>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Top Veterinarians */}
-        <Grid item xs={12} lg={6}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(50% - 12px)' } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -1163,8 +1162,8 @@ export default function StatisticsPage() {
               </Table>
             </TableContainer>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Key Metrics Summary */}
       <Card
@@ -1194,8 +1193,8 @@ export default function StatisticsPage() {
           </Typography>
         </Box>
         <CardContent sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={3}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
               <Box
                 sx={{
                   textAlign: "center",
@@ -1229,8 +1228,8 @@ export default function StatisticsPage() {
                   15% 개선
                 </Box>
               </Box>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
               <Box
                 sx={{
                   textAlign: "center",
@@ -1264,8 +1263,8 @@ export default function StatisticsPage() {
                   0.2점 상승
                 </Box>
               </Box>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
               <Box
                 sx={{
                   textAlign: "center",
@@ -1299,8 +1298,8 @@ export default function StatisticsPage() {
                   18% 증가
                 </Box>
               </Box>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="body2"
@@ -1328,8 +1327,8 @@ export default function StatisticsPage() {
                   3% 감소
                 </Box>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
     </Box>

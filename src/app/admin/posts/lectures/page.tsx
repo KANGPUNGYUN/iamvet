@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -140,8 +139,16 @@ export default function LecturesManagement() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
   const [actionType, setActionType] = useState<
-    "view" | "suspend" | "delete" | "approve"
+    "view" | "suspend" | "delete" | "approve" | "create"
   >("view");
+  const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [newLecture, setNewLecture] = useState({
+    title: "",
+    instructor: "",
+    category: "",
+    duration: 0,
+    description: "",
+  });
 
   const getStatusTag = (status: string) => {
     const statusMap: {
@@ -225,6 +232,11 @@ export default function LecturesManagement() {
     setModalVisible(true);
   };
 
+  const resetCreateForm = () => {
+    setNewLecture({ title: "", instructor: "", category: "", duration: 0, description: "" });
+    setCreateModalVisible(false);
+  };
+
   const confirmAction = () => {
     if (!selectedLecture) return;
 
@@ -248,6 +260,33 @@ export default function LecturesManagement() {
 
     setModalVisible(false);
     setSelectedLecture(null);
+  };
+
+  const handleCreateLecture = () => {
+    if (!newLecture.title || !newLecture.instructor || !newLecture.category || !newLecture.duration) {
+      alert("모든 필수 필드를 입력해 주세요.");
+      return;
+    }
+
+    const newId = Math.max(...lectures.map(l => l.id)) + 1;
+    const newLectureData: Lecture = {
+      id: newId,
+      title: newLecture.title,
+      instructor: newLecture.instructor,
+      category: newLecture.category,
+      duration: newLecture.duration,
+      status: "DRAFT",
+      reportCount: 0,
+      viewCount: 0,
+      rating: 0,
+      reviewCount: 0,
+      createdAt: new Date().toISOString().split('T')[0],
+      description: newLecture.description || "강의 설명이 입력되지 않았습니다.",
+    };
+
+    setLectures(prev => [newLectureData, ...prev]);
+    setCreateModalVisible(false);
+    setNewLecture({ title: "", instructor: "", category: "", duration: 0, description: "" });
   };
 
   const renderActionButtons = (lecture: Lecture) => (
@@ -313,8 +352,8 @@ export default function LecturesManagement() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid xs={12} md={5}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 41.66%' } }}>
               <TextField
                 fullWidth
                 placeholder="제목, 강사명으로 검색..."
@@ -348,8 +387,8 @@ export default function LecturesManagement() {
                   },
                 }}
               />
-            </Grid>
-            <Grid item xs={12} md={2.5}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 20.83%' } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
                 <Select
@@ -377,8 +416,8 @@ export default function LecturesManagement() {
                   <MenuItem value="DRAFT">임시저장</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2.5}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 20.83%' } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>카테고리</InputLabel>
                 <Select
@@ -407,11 +446,12 @@ export default function LecturesManagement() {
                   <MenuItem value="기타">기타</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid xs={12} md={2}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 16.66%' } }}>
               <Button
                 variant="contained"
                 fullWidth
+                onClick={() => setCreateModalVisible(true)}
                 sx={{
                   bgcolor: "#ff8796",
                   color: "white",
@@ -425,16 +465,16 @@ export default function LecturesManagement() {
                   },
                 }}
               >
-                내보내기
+                강의 생성
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Ultra Modern Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid xs={12} sm={6} md={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -531,8 +571,8 @@ export default function LecturesManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -629,8 +669,8 @@ export default function LecturesManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -727,8 +767,8 @@ export default function LecturesManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -827,8 +867,8 @@ export default function LecturesManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Ultra Modern Data Table */}
       <Card
@@ -1159,8 +1199,8 @@ export default function LecturesManagement() {
                   <Typography variant="h6" gutterBottom>
                     {selectedLecture.title}
                   </Typography>
-                  <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid xs={12} md={6}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Stack spacing={1}>
                         <Typography>
                           <strong>강사:</strong> {selectedLecture.instructor}
@@ -1179,8 +1219,8 @@ export default function LecturesManagement() {
                           {getStatusTag(selectedLecture.status)}
                         </Box>
                       </Stack>
-                    </Grid>
-                    <Grid xs={12} md={6}>
+                    </Box>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Stack spacing={1}>
                         <Typography>
                           <strong>조회수:</strong>{" "}
@@ -1196,8 +1236,8 @@ export default function LecturesManagement() {
                           <strong>등록일:</strong> {selectedLecture.createdAt}
                         </Typography>
                       </Stack>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle2" gutterBottom>
                       <strong>설명:</strong>
@@ -1284,6 +1324,83 @@ export default function LecturesManagement() {
               {actionType === "delete" && "삭제"}
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Lecture Modal */}
+      <Dialog
+        open={createModalVisible}
+        onClose={resetCreateForm}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>새 강의 생성</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <TextField
+              label="강의 제목"
+              fullWidth
+              value={newLecture.title}
+              onChange={(e) => setNewLecture(prev => ({ ...prev, title: e.target.value }))}
+              required
+            />
+            <TextField
+              label="강사명"
+              fullWidth
+              value={newLecture.instructor}
+              onChange={(e) => setNewLecture(prev => ({ ...prev, instructor: e.target.value }))}
+              required
+            />
+            <FormControl fullWidth required>
+              <InputLabel>카테고리</InputLabel>
+              <Select
+                value={newLecture.category}
+                label="카테고리"
+                onChange={(e) => setNewLecture(prev => ({ ...prev, category: e.target.value }))}
+              >
+                <MenuItem value="영상진단">영상진단</MenuItem>
+                <MenuItem value="내과">내과</MenuItem>
+                <MenuItem value="외과">외과</MenuItem>
+                <MenuItem value="응급의학">응급의학</MenuItem>
+                <MenuItem value="기타">기타</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="강의 시간 (분)"
+              type="number"
+              fullWidth
+              value={newLecture.duration}
+              onChange={(e) => setNewLecture(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+              required
+              slotProps={{ htmlInput: { min: 1 } }}
+            />
+            <TextField
+              label="강의 설명"
+              fullWidth
+              multiline
+              rows={4}
+              value={newLecture.description}
+              onChange={(e) => setNewLecture(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="강의에 대한 자세한 설명을 입력해 주세요..."
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={resetCreateForm} color="inherit">
+            취소
+          </Button>
+          <Button
+            onClick={handleCreateLecture}
+            variant="contained"
+            sx={{
+              bgcolor: "#ff8796",
+              "&:hover": {
+                bgcolor: "#ffb7b8",
+              },
+            }}
+          >
+            강의 생성
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

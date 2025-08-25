@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -323,8 +322,8 @@ export default function ReportsManagement() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 18px)" } }}>
               <TextField
                 fullWidth
                 placeholder="제목, 신고자, 사유로 검색..."
@@ -356,8 +355,10 @@ export default function ReportsManagement() {
                   ),
                 }}
               />
-            </Grid>
-            <Grid item xs={12} md={2.25}>
+            </Box>
+            <Box
+              sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(18.75% - 18px)" } }}
+            >
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
                 <Select
@@ -385,8 +386,10 @@ export default function ReportsManagement() {
                   <MenuItem value="REJECTED">반려</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2.25}>
+            </Box>
+            <Box
+              sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(18.75% - 18px)" } }}
+            >
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>심각도</InputLabel>
                 <Select
@@ -414,8 +417,10 @@ export default function ReportsManagement() {
                   <MenuItem value="CRITICAL">긴급</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2.25}>
+            </Box>
+            <Box
+              sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(18.75% - 18px)" } }}
+            >
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>콘텐츠 유형</InputLabel>
                 <Select
@@ -443,8 +448,10 @@ export default function ReportsManagement() {
                   <MenuItem value="FORUM">포럼</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2.25}>
+            </Box>
+            <Box
+              sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(18.75% - 18px)" } }}
+            >
               <Button
                 variant="contained"
                 fullWidth
@@ -463,14 +470,22 @@ export default function ReportsManagement() {
               >
                 내보내기
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Ultra Modern Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -567,8 +582,16 @@ export default function ReportsManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -665,8 +688,16 @@ export default function ReportsManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -768,8 +799,16 @@ export default function ReportsManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -866,8 +905,8 @@ export default function ReportsManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Ultra Modern Data Table */}
       <Card
@@ -1183,8 +1222,8 @@ export default function ReportsManagement() {
                   <Typography variant="h6" gutterBottom>
                     신고 정보
                   </Typography>
-                  <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid item xs={12} md={6}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Stack spacing={1}>
                         <Typography>
                           <strong>콘텐츠 유형:</strong>{" "}
@@ -1202,8 +1241,8 @@ export default function ReportsManagement() {
                           {selectedReport.reportReason}
                         </Typography>
                       </Stack>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
+                    </Box>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Stack spacing={1}>
                         <Typography>
                           <strong>신고자:</strong> {selectedReport.reporterName}
@@ -1221,21 +1260,21 @@ export default function ReportsManagement() {
                           {getStatusTag(selectedReport.status)}
                         </Typography>
                       </Stack>
-                    </Grid>
-                  </Grid>
-                  <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid item xs={12} md={6}>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Typography>
                         <strong>신고일:</strong> {selectedReport.reportedAt}
                       </Typography>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
+                    </Box>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Typography>
                         <strong>처리일:</strong>{" "}
                         {selectedReport.resolvedAt || "미처리"}
                       </Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                   <Box sx={{ mt: 3 }}>
                     <Typography variant="subtitle2" gutterBottom>
                       <strong>신고 상세 내용:</strong>

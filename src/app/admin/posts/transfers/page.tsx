@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -286,8 +285,8 @@ export default function TransfersManagement() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={5}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
               <TextField
                 fullWidth
                 placeholder="제목, 병원명, 지역으로 검색..."
@@ -319,8 +318,8 @@ export default function TransfersManagement() {
                   ),
                 }}
               />
-            </Grid>
-            <Grid item xs={12} md={2.5}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 18px)' } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
                 <Select
@@ -348,8 +347,8 @@ export default function TransfersManagement() {
                   <MenuItem value="COMPLETED">완료</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2.5}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 18px)' } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>유형</InputLabel>
                 <Select
@@ -375,8 +374,8 @@ export default function TransfersManagement() {
                   <MenuItem value="양수">양수</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(20% - 14px)' } }}>
               <Button
                 variant="contained"
                 fullWidth
@@ -395,14 +394,14 @@ export default function TransfersManagement() {
               >
                 내보내기
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Ultra Modern Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -499,8 +498,8 @@ export default function TransfersManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -597,8 +596,8 @@ export default function TransfersManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -695,8 +694,8 @@ export default function TransfersManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
           <Card
             sx={{
               position: "relative",
@@ -796,8 +795,8 @@ export default function TransfersManagement() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Ultra Modern Data Table */}
       <Card
@@ -1136,8 +1135,8 @@ export default function TransfersManagement() {
                   <Typography variant="h6" gutterBottom>
                     {selectedTransfer.title}
                   </Typography>
-                  <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid item xs={12} md={6}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Stack spacing={1}>
                         <Typography>
                           <strong>병원명:</strong>{" "}
@@ -1156,8 +1155,8 @@ export default function TransfersManagement() {
                           {getTypeTag(selectedTransfer.transferType)}
                         </Box>
                       </Stack>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
+                    </Box>
+                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                       <Stack spacing={1}>
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 1 }}
@@ -1177,8 +1176,8 @@ export default function TransfersManagement() {
                           <strong>등록일:</strong> {selectedTransfer.createdAt}
                         </Typography>
                       </Stack>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle2" gutterBottom>
                       <strong>설명:</strong>
