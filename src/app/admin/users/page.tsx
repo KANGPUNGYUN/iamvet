@@ -2,45 +2,51 @@
 
 import React, { useState } from "react";
 import {
-  CRow,
-  CCol,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CBadge,
-  CButton,
-  CButtonGroup,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
-  CFormSelect,
-  CPagination,
-  CPaginationItem,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
-  CForm,
-  CFormLabel,
-  CAlert,
-} from "@coreui/react";
-import CIcon from "@coreui/icons-react";
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  ButtonGroup,
+  TextField,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Pagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Stack,
+  Avatar,
+} from "@mui/material";
 import {
-  cilSearch,
-  cilPencil,
-  cilTrash,
-  cilLockLocked,
-  cilLockUnlocked,
-  cilUser,
-  cilBuilding,
-} from "@coreui/icons";
+  Search,
+  Edit,
+  Block,
+  Delete,
+  Person,
+  Business,
+  People,
+  CheckCircle,
+  Cancel,
+  Warning,
+  LockOpen,
+  Lock,
+  Verified,
+  VerifiedUser,
+} from "@mui/icons-material";
+import { Tag } from "@/components/ui/Tag";
 
 interface User {
   id: number;
@@ -120,15 +126,64 @@ export default function UsersManagement() {
   const [itemsPerPage] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [actionType, setActionType] = useState<"edit" | "suspend" | "delete">("edit");
+  const [actionType, setActionType] = useState<
+    "edit" | "suspend" | "delete" | "view"
+  >("view");
+
+  const getStatusTag = (status: string) => {
+    const statusMap: {
+      [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6; text: string };
+    } = {
+      ACTIVE: { variant: 2, text: "활성" },
+      PENDING: { variant: 3, text: "승인대기" },
+      SUSPENDED: { variant: 1, text: "정지" },
+      INACTIVE: { variant: 6, text: "비활성" },
+    };
+    const statusInfo = statusMap[status] || {
+      variant: 6 as const,
+      text: status,
+    };
+    return <Tag variant={statusInfo.variant}>{statusInfo.text}</Tag>;
+  };
+
+  const getRoleTag = (role: string) => {
+    const roleMap: { [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6 } } = {
+      USER: { variant: 3 },
+      ADMIN: { variant: 4 },
+      SUPER_ADMIN: { variant: 1 },
+    };
+    const roleInfo = roleMap[role] || { variant: 6 as const };
+    const roleText =
+      {
+        USER: "일반사용자",
+        ADMIN: "관리자",
+        SUPER_ADMIN: "슈퍼관리자",
+      }[role] || role;
+    return <Tag variant={roleInfo.variant}>{roleText}</Tag>;
+  };
+
+  const getTypeTag = (type: string) => {
+    const typeMap: { [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6 } } = {
+      VETERINARIAN: { variant: 4 },
+      HOSPITAL: { variant: 5 },
+    };
+    const typeInfo = typeMap[type] || { variant: 6 as const };
+    const typeText =
+      {
+        VETERINARIAN: "수의사",
+        HOSPITAL: "병원",
+      }[type] || type;
+    return <Tag variant={typeInfo.variant}>{typeText}</Tag>;
+  };
 
   // Filter users based on search and filters
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = 
+    const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === "ALL" || user.type === filterType;
-    const matchesStatus = filterStatus === "ALL" || user.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "ALL" || user.status === filterStatus;
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -138,28 +193,10 @@ export default function UsersManagement() {
   const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
-  const getStatusBadge = (status: string) => {
-    const statusMap: { [key: string]: { color: string; text: string } } = {
-      ACTIVE: { color: "success", text: "활성" },
-      PENDING: { color: "warning", text: "대기" },
-      SUSPENDED: { color: "danger", text: "정지" },
-      INACTIVE: { color: "secondary", text: "비활성" },
-    };
-    const statusInfo = statusMap[status] || { color: "secondary", text: status };
-    return <CBadge color={statusInfo.color}>{statusInfo.text}</CBadge>;
-  };
-
-  const getRoleBadge = (role: string) => {
-    const roleMap: { [key: string]: { color: string; text: string } } = {
-      USER: { color: "info", text: "일반사용자" },
-      ADMIN: { color: "warning", text: "관리자" },
-      SUPER_ADMIN: { color: "danger", text: "슈퍼관리자" },
-    };
-    const roleInfo = roleMap[role] || { color: "secondary", text: role };
-    return <CBadge color={roleInfo.color}>{roleInfo.text}</CBadge>;
-  };
-
-  const handleAction = (user: User, action: "edit" | "suspend" | "delete") => {
+  const handleAction = (
+    user: User,
+    action: "edit" | "suspend" | "delete" | "view"
+  ) => {
     setSelectedUser(user);
     setActionType(action);
     setModalVisible(true);
@@ -175,7 +212,10 @@ export default function UsersManagement() {
             case "suspend":
               return {
                 ...user,
-                status: user.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED" as const,
+                status:
+                  user.status === "SUSPENDED"
+                    ? "ACTIVE"
+                    : ("SUSPENDED" as const),
               };
             case "delete":
               return { ...user, status: "INACTIVE" as const };
@@ -192,248 +232,1054 @@ export default function UsersManagement() {
   };
 
   const renderActionButtons = (user: User) => (
-    <CButtonGroup size="sm">
-      <CButton
-        color="primary"
-        variant="outline"
-        onClick={() => handleAction(user, "edit")}
-      >
-        <CIcon icon={cilPencil} />
-      </CButton>
-      <CButton
+    <ButtonGroup size="small">
+      <Button variant="outlined" onClick={() => handleAction(user, "view")}>
+        <Person />
+      </Button>
+      <Button variant="outlined" onClick={() => handleAction(user, "edit")}>
+        <Edit />
+      </Button>
+      <Button
+        variant="outlined"
         color={user.status === "SUSPENDED" ? "success" : "warning"}
-        variant="outline"
         onClick={() => handleAction(user, "suspend")}
       >
-        <CIcon icon={user.status === "SUSPENDED" ? cilLockUnlocked : cilLockLocked} />
-      </CButton>
-      <CButton
-        color="danger"
-        variant="outline"
+        {user.status === "SUSPENDED" ? <LockOpen /> : <Lock />}
+      </Button>
+      <Button
+        variant="outlined"
+        color="error"
         onClick={() => handleAction(user, "delete")}
       >
-        <CIcon icon={cilTrash} />
-      </CButton>
-    </CButtonGroup>
+        <Delete />
+      </Button>
+    </ButtonGroup>
   );
 
   return (
-    <>
-      <CRow>
-        <CCol xs={12}>
-          <h1 className="mb-4">회원 관리</h1>
-        </CCol>
-      </CRow>
+    <Box>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            color: "#3b394d",
+            mb: 1,
+            fontSize: { xs: "1.75rem", md: "2rem" },
+          }}
+        >
+          회원 관리
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#4f5866" }}>
+          플랫폼의 회원을 효율적으로 관리하고 모니터링하세요.
+        </Typography>
+      </Box>
 
-      {/* Search and Filters */}
-      <CRow className="mb-4">
-        <CCol md={4}>
-          <CInputGroup>
-            <CInputGroupText>
-              <CIcon icon={cilSearch} />
-            </CInputGroupText>
-            <CFormInput
-              placeholder="이름 또는 이메일로 검색"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </CInputGroup>
-        </CCol>
-        <CCol md={3}>
-          <CFormSelect
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+      {/* Modern Filter Section */}
+      <Card
+        sx={{
+          mb: 3,
+          borderRadius: 3,
+          border: "1px solid #efeff0",
+          bgcolor: "#fafafa",
+          boxShadow: "none",
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                placeholder="이름 또는 이메일로 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    border: "1px solid #efeff0",
+                    "&:hover": {
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff8796",
+                      },
+                    },
+                    "&.Mui-focused": {
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff8796",
+                        borderWidth: 2,
+                      },
+                    },
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: "#9098a4", fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={2.5}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "#4f5866" }}>타입</InputLabel>
+                <Select
+                  value={filterType}
+                  label="타입"
+                  onChange={(e) => setFilterType(e.target.value)}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#efeff0",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                  }}
+                >
+                  <MenuItem value="ALL">모든 타입</MenuItem>
+                  <MenuItem value="VETERINARIAN">수의사</MenuItem>
+                  <MenuItem value="HOSPITAL">병원</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2.5}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
+                <Select
+                  value={filterStatus}
+                  label="상태"
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#efeff0",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                  }}
+                >
+                  <MenuItem value="ALL">모든 상태</MenuItem>
+                  <MenuItem value="ACTIVE">활성</MenuItem>
+                  <MenuItem value="PENDING">승인대기</MenuItem>
+                  <MenuItem value="SUSPENDED">정지</MenuItem>
+                  <MenuItem value="INACTIVE">비활성</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{
+                  bgcolor: "#ff8796",
+                  color: "white",
+                  borderRadius: 2,
+                  py: 1.5,
+                  fontWeight: 600,
+                  boxShadow: "0 4px 12px rgba(105, 140, 252, 0.3)",
+                  "&:hover": {
+                    bgcolor: "#ffb7b8",
+                    boxShadow: "0 6px 16px rgba(105, 140, 252, 0.4)",
+                  },
+                }}
+              >
+                내보내기
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Ultra Modern Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px #ffe5e5",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ffe5e5)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
           >
-            <option value="ALL">모든 타입</option>
-            <option value="VETERINARIAN">수의사</option>
-            <option value="HOSPITAL">병원</option>
-          </CFormSelect>
-        </CCol>
-        <CCol md={3}>
-          <CFormSelect
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {users.filter((u) => u.status === "ACTIVE").length}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    활성 회원
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    전월 대비 +5%
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CheckCircle sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px rgba(255, 139, 150, 0.15)",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ffb7b8)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
           >
-            <option value="ALL">모든 상태</option>
-            <option value="ACTIVE">활성</option>
-            <option value="PENDING">대기</option>
-            <option value="SUSPENDED">정지</option>
-            <option value="INACTIVE">비활성</option>
-          </CFormSelect>
-        </CCol>
-        <CCol md={2}>
-          <CButton color="primary" className="w-100">
-            내보내기
-          </CButton>
-        </CCol>
-      </CRow>
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {users.filter((u) => u.status === "PENDING").length}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    승인 대기
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    승인 필요
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Warning sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px rgba(255, 135, 150, 0.2)",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ff8796)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {users.filter((u) => u.status === "SUSPENDED").length}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    정지된 계정
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    관리 필요
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Block sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px #ffe5e5",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ffe5e5)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {users.length}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    총 회원수
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    지속 성장
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <People sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      {/* Users Table */}
-      <CRow>
-        <CCol xs={12}>
-          <CCard>
-            <CCardHeader>
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">
-                  전체 회원 ({filteredUsers.length}명)
-                </h5>
-              </div>
-            </CCardHeader>
-            <CCardBody>
-              <CTable responsive hover>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>회원정보</CTableHeaderCell>
-                    <CTableHeaderCell>타입</CTableHeaderCell>
-                    <CTableHeaderCell>권한</CTableHeaderCell>
-                    <CTableHeaderCell>상태</CTableHeaderCell>
-                    <CTableHeaderCell>인증</CTableHeaderCell>
-                    <CTableHeaderCell>가입일</CTableHeaderCell>
-                    <CTableHeaderCell>최근 로그인</CTableHeaderCell>
-                    <CTableHeaderCell>액션</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  {currentUsers.map((user) => (
-                    <CTableRow key={user.id}>
-                      <CTableDataCell>
-                        <div className="d-flex align-items-center">
-                          <div className="me-3">
-                            <CIcon
-                              icon={user.type === "VETERINARIAN" ? cilUser : cilBuilding}
-                              size="lg"
-                              className="text-medium-emphasis"
-                            />
-                          </div>
-                          <div>
-                            <div className="fw-semibold">{user.name}</div>
-                            <div className="small text-medium-emphasis">
-                              {user.email}
-                            </div>
-                          </div>
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color={user.type === "VETERINARIAN" ? "info" : "success"}>
-                          {user.type === "VETERINARIAN" ? "수의사" : "병원"}
-                        </CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>{getRoleBadge(user.role)}</CTableDataCell>
-                      <CTableDataCell>{getStatusBadge(user.status)}</CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color={user.verified ? "success" : "danger"}>
-                          {user.verified ? "인증완료" : "미인증"}
-                        </CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>{user.joinDate}</CTableDataCell>
-                      <CTableDataCell>{user.lastLogin}</CTableDataCell>
-                      <CTableDataCell>{renderActionButtons(user)}</CTableDataCell>
-                    </CTableRow>
-                  ))}
-                </CTableBody>
-              </CTable>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-center mt-4">
-                  <CPagination>
-                    <CPaginationItem
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                    >
-                      이전
-                    </CPaginationItem>
-                    {[...Array(totalPages)].map((_, index) => (
-                      <CPaginationItem
-                        key={index + 1}
-                        active={currentPage === index + 1}
-                        onClick={() => setCurrentPage(index + 1)}
+      {/* Ultra Modern Data Table */}
+      <Card
+        sx={{
+          borderRadius: 4,
+          border: "1px solid #efeff0",
+          boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            p: 3,
+            bgcolor: "white",
+            borderBottom: "1px solid #efeff0",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                회원 목록
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#4f5866",
+                  mt: 0.5,
+                }}
+              >
+                총 {filteredUsers.length}명의 회원
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                size="small"
+                sx={{
+                  color: "#4f5866",
+                  border: "1px solid #efeff0",
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 500,
+                }}
+              >
+                필터
+              </Button>
+              <Button
+                size="small"
+                sx={{
+                  color: "#4f5866",
+                  border: "1px solid #efeff0",
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 500,
+                }}
+              >
+                정렬
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+        <TableContainer>
+          <Table
+            sx={{
+              "& .MuiTableCell-root": {
+                borderBottom: "1px solid #efeff0",
+                py: 2,
+              },
+            }}
+          >
+            <TableHead sx={{ bgcolor: "#fafafa" }}>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  회원정보
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  타입
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  권한
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  상태
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  인증
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  가입일
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  최근 로그인
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  액션
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {currentUsers.map((user) => (
+                <TableRow
+                  key={user.id}
+                  hover
+                  sx={{
+                    "&:hover": {
+                      bgcolor: "rgba(0, 0, 0, 0.02)",
+                    },
+                    "& .MuiTableCell-root": {
+                      py: 2,
+                    },
+                  }}
+                >
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor:
+                            user.type === "VETERINARIAN"
+                              ? "#ff8796"
+                              : "#ffb7b8",
+                          width: 40,
+                          height: 40,
+                        }}
                       >
-                        {index + 1}
-                      </CPaginationItem>
-                    ))}
-                    <CPaginationItem
-                      disabled={currentPage === totalPages}
-                      onClick={() => setCurrentPage(currentPage + 1)}
+                        {user.type === "VETERINARIAN" ? (
+                          <Person />
+                        ) : (
+                          <Business />
+                        )}
+                      </Avatar>
+                      <Box>
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="600"
+                          sx={{ color: "text.primary", mb: 0.5 }}
+                        >
+                          {user.name}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ lineHeight: 1.3 }}
+                        >
+                          {user.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{getTypeTag(user.type)}</TableCell>
+                  <TableCell>{getRoleTag(user.role)}</TableCell>
+                  <TableCell>{getStatusTag(user.status)}</TableCell>
+                  <TableCell>
+                    {user.verified ? (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <VerifiedUser
+                          sx={{ color: "#10B981", fontSize: 20, mr: 1 }}
+                        />
+                        <Tag variant={2}>인증완료</Tag>
+                      </Box>
+                    ) : (
+                      <Tag variant={1}>미인증</Tag>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      color="#9098a4"
+                      sx={{ fontSize: "0.875rem" }}
                     >
-                      다음
-                    </CPaginationItem>
-                  </CPagination>
-                </div>
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                      {user.joinDate}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      color="#9098a4"
+                      sx={{ fontSize: "0.875rem" }}
+                    >
+                      {user.lastLogin}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{renderActionButtons(user)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Modern Pagination */}
+        {totalPages > 1 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              p: 3,
+              bgcolor: "#fafafa",
+              borderTop: "1px solid #efeff0",
+            }}
+          >
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={(_, page) => setCurrentPage(page)}
+              sx={{
+                "& .MuiPaginationItem-root": {
+                  borderRadius: 2,
+                  fontWeight: 500,
+                  color: "#4f5866",
+                  "&.Mui-selected": {
+                    bgcolor: "#ff8796",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "#ffb7b8",
+                    },
+                  },
+                  "&:hover": {
+                    bgcolor: "#ffe5e5",
+                  },
+                },
+              }}
+            />
+          </Box>
+        )}
+      </Card>
 
       {/* Action Modal */}
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>
-            {actionType === "edit" && "회원 정보 수정"}
-            {actionType === "suspend" && 
-              (selectedUser?.status === "SUSPENDED" ? "계정 활성화" : "계정 정지")}
-            {actionType === "delete" && "계정 삭제"}
-          </CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          {actionType === "edit" && selectedUser && (
-            <CForm>
-              <div className="mb-3">
-                <CFormLabel>이름</CFormLabel>
-                <CFormInput value={selectedUser.name} />
-              </div>
-              <div className="mb-3">
-                <CFormLabel>이메일</CFormLabel>
-                <CFormInput value={selectedUser.email} />
-              </div>
-              <div className="mb-3">
-                <CFormLabel>권한</CFormLabel>
-                <CFormSelect value={selectedUser.role}>
-                  <option value="USER">일반사용자</option>
-                  <option value="ADMIN">관리자</option>
-                  <option value="SUPER_ADMIN">슈퍼관리자</option>
-                </CFormSelect>
-              </div>
-            </CForm>
-          )}
-          
-          {actionType === "suspend" && selectedUser && (
-            <CAlert color={selectedUser.status === "SUSPENDED" ? "success" : "warning"}>
-              <strong>{selectedUser.name}</strong>님의 계정을{" "}
-              {selectedUser.status === "SUSPENDED" ? "활성화" : "정지"}하시겠습니까?
-              {selectedUser.status !== "SUSPENDED" && (
-                <div className="mt-2">
-                  계정이 정지되면 로그인할 수 없습니다.
-                </div>
+      <Dialog
+        open={modalVisible}
+        onClose={() => setModalVisible(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {actionType === "view" && "회원 상세정보"}
+          {actionType === "edit" && "회원 정보 수정"}
+          {actionType === "suspend" &&
+            (selectedUser?.status === "SUSPENDED"
+              ? "계정 활성화"
+              : "계정 정지")}
+          {actionType === "delete" && "계정 삭제"}
+        </DialogTitle>
+        <DialogContent>
+          {selectedUser && (
+            <Box>
+              {actionType === "view" && (
+                <Box>
+                  <Stack spacing={2} sx={{ mt: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor:
+                            selectedUser.type === "VETERINARIAN"
+                              ? "#ff8796"
+                              : "#ffb7b8",
+                          width: 60,
+                          height: 60,
+                        }}
+                      >
+                        {selectedUser.type === "VETERINARIAN" ? (
+                          <Person />
+                        ) : (
+                          <Business />
+                        )}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h6" gutterBottom>
+                          {selectedUser.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedUser.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <strong>타입:</strong>
+                          {getTypeTag(selectedUser.type)}
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <strong>권한:</strong>
+                          {getRoleTag(selectedUser.role)}
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <strong>상태:</strong>
+                          {getStatusTag(selectedUser.status)}
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <strong>인증:</strong>
+                          {selectedUser.verified ? (
+                            <Tag variant={2}>인증완료</Tag>
+                          ) : (
+                            <Tag variant={1}>미인증</Tag>
+                          )}
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography>
+                          <strong>가입일:</strong> {selectedUser.joinDate}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography>
+                          <strong>최근 로그인:</strong> {selectedUser.lastLogin}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Stack>
+                </Box>
               )}
-            </CAlert>
+
+              {actionType === "edit" && (
+                <Stack spacing={2} sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="이름"
+                    value={selectedUser.name}
+                    disabled
+                  />
+                  <TextField
+                    fullWidth
+                    label="이메일"
+                    value={selectedUser.email}
+                    disabled
+                  />
+                  <FormControl fullWidth>
+                    <InputLabel>권한</InputLabel>
+                    <Select value={selectedUser.role} label="권한">
+                      <MenuItem value="USER">일반사용자</MenuItem>
+                      <MenuItem value="ADMIN">관리자</MenuItem>
+                      <MenuItem value="SUPER_ADMIN">슈퍼관리자</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Stack>
+              )}
+
+              {actionType === "suspend" && (
+                <Alert
+                  severity={
+                    selectedUser.status === "SUSPENDED" ? "success" : "warning"
+                  }
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {selectedUser.status === "SUSPENDED" ? (
+                      <LockOpen />
+                    ) : (
+                      <Lock />
+                    )}
+                    <Typography>
+                      <strong>{selectedUser.name}</strong>님의 계정을{" "}
+                      {selectedUser.status === "SUSPENDED" ? "활성화" : "정지"}
+                      하시겠습니까?
+                    </Typography>
+                  </Box>
+                  {selectedUser.status !== "SUSPENDED" && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      계정이 정지되면 로그인할 수 없습니다.
+                    </Typography>
+                  )}
+                </Alert>
+              )}
+
+              {actionType === "delete" && (
+                <Alert severity="error">
+                  <Typography>
+                    <strong>{selectedUser.name}</strong>님의 계정을
+                    삭제하시겠습니까?
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    삭제된 계정은 복구할 수 없습니다.
+                  </Typography>
+                </Alert>
+              )}
+            </Box>
           )}
-          
-          {actionType === "delete" && selectedUser && (
-            <CAlert color="danger">
-              <strong>{selectedUser.name}</strong>님의 계정을 삭제하시겠습니까?
-              <div className="mt-2">
-                삭제된 계정은 복구할 수 없습니다.
-              </div>
-            </CAlert>
-          )}
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalVisible(false)} color="inherit">
             취소
-          </CButton>
-          <CButton
-            color={actionType === "delete" ? "danger" : "primary"}
-            onClick={confirmAction}
-          >
-            {actionType === "edit" && "저장"}
-            {actionType === "suspend" && 
-              (selectedUser?.status === "SUSPENDED" ? "활성화" : "정지")}
-            {actionType === "delete" && "삭제"}
-          </CButton>
-        </CModalFooter>
-      </CModal>
-    </>
+          </Button>
+          {actionType !== "view" && (
+            <Button
+              onClick={confirmAction}
+              color={
+                actionType === "delete"
+                  ? "error"
+                  : actionType === "suspend"
+                  ? selectedUser?.status === "SUSPENDED"
+                    ? "success"
+                    : "warning"
+                  : "primary"
+              }
+              variant="contained"
+            >
+              {actionType === "edit" && "저장"}
+              {actionType === "suspend" &&
+                (selectedUser?.status === "SUSPENDED" ? "활성화" : "정지")}
+              {actionType === "delete" && "삭제"}
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

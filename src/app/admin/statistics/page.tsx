@@ -2,35 +2,62 @@
 
 import React, { useState } from "react";
 import {
-  CRow,
-  CCol,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CButton,
-  CButtonGroup,
-  CFormSelect,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CBadge,
-  CProgress,
-  CAlert,
-} from "@coreui/react";
-import CIcon from "@coreui/icons-react";
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  ButtonGroup,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  LinearProgress,
+} from "@mui/material";
 import {
-  cilPeople,
-  cilNotes,
-  cilCheckCircle,
-  cilChart,
-  cilCloudDownload,
-  cilCalendar,
-  cilTrendUp,
-  cilTrendDown,
-} from "@coreui/icons";
+  People,
+  Work,
+  CheckCircle,
+  Assessment,
+  CloudDownload,
+  TrendingUp,
+  TrendingDown,
+  Star,
+} from "@mui/icons-material";
+import { Tag } from "@/components/ui/Tag";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+import { Line, Bar, Doughnut } from "react-chartjs-2";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 interface StatCard {
   title: string;
@@ -39,12 +66,6 @@ interface StatCard {
   changeType: "increase" | "decrease";
   icon: any;
   color: string;
-}
-
-interface ChartData {
-  label: string;
-  value: number;
-  change: number;
 }
 
 export default function StatisticsPage() {
@@ -58,7 +79,7 @@ export default function StatisticsPage() {
       value: "1,247",
       change: "+12.5%",
       changeType: "increase",
-      icon: cilPeople,
+      icon: People,
       color: "primary",
     },
     {
@@ -66,7 +87,7 @@ export default function StatisticsPage() {
       value: "328",
       change: "+5.2%",
       changeType: "increase",
-      icon: cilNotes,
+      icon: Work,
       color: "success",
     },
     {
@@ -74,7 +95,7 @@ export default function StatisticsPage() {
       value: "89",
       change: "+23.1%",
       changeType: "increase",
-      icon: cilCheckCircle,
+      icon: CheckCircle,
       color: "warning",
     },
     {
@@ -82,7 +103,7 @@ export default function StatisticsPage() {
       value: "₩4.2M",
       change: "-2.1%",
       changeType: "decrease",
-      icon: cilChart,
+      icon: Assessment,
       color: "info",
     },
   ];
@@ -210,288 +231,1107 @@ export default function StatisticsPage() {
     }
   };
 
-  const getSuccessRateColor = (rate: number) => {
-    if (rate >= 90) return "success";
-    if (rate >= 80) return "warning";
-    return "danger";
+  // Chart configuration
+  const getChartData = () => {
+    const currentData = getCurrentData();
+    return {
+      labels: currentData.map((item) => item.label),
+      datasets: [
+        {
+          label: getMetricTitle(),
+          data: currentData.map((item) => item.value),
+          borderColor: "#ff8796",
+          backgroundColor: "rgba(105, 140, 252, 0.1)",
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: "#ff8796",
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        },
+        {
+          label: "증감률",
+          data: currentData.map((item) => item.change),
+          borderColor: "#4f5866",
+          backgroundColor: "rgba(16, 185, 129, 0.1)",
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4,
+          yAxisID: "y1",
+          pointBackgroundColor: "#4f5866",
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },
+      ],
+    };
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top" as const,
+        labels: {
+          font: {
+            family: "inherit",
+            size: 12,
+            weight: "500" as const,
+          },
+          color: "#3b394d",
+          usePointStyle: true,
+          padding: 20,
+        },
+      },
+      tooltip: {
+        backgroundColor: "#ffffff",
+        titleColor: "#3b394d",
+        bodyColor: "#4f5866",
+        borderColor: "#efeff0",
+        borderWidth: 1,
+        cornerRadius: 8,
+        padding: 12,
+        font: {
+          family: "inherit",
+        },
+        callbacks: {
+          title: (context: any) => context[0].label,
+          label: (context: any) => {
+            if (context.datasetIndex === 0) {
+              return `${
+                context.dataset.label
+              }: ${context.parsed.y.toLocaleString()}`;
+            } else {
+              return `증감률: ${context.parsed.y > 0 ? "+" : ""}${
+                context.parsed.y
+              }%`;
+            }
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            family: "inherit",
+            size: 11,
+            weight: "500" as const,
+          },
+          color: "#9098a4",
+        },
+      },
+      y: {
+        type: "linear" as const,
+        display: true,
+        position: "left" as const,
+        grid: {
+          color: "rgba(239, 239, 240, 0.5)",
+          drawBorder: false,
+        },
+        ticks: {
+          font: {
+            family: "inherit",
+            size: 11,
+            weight: "500" as const,
+          },
+          color: "#9098a4",
+          callback: (value: any) => value.toLocaleString(),
+        },
+      },
+      y1: {
+        type: "linear" as const,
+        display: true,
+        position: "right" as const,
+        grid: {
+          drawOnChartArea: false,
+        },
+        ticks: {
+          font: {
+            family: "inherit",
+            size: 11,
+            weight: "500" as const,
+          },
+          color: "#9098a4",
+          callback: (value: any) => `${value}%`,
+        },
+      },
+    },
+    interaction: {
+      intersect: false,
+      mode: "index" as const,
+    },
   };
 
   return (
-    <>
-      <CRow>
-        <CCol xs={12}>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1>통계/리포트</h1>
-            <div className="d-flex gap-2">
-              <CFormSelect
+    <Box>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 2,
+            flexDirection: { xs: "column", md: "row" },
+            gap: { xs: 2, md: 0 },
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 700,
+                color: "#3b394d",
+                mb: 1,
+                fontSize: { xs: "1.75rem", md: "2rem" },
+              }}
+            >
+              통계/리포트
+            </Typography>
+            <Typography variant="body1" sx={{ color: "#4f5866" }}>
+              플랫폼의 주요 지표와 성과를 한눈에 확인하세요.
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel sx={{ color: "#4f5866" }}>기간</InputLabel>
+              <Select
                 value={timeRange}
+                label="기간"
                 onChange={(e) => setTimeRange(e.target.value)}
-                style={{ width: "auto" }}
+                sx={{
+                  bgcolor: "white",
+                  borderRadius: 2,
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#efeff0",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#ff8796",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#ff8796",
+                  },
+                }}
               >
-                <option value="daily">일별</option>
-                <option value="weekly">주별</option>
-                <option value="monthly">월별</option>
-                <option value="yearly">연별</option>
-              </CFormSelect>
-              <CButton color="primary">
-                <CIcon icon={cilCloudDownload} className="me-2" />
-                리포트 다운로드
-              </CButton>
-            </div>
-          </div>
-        </CCol>
-      </CRow>
+                <MenuItem value="daily">일별</MenuItem>
+                <MenuItem value="weekly">주별</MenuItem>
+                <MenuItem value="monthly">월별</MenuItem>
+                <MenuItem value="yearly">연별</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<CloudDownload />}
+              sx={{
+                bgcolor: "#ff8796",
+                color: "white",
+                borderRadius: 2,
+                py: 1,
+                px: 3,
+                fontWeight: 600,
+                boxShadow: "0 4px 12px rgba(105, 140, 252, 0.3)",
+                "&:hover": {
+                  bgcolor: "#ffe5e5",
+                  boxShadow: "0 6px 16px rgba(105, 140, 252, 0.4)",
+                },
+              }}
+            >
+              리포트 다운로드
+            </Button>
+          </Box>
+        </Box>
+      </Box>
 
-      {/* Stats Cards */}
-      <CRow className="mb-4">
+      {/* Ultra Modern Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         {statsCards.map((stat, index) => (
-          <CCol sm={6} lg={3} key={index}>
-            <CCard className="mb-3">
-              <CCardBody>
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <div className="fs-6 fw-semibold text-medium-emphasis">
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card
+              sx={{
+                position: "relative",
+                bgcolor: "white",
+                border: "1px solid #efeff0",
+                borderRadius: 4,
+                overflow: "hidden",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
+                  "&::before": {
+                    opacity: 1,
+                  },
+                },
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "4px",
+                  background:
+                    stat.color === "primary"
+                      ? "linear-gradient(90deg, #ff8796, #ffb7b8)"
+                      : stat.color === "success"
+                      ? "linear-gradient(90deg, #ff8796, #ffb7b8)"
+                      : stat.color === "warning"
+                      ? "linear-gradient(90deg, #ff8796, #ffb7b8)"
+                      : "linear-gradient(90deg, #ff8796, #ffb7b8)",
+                  opacity: 0,
+                  transition: "opacity 0.3s ease",
+                },
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        fontWeight: 800,
+                        color: "#3b394d",
+                        mb: 0.5,
+                        fontSize: "2rem",
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#4f5866",
+                        fontWeight: 600,
+                        mb: 2,
+                      }}
+                    >
                       {stat.title}
-                    </div>
-                    <div className="fs-4 fw-bold">{stat.value}</div>
-                    <div className="d-flex align-items-center">
-                      <CIcon
-                        icon={stat.changeType === "increase" ? cilTrendUp : cilTrendDown}
-                        className={`me-1 ${stat.changeType === "increase" ? "text-success" : "text-danger"}`}
-                      />
-                      <small className={stat.changeType === "increase" ? "text-success" : "text-danger"}>
-                        {stat.change} 이번 달
-                      </small>
-                    </div>
-                  </div>
-                  <div className={`bg-${stat.color} text-white p-3 rounded`}>
-                    <CIcon icon={stat.icon} size="xl" />
-                  </div>
-                </div>
-              </CCardBody>
-            </CCard>
-          </CCol>
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color:
+                          stat.changeType === "increase"
+                            ? "#ffb7b8"
+                            : "#4f5866",
+                        fontSize: "0.875rem",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {stat.changeType === "increase" ? (
+                        <TrendingUp sx={{ fontSize: 16, mr: 0.5 }} />
+                      ) : (
+                        <TrendingDown sx={{ fontSize: 16, mr: 0.5 }} />
+                      )}
+                      {stat.change} 이번 달
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 3,
+                      background:
+                        stat.color === "primary"
+                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)"
+                          : stat.color === "success"
+                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)"
+                          : stat.color === "warning"
+                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)"
+                          : "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <stat.icon
+                      sx={{
+                        fontSize: 28,
+                        color: "#ff8796",
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
-      </CRow>
+      </Grid>
 
       {/* Main Chart */}
-      <CRow className="mb-4">
-        <CCol xs={12}>
-          <CCard>
-            <CCardHeader>
-              <div className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">{getMetricTitle()}</h5>
-                <CButtonGroup>
-                  <CButton
-                    color={activeMetric === "users" ? "primary" : "outline-primary"}
-                    onClick={() => setActiveMetric("users")}
-                  >
-                    회원
-                  </CButton>
-                  <CButton
-                    color={activeMetric === "jobs" ? "primary" : "outline-primary"}
-                    onClick={() => setActiveMetric("jobs")}
-                  >
-                    채용공고
-                  </CButton>
-                  <CButton
-                    color={activeMetric === "matches" ? "primary" : "outline-primary"}
-                    onClick={() => setActiveMetric("matches")}
-                  >
-                    매칭
-                  </CButton>
-                </CButtonGroup>
-              </div>
-            </CCardHeader>
-            <CCardBody>
-              <div style={{ height: "300px", position: "relative" }}>
-                <CAlert color="info">
-                  <CIcon icon={cilChart} className="me-2" />
-                  실제 환경에서는 Chart.js나 다른 차트 라이브러리를 사용하여 시각화합니다.
-                </CAlert>
-                
-                {/* Simple bar chart representation */}
-                <div className="d-flex align-items-end justify-content-between" style={{ height: "200px" }}>
-                  {getCurrentData().slice(-6).map((data, index) => (
-                    <div key={index} className="d-flex flex-column align-items-center" style={{ width: "14%" }}>
-                      <div
-                        className="bg-primary rounded-top"
-                        style={{
-                          height: `${(data.value / Math.max(...getCurrentData().map(d => d.value))) * 150}px`,
-                          width: "100%",
-                          minHeight: "10px",
-                        }}
-                      />
-                      <div className="small mt-2 text-center">
-                        <div className="fw-semibold">{data.label}</div>
-                        <div className="text-muted">{data.value.toLocaleString()}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+      <Card
+        sx={{
+          mb: 4,
+          borderRadius: 4,
+          border: "1px solid #efeff0",
+          boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            p: 3,
+            bgcolor: "white",
+            borderBottom: "1px solid #efeff0",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexDirection: { xs: "column", md: "row" },
+              gap: { xs: 2, md: 0 },
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: "#3b394d",
+                fontSize: "1.25rem",
+              }}
+            >
+              {getMetricTitle()}
+            </Typography>
+            <ButtonGroup>
+              <Button
+                variant={activeMetric === "users" ? "contained" : "outlined"}
+                onClick={() => setActiveMetric("users")}
+                sx={{
+                  bgcolor: activeMetric === "users" ? "#ff8796" : "transparent",
+                  color: activeMetric === "users" ? "white" : "#ff8796",
+                  borderColor: "#ff8796",
+                  "&:hover": {
+                    bgcolor: activeMetric === "users" ? "#ffb7b8" : "#ffd3d3",
+                    borderColor: "#ff8796",
+                  },
+                }}
+              >
+                회원
+              </Button>
+              <Button
+                variant={activeMetric === "jobs" ? "contained" : "outlined"}
+                onClick={() => setActiveMetric("jobs")}
+                sx={{
+                  bgcolor: activeMetric === "jobs" ? "#ff8796" : "transparent",
+                  color: activeMetric === "jobs" ? "white" : "#ff8796",
+                  borderColor: "#ff8796",
+                  "&:hover": {
+                    bgcolor: activeMetric === "jobs" ? "#ffb7b8" : "#ffd3d3",
+                    borderColor: "#ff8796",
+                  },
+                }}
+              >
+                채용공고
+              </Button>
+              <Button
+                variant={activeMetric === "matches" ? "contained" : "outlined"}
+                onClick={() => setActiveMetric("matches")}
+                sx={{
+                  bgcolor:
+                    activeMetric === "matches" ? "#ff8796" : "transparent",
+                  color: activeMetric === "matches" ? "white" : "#ff8796",
+                  borderColor: "#ff8796",
+                  "&:hover": {
+                    bgcolor: activeMetric === "matches" ? "#ffb7b8" : "#ffd3d3",
+                    borderColor: "#ff8796",
+                  },
+                }}
+              >
+                매칭
+              </Button>
+            </ButtonGroup>
+          </Box>
+        </Box>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ height: "400px", position: "relative" }}>
+            <Line data={getChartData()} options={chartOptions} />
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Performance Charts */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Performance Comparison Chart */}
+        <Grid item xs={12} lg={8}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                월별 성과 비교
+              </Typography>
+            </Box>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ height: "300px", position: "relative" }}>
+                <Bar
+                  data={{
+                    labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
+                    datasets: [
+                      {
+                        label: "회원 가입",
+                        data: [156, 189, 234, 298, 356, 445],
+                        backgroundColor: "#ffb7b8",
+                        borderColor: "#ff8796",
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                      },
+                      {
+                        label: "채용 공고",
+                        data: [45, 67, 89, 123, 156, 189],
+                        backgroundColor: "#9098a4",
+                        borderColor: "#4f5866",
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                      },
+                      {
+                        label: "매칭 성공",
+                        data: [12, 18, 25, 34, 42, 51],
+                        backgroundColor: "#ffe5e5",
+                        borderColor: "#ffd3d3",
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: "top" as const,
+                        labels: {
+                          font: {
+                            family: "inherit",
+                            size: 12,
+                            weight: "500" as const,
+                          },
+                          color: "#3b394d",
+                          usePointStyle: true,
+                          padding: 15,
+                        },
+                      },
+                      tooltip: {
+                        backgroundColor: "#ffffff",
+                        titleColor: "#3b394d",
+                        bodyColor: "#4f5866",
+                        borderColor: "#efeff0",
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 12,
+                      },
+                    },
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false,
+                        },
+                        ticks: {
+                          font: {
+                            family: "inherit",
+                            size: 11,
+                            weight: "500" as const,
+                          },
+                          color: "#9098a4",
+                        },
+                      },
+                      y: {
+                        grid: {
+                          color: "rgba(239, 239, 240, 0.5)",
+                          drawBorder: false,
+                        },
+                        ticks: {
+                          font: {
+                            family: "inherit",
+                            size: 11,
+                            weight: "500" as const,
+                          },
+                          color: "#9098a4",
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Success Rate Donut Chart */}
+        <Grid item xs={12} lg={4}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                매칭 성공률
+              </Typography>
+            </Box>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ height: "300px", position: "relative" }}>
+                <Doughnut
+                  data={{
+                    labels: ["성공", "실패", "진행중"],
+                    datasets: [
+                      {
+                        data: [75, 15, 10],
+                        backgroundColor: ["#4f5866", "#F87171", "#ffd3d3"],
+                        borderColor: ["#4f5866", "#F87171", "#ffd3d3"],
+                        borderWidth: 2,
+                        hoverOffset: 4,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: "bottom" as const,
+                        labels: {
+                          font: {
+                            family: "inherit",
+                            size: 12,
+                            weight: "500" as const,
+                          },
+                          color: "#3b394d",
+                          usePointStyle: true,
+                          padding: 15,
+                        },
+                      },
+                      tooltip: {
+                        backgroundColor: "#ffffff",
+                        titleColor: "#3b394d",
+                        bodyColor: "#4f5866",
+                        borderColor: "#efeff0",
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 12,
+                        callbacks: {
+                          label: (context: any) => {
+                            const label = context.label || "";
+                            const value = context.parsed || 0;
+                            return `${label}: ${value}%`;
+                          },
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Top Performers */}
-      <CRow>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         {/* Top Hospitals */}
-        <CCol md={6}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <h5 className="mb-0">활발한 병원 순위</h5>
-            </CCardHeader>
-            <CCardBody>
-              <CTable responsive>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>병원명</CTableHeaderCell>
-                    <CTableHeaderCell>채용공고</CTableHeaderCell>
-                    <CTableHeaderCell>성공률</CTableHeaderCell>
-                    <CTableHeaderCell>평균 응답</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
+        <Grid item xs={12} lg={6}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                활발한 병원 순위
+              </Typography>
+            </Box>
+            <TableContainer>
+              <Table
+                sx={{
+                  "& .MuiTableCell-root": {
+                    borderBottom: "1px solid #efeff0",
+                    py: 2,
+                  },
+                }}
+              >
+                <TableHead sx={{ bgcolor: "#fafafa" }}>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      병원명
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      채용공고
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      성공률
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      평균 응답
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {topHospitals.map((hospital, index) => (
-                    <CTableRow key={index}>
-                      <CTableDataCell>
-                        <div className="d-flex align-items-center">
-                          <CBadge color="primary" className="me-2">
-                            {index + 1}
-                          </CBadge>
-                          {hospital.name}
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color="info">{hospital.jobCount}개</CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <div className="d-flex align-items-center">
-                          <span className="me-2">{hospital.successRate}%</span>
-                          <CProgress
+                    <TableRow
+                      key={index}
+                      hover
+                      sx={{
+                        "&:hover": {
+                          bgcolor: "rgba(0, 0, 0, 0.02)",
+                        },
+                      }}
+                    >
+                      <TableCell>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Tag variant={4}>{index + 1}</Tag>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {hospital.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Tag variant={3}>{hospital.jobCount}개</Tag>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ mr: 2, fontWeight: 500 }}
+                          >
+                            {hospital.successRate}%
+                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
                             value={hospital.successRate}
-                            color={getSuccessRateColor(hospital.successRate)}
-                            className="flex-grow-1"
-                            style={{ height: "6px" }}
+                            sx={{
+                              flexGrow: 1,
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: "#f3f4f6",
+                              "& .MuiLinearProgress-bar": {
+                                bgcolor:
+                                  hospital.successRate >= 90
+                                    ? "#4f5866"
+                                    : hospital.successRate >= 80
+                                    ? "#ffd3d3"
+                                    : "#F87171",
+                                borderRadius: 3,
+                              },
+                            }}
                           />
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell>{hospital.avgResponseTime}</CTableDataCell>
-                    </CTableRow>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {hospital.avgResponseTime}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </CTableBody>
-              </CTable>
-            </CCardBody>
-          </CCard>
-        </CCol>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
+        </Grid>
 
         {/* Top Veterinarians */}
-        <CCol md={6}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <h5 className="mb-0">활발한 수의사 순위</h5>
-            </CCardHeader>
-            <CCardBody>
-              <CTable responsive>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>수의사명</CTableHeaderCell>
-                    <CTableHeaderCell>지원횟수</CTableHeaderCell>
-                    <CTableHeaderCell>성공률</CTableHeaderCell>
-                    <CTableHeaderCell>평균 응답</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
+        <Grid item xs={12} lg={6}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                활발한 수의사 순위
+              </Typography>
+            </Box>
+            <TableContainer>
+              <Table
+                sx={{
+                  "& .MuiTableCell-root": {
+                    borderBottom: "1px solid #efeff0",
+                    py: 2,
+                  },
+                }}
+              >
+                <TableHead sx={{ bgcolor: "#fafafa" }}>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      수의사명
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      지원횟수
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      성공률
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      평균 응답
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {topVeterinarians.map((vet, index) => (
-                    <CTableRow key={index}>
-                      <CTableDataCell>
-                        <div className="d-flex align-items-center">
-                          <CBadge color="success" className="me-2">
-                            {index + 1}
-                          </CBadge>
-                          {vet.name}
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color="info">{vet.applicationCount}회</CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <div className="d-flex align-items-center">
-                          <span className="me-2">{vet.successRate}%</span>
-                          <CProgress
+                    <TableRow
+                      key={index}
+                      hover
+                      sx={{
+                        "&:hover": {
+                          bgcolor: "rgba(0, 0, 0, 0.02)",
+                        },
+                      }}
+                    >
+                      <TableCell>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Tag variant={2}>{index + 1}</Tag>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {vet.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Tag variant={3}>{vet.applicationCount}회</Tag>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ mr: 2, fontWeight: 500 }}
+                          >
+                            {vet.successRate}%
+                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
                             value={vet.successRate}
-                            color={getSuccessRateColor(vet.successRate)}
-                            className="flex-grow-1"
-                            style={{ height: "6px" }}
+                            sx={{
+                              flexGrow: 1,
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: "#f3f4f6",
+                              "& .MuiLinearProgress-bar": {
+                                bgcolor:
+                                  vet.successRate >= 90
+                                    ? "#4f5866"
+                                    : vet.successRate >= 80
+                                    ? "#ffd3d3"
+                                    : "#F87171",
+                                borderRadius: 3,
+                              },
+                            }}
                           />
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell>{vet.avgResponseTime}</CTableDataCell>
-                    </CTableRow>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {vet.avgResponseTime}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </CTableBody>
-              </CTable>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Key Metrics Summary */}
-      <CRow>
-        <CCol xs={12}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <h5 className="mb-0">주요 지표 요약</h5>
-            </CCardHeader>
-            <CCardBody>
-              <CRow>
-                <CCol md={3}>
-                  <div className="border-end pe-3">
-                    <div className="fs-6 text-medium-emphasis">평균 매칭 시간</div>
-                    <div className="fs-4 fw-bold text-primary">2.4일</div>
-                    <div className="small text-success">
-                      <CIcon icon={cilTrendUp} className="me-1" />
-                      15% 개선
-                    </div>
-                  </div>
-                </CCol>
-                <CCol md={3}>
-                  <div className="border-end pe-3">
-                    <div className="fs-6 text-medium-emphasis">사용자 만족도</div>
-                    <div className="fs-4 fw-bold text-success">4.7/5.0</div>
-                    <div className="small text-success">
-                      <CIcon icon={cilTrendUp} className="me-1" />
-                      0.2점 상승
-                    </div>
-                  </div>
-                </CCol>
-                <CCol md={3}>
-                  <div className="border-end pe-3">
-                    <div className="fs-6 text-medium-emphasis">월간 활성 사용자</div>
-                    <div className="fs-4 fw-bold text-info">756명</div>
-                    <div className="small text-success">
-                      <CIcon icon={cilTrendUp} className="me-1" />
-                      18% 증가
-                    </div>
-                  </div>
-                </CCol>
-                <CCol md={3}>
-                  <div>
-                    <div className="fs-6 text-medium-emphasis">평균 세션 시간</div>
-                    <div className="fs-4 fw-bold text-warning">12분 34초</div>
-                    <div className="small text-danger">
-                      <CIcon icon={cilTrendDown} className="me-1" />
-                      3% 감소
-                    </div>
-                  </div>
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-    </>
+      <Card
+        sx={{
+          borderRadius: 4,
+          border: "1px solid #efeff0",
+          boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            p: 3,
+            bgcolor: "white",
+            borderBottom: "1px solid #efeff0",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              color: "#3b394d",
+              fontSize: "1.25rem",
+            }}
+          >
+            주요 지표 요약
+          </Typography>
+        </Box>
+        <CardContent sx={{ p: 3 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  borderRight: { md: "1px solid #efeff0" },
+                  pr: { md: 3 },
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#4f5866", mb: 1, fontWeight: 500 }}
+                >
+                  평균 매칭 시간
+                </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, color: "#ff8796", mb: 1 }}
+                >
+                  2.4일
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#4f5866",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  <TrendingUp sx={{ fontSize: 16, mr: 0.5 }} />
+                  15% 개선
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  borderRight: { md: "1px solid #efeff0" },
+                  pr: { md: 3 },
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#4f5866", mb: 1, fontWeight: 500 }}
+                >
+                  사용자 만족도
+                </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, color: "#4f5866", mb: 1 }}
+                >
+                  4.7/5.0
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#4f5866",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  <Star sx={{ fontSize: 16, mr: 0.5 }} />
+                  0.2점 상승
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  borderRight: { md: "1px solid #efeff0" },
+                  pr: { md: 3 },
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#4f5866", mb: 1, fontWeight: 500 }}
+                >
+                  월간 활성 사용자
+                </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, color: "#3B82F6", mb: 1 }}
+                >
+                  756명
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#4f5866",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  <TrendingUp sx={{ fontSize: 16, mr: 0.5 }} />
+                  18% 증가
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ textAlign: "center" }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#4f5866", mb: 1, fontWeight: 500 }}
+                >
+                  평균 세션 시간
+                </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, color: "#ffd3d3", mb: 1 }}
+                >
+                  12분 34초
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#F87171",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  <TrendingDown sx={{ fontSize: 16, mr: 0.5 }} />
+                  3% 감소
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }

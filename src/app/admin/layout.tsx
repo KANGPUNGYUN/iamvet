@@ -3,178 +3,328 @@
 import React from "react";
 import "./globals.css";
 import {
-  CSidebar,
-  CSidebarBrand,
-  CSidebarNav,
-  CNavTitle,
-  CNavItem,
-  CNavGroup,
-  CSidebarToggler,
-  CContainer,
-  CBreadcrumb,
-  CBreadcrumbItem,
-} from "@coreui/react";
-import CIcon from "@coreui/icons-react";
+  Box,
+  Drawer,
+  AppBar,
+  Toolbar,
+  List,
+  Typography,
+  Divider,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Container,
+  Breadcrumbs,
+  Link,
+  Collapse,
+} from "@mui/material";
 import {
-  cilPeople,
-  cilNotes,
-  cilChart,
-  cilCog,
-  cilSpeedometer,
-  cilSettings,
-  cilMenu,
-} from "@coreui/icons";
+  People,
+  Article,
+  BarChart,
+  Settings,
+  Dashboard,
+  Menu,
+  ExpandLess,
+  ExpandMore,
+  Speed,
+} from "@mui/icons-material";
 import { usePathname } from "next/navigation";
+import NextLink from "next/link";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+const drawerWidth = 280;
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const [sidebarShow, setSidebarShow] = React.useState(true);
+  const [postsExpanded, setPostsExpanded] = React.useState(false);
 
   const navigation = [
     {
-      component: CNavItem,
       name: "대시보드",
-      to: "/admin",
-      icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+      href: "/admin",
+      icon: <Dashboard />,
     },
     {
-      component: CNavTitle,
-      name: "사용자 관리",
-    },
-    {
-      component: CNavItem,
       name: "회원 관리",
-      to: "/admin/users",
-      icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+      href: "/admin/users",
+      icon: <People />,
     },
     {
-      component: CNavTitle,
-      name: "콘텐츠 관리",
-    },
-    {
-      component: CNavGroup,
       name: "게시물 관리",
-      to: "/admin/posts",
-      icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
-      items: [
-        {
-          component: CNavItem,
-          name: "채용 공고",
-          to: "/admin/posts/jobs",
-        },
-        {
-          component: CNavItem,
-          name: "교육 콘텐츠",
-          to: "/admin/posts/lectures",
-        },
-        {
-          component: CNavItem,
-          name: "양도양수",
-          to: "/admin/posts/transfers",
-        },
-        {
-          component: CNavItem,
-          name: "신고 관리",
-          to: "/admin/posts/reports",
-        },
+      icon: <Article />,
+      children: [
+        { name: "채용 공고", href: "/admin/posts/jobs" },
+        { name: "교육 콘텐츠", href: "/admin/posts/lectures" },
+        { name: "양도양수", href: "/admin/posts/transfers" },
+        { name: "신고 관리", href: "/admin/posts/reports" },
       ],
     },
     {
-      component: CNavTitle,
-      name: "시스템",
-    },
-    {
-      component: CNavItem,
       name: "AI 매칭 모니터링",
-      to: "/admin/ai-monitoring",
-      icon: <CIcon icon={cilCog} customClassName="nav-icon" />,
+      href: "/admin/ai-monitoring",
+      icon: <Speed />,
     },
     {
-      component: CNavItem,
       name: "통계/리포트",
-      to: "/admin/statistics",
-      icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
+      href: "/admin/statistics",
+      icon: <BarChart />,
     },
     {
-      component: CNavItem,
       name: "설정",
-      to: "/admin/settings",
-      icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+      href: "/admin/settings",
+      icon: <Settings />,
     },
   ];
 
-  return (
-    <div className="admin-layout">
-      <CSidebar
-        position="fixed"
-        unfoldable={false}
-        visible={sidebarShow}
-        onVisibleChange={(visible) => setSidebarShow(visible)}
-        className="d-print-none sidebar sidebar-fixed"
+  const drawer = (
+    <div>
+      <Toolbar
+        sx={{
+          bgcolor: "var(--Box_Light)",
+          borderBottom: "1px solid var(--Line)",
+        }}
       >
-        <CSidebarBrand className="d-md-flex" href="/admin">
-          <div className="sidebar-brand-full h4 mb-0">IAMVET Admin</div>
-          <div className="sidebar-brand-minimized">IV</div>
-        </CSidebarBrand>
-        <CSidebarNav>
-          {navigation.map((item, index) => {
-            if (item.component === CNavTitle) {
-              return <CNavTitle key={index}>{item.name}</CNavTitle>;
-            }
-            if (item.component === CNavGroup) {
-              return (
-                <CNavGroup key={index} toggler={item.name}>
-                  {item.items?.map((subItem, subIndex) => (
-                    <CNavItem key={subIndex} href={subItem.to}>
-                      {subItem.name}
-                    </CNavItem>
-                  ))}
-                </CNavGroup>
-              );
-            }
+        <Typography
+          variant="h6"
+          noWrap
+          component="div"
+          sx={{ color: "var(--Keycolor1)", fontWeight: 700 }}
+        >
+          IAMVET Admin
+        </Typography>
+      </Toolbar>
+      <List sx={{ px: 2, py: 3 }}>
+        {navigation.map((item, index) => {
+          if (item.children) {
             return (
-              <CNavItem key={index} href={item.to}>
-                {item.icon}
-                <span className="ms-2">{item.name}</span>
-              </CNavItem>
+              <React.Fragment key={index}>
+                <ListItem disablePadding sx={{ mb: 1 }}>
+                  <ListItemButton
+                    onClick={() => setPostsExpanded(!postsExpanded)}
+                    sx={{
+                      borderRadius: 2,
+                      "&:hover": {
+                        bgcolor: "rgba(105, 140, 252, 0.08)",
+                      },
+                      py: 1.5,
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{ color: "var(--Keycolor1)", minWidth: 40 }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.name}
+                      primaryTypographyProps={{
+                        fontWeight: 500,
+                        fontSize: "0.95rem",
+                        color: "text.primary",
+                      }}
+                    />
+                    {postsExpanded ? <ExpandLess /> : <ExpandMore />}
+                  </ListItemButton>
+                </ListItem>
+                <Collapse in={postsExpanded} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding sx={{ mb: 1 }}>
+                    {item.children.map((child, childIndex) => (
+                      <ListItem key={childIndex} disablePadding>
+                        <ListItemButton
+                          component={NextLink}
+                          href={child.href}
+                          sx={{
+                            pl: 6,
+                            py: 1,
+                            borderRadius: 2,
+                            mx: 1,
+                            "&:hover": {
+                              bgcolor: "rgba(105, 140, 252, 0.08)",
+                            },
+                            "&.Mui-selected": {
+                              bgcolor: "rgba(105, 140, 252, 0.15)",
+                              "&:hover": {
+                                bgcolor: "rgba(105, 140, 252, 0.2)",
+                              },
+                            },
+                          }}
+                          selected={pathname === child.href}
+                        >
+                          <ListItemText
+                            primary={child.name}
+                            primaryTypographyProps={{
+                              fontWeight: pathname === child.href ? 600 : 400,
+                              fontSize: "0.875rem",
+                              color:
+                                pathname === child.href
+                                  ? "var(--Keycolor1)"
+                                  : "text.secondary",
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Collapse>
+              </React.Fragment>
             );
-          })}
-        </CSidebarNav>
-        <CSidebarToggler
-          className="d-none d-lg-flex"
-          onClick={() => setSidebarShow(!sidebarShow)}
-        />
-      </CSidebar>
-
-      <div className={`main-content ${sidebarShow ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
-        <div className="content-header bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-center">
-          <div>
-            <button
-              className="btn btn-link d-lg-none p-0 me-3"
-              onClick={() => setSidebarShow(!sidebarShow)}
-            >
-              <CIcon icon={cilMenu} size="lg" />
-            </button>
-            <CBreadcrumb className="mb-0">
-              <CBreadcrumbItem href="/admin">Home</CBreadcrumbItem>
-              {pathname !== "/admin" && (
-                <CBreadcrumbItem active>
-                  {pathname.split("/").slice(-1)[0]}
-                </CBreadcrumbItem>
-              )}
-            </CBreadcrumb>
-          </div>
-        </div>
-        <div className="content-body bg-light">
-          <CContainer fluid className="p-4">
-            {children}
-          </CContainer>
-        </div>
-      </div>
+          } else {
+            return (
+              <ListItem key={index} disablePadding sx={{ mb: 1 }}>
+                <ListItemButton
+                  component={NextLink}
+                  href={item.href}
+                  selected={pathname === item.href}
+                  sx={{
+                    borderRadius: 2,
+                    py: 1.5,
+                    "&:hover": {
+                      bgcolor: "rgba(105, 140, 252, 0.08)",
+                    },
+                    "&.Mui-selected": {
+                      bgcolor: "rgba(105, 140, 252, 0.15)",
+                      "&:hover": {
+                        bgcolor: "rgba(105, 140, 252, 0.2)",
+                      },
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      color:
+                        pathname === item.href
+                          ? "var(--Keycolor1)"
+                          : "text.secondary",
+                      minWidth: 40,
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.name}
+                    primaryTypographyProps={{
+                      fontWeight: pathname === item.href ? 600 : 500,
+                      fontSize: "0.95rem",
+                      color:
+                        pathname === item.href
+                          ? "var(--Keycolor1)"
+                          : "text.primary",
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          }
+        })}
+      </List>
     </div>
+  );
+
+  return (
+    <Box sx={{ display: "flex", bgcolor: "var(--Box_Light)" }}>
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          width: { sm: `calc(100% - ${sidebarShow ? drawerWidth : 0}px)` },
+          ml: { sm: sidebarShow ? `${drawerWidth}px` : 0 },
+          bgcolor: "white",
+          color: "text.primary",
+          borderBottom: "1px solid var(--Line)",
+          boxShadow: "0 1px 3px rgba(105, 140, 252, 0.08)",
+        }}
+      >
+        <Toolbar sx={{ minHeight: "64px !important" }}>
+          <IconButton
+            color="inherit"
+            aria-label="toggle drawer"
+            edge="start"
+            onClick={() => setSidebarShow(!sidebarShow)}
+            sx={{ mr: 2, display: { sm: "none" } }}
+          >
+            <Menu />
+          </IconButton>
+          <Breadcrumbs aria-label="breadcrumb" sx={{ color: "text.secondary" }}>
+            <Link
+              component={NextLink}
+              underline="hover"
+              color="text.secondary"
+              href="/admin"
+              sx={{ fontWeight: 500 }}
+            >
+              Home
+            </Link>
+            {pathname !== "/admin" && (
+              <Typography color="text.primary" sx={{ fontWeight: 600 }}>
+                {pathname.split("/").slice(-1)[0]}
+              </Typography>
+            )}
+          </Breadcrumbs>
+        </Toolbar>
+      </AppBar>
+      <Box
+        component="nav"
+        sx={{
+          width: { sm: sidebarShow ? drawerWidth : 0 },
+          flexShrink: { sm: 0 },
+        }}
+        aria-label="admin navigation"
+      >
+        <Drawer
+          variant="temporary"
+          open={sidebarShow}
+          onClose={() => setSidebarShow(false)}
+          ModalProps={{
+            keepMounted: true,
+          }}
+          sx={{
+            display: { xs: "block", sm: "none" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
+          }}
+        >
+          {drawer}
+        </Drawer>
+        <Drawer
+          variant="persistent"
+          sx={{
+            display: { xs: "none", sm: "block" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+              border: "none",
+              boxShadow: "0 4px 20px rgba(105, 140, 252, 0.12)",
+              bgcolor: "white",
+            },
+          }}
+          open={sidebarShow}
+        >
+          {drawer}
+        </Drawer>
+      </Box>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${sidebarShow ? drawerWidth : 0}px)` },
+          bgcolor: "var(--Box_Light)",
+          minHeight: "100vh",
+        }}
+      >
+        <Toolbar />
+        <Container maxWidth="xl" sx={{ mt: 2 }}>
+          {children}
+        </Container>
+      </Box>
+    </Box>
   );
 }

@@ -2,28 +2,64 @@
 
 import React from "react";
 import {
-  CRow,
-  CCol,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CProgress,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CBadge,
-} from "@coreui/react";
-import CIcon from "@coreui/icons-react";
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  LinearProgress,
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Divider,
+} from "@mui/material";
 import {
-  cilPeople,
-  cilNotes,
-  cilChart,
-  cilCheckCircle,
-} from "@coreui/icons";
-import "./globals.css";
+  People,
+  Work,
+  CheckCircle,
+  TrendingUp,
+  Person,
+  Business,
+  ReportProblem,
+  Computer,
+  Speed,
+  Assessment,
+  CloudDone,
+} from "@mui/icons-material";
+import { Tag } from "@/components/ui/Tag";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Line, Doughnut } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 export default function AdminDashboard() {
   const statsData = [
@@ -31,28 +67,28 @@ export default function AdminDashboard() {
       title: "전체 회원",
       count: "1,247",
       percentage: "+12%",
-      icon: cilPeople,
+      icon: People,
       color: "primary",
     },
     {
       title: "채용 공고",
       count: "328",
       percentage: "+5%",
-      icon: cilNotes,
+      icon: Work,
       color: "success",
     },
     {
       title: "매칭 성공",
       count: "89",
       percentage: "+23%",
-      icon: cilCheckCircle,
+      icon: CheckCircle,
       color: "warning",
     },
     {
       title: "월간 활성 사용자",
       count: "756",
       percentage: "+18%",
-      icon: cilChart,
+      icon: Assessment,
       color: "info",
     },
   ];
@@ -62,32 +98,32 @@ export default function AdminDashboard() {
       id: 1,
       name: "김수의",
       email: "kim@example.com",
-      type: "수의사",
-      status: "active",
+      type: "VETERINARIAN",
+      status: "ACTIVE",
       joinDate: "2024-01-15",
     },
     {
       id: 2,
       name: "서울동물병원",
       email: "seoul@hospital.com",
-      type: "병원",
-      status: "pending",
+      type: "HOSPITAL",
+      status: "PENDING",
       joinDate: "2024-01-14",
     },
     {
       id: 3,
       name: "박수의",
       email: "park@example.com",
-      type: "수의사",
-      status: "active",
+      type: "VETERINARIAN",
+      status: "ACTIVE",
       joinDate: "2024-01-13",
     },
     {
       id: 4,
       name: "강남동물병원",
       email: "gangnam@hospital.com",
-      type: "병원",
-      status: "suspended",
+      type: "HOSPITAL",
+      status: "SUSPENDED",
       joinDate: "2024-01-12",
     },
   ];
@@ -99,7 +135,7 @@ export default function AdminDashboard() {
       reporter: "김수의",
       type: "채용공고",
       date: "2024-01-15",
-      status: "pending",
+      status: "PENDING",
     },
     {
       id: 2,
@@ -107,7 +143,7 @@ export default function AdminDashboard() {
       reporter: "이수의",
       type: "교육콘텐츠",
       date: "2024-01-14",
-      status: "investigating",
+      status: "INVESTIGATING",
     },
     {
       id: 3,
@@ -115,199 +151,855 @@ export default function AdminDashboard() {
       reporter: "박수의",
       type: "양도양수",
       date: "2024-01-13",
-      status: "pending",
+      status: "PENDING",
     },
   ];
 
-  const getStatusBadge = (status: string) => {
-    const statusMap: { [key: string]: { color: string; text: string } } = {
-      active: { color: "success", text: "활성" },
-      pending: { color: "warning", text: "대기" },
-      suspended: { color: "danger", text: "정지" },
-      investigating: { color: "info", text: "조사중" },
+  const getStatusTag = (status: string) => {
+    const statusMap: {
+      [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6; text: string };
+    } = {
+      ACTIVE: { variant: 2, text: "활성" },
+      PENDING: { variant: 3, text: "대기" },
+      SUSPENDED: { variant: 1, text: "정지" },
+      INVESTIGATING: { variant: 4, text: "조사중" },
     };
-    const statusInfo = statusMap[status] || { color: "secondary", text: status };
-    return <CBadge color={statusInfo.color}>{statusInfo.text}</CBadge>;
+    const statusInfo = statusMap[status] || {
+      variant: 6 as const,
+      text: status,
+    };
+    return <Tag variant={statusInfo.variant}>{statusInfo.text}</Tag>;
+  };
+
+  const getTypeTag = (type: string) => {
+    const typeMap: { [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6 } } = {
+      VETERINARIAN: { variant: 4 },
+      HOSPITAL: { variant: 5 },
+    };
+    const typeInfo = typeMap[type] || { variant: 6 as const };
+    const typeText =
+      {
+        VETERINARIAN: "수의사",
+        HOSPITAL: "병원",
+      }[type] || type;
+    return <Tag variant={typeInfo.variant}>{typeText}</Tag>;
   };
 
   return (
-    <>
-      <CRow>
-        <CCol xs={12}>
-          <h1 className="mb-4">관리자 대시보드</h1>
-        </CCol>
-      </CRow>
+    <Box>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            color: "#3b394d",
+            mb: 1,
+            fontSize: { xs: "1.75rem", md: "2rem" },
+          }}
+        >
+          관리자 대시보드
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#4f5866" }}>
+          플랫폼의 전반적인 현황을 한눈에 확인하세요.
+        </Typography>
+      </Box>
 
-      {/* Stats Cards */}
-      <CRow className="mb-4">
+      {/* Ultra Modern Stats Cards */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
         {statsData.map((stat, index) => (
-          <CCol sm={6} lg={3} key={index}>
-            <CCard className="mb-3">
-              <CCardBody>
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <div className="fs-6 fw-semibold text-medium-emphasis">
+          <Box key={index} sx={{ flex: "1 1 300px", minWidth: "250px" }}>
+            <Card
+              sx={{
+                position: "relative",
+                bgcolor: "white",
+                border: "1px solid #efeff0",
+                borderRadius: 4,
+                overflow: "hidden",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
+                  "&::before": {
+                    opacity: 1,
+                  },
+                },
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "4px",
+                  background:
+                    stat.color === "primary"
+                      ? "linear-gradient(90deg, #ff8796, #ffd3d3)"
+                      : stat.color === "success"
+                      ? "linear-gradient(90deg, #ffb7b8, #ffe5e5)"
+                      : stat.color === "warning"
+                      ? "linear-gradient(90deg, #ff8796, #ffd3d3)"
+                      : "linear-gradient(90deg, #ffb7b8, #ffe5e5)",
+                  opacity: 0,
+                  transition: "opacity 0.3s ease",
+                },
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        fontWeight: 800,
+                        color: "#3b394d",
+                        mb: 0.5,
+                        fontSize: "2rem",
+                      }}
+                    >
+                      {stat.count}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#4f5866",
+                        fontWeight: 600,
+                        mb: 2,
+                      }}
+                    >
                       {stat.title}
-                    </div>
-                    <div className="fs-4 fw-bold">{stat.count}</div>
-                    <small className={`text-${stat.color}`}>
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "#ff8796",
+                        fontSize: "0.875rem",
+                        fontWeight: 500,
+                      }}
+                    >
+                      <TrendingUp sx={{ fontSize: 16, mr: 0.5 }} />
                       {stat.percentage} 이번 달
-                    </small>
-                  </div>
-                  <div className={`bg-${stat.color} text-white p-3 rounded`}>
-                    <CIcon icon={stat.icon} size="xl" />
-                  </div>
-                </div>
-              </CCardBody>
-            </CCard>
-          </CCol>
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 3,
+                      background:
+                        stat.color === "primary"
+                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)"
+                          : stat.color === "success"
+                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)"
+                          : stat.color === "warning"
+                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)"
+                          : "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <stat.icon
+                      sx={{
+                        fontSize: 28,
+                        color: "#ff8796",
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
         ))}
-      </CRow>
+      </Box>
 
-      <CRow>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
         {/* Recent Users */}
-        <CCol md={8}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <h5 className="mb-0">최근 가입 회원</h5>
-            </CCardHeader>
-            <CCardBody>
-              <CTable responsive>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>이름/병원명</CTableHeaderCell>
-                    <CTableHeaderCell>이메일</CTableHeaderCell>
-                    <CTableHeaderCell>타입</CTableHeaderCell>
-                    <CTableHeaderCell>상태</CTableHeaderCell>
-                    <CTableHeaderCell>가입일</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
+        <Box sx={{ flex: "2 1 600px" }}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                최근 가입 회원
+              </Typography>
+            </Box>
+            <TableContainer>
+              <Table
+                sx={{
+                  "& .MuiTableCell-root": {
+                    borderBottom: "1px solid #efeff0",
+                    py: 2,
+                  },
+                }}
+              >
+                <TableHead sx={{ bgcolor: "#fafafa" }}>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                        letterSpacing: "0.025em",
+                      }}
+                    >
+                      이름/병원명
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                        letterSpacing: "0.025em",
+                      }}
+                    >
+                      이메일
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                        letterSpacing: "0.025em",
+                      }}
+                    >
+                      타입
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                        letterSpacing: "0.025em",
+                      }}
+                    >
+                      상태
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 700,
+                        color: "#3b394d",
+                        fontSize: "0.875rem",
+                        letterSpacing: "0.025em",
+                      }}
+                    >
+                      가입일
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {recentUsers.map((user) => (
-                    <CTableRow key={user.id}>
-                      <CTableDataCell>
-                        <div className="fw-semibold">{user.name}</div>
-                      </CTableDataCell>
-                      <CTableDataCell>{user.email}</CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color={user.type === "수의사" ? "info" : "success"}>
-                          {user.type}
-                        </CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>{getStatusBadge(user.status)}</CTableDataCell>
-                      <CTableDataCell>{user.joinDate}</CTableDataCell>
-                    </CTableRow>
+                    <TableRow
+                      key={user.id}
+                      hover
+                      sx={{
+                        "&:hover": {
+                          bgcolor: "rgba(0, 0, 0, 0.02)",
+                        },
+                      }}
+                    >
+                      <TableCell>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <Avatar
+                            sx={{
+                              bgcolor:
+                                user.type === "VETERINARIAN"
+                                  ? "#ff8796"
+                                  : "#ffb7b8",
+                              width: 36,
+                              height: 36,
+                            }}
+                          >
+                            {user.type === "VETERINARIAN" ? (
+                              <Person sx={{ fontSize: 20 }} />
+                            ) : (
+                              <Business sx={{ fontSize: 20 }} />
+                            )}
+                          </Avatar>
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight="600"
+                            sx={{ color: "text.primary" }}
+                          >
+                            {user.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: "0.875rem" }}
+                        >
+                          {user.email}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{getTypeTag(user.type)}</TableCell>
+                      <TableCell>{getStatusTag(user.status)}</TableCell>
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          color="#9098a4"
+                          sx={{ fontSize: "0.875rem" }}
+                        >
+                          {user.joinDate}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </CTableBody>
-              </CTable>
-            </CCardBody>
-          </CCard>
-        </CCol>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
+        </Box>
 
         {/* Pending Reports */}
-        <CCol md={4}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <h5 className="mb-0">처리 대기 신고</h5>
-            </CCardHeader>
-            <CCardBody>
-              {pendingReports.map((report) => (
-                <div key={report.id} className="border-bottom py-3">
-                  <div className="d-flex justify-content-between">
-                    <div className="fw-semibold small">{report.title}</div>
-                    {getStatusBadge(report.status)}
-                  </div>
-                  <div className="text-medium-emphasis small">
-                    신고자: {report.reporter}
-                  </div>
-                  <div className="text-medium-emphasis small">
-                    {report.type} • {report.date}
-                  </div>
-                </div>
-              ))}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+        <Box sx={{ flex: "1 1 400px" }}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    background:
+                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <ReportProblem sx={{ fontSize: 24, color: "#ff8796" }} />
+                </Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "1.25rem",
+                  }}
+                >
+                  처리 대기 신고
+                </Typography>
+              </Box>
+            </Box>
+            <CardContent sx={{ p: 0 }}>
+              <List>
+                {pendingReports.map((report, index) => (
+                  <React.Fragment key={report.id}>
+                    <ListItem sx={{ px: 3, py: 2 }}>
+                      <ListItemAvatar>
+                        <Avatar
+                          sx={{
+                            bgcolor: "#ff8796",
+                            width: 36,
+                            height: 36,
+                          }}
+                        >
+                          <ReportProblem sx={{ fontSize: 20 }} />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "flex-start",
+                              mb: 1,
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="600"
+                              sx={{ color: "text.primary", flex: 1 }}
+                            >
+                              {report.title}
+                            </Typography>
+                            {getStatusTag(report.status)}
+                          </Box>
+                        }
+                        secondary={
+                          <>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block" }}
+                            >
+                              신고자: {report.reporter}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {report.type} • {report.date}
+                            </Typography>
+                          </>
+                        }
+                      />
+                    </ListItem>
+                    {index < pendingReports.length - 1 && (
+                      <Divider variant="inset" component="li" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
 
-      {/* System Status */}
-      <CRow>
-        <CCol md={6}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <h5 className="mb-0">시스템 상태</h5>
-            </CCardHeader>
-            <CCardBody>
-              <div className="mb-3">
-                <div className="d-flex justify-content-between mb-1">
-                  <span>서버 CPU 사용률</span>
-                  <span>65%</span>
-                </div>
-                <CProgress value={65} color="success" />
-              </div>
-              <div className="mb-3">
-                <div className="d-flex justify-content-between mb-1">
-                  <span>메모리 사용률</span>
-                  <span>78%</span>
-                </div>
-                <CProgress value={78} color="warning" />
-              </div>
-              <div className="mb-3">
-                <div className="d-flex justify-content-between mb-1">
-                  <span>데이터베이스 연결</span>
-                  <span>정상</span>
-                </div>
-                <CProgress value={100} color="success" />
-              </div>
-              <div>
-                <div className="d-flex justify-content-between mb-1">
-                  <span>스토리지 사용률</span>
-                  <span>45%</span>
-                </div>
-                <CProgress value={45} color="info" />
-              </div>
-            </CCardBody>
-          </CCard>
-        </CCol>
+      {/* System Status and AI Performance */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+        {/* System Status */}
+        <Box sx={{ flex: "1 1 400px" }}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    background:
+                      "linear-gradient(135deg, #f2f5ff 0%, #ffb7b8 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Computer sx={{ fontSize: 24, color: "#ff8796" }} />
+                </Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "1.25rem",
+                  }}
+                >
+                  시스템 상태
+                </Typography>
+              </Box>
+            </Box>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      서버 CPU 사용률
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#3b394d" }}
+                    >
+                      65%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={65}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ff8796",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
 
-        <CCol md={6}>
-          <CCard className="mb-4">
-            <CCardHeader>
-              <h5 className="mb-0">AI 매칭 성능</h5>
-            </CCardHeader>
-            <CCardBody>
-              <div className="mb-3">
-                <div className="d-flex justify-content-between mb-1">
-                  <span>매칭 정확도</span>
-                  <span>87%</span>
-                </div>
-                <CProgress value={87} color="primary" />
-              </div>
-              <div className="mb-3">
-                <div className="d-flex justify-content-between mb-1">
-                  <span>응답 시간</span>
-                  <span>1.2초</span>
-                </div>
-                <CProgress value={80} color="success" />
-              </div>
-              <div className="mb-3">
-                <div className="d-flex justify-content-between mb-1">
-                  <span>일일 매칭 요청</span>
-                  <span>456건</span>
-                </div>
-                <CProgress value={70} color="info" />
-              </div>
-              <div>
-                <div className="d-flex justify-content-between mb-1">
-                  <span>성공률</span>
-                  <span>92%</span>
-                </div>
-                <CProgress value={92} color="warning" />
-              </div>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-    </>
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      메모리 사용률
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#3b394d" }}
+                    >
+                      78%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={78}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ffb7b8",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      데이터베이스 연결
+                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CloudDone sx={{ fontSize: 16, color: "#ff8796" }} />
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600, color: "#ff8796" }}
+                      >
+                        정상
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={100}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ff8796",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      스토리지 사용률
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#3b394d" }}
+                    >
+                      45%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={45}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ffb7b8",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* AI Performance */}
+        <Box sx={{ flex: "1 1 400px" }}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    background:
+                      "linear-gradient(135deg, #ecfdf5 0%, #ffb7b8 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Speed sx={{ fontSize: 24, color: "#ff8796" }} />
+                </Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "1.25rem",
+                  }}
+                >
+                  AI 매칭 성능
+                </Typography>
+              </Box>
+            </Box>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      매칭 정확도
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#3b394d" }}
+                    >
+                      87%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={87}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ff8796",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      응답 시간
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#3b394d" }}
+                    >
+                      1.2초
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={80}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ffb7b8",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      일일 매칭 요청
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#3b394d" }}
+                    >
+                      456건
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={70}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ff8796",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#4f5866" }}
+                    >
+                      성공률
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#3b394d" }}
+                    >
+                      92%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={92}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "#f3f4f6",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "#ffb7b8",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
+    </Box>
   );
 }

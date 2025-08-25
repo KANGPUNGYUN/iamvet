@@ -2,44 +2,45 @@
 
 import React, { useState } from "react";
 import {
-  CRow,
-  CCol,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CBadge,
-  CButton,
-  CButtonGroup,
-  CFormInput,
-  CInputGroup,
-  CInputGroupText,
-  CFormSelect,
-  CPagination,
-  CPaginationItem,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
-  CAlert,
-} from "@coreui/react";
-import CIcon from "@coreui/icons-react";
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  ButtonGroup,
+  TextField,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Pagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Stack,
+} from "@mui/material";
 import {
-  cilSearch,
-  cilEye,
-  cilTrash,
-  cilCheckCircle,
-  cilXCircle,
-  cilWarning,
-  cilHome,
-  cilCurrencyDollar,
-} from "@coreui/icons";
+  Search,
+  Visibility,
+  Delete,
+  CheckCircle,
+  Cancel,
+  Warning,
+  Home,
+  AttachMoney,
+} from "@mui/icons-material";
+import { Tag } from "@/components/ui/Tag";
 
 interface Transfer {
   id: number;
@@ -136,45 +137,62 @@ export default function TransfersManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
-  const [actionType, setActionType] = useState<"view" | "suspend" | "delete" | "approve">("view");
+  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
+    null
+  );
+  const [actionType, setActionType] = useState<
+    "view" | "suspend" | "delete" | "approve"
+  >("view");
 
-  const getStatusBadge = (status: string) => {
-    const statusMap: { [key: string]: { color: string; text: string } } = {
-      ACTIVE: { color: "success", text: "활성" },
-      PENDING: { color: "warning", text: "승인대기" },
-      SUSPENDED: { color: "danger", text: "정지" },
-      COMPLETED: { color: "info", text: "완료" },
+  const getStatusTag = (status: string) => {
+    const statusMap: {
+      [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6; text: string };
+    } = {
+      ACTIVE: { variant: 2, text: "활성" },
+      PENDING: { variant: 3, text: "승인대기" },
+      SUSPENDED: { variant: 1, text: "정지" },
+      COMPLETED: { variant: 4, text: "완료" },
     };
-    const statusInfo = statusMap[status] || { color: "secondary", text: status };
-    return <CBadge color={statusInfo.color}>{statusInfo.text}</CBadge>;
+    const statusInfo = statusMap[status] || {
+      variant: 6 as const,
+      text: status,
+    };
+    return <Tag variant={statusInfo.variant}>{statusInfo.text}</Tag>;
   };
 
-  const getTypeBadge = (type: string) => {
-    const typeMap: { [key: string]: { color: string } } = {
-      "양도": { color: "primary" },
-      "양수": { color: "success" },
+  const getTypeTag = (type: string) => {
+    const typeMap: { [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6 } } = {
+      양도: { variant: 4 },
+      양수: { variant: 5 },
     };
-    const typeInfo = typeMap[type] || { color: "secondary" };
-    return <CBadge color={typeInfo.color}>{type}</CBadge>;
+    const typeInfo = typeMap[type] || { variant: 6 as const };
+    return <Tag variant={typeInfo.variant}>{type}</Tag>;
   };
 
   const filteredTransfers = transfers.filter((transfer) => {
-    const matchesSearch = 
+    const matchesSearch =
       transfer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transfer.hospitalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transfer.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "ALL" || transfer.status === filterStatus;
-    const matchesType = filterType === "ALL" || transfer.transferType === filterType;
+    const matchesStatus =
+      filterStatus === "ALL" || transfer.status === filterStatus;
+    const matchesType =
+      filterType === "ALL" || transfer.transferType === filterType;
     return matchesSearch && matchesStatus && matchesType;
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTransfers = filteredTransfers.slice(indexOfFirstItem, indexOfLastItem);
+  const currentTransfers = filteredTransfers.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const totalPages = Math.ceil(filteredTransfers.length / itemsPerPage);
 
-  const handleAction = (transfer: Transfer, action: "view" | "suspend" | "delete" | "approve") => {
+  const handleAction = (
+    transfer: Transfer,
+    action: "view" | "suspend" | "delete" | "approve"
+  ) => {
     setSelectedTransfer(transfer);
     setActionType(action);
     setModalVisible(true);
@@ -206,339 +224,1049 @@ export default function TransfersManagement() {
   };
 
   const renderActionButtons = (transfer: Transfer) => (
-    <CButtonGroup size="sm">
-      <CButton
-        color="info"
-        variant="outline"
-        onClick={() => handleAction(transfer, "view")}
-      >
-        <CIcon icon={cilEye} />
-      </CButton>
+    <ButtonGroup size="small">
+      <Button variant="outlined" onClick={() => handleAction(transfer, "view")}>
+        <Visibility />
+      </Button>
       {transfer.status === "PENDING" && (
-        <CButton
+        <Button
+          variant="outlined"
           color="success"
-          variant="outline"
           onClick={() => handleAction(transfer, "approve")}
         >
-          <CIcon icon={cilCheckCircle} />
-        </CButton>
+          <CheckCircle />
+        </Button>
       )}
-      <CButton
+      <Button
+        variant="outlined"
         color="warning"
-        variant="outline"
         onClick={() => handleAction(transfer, "suspend")}
         disabled={transfer.status === "SUSPENDED"}
       >
-        <CIcon icon={cilXCircle} />
-      </CButton>
-      <CButton
-        color="danger"
-        variant="outline"
+        <Cancel />
+      </Button>
+      <Button
+        variant="outlined"
+        color="error"
         onClick={() => handleAction(transfer, "delete")}
       >
-        <CIcon icon={cilTrash} />
-      </CButton>
-    </CButtonGroup>
+        <Delete />
+      </Button>
+    </ButtonGroup>
   );
 
   return (
-    <>
-      <CRow>
-        <CCol xs={12}>
-          <h1 className="mb-4">양도양수 관리</h1>
-        </CCol>
-      </CRow>
+    <Box>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            color: "#3b394d",
+            mb: 1,
+            fontSize: { xs: "1.75rem", md: "2rem" },
+          }}
+        >
+          양도양수 관리
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#4f5866" }}>
+          병원 양도양수 게시물을 효율적으로 관리하고 모니터링하세요.
+        </Typography>
+      </Box>
 
-      {/* Search and Filters */}
-      <CRow className="mb-4">
-        <CCol md={4}>
-          <CInputGroup>
-            <CInputGroupText>
-              <CIcon icon={cilSearch} />
-            </CInputGroupText>
-            <CFormInput
-              placeholder="제목, 병원명, 지역으로 검색"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </CInputGroup>
-        </CCol>
-        <CCol md={3}>
-          <CFormSelect
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+      {/* Modern Filter Section */}
+      <Card
+        sx={{
+          mb: 3,
+          borderRadius: 3,
+          border: "1px solid #efeff0",
+          bgcolor: "#fafafa",
+          boxShadow: "none",
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={5}>
+              <TextField
+                fullWidth
+                placeholder="제목, 병원명, 지역으로 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    border: "1px solid #efeff0",
+                    "&:hover": {
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff8796",
+                      },
+                    },
+                    "&.Mui-focused": {
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff8796",
+                        borderWidth: 2,
+                      },
+                    },
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: "#9098a4", fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={2.5}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
+                <Select
+                  value={filterStatus}
+                  label="상태"
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#efeff0",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                  }}
+                >
+                  <MenuItem value="ALL">모든 상태</MenuItem>
+                  <MenuItem value="ACTIVE">활성</MenuItem>
+                  <MenuItem value="PENDING">승인대기</MenuItem>
+                  <MenuItem value="SUSPENDED">정지</MenuItem>
+                  <MenuItem value="COMPLETED">완료</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2.5}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "#4f5866" }}>유형</InputLabel>
+                <Select
+                  value={filterType}
+                  label="유형"
+                  onChange={(e) => setFilterType(e.target.value)}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#efeff0",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                  }}
+                >
+                  <MenuItem value="ALL">모든 유형</MenuItem>
+                  <MenuItem value="양도">양도</MenuItem>
+                  <MenuItem value="양수">양수</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{
+                  bgcolor: "#ff8796",
+                  color: "white",
+                  borderRadius: 2,
+                  py: 1.5,
+                  fontWeight: 600,
+                  boxShadow: "0 4px 12px rgba(105, 140, 252, 0.3)",
+                  "&:hover": {
+                    bgcolor: "#ffb7b8",
+                    boxShadow: "0 6px 16px rgba(105, 140, 252, 0.4)",
+                  },
+                }}
+              >
+                내보내기
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Ultra Modern Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ffd3d3)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
           >
-            <option value="ALL">모든 상태</option>
-            <option value="ACTIVE">활성</option>
-            <option value="PENDING">승인대기</option>
-            <option value="SUSPENDED">정지</option>
-            <option value="COMPLETED">완료</option>
-          </CFormSelect>
-        </CCol>
-        <CCol md={3}>
-          <CFormSelect
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {transfers.filter((t) => t.status === "ACTIVE").length}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    활성 게시물
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    전월 대비 +12%
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CheckCircle sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px rgba(255, 139, 150, 0.15)",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ffb7b8)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
           >
-            <option value="ALL">모든 유형</option>
-            <option value="양도">양도</option>
-            <option value="양수">양수</option>
-          </CFormSelect>
-        </CCol>
-        <CCol md={2}>
-          <CButton color="primary" className="w-100">
-            내보내기
-          </CButton>
-        </CCol>
-      </CRow>
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {transfers.filter((t) => t.status === "PENDING").length}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    승인 대기
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    24시간 내 처리
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Warning sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px rgba(255, 135, 150, 0.2)",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ff8796)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {transfers.filter((t) => t.reportCount > 0).length}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    신고된 게시물
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    즉시 확인 필요
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Cancel sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              position: "relative",
+              bgcolor: "white",
+              border: "1px solid #efeff0",
+              borderRadius: 4,
+              overflow: "hidden",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
+                "&::before": {
+                  opacity: 1,
+                },
+              },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #ff8796, #ffd3d3)",
+                opacity: 0,
+                transition: "opacity 0.3s ease",
+              },
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: "#3b394d",
+                      mb: 0.5,
+                      fontSize: "2rem",
+                    }}
+                  >
+                    {transfers.reduce(
+                      (sum, transfer) => sum + transfer.inquiryCount,
+                      0
+                    )}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#4f5866",
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
+                    총 문의수
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "#ff8796",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#ff8796",
+                        mr: 1,
+                      }}
+                    />
+                    이번 주 +8건
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Home sx={{ fontSize: 28, color: "#ff8796" }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      {/* Stats Cards */}
-      <CRow className="mb-4">
-        <CCol sm={6} md={3}>
-          <CCard className="bg-success text-white">
-            <CCardBody className="pb-0 d-flex justify-content-between align-items-start">
-              <div>
-                <div className="fs-4 fw-semibold">
-                  {transfers.filter(t => t.status === "ACTIVE").length}
-                </div>
-                <div>활성 게시물</div>
-              </div>
-              <CIcon icon={cilCheckCircle} height={36} />
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol sm={6} md={3}>
-          <CCard className="bg-warning text-white">
-            <CCardBody className="pb-0 d-flex justify-content-between align-items-start">
-              <div>
-                <div className="fs-4 fw-semibold">
-                  {transfers.filter(t => t.status === "PENDING").length}
-                </div>
-                <div>승인 대기</div>
-              </div>
-              <CIcon icon={cilWarning} height={36} />
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol sm={6} md={3}>
-          <CCard className="bg-danger text-white">
-            <CCardBody className="pb-0 d-flex justify-content-between align-items-start">
-              <div>
-                <div className="fs-4 fw-semibold">
-                  {transfers.filter(t => t.reportCount > 0).length}
-                </div>
-                <div>신고된 게시물</div>
-              </div>
-              <CIcon icon={cilXCircle} height={36} />
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol sm={6} md={3}>
-          <CCard className="bg-info text-white">
-            <CCardBody className="pb-0 d-flex justify-content-between align-items-start">
-              <div>
-                <div className="fs-4 fw-semibold">
-                  {transfers.reduce((sum, transfer) => sum + transfer.inquiryCount, 0)}
-                </div>
-                <div>총 문의수</div>
-              </div>
-              <CIcon icon={cilHome} height={36} />
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-
-      {/* Transfers Table */}
-      <CRow>
-        <CCol xs={12}>
-          <CCard>
-            <CCardHeader>
-              <h5 className="mb-0">양도양수 목록 ({filteredTransfers.length}개)</h5>
-            </CCardHeader>
-            <CCardBody>
-              <CTable responsive hover>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>제목</CTableHeaderCell>
-                    <CTableHeaderCell>병원/지역</CTableHeaderCell>
-                    <CTableHeaderCell>가격</CTableHeaderCell>
-                    <CTableHeaderCell>유형</CTableHeaderCell>
-                    <CTableHeaderCell>상태</CTableHeaderCell>
-                    <CTableHeaderCell>문의</CTableHeaderCell>
-                    <CTableHeaderCell>신고</CTableHeaderCell>
-                    <CTableHeaderCell>조회수</CTableHeaderCell>
-                    <CTableHeaderCell>등록일</CTableHeaderCell>
-                    <CTableHeaderCell>액션</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  {currentTransfers.map((transfer) => (
-                    <CTableRow key={transfer.id}>
-                      <CTableDataCell>
-                        <div className="fw-semibold">{transfer.title}</div>
-                        <small className="text-muted">{transfer.description}</small>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <div>{transfer.hospitalName}</div>
-                        <small className="text-muted">{transfer.location}</small>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <div className="fw-semibold text-success">
-                          <CIcon icon={cilCurrencyDollar} className="me-1" />
-                          {transfer.price}
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell>{getTypeBadge(transfer.transferType)}</CTableDataCell>
-                      <CTableDataCell>{getStatusBadge(transfer.status)}</CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color="info">{transfer.inquiryCount}건</CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {transfer.reportCount > 0 ? (
-                          <CBadge color="danger">{transfer.reportCount}</CBadge>
-                        ) : (
-                          <span className="text-muted">0</span>
-                        )}
-                      </CTableDataCell>
-                      <CTableDataCell>{transfer.viewCount.toLocaleString()}</CTableDataCell>
-                      <CTableDataCell>{transfer.createdAt}</CTableDataCell>
-                      <CTableDataCell>{renderActionButtons(transfer)}</CTableDataCell>
-                    </CTableRow>
-                  ))}
-                </CTableBody>
-              </CTable>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-center mt-4">
-                  <CPagination>
-                    <CPaginationItem
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                    >
-                      이전
-                    </CPaginationItem>
-                    {[...Array(totalPages)].map((_, index) => (
-                      <CPaginationItem
-                        key={index + 1}
-                        active={currentPage === index + 1}
-                        onClick={() => setCurrentPage(index + 1)}
+      {/* Ultra Modern Data Table */}
+      <Card
+        sx={{
+          borderRadius: 4,
+          border: "1px solid #efeff0",
+          boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            p: 3,
+            bgcolor: "white",
+            borderBottom: "1px solid #efeff0",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                양도양수 목록
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#4f5866",
+                  mt: 0.5,
+                }}
+              >
+                총 {filteredTransfers.length}개의 게시물
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                size="small"
+                sx={{
+                  color: "#4f5866",
+                  border: "1px solid #efeff0",
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 500,
+                }}
+              >
+                필터
+              </Button>
+              <Button
+                size="small"
+                sx={{
+                  color: "#4f5866",
+                  border: "1px solid #efeff0",
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 500,
+                }}
+              >
+                정렬
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+        <TableContainer>
+          <Table
+            sx={{
+              "& .MuiTableCell-root": {
+                borderBottom: "1px solid #efeff0",
+                py: 2,
+              },
+            }}
+          >
+            <TableHead sx={{ bgcolor: "#fafafa" }}>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  제목
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  병원/지역
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  가격
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  유형
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  상태
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  문의
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  신고
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  조회수
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  등록일
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 700,
+                    color: "#3b394d",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.025em",
+                  }}
+                >
+                  액션
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {currentTransfers.map((transfer) => (
+                <TableRow
+                  key={transfer.id}
+                  hover
+                  sx={{
+                    "&:hover": {
+                      bgcolor: "rgba(0, 0, 0, 0.02)",
+                    },
+                    "& .MuiTableCell-root": {
+                      py: 2,
+                    },
+                  }}
+                >
+                  <TableCell>
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="600"
+                        sx={{ color: "text.primary", mb: 0.5 }}
                       >
-                        {index + 1}
-                      </CPaginationItem>
-                    ))}
-                    <CPaginationItem
-                      disabled={currentPage === totalPages}
-                      onClick={() => setCurrentPage(currentPage + 1)}
+                        {transfer.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.3 }}
+                      >
+                        {transfer.description}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 500, mb: 0.5 }}
+                      >
+                        {transfer.hospitalName}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {transfer.location}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <AttachMoney
+                        sx={{ mr: 0.5, fontSize: 20, color: "#4CAF50" }}
+                      />
+                      <Typography
+                        variant="body2"
+                        fontWeight="600"
+                        sx={{ color: "#4CAF50" }}
+                      >
+                        {transfer.price}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{getTypeTag(transfer.transferType)}</TableCell>
+                  <TableCell>{getStatusTag(transfer.status)}</TableCell>
+                  <TableCell>
+                    <Tag variant={3}>{transfer.inquiryCount}건</Tag>
+                  </TableCell>
+                  <TableCell>
+                    {transfer.reportCount > 0 ? (
+                      <Tag variant={1}>{transfer.reportCount}</Tag>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        0
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {transfer.viewCount.toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      color="#9098a4"
+                      sx={{ fontSize: "0.875rem" }}
                     >
-                      다음
-                    </CPaginationItem>
-                  </CPagination>
-                </div>
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                      {transfer.createdAt}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{renderActionButtons(transfer)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Modern Pagination */}
+        {totalPages > 1 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              p: 3,
+              bgcolor: "#fafafa",
+              borderTop: "1px solid #efeff0",
+            }}
+          >
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={(_, page) => setCurrentPage(page)}
+              sx={{
+                "& .MuiPaginationItem-root": {
+                  borderRadius: 2,
+                  fontWeight: 500,
+                  color: "#4f5866",
+                  "&.Mui-selected": {
+                    bgcolor: "#ff8796",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "#ffb7b8",
+                    },
+                  },
+                  "&:hover": {
+                    bgcolor: "#ffe5e5",
+                  },
+                },
+              }}
+            />
+          </Box>
+        )}
+      </Card>
 
       {/* Action Modal */}
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)} size="lg">
-        <CModalHeader>
-          <CModalTitle>
-            {actionType === "view" && "양도양수 상세정보"}
-            {actionType === "approve" && "게시물 승인"}
-            {actionType === "suspend" && "게시물 정지"}
-            {actionType === "delete" && "게시물 삭제"}
-          </CModalTitle>
-        </CModalHeader>
-        <CModalBody>
+      <Dialog
+        open={modalVisible}
+        onClose={() => setModalVisible(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {actionType === "view" && "양도양수 상세정보"}
+          {actionType === "approve" && "게시물 승인"}
+          {actionType === "suspend" && "게시물 정지"}
+          {actionType === "delete" && "게시물 삭제"}
+        </DialogTitle>
+        <DialogContent>
           {selectedTransfer && (
-            <div>
+            <Box>
               {actionType === "view" && (
-                <div>
-                  <h5>{selectedTransfer.title}</h5>
-                  <hr />
-                  <CRow>
-                    <CCol md={6}>
-                      <p><strong>병원명:</strong> {selectedTransfer.hospitalName || "정보없음"}</p>
-                      <p><strong>위치:</strong> {selectedTransfer.location}</p>
-                      <p><strong>가격:</strong> {selectedTransfer.price}</p>
-                      <p><strong>유형:</strong> {getTypeBadge(selectedTransfer.transferType)}</p>
-                    </CCol>
-                    <CCol md={6}>
-                      <p><strong>상태:</strong> {getStatusBadge(selectedTransfer.status)}</p>
-                      <p><strong>문의 수:</strong> {selectedTransfer.inquiryCount}건</p>
-                      <p><strong>조회수:</strong> {selectedTransfer.viewCount.toLocaleString()}</p>
-                      <p><strong>등록일:</strong> {selectedTransfer.createdAt}</p>
-                    </CCol>
-                  </CRow>
-                  <div className="mt-3">
-                    <p><strong>설명:</strong></p>
-                    <p>{selectedTransfer.description}</p>
-                  </div>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedTransfer.title}
+                  </Typography>
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <Typography>
+                          <strong>병원명:</strong>{" "}
+                          {selectedTransfer.hospitalName || "정보없음"}
+                        </Typography>
+                        <Typography>
+                          <strong>위치:</strong> {selectedTransfer.location}
+                        </Typography>
+                        <Typography>
+                          <strong>가격:</strong> {selectedTransfer.price}
+                        </Typography>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <strong>유형:</strong>
+                          {getTypeTag(selectedTransfer.transferType)}
+                        </Box>
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <strong>상태:</strong>
+                          {getStatusTag(selectedTransfer.status)}
+                        </Box>
+                        <Typography>
+                          <strong>문의 수:</strong>{" "}
+                          {selectedTransfer.inquiryCount}건
+                        </Typography>
+                        <Typography>
+                          <strong>조회수:</strong>{" "}
+                          {selectedTransfer.viewCount.toLocaleString()}
+                        </Typography>
+                        <Typography>
+                          <strong>등록일:</strong> {selectedTransfer.createdAt}
+                        </Typography>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      <strong>설명:</strong>
+                    </Typography>
+                    <Typography>{selectedTransfer.description}</Typography>
+                  </Box>
                   {selectedTransfer.reportCount > 0 && (
-                    <CAlert color="warning">
-                      <strong>주의:</strong> 이 게시물은 {selectedTransfer.reportCount}건의 신고를 받았습니다.
-                    </CAlert>
+                    <Alert severity="warning" sx={{ mt: 2 }}>
+                      <strong>주의:</strong> 이 게시물은{" "}
+                      {selectedTransfer.reportCount}건의 신고를 받았습니다.
+                    </Alert>
                   )}
                   {selectedTransfer.status === "PENDING" && (
-                    <CAlert color="info">
-                      <strong>알림:</strong> 이 게시물은 관리자 승인을 기다리고 있습니다.
-                    </CAlert>
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      <strong>알림:</strong> 이 게시물은 관리자 승인을 기다리고
+                      있습니다.
+                    </Alert>
                   )}
-                </div>
+                </Box>
               )}
 
               {actionType === "approve" && (
-                <CAlert color="success">
-                  <CIcon icon={cilCheckCircle} className="me-2" />
-                  <strong>{selectedTransfer.title}</strong> 게시물을 승인하시겠습니까?
-                  <div className="mt-2">
+                <Alert severity="success">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <CheckCircle />
+                    <Typography>
+                      <strong>{selectedTransfer.title}</strong> 게시물을
+                      승인하시겠습니까?
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
                     승인된 게시물은 사용자에게 공개됩니다.
-                  </div>
-                </CAlert>
+                  </Typography>
+                </Alert>
               )}
 
               {actionType === "suspend" && (
-                <CAlert color="warning">
-                  <CIcon icon={cilWarning} className="me-2" />
-                  <strong>{selectedTransfer.title}</strong> 게시물을 정지하시겠습니까?
-                  <div className="mt-2">
+                <Alert severity="warning">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Warning />
+                    <Typography>
+                      <strong>{selectedTransfer.title}</strong> 게시물을
+                      정지하시겠습니까?
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
                     정지된 게시물은 사용자에게 표시되지 않습니다.
-                  </div>
-                </CAlert>
+                  </Typography>
+                </Alert>
               )}
 
               {actionType === "delete" && (
-                <CAlert color="danger">
-                  <strong>{selectedTransfer.title}</strong> 게시물을 삭제하시겠습니까?
-                  <div className="mt-2">
+                <Alert severity="error">
+                  <Typography>
+                    <strong>{selectedTransfer.title}</strong> 게시물을
+                    삭제하시겠습니까?
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
                     삭제된 게시물은 복구할 수 없습니다.
-                  </div>
-                </CAlert>
+                  </Typography>
+                </Alert>
               )}
-            </div>
+            </Box>
           )}
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalVisible(false)} color="inherit">
             취소
-          </CButton>
+          </Button>
           {actionType !== "view" && (
-            <CButton
-              color={
-                actionType === "approve" ? "success" :
-                actionType === "delete" ? "danger" : "warning"
-              }
+            <Button
               onClick={confirmAction}
+              color={
+                actionType === "approve"
+                  ? "success"
+                  : actionType === "delete"
+                  ? "error"
+                  : "warning"
+              }
+              variant="contained"
             >
               {actionType === "approve" && "승인"}
               {actionType === "suspend" && "정지"}
               {actionType === "delete" && "삭제"}
-            </CButton>
+            </Button>
           )}
-        </CModalFooter>
-      </CModal>
-    </>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
