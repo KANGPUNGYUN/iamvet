@@ -42,6 +42,7 @@ import {
   RestartAlt,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
+import NextLink from "next/link";
 
 interface SystemSetting {
   key: string;
@@ -654,6 +655,8 @@ export default function SettingsManagement() {
             <Box sx={{ textAlign: "center", mt: 3 }}>
               <Button
                 variant="outlined"
+                component={NextLink}
+                href="/admin/settings/logs"
                 sx={{
                   borderColor: "var(--Keycolor1)",
                   color: "var(--Keycolor1)",
@@ -907,7 +910,7 @@ export default function SettingsManagement() {
                   </Typography>
                   <Typography
                     variant="body2"
-                    sx={{ fontWeight: 600, color: "#FF9800" }}
+                    sx={{ fontWeight: 600, color: "#ff8796" }}
                   >
                     78% (6.2GB/8GB)
                   </Typography>
@@ -927,7 +930,7 @@ export default function SettingsManagement() {
                   </Typography>
                   <Typography
                     variant="body2"
-                    sx={{ fontWeight: 600, color: "#ff8796" }}
+                    sx={{ fontWeight: 600, color: "#ffb7b8" }}
                   >
                     65% (130GB/200GB)
                   </Typography>
@@ -938,9 +941,9 @@ export default function SettingsManagement() {
                   variant="contained"
                   startIcon={<Cached />}
                   sx={{
-                    bgcolor: "#FF9800",
+                    bgcolor: "#ff8796",
                     "&:hover": {
-                      bgcolor: "#F57C00",
+                      bgcolor: "#ff8796",
                     },
                     borderRadius: 2,
                   }}
@@ -951,11 +954,11 @@ export default function SettingsManagement() {
                   variant="outlined"
                   startIcon={<RestartAlt />}
                   sx={{
-                    borderColor: "#F44336",
-                    color: "#F44336",
+                    borderColor: "#ff8796",
+                    color: "#ff8796",
                     "&:hover": {
-                      borderColor: "#F44336",
-                      bgcolor: "rgba(244, 67, 54, 0.04)",
+                      borderColor: "#ff8796",
+                      bgcolor: "#ffe5e5",
                     },
                     borderRadius: 2,
                   }}

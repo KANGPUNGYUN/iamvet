@@ -57,6 +57,22 @@ interface User {
   joinDate: string;
   lastLogin: string;
   verified: boolean;
+  // 수의사 관련 필드
+  veterinarianLicense?: {
+    licenseNumber: string;
+    licenseImage: string;
+    issueDate: string;
+    expiryDate: string;
+  };
+  // 병원 관련 필드
+  hospitalInfo?: {
+    businessNumber: string;
+    businessRegistration: string;
+    representativeName: string;
+    establishedDate: string;
+  };
+  phone?: string;
+  address?: string;
 }
 
 export default function UsersManagement() {
@@ -71,6 +87,14 @@ export default function UsersManagement() {
       joinDate: "2024-01-15",
       lastLogin: "2024-01-20",
       verified: true,
+      veterinarianLicense: {
+        licenseNumber: "VET-2020-1234",
+        licenseImage: "/sample-license.jpg",
+        issueDate: "2020-03-15",
+        expiryDate: "2025-03-15",
+      },
+      phone: "010-1234-5678",
+      address: "서울특별시 강남구 테헤란로 123",
     },
     {
       id: 2,
@@ -82,6 +106,14 @@ export default function UsersManagement() {
       joinDate: "2024-01-14",
       lastLogin: "2024-01-19",
       verified: false,
+      hospitalInfo: {
+        businessNumber: "123-45-67890",
+        businessRegistration: "/sample-business-registration.pdf",
+        representativeName: "김대표",
+        establishedDate: "2015-05-20",
+      },
+      phone: "02-1234-5678",
+      address: "서울특별시 중구 명동길 45",
     },
     {
       id: 3,
@@ -93,6 +125,14 @@ export default function UsersManagement() {
       joinDate: "2024-01-13",
       lastLogin: "2024-01-20",
       verified: true,
+      veterinarianLicense: {
+        licenseNumber: "VET-2019-5678",
+        licenseImage: "/sample-license-2.jpg",
+        issueDate: "2019-06-10",
+        expiryDate: "2024-06-10",
+      },
+      phone: "010-9876-5432",
+      address: "부산광역시 해운대구 해운대로 567",
     },
     {
       id: 4,
@@ -104,6 +144,14 @@ export default function UsersManagement() {
       joinDate: "2024-01-12",
       lastLogin: "2024-01-18",
       verified: true,
+      hospitalInfo: {
+        businessNumber: "987-65-43210",
+        businessRegistration: "/sample-business-registration-2.pdf",
+        representativeName: "박원장",
+        establishedDate: "2010-10-15",
+      },
+      phone: "02-9876-5432",
+      address: "서울특별시 강남구 강남대로 890",
     },
     {
       id: 5,
@@ -115,6 +163,14 @@ export default function UsersManagement() {
       joinDate: "2024-01-10",
       lastLogin: "2024-01-20",
       verified: true,
+      veterinarianLicense: {
+        licenseNumber: "VET-2018-9012",
+        licenseImage: "/sample-license-3.jpg",
+        issueDate: "2018-09-05",
+        expiryDate: "2023-09-05",
+      },
+      phone: "010-5555-7777",
+      address: "대구광역시 중구 국채보상로 234",
     },
   ]);
 
@@ -126,7 +182,7 @@ export default function UsersManagement() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionType, setActionType] = useState<
-    "edit" | "suspend" | "delete" | "view"
+    "edit" | "suspend" | "delete" | "view" | "verify" | "reject"
   >("view");
 
   const getStatusTag = (status: string) => {
@@ -194,7 +250,7 @@ export default function UsersManagement() {
 
   const handleAction = (
     user: User,
-    action: "edit" | "suspend" | "delete" | "view"
+    action: "edit" | "suspend" | "delete" | "view" | "verify" | "reject"
   ) => {
     setSelectedUser(user);
     setActionType(action);
@@ -218,6 +274,10 @@ export default function UsersManagement() {
               };
             case "delete":
               return { ...user, status: "INACTIVE" as const };
+            case "verify":
+              return { ...user, verified: true, status: "ACTIVE" as const };
+            case "reject":
+              return { ...user, verified: false, status: "SUSPENDED" as const };
             default:
               return user;
           }
@@ -238,6 +298,24 @@ export default function UsersManagement() {
       <Button variant="outlined" onClick={() => handleAction(user, "edit")}>
         <Edit />
       </Button>
+      {!user.verified && user.status === "PENDING" && (
+        <>
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={() => handleAction(user, "verify")}
+          >
+            <CheckCircle />
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => handleAction(user, "reject")}
+          >
+            <Block />
+          </Button>
+        </>
+      )}
       <Button
         variant="outlined"
         color={user.status === "SUSPENDED" ? "success" : "warning"}
@@ -1103,6 +1181,8 @@ export default function UsersManagement() {
               ? "계정 활성화"
               : "계정 정지")}
           {actionType === "delete" && "계정 삭제"}
+          {actionType === "verify" && "계정 인증 승인"}
+          {actionType === "reject" && "계정 인증 거부"}
         </DialogTitle>
         <DialogContent>
           {selectedUser && (
@@ -1183,7 +1263,113 @@ export default function UsersManagement() {
                           <strong>최근 로그인:</strong> {selectedUser.lastLogin}
                         </Typography>
                       </Box>
+                      {selectedUser.phone && (
+                        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                          <Typography>
+                            <strong>연락처:</strong> {selectedUser.phone}
+                          </Typography>
+                        </Box>
+                      )}
+                      {selectedUser.address && (
+                        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                          <Typography>
+                            <strong>주소:</strong> {selectedUser.address}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
+
+                    {/* 수의사 면허증 정보 */}
+                    {selectedUser.type === "VETERINARIAN" && selectedUser.veterinarianLicense && (
+                      <Box sx={{ mt: 4 }}>
+                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#3b394d" }}>
+                          수의사 면허 정보
+                        </Typography>
+                        <Card sx={{ bgcolor: "#f9f9f9", border: "1px solid #efeff0", borderRadius: 2 }}>
+                          <CardContent>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                                <Typography><strong>면허번호:</strong> {selectedUser.veterinarianLicense.licenseNumber}</Typography>
+                              </Box>
+                              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                                <Typography><strong>발급일:</strong> {selectedUser.veterinarianLicense.issueDate}</Typography>
+                              </Box>
+                              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                                <Typography><strong>만료일:</strong> {selectedUser.veterinarianLicense.expiryDate}</Typography>
+                              </Box>
+                              <Box sx={{ flex: '1 1 100%', mt: 2 }}>
+                                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>면허증 이미지:</Typography>
+                                <Box
+                                  sx={{
+                                    border: "1px solid #ddd",
+                                    borderRadius: 1,
+                                    p: 2,
+                                    bgcolor: "white",
+                                    textAlign: "center",
+                                    minHeight: "200px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <Typography color="text.secondary">
+                                    이미지: {selectedUser.veterinarianLicense.licenseImage}
+                                    <br />
+                                    <small>(실제 구현시 이미지가 표시됩니다)</small>
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Box>
+                    )}
+
+                    {/* 병원 사업자등록 정보 */}
+                    {selectedUser.type === "HOSPITAL" && selectedUser.hospitalInfo && (
+                      <Box sx={{ mt: 4 }}>
+                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#3b394d" }}>
+                          병원 사업자 정보
+                        </Typography>
+                        <Card sx={{ bgcolor: "#f9f9f9", border: "1px solid #efeff0", borderRadius: 2 }}>
+                          <CardContent>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                                <Typography><strong>사업자등록번호:</strong> {selectedUser.hospitalInfo.businessNumber}</Typography>
+                              </Box>
+                              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                                <Typography><strong>대표자명:</strong> {selectedUser.hospitalInfo.representativeName}</Typography>
+                              </Box>
+                              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                                <Typography><strong>개원일:</strong> {selectedUser.hospitalInfo.establishedDate}</Typography>
+                              </Box>
+                              <Box sx={{ flex: '1 1 100%', mt: 2 }}>
+                                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>사업자등록증:</Typography>
+                                <Box
+                                  sx={{
+                                    border: "1px solid #ddd",
+                                    borderRadius: 1,
+                                    p: 2,
+                                    bgcolor: "white",
+                                    textAlign: "center",
+                                    minHeight: "150px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <Typography color="text.secondary">
+                                    파일: {selectedUser.hospitalInfo.businessRegistration}
+                                    <br />
+                                    <small>(실제 구현시 PDF 뷰어가 표시됩니다)</small>
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Box>
+                    )}
                   </Stack>
                 </Box>
               )}
@@ -1250,6 +1436,67 @@ export default function UsersManagement() {
                   </Typography>
                 </Alert>
               )}
+
+              {actionType === "verify" && (
+                <Box>
+                  <Alert severity="success" sx={{ mb: 3 }}>
+                    <Typography>
+                      <strong>{selectedUser.name}</strong>님의 계정을 인증 승인하시겠습니까?
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      승인 시 계정 상태가 '활성'으로 변경되며, 모든 서비스 이용이 가능해집니다.
+                    </Typography>
+                  </Alert>
+
+                  {/* 인증 정보 표시 */}
+                  {selectedUser.type === "VETERINARIAN" && selectedUser.veterinarianLicense && (
+                    <Card sx={{ bgcolor: "#f0f8f0", border: "1px solid #c8e6c9" }}>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ mb: 2, color: "#2e7d32" }}>
+                          수의사 면허 정보 확인
+                        </Typography>
+                        <Typography><strong>면허번호:</strong> {selectedUser.veterinarianLicense.licenseNumber}</Typography>
+                        <Typography><strong>발급일:</strong> {selectedUser.veterinarianLicense.issueDate}</Typography>
+                        <Typography><strong>만료일:</strong> {selectedUser.veterinarianLicense.expiryDate}</Typography>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {selectedUser.type === "HOSPITAL" && selectedUser.hospitalInfo && (
+                    <Card sx={{ bgcolor: "#f0f8f0", border: "1px solid #c8e6c9" }}>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ mb: 2, color: "#2e7d32" }}>
+                          병원 사업자 정보 확인
+                        </Typography>
+                        <Typography><strong>사업자등록번호:</strong> {selectedUser.hospitalInfo.businessNumber}</Typography>
+                        <Typography><strong>대표자명:</strong> {selectedUser.hospitalInfo.representativeName}</Typography>
+                        <Typography><strong>개원일:</strong> {selectedUser.hospitalInfo.establishedDate}</Typography>
+                      </CardContent>
+                    </Card>
+                  )}
+                </Box>
+              )}
+
+              {actionType === "reject" && (
+                <Alert severity="warning">
+                  <Typography>
+                    <strong>{selectedUser.name}</strong>님의 인증을 거부하시겠습니까?
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    거부 시 계정이 정지되며, 재신청 후 다시 검토가 필요합니다.
+                  </Typography>
+                  {selectedUser.type === "VETERINARIAN" && (
+                    <Typography variant="body2" sx={{ mt: 1, fontStyle: "italic" }}>
+                      거부 사유: 수의사 면허증 확인 불가 또는 정보 불일치
+                    </Typography>
+                  )}
+                  {selectedUser.type === "HOSPITAL" && (
+                    <Typography variant="body2" sx={{ mt: 1, fontStyle: "italic" }}>
+                      거부 사유: 사업자등록증 확인 불가 또는 정보 불일치
+                    </Typography>
+                  )}
+                </Alert>
+              )}
             </Box>
           )}
         </DialogContent>
@@ -1267,6 +1514,10 @@ export default function UsersManagement() {
                   ? selectedUser?.status === "SUSPENDED"
                     ? "success"
                     : "warning"
+                  : actionType === "verify"
+                  ? "success"
+                  : actionType === "reject"
+                  ? "error"
                   : "primary"
               }
               variant="contained"
@@ -1275,6 +1526,8 @@ export default function UsersManagement() {
               {actionType === "suspend" &&
                 (selectedUser?.status === "SUSPENDED" ? "활성화" : "정지")}
               {actionType === "delete" && "삭제"}
+              {actionType === "verify" && "승인"}
+              {actionType === "reject" && "거부"}
             </Button>
           )}
         </DialogActions>

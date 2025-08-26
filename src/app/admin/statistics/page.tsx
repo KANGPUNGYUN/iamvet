@@ -449,9 +449,18 @@ export default function StatisticsPage() {
       </Box>
 
       {/* Ultra Modern Stats Cards */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
         {statsCards.map((stat, index) => (
-          <Box key={index} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+          <Box
+            key={index}
+            sx={{
+              flex: {
+                xs: "1 1 100%",
+                sm: "1 1 calc(50% - 12px)",
+                md: "1 1 calc(25% - 18px)",
+              },
+            }}
+          >
             <Card
               sx={{
                 position: "relative",
@@ -663,9 +672,9 @@ export default function StatisticsPage() {
       </Card>
 
       {/* Performance Charts */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
         {/* Performance Comparison Chart */}
-        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(67% - 12px)' } }}>
+        <Box sx={{ flex: { xs: "1 1 100%", lg: "1 1 calc(67% - 12px)" } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -790,7 +799,7 @@ export default function StatisticsPage() {
         </Box>
 
         {/* Success Rate Donut Chart */}
-        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(33.33% - 16px)' } }}>
+        <Box sx={{ flex: { xs: "1 1 100%", lg: "1 1 calc(33.33% - 16px)" } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -875,9 +884,9 @@ export default function StatisticsPage() {
       </Box>
 
       {/* Top Performers */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
         {/* Top Hospitals */}
-        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(50% - 12px)' } }}>
+        <Box sx={{ flex: { xs: "1 1 100%", lg: "1 1 calc(50% - 12px)" } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -994,12 +1003,7 @@ export default function StatisticsPage() {
                               borderRadius: 3,
                               bgcolor: "#f3f4f6",
                               "& .MuiLinearProgress-bar": {
-                                bgcolor:
-                                  hospital.successRate >= 90
-                                    ? "#4f5866"
-                                    : hospital.successRate >= 80
-                                    ? "#ffd3d3"
-                                    : "#F87171",
+                                bgcolor: "#F87171",
                                 borderRadius: 3,
                               },
                             }}
@@ -1020,7 +1024,7 @@ export default function StatisticsPage() {
         </Box>
 
         {/* Top Veterinarians */}
-        <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(50% - 12px)' } }}>
+        <Box sx={{ flex: { xs: "1 1 100%", lg: "1 1 calc(50% - 12px)" } }}>
           <Card
             sx={{
               borderRadius: 4,
@@ -1137,12 +1141,7 @@ export default function StatisticsPage() {
                               borderRadius: 3,
                               bgcolor: "#f3f4f6",
                               "& .MuiLinearProgress-bar": {
-                                bgcolor:
-                                  vet.successRate >= 90
-                                    ? "#4f5866"
-                                    : vet.successRate >= 80
-                                    ? "#ffd3d3"
-                                    : "#F87171",
+                                bgcolor: "#F87171",
                                 borderRadius: 3,
                               },
                             }}
@@ -1191,8 +1190,16 @@ export default function StatisticsPage() {
           </Typography>
         </Box>
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+            <Box
+              sx={{
+                flex: {
+                  xs: "1 1 100%",
+                  sm: "1 1 calc(50% - 12px)",
+                  md: "1 1 calc(25% - 18px)",
+                },
+              }}
+            >
               <Box
                 sx={{
                   textAlign: "center",
@@ -1227,7 +1234,15 @@ export default function StatisticsPage() {
                 </Box>
               </Box>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+            <Box
+              sx={{
+                flex: {
+                  xs: "1 1 100%",
+                  sm: "1 1 calc(50% - 12px)",
+                  md: "1 1 calc(25% - 18px)",
+                },
+              }}
+            >
               <Box
                 sx={{
                   textAlign: "center",
@@ -1243,7 +1258,7 @@ export default function StatisticsPage() {
                 </Typography>
                 <Typography
                   variant="h4"
-                  sx={{ fontWeight: 700, color: "#4f5866", mb: 1 }}
+                  sx={{ fontWeight: 700, color: "#ff8796", mb: 1 }}
                 >
                   4.7/5.0
                 </Typography>
@@ -1252,7 +1267,7 @@ export default function StatisticsPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#4f5866",
+                    color: "#ff8796",
                     fontSize: "0.875rem",
                     fontWeight: 500,
                   }}
@@ -1262,7 +1277,15 @@ export default function StatisticsPage() {
                 </Box>
               </Box>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+            <Box
+              sx={{
+                flex: {
+                  xs: "1 1 100%",
+                  sm: "1 1 calc(50% - 12px)",
+                  md: "1 1 calc(25% - 18px)",
+                },
+              }}
+            >
               <Box
                 sx={{
                   textAlign: "center",
@@ -1278,7 +1301,7 @@ export default function StatisticsPage() {
                 </Typography>
                 <Typography
                   variant="h4"
-                  sx={{ fontWeight: 700, color: "#3B82F6", mb: 1 }}
+                  sx={{ fontWeight: 700, color: "#ff8796", mb: 1 }}
                 >
                   756명
                 </Typography>
@@ -1287,7 +1310,7 @@ export default function StatisticsPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#4f5866",
+                    color: "#ff8796",
                     fontSize: "0.875rem",
                     fontWeight: 500,
                   }}
@@ -1297,7 +1320,15 @@ export default function StatisticsPage() {
                 </Box>
               </Box>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+            <Box
+              sx={{
+                flex: {
+                  xs: "1 1 100%",
+                  sm: "1 1 calc(50% - 12px)",
+                  md: "1 1 calc(25% - 18px)",
+                },
+              }}
+            >
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="body2"
@@ -1307,7 +1338,7 @@ export default function StatisticsPage() {
                 </Typography>
                 <Typography
                   variant="h4"
-                  sx={{ fontWeight: 700, color: "#ffd3d3", mb: 1 }}
+                  sx={{ fontWeight: 700, color: "#ff8796", mb: 1 }}
                 >
                   12분 34초
                 </Typography>
@@ -1316,7 +1347,7 @@ export default function StatisticsPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#F87171",
+                    color: "#4f5866",
                     fontSize: "0.875rem",
                     fontWeight: 500,
                   }}

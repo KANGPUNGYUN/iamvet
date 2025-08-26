@@ -46,7 +46,8 @@ interface Lecture {
   title: string;
   instructor: string;
   category: string;
-  duration: number; // minutes
+  duration?: number; // minutes - optional, calculated from YouTube video
+  youtubeUrl?: string; // YouTube video URL or iframe embed code
   status: "ACTIVE" | "PENDING" | "SUSPENDED" | "DRAFT";
   reportCount: number;
   viewCount: number;
@@ -64,6 +65,7 @@ export default function LecturesManagement() {
       instructor: "김영상 교수",
       category: "영상진단",
       duration: 120,
+      youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       status: "ACTIVE",
       reportCount: 0,
       viewCount: 1245,
@@ -146,9 +148,33 @@ export default function LecturesManagement() {
     title: "",
     instructor: "",
     category: "",
-    duration: 0,
+    youtubeUrl: "",
     description: "",
   });
+
+  // YouTube URL이나 iframe에서 video ID를 추출하는 함수
+  const extractYouTubeVideoId = (input: string): string | null => {
+    if (!input) return null;
+    
+    // iframe 태그에서 src URL 추출
+    const iframeMatch = input.match(/src=[\"']([^\"']+)[\"']/);
+    if (iframeMatch) {
+      input = iframeMatch[1];
+    }
+    
+    // YouTube URL 패턴들
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = input.match(pattern);
+      if (match) return match[1];
+    }
+    
+    return null;
+  };
 
   const getStatusTag = (status: string) => {
     const statusMap: {
@@ -178,7 +204,8 @@ export default function LecturesManagement() {
     return <Tag variant={categoryInfo.variant}>{category}</Tag>;
   };
 
-  const formatDuration = (minutes: number) => {
+  const formatDuration = (minutes?: number) => {
+    if (!minutes) return "시간 미정";
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours > 0) {
@@ -233,7 +260,7 @@ export default function LecturesManagement() {
   };
 
   const resetCreateForm = () => {
-    setNewLecture({ title: "", instructor: "", category: "", duration: 0, description: "" });
+    setNewLecture({ title: "", instructor: "", category: "", youtubeUrl: "", description: "" });
     setCreateModalVisible(false);
   };
 
@@ -263,8 +290,15 @@ export default function LecturesManagement() {
   };
 
   const handleCreateLecture = () => {
-    if (!newLecture.title || !newLecture.instructor || !newLecture.category || !newLecture.duration) {
-      alert("모든 필수 필드를 입력해 주세요.");
+    if (!newLecture.title || !newLecture.instructor || !newLecture.category) {
+      alert("제목, 강사명, 카테고리는 필수 필드입니다.");
+      return;
+    }
+
+    // YouTube URL 검증
+    const videoId = extractYouTubeVideoId(newLecture.youtubeUrl);
+    if (newLecture.youtubeUrl && !videoId) {
+      alert("유효한 유튜브 URL 또는 iframe 코드를 입력해 주세요.");
       return;
     }
 
@@ -274,7 +308,7 @@ export default function LecturesManagement() {
       title: newLecture.title,
       instructor: newLecture.instructor,
       category: newLecture.category,
-      duration: newLecture.duration,
+      youtubeUrl: newLecture.youtubeUrl,
       status: "DRAFT",
       reportCount: 0,
       viewCount: 0,
@@ -286,7 +320,7 @@ export default function LecturesManagement() {
 
     setLectures(prev => [newLectureData, ...prev]);
     setCreateModalVisible(false);
-    setNewLecture({ title: "", instructor: "", category: "", duration: 0, description: "" });
+    setNewLecture({ title: "", instructor: "", category: "", youtubeUrl: "", description: "" });
   };
 
   const renderActionButtons = (lecture: Lecture) => (
@@ -1212,6 +1246,19 @@ export default function LecturesManagement() {
                           <strong>강의시간:</strong>{" "}
                           {formatDuration(selectedLecture.duration)}
                         </Typography>
+                        {selectedLecture.youtubeUrl && (
+                          <Typography>
+                            <strong>동영상:</strong>{" "}
+                            <a 
+                              href={selectedLecture.youtubeUrl.startsWith('http') ? selectedLecture.youtubeUrl : `https://www.youtube.com/watch?v=${extractYouTubeVideoId(selectedLecture.youtubeUrl)}`}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ color: "#ff8796", textDecoration: "none" }}
+                            >
+                              유튜브에서 보기
+                            </a>
+                          </Typography>
+                        )}
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 1 }}
                         >
@@ -1244,6 +1291,57 @@ export default function LecturesManagement() {
                     </Typography>
                     <Typography>{selectedLecture.description}</Typography>
                   </Box>
+                  
+                  {/* YouTube 미리보기 */}
+                  {selectedLecture.youtubeUrl && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        <strong>동영상 미리보기:</strong>
+                      </Typography>
+                      {(() => {
+                        const videoId = extractYouTubeVideoId(selectedLecture.youtubeUrl);
+                        if (videoId) {
+                          return (
+                            <Box sx={{ 
+                              position: 'relative', 
+                              paddingBottom: '56.25%', 
+                              height: 0, 
+                              overflow: 'hidden',
+                              borderRadius: 2,
+                              border: '1px solid #efeff0'
+                            }}>
+                              <iframe
+                                src={`https://www.youtube.com/embed/${videoId}`}
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  border: 'none'
+                                }}
+                                allowFullScreen
+                                title="YouTube video player"
+                              />
+                            </Box>
+                          );
+                        } else {
+                          return (
+                            <Box sx={{ 
+                              p: 2, 
+                              border: '1px solid #efeff0', 
+                              borderRadius: 2, 
+                              bgcolor: '#f9f9f9' 
+                            }}>
+                              <Typography color="text.secondary">
+                                유효하지 않은 유튜브 URL입니다.
+                              </Typography>
+                            </Box>
+                          );
+                        }
+                      })()}
+                    </Box>
+                  )}
                   {selectedLecture.reportCount > 0 && (
                     <Alert severity="warning" sx={{ mt: 2 }}>
                       <strong>주의:</strong> 이 강의는{" "}
@@ -1366,13 +1464,14 @@ export default function LecturesManagement() {
               </Select>
             </FormControl>
             <TextField
-              label="강의 시간 (분)"
-              type="number"
+              label="유튜브 동영상 URL 또는 iframe 코드"
               fullWidth
-              value={newLecture.duration}
-              onChange={(e) => setNewLecture(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
-              required
-              slotProps={{ htmlInput: { min: 1 } }}
+              multiline
+              rows={4}
+              value={newLecture.youtubeUrl}
+              onChange={(e) => setNewLecture(prev => ({ ...prev, youtubeUrl: e.target.value }))}
+              placeholder="다음 중 하나를 입력하세요:&#10;1. https://www.youtube.com/watch?v=VIDEO_ID&#10;2. https://youtu.be/VIDEO_ID&#10;3. <iframe src='https://www.youtube.com/embed/VIDEO_ID'></iframe>"
+              helperText="유튜브 동영상 URL을 입력하거나 유튜브에서 제공하는 iframe 임베드 코드를 붙여넣으세요."
             />
             <TextField
               label="강의 설명"

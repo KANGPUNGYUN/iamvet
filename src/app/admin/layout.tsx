@@ -227,7 +227,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   );
 
   return (
-    <Box sx={{ display: "flex", bgcolor: "var(--Box_Light)" }}>
+    <Box sx={{ display: "flex", height: "100vh", bgcolor: "var(--Box_Light)" }}>
       <AppBar
         position="fixed"
         elevation={0}
@@ -303,6 +303,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               border: "none",
               boxShadow: "0 4px 20px rgba(105, 140, 252, 0.12)",
               bgcolor: "white",
+              height: "100vh",
             },
           }}
           open={sidebarShow}
@@ -314,14 +315,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${sidebarShow ? drawerWidth : 0}px)` },
+          height: "100vh",
+          overflow: "auto",
           bgcolor: "var(--Box_Light)",
-          minHeight: "100vh",
         }}
       >
         <Toolbar />
-        <Container maxWidth="xl" sx={{ mt: 2 }}>
+        <Container maxWidth="xl" sx={{ p: 3 }}>
           {children}
         </Container>
       </Box>
