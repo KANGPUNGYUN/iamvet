@@ -37,7 +37,12 @@ import {
   Cancel,
   Warning,
   PlayArrow,
-  Star,
+  Pause,
+  CloudUpload,
+  AttachFile,
+  PictureAsPdf,
+  Description,
+  TableChart,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
 
@@ -48,13 +53,17 @@ interface Lecture {
   category: string;
   duration?: number; // minutes - optional, calculated from YouTube video
   youtubeUrl?: string; // YouTube video URL or iframe embed code
-  status: "ACTIVE" | "PENDING" | "SUSPENDED" | "DRAFT";
-  reportCount: number;
+  isActive: boolean;
   viewCount: number;
-  rating: number;
-  reviewCount: number;
   createdAt: string;
   description: string;
+  referenceMaterials?: {
+    id: string;
+    name: string;
+    type: "PDF" | "PPT" | "WORD" | "EXCEL";
+    size: number;
+    url: string;
+  }[];
 }
 
 export default function LecturesManagement() {
@@ -66,13 +75,26 @@ export default function LecturesManagement() {
       category: "영상진단",
       duration: 120,
       youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      status: "ACTIVE",
-      reportCount: 0,
+      isActive: true,
       viewCount: 1245,
-      rating: 4.8,
-      reviewCount: 34,
       createdAt: "2024-01-20",
       description: "반려동물 영상진단의 기본 원리와 실습을 다룹니다.",
+      referenceMaterials: [
+        {
+          id: "ref_1",
+          name: "영상진단학_교재.pdf",
+          type: "PDF",
+          size: 2048576,
+          url: "/reference/radiology_textbook.pdf",
+        },
+        {
+          id: "ref_2",
+          name: "실습_가이드.pptx",
+          type: "PPT",
+          size: 1536000,
+          url: "/reference/practice_guide.pptx",
+        },
+      ],
     },
     {
       id: 2,
@@ -80,11 +102,8 @@ export default function LecturesManagement() {
       instructor: "박내과 수의사",
       category: "내과",
       duration: 90,
-      status: "ACTIVE",
-      reportCount: 0,
+      isActive: true,
       viewCount: 987,
-      rating: 4.6,
-      reviewCount: 28,
       createdAt: "2024-01-19",
       description:
         "고양이 특유의 내과 질환에 대한 체계적인 접근법을 소개합니다.",
@@ -95,11 +114,8 @@ export default function LecturesManagement() {
       instructor: "이외과 전문의",
       category: "외과",
       duration: 180,
-      status: "PENDING",
-      reportCount: 0,
+      isActive: false,
       viewCount: 0,
-      rating: 0,
-      reviewCount: 0,
       createdAt: "2024-01-18",
       description: "실제 수술 과정을 단계별로 상세히 설명합니다.",
     },
@@ -109,11 +125,8 @@ export default function LecturesManagement() {
       instructor: "정응급 수의사",
       category: "응급의학",
       duration: 75,
-      status: "ACTIVE",
-      reportCount: 0,
+      isActive: true,
       viewCount: 2156,
-      rating: 4.9,
-      reviewCount: 67,
       createdAt: "2024-01-17",
       description: "응급 상황에서 필요한 처치법을 실습과 함께 배웁니다.",
     },
@@ -123,11 +136,8 @@ export default function LecturesManagement() {
       instructor: "스팸강사",
       category: "기타",
       duration: 30,
-      status: "SUSPENDED",
-      reportCount: 5,
+      isActive: false,
       viewCount: 45,
-      rating: 1.2,
-      reviewCount: 8,
       createdAt: "2024-01-15",
       description: "신고된 부적절한 내용의 강의입니다.",
     },
@@ -141,7 +151,7 @@ export default function LecturesManagement() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
   const [actionType, setActionType] = useState<
-    "view" | "suspend" | "delete" | "approve" | "create"
+    "view" | "activate" | "deactivate"
   >("view");
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [newLecture, setNewLecture] = useState({
@@ -150,46 +160,133 @@ export default function LecturesManagement() {
     category: "",
     youtubeUrl: "",
     description: "",
+    referenceMaterials: [] as {
+      id: string;
+      name: string;
+      type: "PDF" | "PPT" | "WORD" | "EXCEL";
+      size: number;
+      url: string;
+    }[],
   });
+
+  const getFileType = (
+    fileName: string
+  ): "PDF" | "PPT" | "WORD" | "EXCEL" | null => {
+    const extension = fileName.toLowerCase().split(".").pop();
+    switch (extension) {
+      case "pdf":
+        return "PDF";
+      case "ppt":
+      case "pptx":
+        return "PPT";
+      case "doc":
+      case "docx":
+        return "WORD";
+      case "xls":
+      case "xlsx":
+        return "EXCEL";
+      default:
+        return null;
+    }
+  };
+
+  const getFileIcon = (type: "PDF" | "PPT" | "WORD" | "EXCEL") => {
+    switch (type) {
+      case "PDF":
+        return <PictureAsPdf sx={{ color: "#f44336" }} />;
+      case "PPT":
+        return <Description sx={{ color: "#ff9800" }} />;
+      case "WORD":
+        return <Description sx={{ color: "#2196f3" }} />;
+      case "EXCEL":
+        return <TableChart sx={{ color: "#4caf50" }} />;
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files)
+      .map((file) => {
+        const fileType = getFileType(file.name);
+        if (!fileType) {
+          alert(`지원하지 않는 파일 형식입니다: ${file.name}`);
+          return null;
+        }
+
+        return {
+          id: `file_${Date.now()}_${Math.random()
+            .toString(36)
+            .substring(2, 11)}`,
+          name: file.name,
+          type: fileType,
+          size: file.size,
+          url: URL.createObjectURL(file), // 실제로는 서버 업로드 후 URL을 받아야 함
+        };
+      })
+      .filter(Boolean) as {
+      id: string;
+      name: string;
+      type: "PDF" | "PPT" | "WORD" | "EXCEL";
+      size: number;
+      url: string;
+    }[];
+
+    setNewLecture((prev) => ({
+      ...prev,
+      referenceMaterials: [...prev.referenceMaterials, ...newFiles],
+    }));
+
+    // Reset the file input
+    event.target.value = "";
+  };
+
+  const removeReferenceMaterial = (fileId: string) => {
+    setNewLecture((prev) => ({
+      ...prev,
+      referenceMaterials: prev.referenceMaterials.filter(
+        (file) => file.id !== fileId
+      ),
+    }));
+  };
 
   // YouTube URL이나 iframe에서 video ID를 추출하는 함수
   const extractYouTubeVideoId = (input: string): string | null => {
     if (!input) return null;
-    
+
     // iframe 태그에서 src URL 추출
     const iframeMatch = input.match(/src=[\"']([^\"']+)[\"']/);
     if (iframeMatch) {
       input = iframeMatch[1];
     }
-    
+
     // YouTube URL 패턴들
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-      /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+      /youtube\.com\/watch\?.*v=([^&\n?#]+)/,
     ];
-    
+
     for (const pattern of patterns) {
       const match = input.match(pattern);
       if (match) return match[1];
     }
-    
+
     return null;
   };
 
-  const getStatusTag = (status: string) => {
-    const statusMap: {
-      [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6; text: string };
-    } = {
-      ACTIVE: { variant: 2, text: "활성" },
-      PENDING: { variant: 3, text: "승인대기" },
-      SUSPENDED: { variant: 1, text: "정지" },
-      DRAFT: { variant: 6, text: "임시저장" },
-    };
-    const statusInfo = statusMap[status] || {
-      variant: 6 as const,
-      text: status,
-    };
-    return <Tag variant={statusInfo.variant}>{statusInfo.text}</Tag>;
+  const getStatusTag = (isActive: boolean) => {
+    return (
+      <Tag variant={isActive ? 2 : 1}>{isActive ? "활성화" : "비활성화"}</Tag>
+    );
   };
 
   const getCategoryTag = (category: string) => {
@@ -214,29 +311,14 @@ export default function LecturesManagement() {
     return `${mins}분`;
   };
 
-  const renderRating = (rating: number) => {
-    if (rating === 0)
-      return (
-        <Typography variant="body2" color="text.secondary">
-          -
-        </Typography>
-      );
-    return (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        <Star sx={{ fontSize: 18, color: "#FFA726" }} />
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {rating.toFixed(1)}
-        </Typography>
-      </Box>
-    );
-  };
-
   const filteredLectures = lectures.filter((lecture) => {
     const matchesSearch =
       lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lecture.instructor.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
-      filterStatus === "ALL" || lecture.status === filterStatus;
+      filterStatus === "ALL" ||
+      (filterStatus === "ACTIVE" && lecture.isActive) ||
+      (filterStatus === "INACTIVE" && !lecture.isActive);
     const matchesCategory =
       filterCategory === "ALL" || lecture.category === filterCategory;
     return matchesSearch && matchesStatus && matchesCategory;
@@ -252,7 +334,7 @@ export default function LecturesManagement() {
 
   const handleAction = (
     lecture: Lecture,
-    action: "view" | "suspend" | "delete" | "approve"
+    action: "view" | "activate" | "deactivate"
   ) => {
     setSelectedLecture(lecture);
     setActionType(action);
@@ -260,7 +342,14 @@ export default function LecturesManagement() {
   };
 
   const resetCreateForm = () => {
-    setNewLecture({ title: "", instructor: "", category: "", youtubeUrl: "", description: "" });
+    setNewLecture({
+      title: "",
+      instructor: "",
+      category: "",
+      youtubeUrl: "",
+      description: "",
+      referenceMaterials: [],
+    });
     setCreateModalVisible(false);
   };
 
@@ -271,12 +360,10 @@ export default function LecturesManagement() {
       prev.map((lecture) => {
         if (lecture.id === selectedLecture.id) {
           switch (actionType) {
-            case "approve":
-              return { ...lecture, status: "ACTIVE" as const };
-            case "suspend":
-              return { ...lecture, status: "SUSPENDED" as const };
-            case "delete":
-              return { ...lecture, status: "SUSPENDED" as const };
+            case "activate":
+              return { ...lecture, isActive: true };
+            case "deactivate":
+              return { ...lecture, isActive: false };
             default:
               return lecture;
           }
@@ -302,25 +389,29 @@ export default function LecturesManagement() {
       return;
     }
 
-    const newId = Math.max(...lectures.map(l => l.id)) + 1;
+    const newId = Math.max(...lectures.map((l) => l.id)) + 1;
     const newLectureData: Lecture = {
       id: newId,
       title: newLecture.title,
       instructor: newLecture.instructor,
       category: newLecture.category,
       youtubeUrl: newLecture.youtubeUrl,
-      status: "DRAFT",
-      reportCount: 0,
+      isActive: false,
       viewCount: 0,
-      rating: 0,
-      reviewCount: 0,
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString().split("T")[0],
       description: newLecture.description || "강의 설명이 입력되지 않았습니다.",
     };
 
-    setLectures(prev => [newLectureData, ...prev]);
+    setLectures((prev) => [newLectureData, ...prev]);
     setCreateModalVisible(false);
-    setNewLecture({ title: "", instructor: "", category: "", youtubeUrl: "", description: "" });
+    setNewLecture({
+      title: "",
+      instructor: "",
+      category: "",
+      youtubeUrl: "",
+      description: "",
+      referenceMaterials: [],
+    });
   };
 
   const renderActionButtons = (lecture: Lecture) => (
@@ -328,30 +419,23 @@ export default function LecturesManagement() {
       <Button variant="outlined" onClick={() => handleAction(lecture, "view")}>
         <Visibility />
       </Button>
-      {lecture.status === "PENDING" && (
+      {lecture.isActive ? (
+        <Button
+          variant="outlined"
+          color="warning"
+          onClick={() => handleAction(lecture, "deactivate")}
+        >
+          <Pause />
+        </Button>
+      ) : (
         <Button
           variant="outlined"
           color="success"
-          onClick={() => handleAction(lecture, "approve")}
+          onClick={() => handleAction(lecture, "activate")}
         >
-          <CheckCircle />
+          <PlayArrow />
         </Button>
       )}
-      <Button
-        variant="outlined"
-        color="warning"
-        onClick={() => handleAction(lecture, "suspend")}
-        disabled={lecture.status === "SUSPENDED"}
-      >
-        <Cancel />
-      </Button>
-      <Button
-        variant="outlined"
-        color="error"
-        onClick={() => handleAction(lecture, "delete")}
-      >
-        <Delete />
-      </Button>
     </ButtonGroup>
   );
 
@@ -368,10 +452,10 @@ export default function LecturesManagement() {
             fontSize: { xs: "1.75rem", md: "2rem" },
           }}
         >
-          교육콘텐츠 관리
+          강의영상 관리
         </Typography>
         <Typography variant="body1" sx={{ color: "#4f5866" }}>
-          수의사 교육콘텐츠를 효율적으로 관리하고 모니터링하세요.
+          강의영상을 효율적으로 관리하고 모니터링하세요.
         </Typography>
       </Box>
 
@@ -386,8 +470,8 @@ export default function LecturesManagement() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 41.66%' } }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 41.66%" } }}>
               <TextField
                 fullWidth
                 placeholder="제목, 강사명으로 검색..."
@@ -422,7 +506,7 @@ export default function LecturesManagement() {
                 }}
               />
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 20.83%' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 20.83%" } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
                 <Select
@@ -444,14 +528,12 @@ export default function LecturesManagement() {
                   }}
                 >
                   <MenuItem value="ALL">모든 상태</MenuItem>
-                  <MenuItem value="ACTIVE">활성</MenuItem>
-                  <MenuItem value="PENDING">승인대기</MenuItem>
-                  <MenuItem value="SUSPENDED">정지</MenuItem>
-                  <MenuItem value="DRAFT">임시저장</MenuItem>
+                  <MenuItem value="ACTIVE">활성화</MenuItem>
+                  <MenuItem value="INACTIVE">비활성화</MenuItem>
                 </Select>
               </FormControl>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 20.83%' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 20.83%" } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>카테고리</InputLabel>
                 <Select
@@ -481,7 +563,7 @@ export default function LecturesManagement() {
                 </Select>
               </FormControl>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 16.66%' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 16.66%" } }}>
               <Button
                 variant="contained"
                 fullWidth
@@ -507,8 +589,16 @@ export default function LecturesManagement() {
       </Card>
 
       {/* Ultra Modern Stats Cards */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -555,7 +645,7 @@ export default function LecturesManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {lectures.filter((l) => l.status === "ACTIVE").length}
+                    {lectures.filter((l) => l.isActive).length}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -606,7 +696,15 @@ export default function LecturesManagement() {
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -653,7 +751,7 @@ export default function LecturesManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {lectures.filter((l) => l.status === "PENDING").length}
+                    {lectures.filter((l) => !l.isActive).length}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -663,7 +761,7 @@ export default function LecturesManagement() {
                       mb: 2,
                     }}
                   >
-                    승인 대기
+                    비활성화
                   </Typography>
                   <Box
                     sx={{
@@ -704,7 +802,15 @@ export default function LecturesManagement() {
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -751,7 +857,7 @@ export default function LecturesManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {lectures.filter((l) => l.reportCount > 0).length}
+                    {lectures.length}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -761,7 +867,7 @@ export default function LecturesManagement() {
                       mb: 2,
                     }}
                   >
-                    신고된 강의
+                    전체 강의
                   </Typography>
                   <Box
                     sx={{
@@ -781,7 +887,7 @@ export default function LecturesManagement() {
                         mr: 1,
                       }}
                     />
-                    즉시 검토 필요
+                    전체 강의 수
                   </Box>
                 </Box>
                 <Box
@@ -802,7 +908,15 @@ export default function LecturesManagement() {
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -1025,16 +1139,6 @@ export default function LecturesManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  시간
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
                   상태
                 </TableCell>
                 <TableCell
@@ -1045,27 +1149,7 @@ export default function LecturesManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  평점
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
                   조회수
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  신고
                 </TableCell>
                 <TableCell
                   sx={{
@@ -1127,37 +1211,11 @@ export default function LecturesManagement() {
                     </Typography>
                   </TableCell>
                   <TableCell>{getCategoryTag(lecture.category)}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {formatDuration(lecture.duration)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{getStatusTag(lecture.status)}</TableCell>
-                  <TableCell>
-                    {renderRating(lecture.rating)}
-                    {lecture.reviewCount > 0 && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: "block", mt: 0.5 }}
-                      >
-                        ({lecture.reviewCount}개 리뷰)
-                      </Typography>
-                    )}
-                  </TableCell>
+                  <TableCell>{getStatusTag(lecture.isActive)}</TableCell>
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       {lecture.viewCount.toLocaleString()}
                     </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {lecture.reportCount > 0 ? (
-                      <Tag variant={1}>{lecture.reportCount}</Tag>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        0
-                      </Typography>
-                    )}
                   </TableCell>
                   <TableCell>
                     <Typography
@@ -1221,9 +1279,8 @@ export default function LecturesManagement() {
       >
         <DialogTitle>
           {actionType === "view" && "강의 상세정보"}
-          {actionType === "approve" && "강의 승인"}
-          {actionType === "suspend" && "강의 정지"}
-          {actionType === "delete" && "강의 삭제"}
+          {actionType === "activate" && "강의 활성화"}
+          {actionType === "deactivate" && "강의 비활성화"}
         </DialogTitle>
         <DialogContent>
           {selectedLecture && (
@@ -1233,8 +1290,14 @@ export default function LecturesManagement() {
                   <Typography variant="h6" gutterBottom>
                     {selectedLecture.title}
                   </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
-                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                  <Box
+                    sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 1 }}
+                  >
+                    <Box
+                      sx={{
+                        flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
+                      }}
+                    >
                       <Stack spacing={1}>
                         <Typography>
                           <strong>강사:</strong> {selectedLecture.instructor}
@@ -1249,11 +1312,20 @@ export default function LecturesManagement() {
                         {selectedLecture.youtubeUrl && (
                           <Typography>
                             <strong>동영상:</strong>{" "}
-                            <a 
-                              href={selectedLecture.youtubeUrl.startsWith('http') ? selectedLecture.youtubeUrl : `https://www.youtube.com/watch?v=${extractYouTubeVideoId(selectedLecture.youtubeUrl)}`}
-                              target="_blank" 
+                            <a
+                              href={
+                                selectedLecture.youtubeUrl.startsWith("http")
+                                  ? selectedLecture.youtubeUrl
+                                  : `https://www.youtube.com/watch?v=${extractYouTubeVideoId(
+                                      selectedLecture.youtubeUrl
+                                    )}`
+                              }
+                              target="_blank"
                               rel="noopener noreferrer"
-                              style={{ color: "#ff8796", textDecoration: "none" }}
+                              style={{
+                                color: "#ff8796",
+                                textDecoration: "none",
+                              }}
                             >
                               유튜브에서 보기
                             </a>
@@ -1263,21 +1335,19 @@ export default function LecturesManagement() {
                           sx={{ display: "flex", alignItems: "center", gap: 1 }}
                         >
                           <strong>상태:</strong>
-                          {getStatusTag(selectedLecture.status)}
+                          {getStatusTag(selectedLecture.isActive)}
                         </Box>
                       </Stack>
                     </Box>
-                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                    <Box
+                      sx={{
+                        flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
+                      }}
+                    >
                       <Stack spacing={1}>
                         <Typography>
                           <strong>조회수:</strong>{" "}
                           {selectedLecture.viewCount.toLocaleString()}
-                        </Typography>
-                        <Typography>
-                          <strong>평점:</strong>{" "}
-                          {selectedLecture.rating > 0
-                            ? `${selectedLecture.rating}/5.0 (${selectedLecture.reviewCount}개 리뷰)`
-                            : "평가없음"}
                         </Typography>
                         <Typography>
                           <strong>등록일:</strong> {selectedLecture.createdAt}
@@ -1291,7 +1361,7 @@ export default function LecturesManagement() {
                     </Typography>
                     <Typography>{selectedLecture.description}</Typography>
                   </Box>
-                  
+
                   {/* YouTube 미리보기 */}
                   {selectedLecture.youtubeUrl && (
                     <Box sx={{ mt: 3 }}>
@@ -1299,26 +1369,30 @@ export default function LecturesManagement() {
                         <strong>동영상 미리보기:</strong>
                       </Typography>
                       {(() => {
-                        const videoId = extractYouTubeVideoId(selectedLecture.youtubeUrl);
+                        const videoId = extractYouTubeVideoId(
+                          selectedLecture.youtubeUrl
+                        );
                         if (videoId) {
                           return (
-                            <Box sx={{ 
-                              position: 'relative', 
-                              paddingBottom: '56.25%', 
-                              height: 0, 
-                              overflow: 'hidden',
-                              borderRadius: 2,
-                              border: '1px solid #efeff0'
-                            }}>
+                            <Box
+                              sx={{
+                                position: "relative",
+                                paddingBottom: "56.25%",
+                                height: 0,
+                                overflow: "hidden",
+                                borderRadius: 2,
+                                border: "1px solid #efeff0",
+                              }}
+                            >
                               <iframe
                                 src={`https://www.youtube.com/embed/${videoId}`}
                                 style={{
-                                  position: 'absolute',
+                                  position: "absolute",
                                   top: 0,
                                   left: 0,
-                                  width: '100%',
-                                  height: '100%',
-                                  border: 'none'
+                                  width: "100%",
+                                  height: "100%",
+                                  border: "none",
                                 }}
                                 allowFullScreen
                                 title="YouTube video player"
@@ -1327,12 +1401,14 @@ export default function LecturesManagement() {
                           );
                         } else {
                           return (
-                            <Box sx={{ 
-                              p: 2, 
-                              border: '1px solid #efeff0', 
-                              borderRadius: 2, 
-                              bgcolor: '#f9f9f9' 
-                            }}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                border: "1px solid #efeff0",
+                                borderRadius: 2,
+                                bgcolor: "#f9f9f9",
+                              }}
+                            >
                               <Typography color="text.secondary">
                                 유효하지 않은 유튜브 URL입니다.
                               </Typography>
@@ -1342,59 +1418,111 @@ export default function LecturesManagement() {
                       })()}
                     </Box>
                   )}
-                  {selectedLecture.reportCount > 0 && (
-                    <Alert severity="warning" sx={{ mt: 2 }}>
-                      <strong>주의:</strong> 이 강의는{" "}
-                      {selectedLecture.reportCount}건의 신고를 받았습니다.
-                    </Alert>
-                  )}
-                  {selectedLecture.status === "PENDING" && (
-                    <Alert severity="info" sx={{ mt: 2 }}>
-                      <strong>알림:</strong> 이 강의는 관리자 승인을 기다리고
-                      있습니다.
-                    </Alert>
-                  )}
+
+                  {/* Reference Materials Display */}
+                  {selectedLecture.referenceMaterials &&
+                    selectedLecture.referenceMaterials.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          <strong>참고자료:</strong>
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 1,
+                          }}
+                        >
+                          {selectedLecture.referenceMaterials.map((file) => (
+                            <Box
+                              key={file.id}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                p: 2,
+                                border: "1px solid #efeff0",
+                                borderRadius: 2,
+                                bgcolor: "#fafafa",
+                                "&:hover": {
+                                  bgcolor: "#f0f0f0",
+                                },
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                {getFileIcon(file.type)}
+                                <Box>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ fontWeight: 500 }}
+                                  >
+                                    {file.name}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                  >
+                                    {formatFileSize(file.size)} • {file.type}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                href={file.url}
+                                target="_blank"
+                                sx={{
+                                  color: "#ff8796",
+                                  borderColor: "#ff8796",
+                                  "&:hover": {
+                                    borderColor: "#ffb7b8",
+                                    bgcolor: "#fff5f5",
+                                  },
+                                }}
+                              >
+                                <AttachFile sx={{ fontSize: 18, mr: 0.5 }} />
+                                열기
+                              </Button>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
                 </Box>
               )}
 
-              {actionType === "approve" && (
+              {actionType === "activate" && (
                 <Alert severity="success">
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <CheckCircle />
                     <Typography>
                       <strong>{selectedLecture.title}</strong> 강의를
-                      승인하시겠습니까?
+                      활성화하시겠습니까?
                     </Typography>
                   </Box>
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    승인된 강의는 사용자에게 공개됩니다.
+                    활성화된 강의는 사용자에게 공개됩니다.
                   </Typography>
                 </Alert>
               )}
 
-              {actionType === "suspend" && (
+              {actionType === "deactivate" && (
                 <Alert severity="warning">
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Warning />
                     <Typography>
                       <strong>{selectedLecture.title}</strong> 강의를
-                      정지하시겠습니까?
+                      비활성화하시겠습니까?
                     </Typography>
                   </Box>
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    정지된 강의는 사용자에게 표시되지 않습니다.
-                  </Typography>
-                </Alert>
-              )}
-
-              {actionType === "delete" && (
-                <Alert severity="error">
-                  <Typography>
-                    <strong>{selectedLecture.title}</strong> 강의를
-                    삭제하시겠습니까?
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    삭제된 강의는 복구할 수 없습니다.
+                    비활성화된 강의는 사용자에게 표시되지 않습니다.
                   </Typography>
                 </Alert>
               )}
@@ -1408,18 +1536,11 @@ export default function LecturesManagement() {
           {actionType !== "view" && (
             <Button
               onClick={confirmAction}
-              color={
-                actionType === "approve"
-                  ? "success"
-                  : actionType === "delete"
-                  ? "error"
-                  : "warning"
-              }
+              color={actionType === "activate" ? "success" : "warning"}
               variant="contained"
             >
-              {actionType === "approve" && "승인"}
-              {actionType === "suspend" && "정지"}
-              {actionType === "delete" && "삭제"}
+              {actionType === "activate" && "활성화"}
+              {actionType === "deactivate" && "비활성화"}
             </Button>
           )}
         </DialogActions>
@@ -1434,19 +1555,26 @@ export default function LecturesManagement() {
       >
         <DialogTitle>새 강의 생성</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}>
             <TextField
               label="강의 제목"
               fullWidth
               value={newLecture.title}
-              onChange={(e) => setNewLecture(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setNewLecture((prev) => ({ ...prev, title: e.target.value }))
+              }
               required
             />
             <TextField
               label="강사명"
               fullWidth
               value={newLecture.instructor}
-              onChange={(e) => setNewLecture(prev => ({ ...prev, instructor: e.target.value }))}
+              onChange={(e) =>
+                setNewLecture((prev) => ({
+                  ...prev,
+                  instructor: e.target.value,
+                }))
+              }
               required
             />
             <FormControl fullWidth required>
@@ -1454,7 +1582,12 @@ export default function LecturesManagement() {
               <Select
                 value={newLecture.category}
                 label="카테고리"
-                onChange={(e) => setNewLecture(prev => ({ ...prev, category: e.target.value }))}
+                onChange={(e) =>
+                  setNewLecture((prev) => ({
+                    ...prev,
+                    category: e.target.value,
+                  }))
+                }
               >
                 <MenuItem value="영상진단">영상진단</MenuItem>
                 <MenuItem value="내과">내과</MenuItem>
@@ -1469,7 +1602,12 @@ export default function LecturesManagement() {
               multiline
               rows={4}
               value={newLecture.youtubeUrl}
-              onChange={(e) => setNewLecture(prev => ({ ...prev, youtubeUrl: e.target.value }))}
+              onChange={(e) =>
+                setNewLecture((prev) => ({
+                  ...prev,
+                  youtubeUrl: e.target.value,
+                }))
+              }
               placeholder="다음 중 하나를 입력하세요:&#10;1. https://www.youtube.com/watch?v=VIDEO_ID&#10;2. https://youtu.be/VIDEO_ID&#10;3. <iframe src='https://www.youtube.com/embed/VIDEO_ID'></iframe>"
               helperText="유튜브 동영상 URL을 입력하거나 유튜브에서 제공하는 iframe 임베드 코드를 붙여넣으세요."
             />
@@ -1479,9 +1617,120 @@ export default function LecturesManagement() {
               multiline
               rows={4}
               value={newLecture.description}
-              onChange={(e) => setNewLecture(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setNewLecture((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               placeholder="강의에 대한 자세한 설명을 입력해 주세요..."
             />
+
+            {/* Reference Materials Upload */}
+            <Box>
+              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                참고자료 (선택사항)
+              </Typography>
+              <Box
+                sx={{
+                  border: "2px dashed #efeff0",
+                  borderRadius: 2,
+                  p: 3,
+                  textAlign: "center",
+                  bgcolor: "#fafafa",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    borderColor: "#ff8796",
+                    bgcolor: "#fff5f5",
+                  },
+                }}
+              >
+                <input
+                  accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
+                  style={{ display: "none" }}
+                  id="reference-materials-upload"
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                />
+                <label htmlFor="reference-materials-upload">
+                  <Box sx={{ cursor: "pointer" }}>
+                    <CloudUpload
+                      sx={{ fontSize: 48, color: "#ff8796", mb: 1 }}
+                    />
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: 600, mb: 0.5 }}
+                    >
+                      클릭하여 참고자료 업로드
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      PDF, PPT, Word, Excel 파일을 지원합니다 (여러 파일 선택
+                      가능)
+                    </Typography>
+                  </Box>
+                </label>
+              </Box>
+
+              {/* Uploaded Files List */}
+              {newLecture.referenceMaterials.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, fontWeight: 600 }}
+                  >
+                    업로드된 파일 ({newLecture.referenceMaterials.length}개)
+                  </Typography>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                  >
+                    {newLecture.referenceMaterials.map((file) => (
+                      <Box
+                        key={file.id}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          p: 2,
+                          border: "1px solid #efeff0",
+                          borderRadius: 2,
+                          bgcolor: "white",
+                        }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          {getFileIcon(file.type)}
+                          <Box>
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 500 }}
+                            >
+                              {file.name}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {formatFileSize(file.size)} • {file.type}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={() => removeReferenceMaterial(file.id)}
+                          sx={{ minWidth: "auto", p: 1 }}
+                        >
+                          <Delete sx={{ fontSize: 18 }} />
+                        </Button>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>

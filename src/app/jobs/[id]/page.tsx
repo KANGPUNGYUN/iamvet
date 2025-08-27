@@ -26,6 +26,14 @@ export default function JobDetailPage({
 }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    subject: "",
+    message: "",
+    senderName: "",
+    senderEmail: "",
+    senderPhone: "",
+  });
   const { id } = use(params);
 
   const jobData = getJobById(id);
@@ -50,6 +58,42 @@ export default function JobDetailPage({
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsBookmarked(!isBookmarked);
+  };
+
+  const handleContactClick = () => {
+    setContactModalOpen(true);
+  };
+
+  const handleContactSubmit = () => {
+    if (!contactForm.subject || !contactForm.message || !contactForm.senderName || !contactForm.senderEmail) {
+      alert("모든 필수 항목을 입력해 주세요.");
+      return;
+    }
+    
+    // 여기에 메시지 전송 로직 추가
+    console.log('메시지 전송:', contactForm);
+    alert('메시지가 성공적으로 전송되었습니다!');
+    
+    // 폼 초기화 및 모달 닫기
+    setContactForm({
+      subject: "",
+      message: "",
+      senderName: "",
+      senderEmail: "",
+      senderPhone: "",
+    });
+    setContactModalOpen(false);
+  };
+
+  const resetContactForm = () => {
+    setContactForm({
+      subject: "",
+      message: "",
+      senderName: "",
+      senderEmail: "",
+      senderPhone: "",
+    });
+    setContactModalOpen(false);
   };
 
   return (
@@ -250,7 +294,7 @@ export default function JobDetailPage({
                 <Button variant="default" size="large">
                   지원하기
                 </Button>
-                <Button variant="weak" size="large">
+                <Button variant="weak" size="large" onClick={handleContactClick}>
                   문의하기
                 </Button>
               </div>
@@ -311,6 +355,64 @@ export default function JobDetailPage({
           </section>
         </div>
       </div>
+
+      {/* Contact Modal */}
+      {contactModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">문의하기</h3>
+              <p className="text-gray-600 mb-6">
+                {jobData.hospital.name}에 {jobData.title} 포지션에 대해 문의하세요.
+              </p>
+              
+              <div className="space-y-4">
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    제목 *
+                  </label>
+                  <input
+                    type="text"
+                    value={contactForm.subject}
+                    onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent"
+                    placeholder="문의 제목을 입력하세요"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    문의 내용 *
+                  </label>
+                  <textarea
+                    value={contactForm.message}
+                    onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                    rows={5}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent resize-none"
+                    placeholder="문의하실 내용을 자세히 작성해 주세요..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={resetContactForm}
+                  className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleContactSubmit}
+                  className="flex-1 px-4 py-2 bg-[#ff8796] text-white rounded-md hover:bg-[#ff9aa6] transition-colors font-medium"
+                >
+                  문의하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

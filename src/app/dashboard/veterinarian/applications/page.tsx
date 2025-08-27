@@ -199,13 +199,10 @@ export default function VeterinarianApplicationsPage() {
                     지원일자
                   </th>
                   <th className="text-left py-[22px] text-sm font-medium text-gray-500 border-t border-b border-[#EFEFF0]">
-                    지원자
+                    지원한 병원
                   </th>
                   <th className="text-left py-[22px] text-sm font-medium text-gray-500 border-t border-b border-[#EFEFF0]">
-                    지원 포지션
-                  </th>
-                  <th className="text-left py-[22px] text-sm font-medium text-gray-500 border-t border-b border-[#EFEFF0]">
-                    연락처/이메일
+                    병원 연락처/이메일
                   </th>
                   <th className="text-left py-[22px] text-sm font-medium text-gray-500 border-t border-b border-[#EFEFF0]">
                     상태
@@ -223,9 +220,6 @@ export default function VeterinarianApplicationsPage() {
                     </td>
                     <td className="py-[22px] text-sm text-gray-900">
                       {application.applicant}
-                    </td>
-                    <td className="py-[22px] text-sm text-gray-900">
-                      {application.position}
                     </td>
                     <td className="py-[22px] text-sm text-gray-600">
                       {application.contact}

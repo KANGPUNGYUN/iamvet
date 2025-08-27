@@ -138,6 +138,11 @@ export default function ResumeDetailPage({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [expandedEvaluations, setExpandedEvaluations] = useState<number[]>([]);
   const [showRatingModal, setShowRatingModal] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    subject: "",
+    message: "",
+  });
   const [ratings, setRatings] = useState({
     stressManagement: 0,
     growth: 0,
@@ -227,6 +232,34 @@ export default function ResumeDetailPage({
       documentation: "",
       contribution: "",
     });
+  };
+
+  const handleContactClick = () => {
+    setContactModalOpen(true);
+  };
+
+  const handleContactSubmit = () => {
+    if (!contactForm.subject || !contactForm.message) {
+      alert("모든 필수 항목을 입력해 주세요.");
+      return;
+    }
+
+    console.log("메시지 전송:", contactForm);
+    alert("메시지가 성공적으로 전송되었습니다!");
+
+    setContactForm({
+      subject: "",
+      message: "",
+    });
+    setContactModalOpen(false);
+  };
+
+  const resetContactForm = () => {
+    setContactForm({
+      subject: "",
+      message: "",
+    });
+    setContactModalOpen(false);
   };
 
   return (
@@ -654,6 +687,17 @@ export default function ResumeDetailPage({
                         <p className="font-text text-[14px] lg:text-[16px] text-sub leading-relaxed whitespace-pre-line">
                           {resumeData.selfIntroduction}
                         </p>
+                      </div>
+
+                      {/* 연락하기 버튼 */}
+                      <div className="w-full flex justify-center mt-6">
+                        <Button
+                          variant="keycolor"
+                          size="medium"
+                          onClick={handleContactClick}
+                        >
+                          연락하기
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1473,12 +1517,77 @@ export default function ResumeDetailPage({
               <Button
                 variant="keycolor"
                 size="medium"
-                fullWidth
                 onClick={handleRatingSubmit}
-                className="bg-[#4F5866] text-white"
               >
                 등록하기
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Modal */}
+      {contactModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">연락하기</h3>
+              <p className="text-gray-600 mb-6">
+                {resumeData.name}님에게 연락하여 채용에 대해 연락하세요.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    제목 *
+                  </label>
+                  <input
+                    type="text"
+                    value={contactForm.subject}
+                    onChange={(e) =>
+                      setContactForm((prev) => ({
+                        ...prev,
+                        subject: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent"
+                    placeholder="문의 제목을 입력하세요"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    문의 내용 *
+                  </label>
+                  <textarea
+                    value={contactForm.message}
+                    onChange={(e) =>
+                      setContactForm((prev) => ({
+                        ...prev,
+                        message: e.target.value,
+                      }))
+                    }
+                    rows={5}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent resize-none"
+                    placeholder="문의하실 내용을 자세히 작성해 주세요..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={resetContactForm}
+                  className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+                <Button
+                  onClick={handleContactSubmit}
+                  className="flex-1 px-4 py-2 bg-[#ff8796] text-white rounded-md hover:bg-[#ff9aa6] transition-colors font-medium"
+                >
+                  연락하기
+                </Button>
+              </div>
             </div>
           </div>
         </div>

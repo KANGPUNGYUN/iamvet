@@ -285,8 +285,8 @@ export default function TransfersManagement() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" } }}>
               <TextField
                 fullWidth
                 placeholder="제목, 병원명, 지역으로 검색..."
@@ -319,7 +319,7 @@ export default function TransfersManagement() {
                 }}
               />
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 18px)' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 18px)" } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
                 <Select
@@ -348,7 +348,7 @@ export default function TransfersManagement() {
                 </Select>
               </FormControl>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 18px)' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 18px)" } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>유형</InputLabel>
                 <Select
@@ -375,7 +375,7 @@ export default function TransfersManagement() {
                 </Select>
               </FormControl>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(20% - 14px)' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(20% - 14px)" } }}>
               <Button
                 variant="contained"
                 fullWidth
@@ -400,8 +400,16 @@ export default function TransfersManagement() {
       </Card>
 
       {/* Ultra Modern Stats Cards */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -499,7 +507,15 @@ export default function TransfersManagement() {
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -597,7 +613,15 @@ export default function TransfersManagement() {
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -654,7 +678,7 @@ export default function TransfersManagement() {
                       mb: 2,
                     }}
                   >
-                    신고된 게시물
+                    비활성화 게시물
                   </Typography>
                   <Box
                     sx={{
@@ -695,7 +719,15 @@ export default function TransfersManagement() {
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -949,16 +981,6 @@ export default function TransfersManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  신고
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
                   조회수
                 </TableCell>
                 <TableCell
@@ -1048,15 +1070,6 @@ export default function TransfersManagement() {
                     <Tag variant={3}>{transfer.inquiryCount}건</Tag>
                   </TableCell>
                   <TableCell>
-                    {transfer.reportCount > 0 ? (
-                      <Tag variant={1}>{transfer.reportCount}</Tag>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        0
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       {transfer.viewCount.toLocaleString()}
                     </Typography>
@@ -1135,8 +1148,14 @@ export default function TransfersManagement() {
                   <Typography variant="h6" gutterBottom>
                     {selectedTransfer.title}
                   </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
-                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                  <Box
+                    sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 1 }}
+                  >
+                    <Box
+                      sx={{
+                        flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
+                      }}
+                    >
                       <Stack spacing={1}>
                         <Typography>
                           <strong>병원명:</strong>{" "}
@@ -1156,7 +1175,11 @@ export default function TransfersManagement() {
                         </Box>
                       </Stack>
                     </Box>
-                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
+                    <Box
+                      sx={{
+                        flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
+                      }}
+                    >
                       <Stack spacing={1}>
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 1 }}

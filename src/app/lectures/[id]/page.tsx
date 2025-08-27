@@ -16,6 +16,8 @@ import {
   PdfIcon,
   UpIcon,
   DownIcon,
+  EditIcon,
+  TrashIcon,
 } from "public/icons";
 import Image from "next/image";
 
@@ -34,6 +36,11 @@ export default function LectureDetailPage({
   const [expandedReplies, setExpandedReplies] = useState<
     Record<string, boolean>
   >({});
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  
+  // 현재 로그인한 사용자 (예시용)
+  const currentUser = "김수의사";
 
   const currentLecture = allLecturesData.find((lecture) => lecture.id === id);
 
@@ -109,6 +116,55 @@ export default function LectureDetailPage({
       ...prev,
       [commentId]: !prev[commentId],
     }));
+  };
+
+  const handleEditComment = (commentId: string, content: string) => {
+    setEditingCommentId(commentId);
+    setEditContent(content);
+  };
+
+  const handleSaveEdit = (commentId: string) => {
+    if (!editContent.trim()) return;
+    
+    setComments((prev) =>
+      prev.map((comment) => {
+        if (comment.id === commentId) {
+          return { ...comment, content: editContent };
+        }
+        // 대댓글 수정
+        if (comment.replies.some(reply => reply.id === commentId)) {
+          return {
+            ...comment,
+            replies: comment.replies.map(reply => 
+              reply.id === commentId ? { ...reply, content: editContent } : reply
+            )
+          };
+        }
+        return comment;
+      })
+    );
+    
+    setEditingCommentId(null);
+    setEditContent("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditContent("");
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    if (window.confirm("댓글을 삭제하시겠습니까?")) {
+      setComments((prev) => {
+        // 메인 댓글 삭제
+        const filteredComments = prev.filter(comment => comment.id !== commentId);
+        // 대댓글 삭제
+        return filteredComments.map(comment => ({
+          ...comment,
+          replies: comment.replies.filter(reply => reply.id !== commentId)
+        }));
+      });
+    }
   };
 
   const displayedComments = showMoreComments ? comments : comments.slice(0, 5);
@@ -303,17 +359,59 @@ export default function LectureDetailPage({
                           className="w-[45px] h-[45px] rounded-full object-cover"
                         />
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[14px] font-semibold text-[#3B394D]">
-                              {comment.author}
-                            </span>
-                            <span className="text-[12px] text-[#9098A4]">
-                              {comment.date}
-                            </span>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[14px] font-semibold text-[#3B394D]">
+                                {comment.author}
+                              </span>
+                              <span className="text-[12px] text-[#9098A4]">
+                                {comment.date}
+                              </span>
+                            </div>
+                            {comment.author === currentUser && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleEditComment(comment.id, comment.content)}
+                                  className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                >
+                                  <EditIcon size="14" currentColor="#9098A4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                  className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                >
+                                  <TrashIcon size="14" currentColor="#9098A4" />
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          <p className="text-[14px] text-[#4F5866] leading-relaxed mb-2">
-                            {comment.content}
-                          </p>
+                          {editingCommentId === comment.id ? (
+                            <div className="mb-2">
+                              <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="w-full min-h-[60px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+                              />
+                              <div className="flex justify-end gap-2 mt-2">
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="px-3 py-1 text-[12px] text-[#9098A4] hover:text-[#4F5866] transition-colors"
+                                >
+                                  취소
+                                </button>
+                                <button
+                                  onClick={() => handleSaveEdit(comment.id)}
+                                  className="px-3 py-1 bg-[#FF8796] text-white rounded-[4px] text-[12px] font-medium hover:bg-[#FF7A8A] transition-colors"
+                                >
+                                  저장
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-[14px] text-[#4F5866] leading-relaxed mb-2">
+                              {comment.content}
+                            </p>
+                          )}
                           <div className="flex items-center gap-4">
                             {/* 답글 토글 버튼 */}
                             {comment.replies.length > 0 ? (
@@ -375,17 +473,59 @@ export default function LectureDetailPage({
                                   className="w-[36px] h-[36px] rounded-full object-cover"
                                 />
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[14px] font-semibold text-[#3B394D]">
-                                      {reply.author}
-                                    </span>
-                                    <span className="text-[12px] text-[#9098A4]">
-                                      {reply.date}
-                                    </span>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[14px] font-semibold text-[#3B394D]">
+                                        {reply.author}
+                                      </span>
+                                      <span className="text-[12px] text-[#9098A4]">
+                                        {reply.date}
+                                      </span>
+                                    </div>
+                                    {reply.author === currentUser && (
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          onClick={() => handleEditComment(reply.id, reply.content)}
+                                          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                        >
+                                          <EditIcon size="12" currentColor="#9098A4" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteComment(reply.id)}
+                                          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                        >
+                                          <TrashIcon size="12" currentColor="#9098A4" />
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
-                                  <p className="text-[14px] text-[#4F5866] leading-relaxed">
-                                    {reply.content}
-                                  </p>
+                                  {editingCommentId === reply.id ? (
+                                    <div>
+                                      <textarea
+                                        value={editContent}
+                                        onChange={(e) => setEditContent(e.target.value)}
+                                        className="w-full min-h-[60px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+                                      />
+                                      <div className="flex justify-end gap-2 mt-2">
+                                        <button
+                                          onClick={handleCancelEdit}
+                                          className="px-3 py-1 text-[12px] text-[#9098A4] hover:text-[#4F5866] transition-colors"
+                                        >
+                                          취소
+                                        </button>
+                                        <button
+                                          onClick={() => handleSaveEdit(reply.id)}
+                                          className="px-3 py-1 bg-[#FF8796] text-white rounded-[4px] text-[12px] font-medium hover:bg-[#FF7A8A] transition-colors"
+                                        >
+                                          저장
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <p className="text-[14px] text-[#4F5866] leading-relaxed">
+                                      {reply.content}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                             ))}

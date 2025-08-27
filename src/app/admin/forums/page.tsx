@@ -12,7 +12,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Button,
   ButtonGroup,
   TextField,
@@ -26,226 +25,244 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,
   Stack,
+  Avatar,
+  Chip,
 } from "@mui/material";
 import {
   Search,
   Visibility,
-  Delete,
-  CheckCircle,
-  Cancel,
+  Forum,
+  Person,
+  Comment,
+  ThumbUp,
   Warning,
-  Work,
-  People,
+  TrendingUp,
+  PlayArrow,
+  Pause,
+  Business,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
 
-interface JobPost {
+interface ForumPost {
   id: number;
   title: string;
-  hospitalName: string;
-  location: string;
-  salary: string;
-  workType: "정규직" | "계약직" | "파트타임" | "인턴";
-  status: "ACTIVE" | "PENDING" | "SUSPENDED" | "EXPIRED";
-  reportCount: number;
-  applicantCount: number;
-  createdAt: string;
+  content: string;
+  author: {
+    id: number;
+    name: string;
+    type: "VETERINARIAN" | "HOSPITAL";
+    avatar?: string;
+  };
+  category:
+    | "CLINICAL"
+    | "TREATMENT"
+    | "DIAGNOSIS"
+    | "MEDICATION"
+    | "SURGERY"
+    | "GENERAL";
+  isActive: boolean;
   viewCount: number;
-  description: string;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  updatedAt: string;
+  tags: string[];
 }
 
-export default function JobPostsManagement() {
-  const [jobPosts, setJobPosts] = useState<JobPost[]>([
+export default function ForumsManagement() {
+  const [forumPosts, setForumPosts] = useState<ForumPost[]>([
     {
       id: 1,
-      title: "경력 수의사 모집 (정규직)",
-      hospitalName: "서울동물병원",
-      location: "서울 강남구",
-      salary: "연봉 5000~7000만원",
-      workType: "정규직",
-      status: "ACTIVE",
-      reportCount: 0,
-      applicantCount: 12,
+      title: "강아지 파보바이러스 감염 시 치료 프로토콜",
+      content:
+        "최근 파보바이러스 감염 케이스가 늘어나고 있습니다. 효과적인 치료 방법에 대해 논의해보고 싶습니다...",
+      author: {
+        id: 1,
+        name: "김수의",
+        type: "VETERINARIAN",
+      },
+      category: "TREATMENT",
+      isActive: true,
+      viewCount: 1205,
+      likeCount: 34,
+      commentCount: 18,
       createdAt: "2024-01-20",
-      viewCount: 245,
-      description: "경력 3년 이상 수의사를 모집합니다. 최신 의료장비 완비.",
+      updatedAt: "2024-01-20",
+      tags: ["파보바이러스", "감염", "치료"],
     },
     {
       id: 2,
-      title: "신입 수의사 채용",
-      hospitalName: "부산해운대동물병원",
-      location: "부산 해운대구",
-      salary: "연봉 4000~5000만원",
-      workType: "정규직",
-      status: "ACTIVE",
-      reportCount: 0,
-      applicantCount: 8,
+      title: "고양이 만성 신부전 관리법",
+      content: "고령 고양이의 만성 신부전 관리에 대한 경험을 공유합니다...",
+      author: {
+        id: 2,
+        name: "박수의",
+        type: "VETERINARIAN",
+      },
+      category: "CLINICAL",
+      isActive: true,
+      viewCount: 892,
+      likeCount: 25,
+      commentCount: 12,
       createdAt: "2024-01-19",
-      viewCount: 189,
-      description: "신입 수의사를 환영합니다. 체계적인 교육 프로그램 제공.",
+      updatedAt: "2024-01-19",
+      tags: ["고양이", "신부전", "만성질환"],
     },
     {
       id: 3,
-      title: "파트타임 수의사 모집",
-      hospitalName: "대구수성동물병원",
-      location: "대구 수성구",
-      salary: "시급 50,000원",
-      workType: "파트타임",
-      status: "PENDING",
-      reportCount: 1,
-      applicantCount: 3,
+      title: "새로운 심장사상충 예방약 효과 분석",
+      content:
+        "최근 출시된 심장사상충 예방약의 효과에 대한 임상 데이터를 분석했습니다...",
+      author: {
+        id: 3,
+        name: "서울동물병원",
+        type: "HOSPITAL",
+      },
+      category: "MEDICATION",
+      isActive: true,
+      viewCount: 567,
+      likeCount: 15,
+      commentCount: 8,
       createdAt: "2024-01-18",
-      viewCount: 87,
-      description: "주말 파트타임 수의사를 모집합니다.",
+      updatedAt: "2024-01-18",
+      tags: ["심장사상충", "예방약", "분석"],
     },
     {
       id: 4,
-      title: "야간 응급 수의사 급구",
-      hospitalName: "24시응급동물병원",
-      location: "인천 남동구",
-      salary: "협의",
-      workType: "계약직",
-      status: "ACTIVE",
-      reportCount: 0,
-      applicantCount: 5,
+      title: "부적절한 내용이 포함된 게시물",
+      content: "이 게시물은 부적절한 내용을 포함하고 있어 신고되었습니다...",
+      author: {
+        id: 4,
+        name: "익명사용자",
+        type: "VETERINARIAN",
+      },
+      category: "GENERAL",
+      isActive: true,
+      viewCount: 123,
+      likeCount: 2,
+      commentCount: 3,
       createdAt: "2024-01-17",
-      viewCount: 156,
-      description: "응급의료 경험자 우대. 야간 근무 가능자.",
+      updatedAt: "2024-01-17",
+      tags: ["신고됨"],
     },
     {
       id: 5,
-      title: "허위 채용 공고",
-      hospitalName: "가짜병원",
-      location: "가짜 주소",
-      salary: "비현실적 급여",
-      workType: "정규직",
-      status: "SUSPENDED",
-      reportCount: 8,
-      applicantCount: 0,
-      createdAt: "2024-01-15",
-      viewCount: 23,
-      description: "허위 채용공고로 신고됨",
+      title: "복강경 수술 기법 워크샵 후기",
+      content:
+        "지난 주 참석한 복강경 수술 워크샵에서 배운 내용을 정리해봤습니다...",
+      author: {
+        id: 5,
+        name: "이수의",
+        type: "VETERINARIAN",
+      },
+      category: "SURGERY",
+      isActive: false,
+      viewCount: 445,
+      likeCount: 22,
+      commentCount: 7,
+      createdAt: "2024-01-16",
+      updatedAt: "2024-01-16",
+      tags: ["복강경", "수술", "워크샵"],
     },
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("ALL");
   const [filterStatus, setFilterStatus] = useState("ALL");
-  const [filterWorkType, setFilterWorkType] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<JobPost | null>(null);
-  const [actionType, setActionType] = useState<
-    "view" | "suspend" | "delete" | "approve"
-  >("view");
+  const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
+  const [actionType, setActionType] = useState<"view" | "toggle">("view");
 
-  const getStatusTag = (status: string) => {
-    const statusMap: {
+  const getCategoryTag = (category: string) => {
+    const categoryMap: {
       [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6; text: string };
     } = {
-      ACTIVE: { variant: 2, text: "활성" },
-      PENDING: { variant: 3, text: "승인대기" },
-      SUSPENDED: { variant: 1, text: "정지" },
-      EXPIRED: { variant: 6, text: "만료" },
+      CLINICAL: { variant: 2, text: "임상" },
+      TREATMENT: { variant: 3, text: "치료" },
+      DIAGNOSIS: { variant: 4, text: "진단" },
+      MEDICATION: { variant: 5, text: "약물" },
+      SURGERY: { variant: 6, text: "수술" },
+      GENERAL: { variant: 1, text: "일반" },
     };
-    const statusInfo = statusMap[status] || {
-      variant: 6 as const,
-      text: status,
+    const categoryInfo = categoryMap[category] || {
+      variant: 1 as const,
+      text: category,
     };
-    return <Tag variant={statusInfo.variant}>{statusInfo.text}</Tag>;
+    return <Tag variant={categoryInfo.variant}>{categoryInfo.text}</Tag>;
   };
 
-  const getWorkTypeTag = (workType: string) => {
-    const typeMap: { [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6 } } = {
-      정규직: { variant: 4 },
-      계약직: { variant: 3 },
-      파트타임: { variant: 5 },
-      인턴: { variant: 2 },
-    };
-    const typeInfo = typeMap[workType] || { variant: 6 as const };
-    return <Tag variant={typeInfo.variant}>{workType}</Tag>;
+  const getStatusTag = (isActive: boolean) => {
+    return isActive ? (
+      <Tag variant={2}>활성화</Tag>
+    ) : (
+      <Tag variant={6}>비활성화</Tag>
+    );
   };
 
-  const filteredJobs = jobPosts.filter((job) => {
+  // Filter posts based on search and filters
+  const filteredPosts = forumPosts.filter((post) => {
     const matchesSearch =
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.hospitalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "ALL" || job.status === filterStatus;
-    const matchesWorkType =
-      filterWorkType === "ALL" || job.workType === filterWorkType;
-    return matchesSearch && matchesStatus && matchesWorkType;
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.tags.some((tag) =>
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    const matchesCategory =
+      filterCategory === "ALL" || post.category === filterCategory;
+    const matchesStatus =
+      filterStatus === "ALL" ||
+      (filterStatus === "ACTIVE" && post.isActive) ||
+      (filterStatus === "INACTIVE" && !post.isActive);
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentJobs = filteredJobs.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
+  const currentPosts = filteredPosts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
 
-  const handleAction = (
-    job: JobPost,
-    action: "view" | "suspend" | "delete" | "approve"
-  ) => {
-    setSelectedJob(job);
+  const handleAction = (post: ForumPost, action: "view" | "toggle") => {
+    setSelectedPost(post);
     setActionType(action);
     setModalVisible(true);
   };
 
   const confirmAction = () => {
-    if (!selectedJob) return;
+    if (!selectedPost) return;
 
-    setJobPosts((prev) =>
-      prev.map((job) => {
-        if (job.id === selectedJob.id) {
+    setForumPosts((prev) =>
+      prev.map((post) => {
+        if (post.id === selectedPost.id) {
           switch (actionType) {
-            case "approve":
-              return { ...job, status: "ACTIVE" as const };
-            case "suspend":
-              return { ...job, status: "SUSPENDED" as const };
-            case "delete":
-              return { ...job, status: "SUSPENDED" as const };
+            case "toggle":
+              return { ...post, isActive: !post.isActive };
             default:
-              return job;
+              return post;
           }
         }
-        return job;
+        return post;
       })
     );
 
     setModalVisible(false);
-    setSelectedJob(null);
+    setSelectedPost(null);
   };
 
-  const renderActionButtons = (job: JobPost) => (
+  const renderActionButtons = (post: ForumPost) => (
     <ButtonGroup size="small">
-      <Button variant="outlined" onClick={() => handleAction(job, "view")}>
+      <Button variant="outlined" onClick={() => handleAction(post, "view")}>
         <Visibility />
       </Button>
-      {job.status === "PENDING" && (
-        <Button
-          variant="outlined"
-          color="success"
-          onClick={() => handleAction(job, "approve")}
-        >
-          <CheckCircle />
-        </Button>
-      )}
       <Button
         variant="outlined"
-        color="warning"
-        onClick={() => handleAction(job, "suspend")}
-        disabled={job.status === "SUSPENDED"}
+        color={post.isActive ? "warning" : "success"}
+        onClick={() => handleAction(post, "toggle")}
       >
-        <Cancel />
-      </Button>
-      <Button
-        variant="outlined"
-        color="error"
-        onClick={() => handleAction(job, "delete")}
-      >
-        <Delete />
+        {post.isActive ? <Pause /> : <PlayArrow />}
       </Button>
     </ButtonGroup>
   );
@@ -263,10 +280,10 @@ export default function JobPostsManagement() {
             fontSize: { xs: "1.75rem", md: "2rem" },
           }}
         >
-          채용공고 관리
+          임상포럼 관리
         </Typography>
         <Typography variant="body1" sx={{ color: "#4f5866" }}>
-          수의사 채용공고를 효율적으로 관리하고 모니터링하세요.
+          임상포럼의 게시물을 효율적으로 관리하고 모니터링하세요.
         </Typography>
       </Box>
 
@@ -281,11 +298,11 @@ export default function JobPostsManagement() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(40% - 12px)" } }}>
               <TextField
                 fullWidth
-                placeholder="제목, 병원명, 지역으로 검색..."
+                placeholder="제목, 작성자, 태그로 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 sx={{
@@ -315,7 +332,38 @@ export default function JobPostsManagement() {
                 }}
               />
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 18px)' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 18px)" } }}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: "#4f5866" }}>카테고리</InputLabel>
+                <Select
+                  value={filterCategory}
+                  label="카테고리"
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#efeff0",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff8796",
+                    },
+                  }}
+                >
+                  <MenuItem value="ALL">모든 카테고리</MenuItem>
+                  <MenuItem value="CLINICAL">임상</MenuItem>
+                  <MenuItem value="TREATMENT">치료</MenuItem>
+                  <MenuItem value="DIAGNOSIS">진단</MenuItem>
+                  <MenuItem value="MEDICATION">약물</MenuItem>
+                  <MenuItem value="SURGERY">수술</MenuItem>
+                  <MenuItem value="GENERAL">일반</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 18px)" } }}>
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
                 <Select
@@ -337,43 +385,12 @@ export default function JobPostsManagement() {
                   }}
                 >
                   <MenuItem value="ALL">모든 상태</MenuItem>
-                  <MenuItem value="ACTIVE">활성</MenuItem>
-                  <MenuItem value="PENDING">승인대기</MenuItem>
-                  <MenuItem value="SUSPENDED">정지</MenuItem>
-                  <MenuItem value="EXPIRED">만료</MenuItem>
+                  <MenuItem value="ACTIVE">활성화</MenuItem>
+                  <MenuItem value="INACTIVE">비활성화</MenuItem>
                 </Select>
               </FormControl>
             </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(25% - 18px)' } }}>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: "#4f5866" }}>근무형태</InputLabel>
-                <Select
-                  value={filterWorkType}
-                  label="근무형태"
-                  onChange={(e) => setFilterWorkType(e.target.value)}
-                  sx={{
-                    bgcolor: "white",
-                    borderRadius: 2,
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#efeff0",
-                    },
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#ff8796",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#ff8796",
-                    },
-                  }}
-                >
-                  <MenuItem value="ALL">모든 근무형태</MenuItem>
-                  <MenuItem value="정규직">정규직</MenuItem>
-                  <MenuItem value="계약직">계약직</MenuItem>
-                  <MenuItem value="파트타임">파트타임</MenuItem>
-                  <MenuItem value="인턴">인턴</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(20% - 14px)' } }}>
+            <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(10% - 18px)" } }}>
               <Button
                 variant="contained"
                 fullWidth
@@ -383,10 +400,10 @@ export default function JobPostsManagement() {
                   borderRadius: 2,
                   py: 1.5,
                   fontWeight: 600,
-                  boxShadow: "0 4px 12px rgba(105, 140, 252, 0.3)",
+                  boxShadow: "0 4px 12px rgba(255, 135, 150, 0.3)",
                   "&:hover": {
                     bgcolor: "#ffb7b8",
-                    boxShadow: "0 6px 16px rgba(105, 140, 252, 0.4)",
+                    boxShadow: "0 6px 16px rgba(255, 135, 150, 0.4)",
                   },
                 }}
               >
@@ -398,8 +415,16 @@ export default function JobPostsManagement() {
       </Card>
 
       {/* Ultra Modern Stats Cards */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -409,7 +434,7 @@ export default function JobPostsManagement() {
               overflow: "hidden",
               "&:hover": {
                 transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
+                boxShadow: "0 12px 32px #ffe5e5",
                 "&::before": {
                   opacity: 1,
                 },
@@ -421,7 +446,7 @@ export default function JobPostsManagement() {
                 left: 0,
                 right: 0,
                 height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffd3d3)",
+                background: "linear-gradient(90deg, #ff8796, #ffe5e5)",
                 opacity: 0,
                 transition: "opacity 0.3s ease",
               },
@@ -446,7 +471,7 @@ export default function JobPostsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {jobPosts.filter((j) => j.status === "ACTIVE").length}
+                    {forumPosts.filter((p) => p.isActive).length}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -456,7 +481,7 @@ export default function JobPostsManagement() {
                       mb: 2,
                     }}
                   >
-                    활성 공고
+                    활성화된 포스트
                   </Typography>
                   <Box
                     sx={{
@@ -476,7 +501,7 @@ export default function JobPostsManagement() {
                         mr: 1,
                       }}
                     />
-                    전월 대비 +8%
+                    활발한 활동
                   </Box>
                 </Box>
                 <Box
@@ -491,13 +516,21 @@ export default function JobPostsManagement() {
                     justifyContent: "center",
                   }}
                 >
-                  <CheckCircle sx={{ fontSize: 28, color: "#ff8796" }} />
+                  <Forum sx={{ fontSize: 28, color: "#ff8796" }} />
                 </Box>
               </Box>
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -544,7 +577,7 @@ export default function JobPostsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {jobPosts.filter((j) => j.status === "PENDING").length}
+                    {forumPosts.filter((p) => p.status === "DRAFT").length}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -554,7 +587,7 @@ export default function JobPostsManagement() {
                       mb: 2,
                     }}
                   >
-                    승인 대기
+                    비활성화된 포스트
                   </Typography>
                   <Box
                     sx={{
@@ -574,7 +607,7 @@ export default function JobPostsManagement() {
                         mr: 1,
                       }}
                     />
-                    24시간 내 처리
+                    비활성 상태
                   </Box>
                 </Box>
                 <Box
@@ -595,7 +628,15 @@ export default function JobPostsManagement() {
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -642,7 +683,7 @@ export default function JobPostsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {jobPosts.filter((j) => j.reportCount > 0).length}
+                    {forumPosts.reduce((sum, p) => sum + p.commentCount, 0)}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -652,7 +693,7 @@ export default function JobPostsManagement() {
                       mb: 2,
                     }}
                   >
-                    신고된 공고
+                    총 댓글수
                   </Typography>
                   <Box
                     sx={{
@@ -672,7 +713,7 @@ export default function JobPostsManagement() {
                         mr: 1,
                       }}
                     />
-                    즉시 확인 필요
+                    활발한 소통
                   </Box>
                 </Box>
                 <Box
@@ -687,13 +728,21 @@ export default function JobPostsManagement() {
                     justifyContent: "center",
                   }}
                 >
-                  <Cancel sx={{ fontSize: 28, color: "#ff8796" }} />
+                  <Comment sx={{ fontSize: 28, color: "#ff8796" }} />
                 </Box>
               </Box>
             </CardContent>
           </Card>
         </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
+        <Box
+          sx={{
+            flex: {
+              xs: "1 1 100%",
+              sm: "1 1 calc(50% - 12px)",
+              md: "1 1 calc(25% - 18px)",
+            },
+          }}
+        >
           <Card
             sx={{
               position: "relative",
@@ -703,7 +752,7 @@ export default function JobPostsManagement() {
               overflow: "hidden",
               "&:hover": {
                 transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
+                boxShadow: "0 12px 32px #ffe5e5",
                 "&::before": {
                   opacity: 1,
                 },
@@ -715,7 +764,7 @@ export default function JobPostsManagement() {
                 left: 0,
                 right: 0,
                 height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffd3d3)",
+                background: "linear-gradient(90deg, #ff8796, #ffe5e5)",
                 opacity: 0,
                 transition: "opacity 0.3s ease",
               },
@@ -740,7 +789,9 @@ export default function JobPostsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {jobPosts.reduce((sum, job) => sum + job.applicantCount, 0)}
+                    {forumPosts
+                      .reduce((sum, p) => sum + p.viewCount, 0)
+                      .toLocaleString()}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -750,7 +801,7 @@ export default function JobPostsManagement() {
                       mb: 2,
                     }}
                   >
-                    총 지원자수
+                    총 조회수
                   </Typography>
                   <Box
                     sx={{
@@ -770,7 +821,7 @@ export default function JobPostsManagement() {
                         mr: 1,
                       }}
                     />
-                    이번 주 +15명
+                    높은 관심도
                   </Box>
                 </Box>
                 <Box
@@ -785,7 +836,7 @@ export default function JobPostsManagement() {
                     justifyContent: "center",
                   }}
                 >
-                  <People sx={{ fontSize: 28, color: "#ff8796" }} />
+                  <TrendingUp sx={{ fontSize: 28, color: "#ff8796" }} />
                 </Box>
               </Box>
             </CardContent>
@@ -825,7 +876,7 @@ export default function JobPostsManagement() {
                   fontSize: "1.25rem",
                 }}
               >
-                채용공고 목록
+                포럼 게시물 목록
               </Typography>
               <Typography
                 variant="body2"
@@ -834,7 +885,7 @@ export default function JobPostsManagement() {
                   mt: 0.5,
                 }}
               >
-                총 {filteredJobs.length}개의 공고
+                총 {filteredPosts.length}개의 게시물
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1 }}>
@@ -884,7 +935,7 @@ export default function JobPostsManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  제목
+                  게시물 정보
                 </TableCell>
                 <TableCell
                   sx={{
@@ -894,7 +945,7 @@ export default function JobPostsManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  병원/지역
+                  작성자
                 </TableCell>
                 <TableCell
                   sx={{
@@ -904,17 +955,7 @@ export default function JobPostsManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  급여
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  근무형태
+                  카테고리
                 </TableCell>
                 <TableCell
                   sx={{
@@ -934,7 +975,7 @@ export default function JobPostsManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  지원자
+                  통계
                 </TableCell>
                 <TableCell
                   sx={{
@@ -944,27 +985,7 @@ export default function JobPostsManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  신고
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  조회수
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  등록일
+                  작성일
                 </TableCell>
                 <TableCell
                   sx={{
@@ -979,9 +1000,9 @@ export default function JobPostsManagement() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {currentJobs.map((job) => (
+              {currentPosts.map((post) => (
                 <TableRow
-                  key={job.id}
+                  key={post.id}
                   hover
                   sx={{
                     "&:hover": {
@@ -994,65 +1015,132 @@ export default function JobPostsManagement() {
                 >
                   <TableCell>
                     <Box>
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight="600"
-                        sx={{ color: "text.primary", mb: 0.5 }}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 1,
+                        }}
                       >
-                        {job.title}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ lineHeight: 1.3 }}
-                      >
-                        {job.description}
-                      </Typography>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="600"
+                          sx={{
+                            color: post.isActive
+                              ? "text.primary"
+                              : "text.secondary",
+                            opacity: post.isActive ? 1 : 0.6,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 1,
+                            WebkitBoxOrient: "vertical",
+                          }}
+                        >
+                          {post.title}
+                        </Typography>
+                        {!post.isActive && (
+                          <Chip
+                            label="비활성"
+                            size="small"
+                            sx={{
+                              bgcolor: "#f5f5f5",
+                              color: "#666",
+                              fontSize: "0.75rem",
+                              height: 20,
+                            }}
+                          />
+                        )}
+                      </Box>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                        {post.tags.slice(0, 3).map((tag, index) => (
+                          <Chip
+                            key={index}
+                            label={tag}
+                            size="small"
+                            sx={{
+                              bgcolor: "#f5f5f5",
+                              color: "#666",
+                              fontSize: "0.75rem",
+                              height: 20,
+                            }}
+                          />
+                        ))}
+                      </Box>
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 500, mb: 0.5 }}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor:
+                            post.author.type === "VETERINARIAN"
+                              ? "#ff8796"
+                              : "#ffb7b8",
+                          width: 32,
+                          height: 32,
+                        }}
                       >
-                        {job.hospitalName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {job.location}
-                      </Typography>
+                        {post.author.type === "VETERINARIAN" ? (
+                          <Person sx={{ fontSize: 18 }} />
+                        ) : (
+                          <Business sx={{ fontSize: 18 }} />
+                        )}
+                      </Avatar>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          sx={{ color: "text.primary" }}
+                        >
+                          {post.author.name}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: "0.75rem" }}
+                        >
+                          {post.author.type === "VETERINARIAN"
+                            ? "수의사"
+                            : "병원"}
+                        </Typography>
+                      </Box>
                     </Box>
                   </TableCell>
+                  <TableCell>{getCategoryTag(post.category)}</TableCell>
+                  <TableCell>{getStatusTag(post.isActive)}</TableCell>
                   <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Work sx={{ mr: 0.5, fontSize: 20, color: "#4CAF50" }} />
-                      <Typography
-                        variant="body2"
-                        fontWeight="600"
-                        sx={{ color: "#4CAF50" }}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0.5,
+                      }}
+                    >
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
                       >
-                        {job.salary}
-                      </Typography>
+                        <Visibility sx={{ fontSize: 14, color: "#9098a4" }} />
+                        <Typography variant="caption" color="text.secondary">
+                          {post.viewCount.toLocaleString()}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <ThumbUp sx={{ fontSize: 14, color: "#9098a4" }} />
+                        <Typography variant="caption" color="text.secondary">
+                          {post.likeCount}
+                        </Typography>
+                        <Comment
+                          sx={{ fontSize: 14, color: "#9098a4", ml: 1 }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {post.commentCount}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </TableCell>
-                  <TableCell>{getWorkTypeTag(job.workType)}</TableCell>
-                  <TableCell>{getStatusTag(job.status)}</TableCell>
-                  <TableCell>
-                    <Tag variant={3}>{job.applicantCount}명</Tag>
-                  </TableCell>
-                  <TableCell>
-                    {job.reportCount > 0 ? (
-                      <Tag variant={1}>{job.reportCount}</Tag>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        0
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {job.viewCount.toLocaleString()}
-                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography
@@ -1060,10 +1148,10 @@ export default function JobPostsManagement() {
                       color="#9098a4"
                       sx={{ fontSize: "0.875rem" }}
                     >
-                      {job.createdAt}
+                      {post.createdAt}
                     </Typography>
                   </TableCell>
-                  <TableCell>{renderActionButtons(job)}</TableCell>
+                  <TableCell>{renderActionButtons(post)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -1115,145 +1203,144 @@ export default function JobPostsManagement() {
         fullWidth
       >
         <DialogTitle>
-          {actionType === "view" && "채용공고 상세정보"}
-          {actionType === "approve" && "공고 승인"}
-          {actionType === "suspend" && "공고 정지"}
-          {actionType === "delete" && "공고 삭제"}
+          {actionType === "view" && "게시물 상세보기"}
+          {actionType === "toggle" &&
+            (selectedPost?.isActive ? "게시물 비활성화" : "게시물 활성화")}
         </DialogTitle>
         <DialogContent>
-          {selectedJob && (
+          {selectedPost && (
             <Box>
               {actionType === "view" && (
-                <Box>
-                  <Typography variant="h6" gutterBottom>
-                    {selectedJob.title}
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
-                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
-                      <Stack spacing={1}>
-                        <Typography>
-                          <strong>병원명:</strong> {selectedJob.hospitalName}
-                        </Typography>
-                        <Typography>
-                          <strong>위치:</strong> {selectedJob.location}
-                        </Typography>
-                        <Typography>
-                          <strong>급여:</strong> {selectedJob.salary}
-                        </Typography>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <strong>근무형태:</strong>
-                          {getWorkTypeTag(selectedJob.workType)}
-                        </Box>
-                      </Stack>
-                    </Box>
-                    <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
-                      <Stack spacing={1}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <strong>상태:</strong>
-                          {getStatusTag(selectedJob.status)}
-                        </Box>
-                        <Typography>
-                          <strong>지원자 수:</strong>{" "}
-                          {selectedJob.applicantCount}명
-                        </Typography>
-                        <Typography>
-                          <strong>조회수:</strong>{" "}
-                          {selectedJob.viewCount.toLocaleString()}
-                        </Typography>
-                        <Typography>
-                          <strong>등록일:</strong> {selectedJob.createdAt}
-                        </Typography>
-                      </Stack>
-                    </Box>
-                  </Box>
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      <strong>설명:</strong>
+                <Stack spacing={3} sx={{ mt: 2 }}>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, color: "#3b394d", mb: 1 }}
+                    >
+                      {selectedPost.title}
                     </Typography>
-                    <Typography>{selectedJob.description}</Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 2,
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          bgcolor:
+                            selectedPost.author.type === "VETERINARIAN"
+                              ? "#ff8796"
+                              : "#ffb7b8",
+                          width: 32,
+                          height: 32,
+                        }}
+                      >
+                        <Person />
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" fontWeight="600">
+                          {selectedPost.author.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {selectedPost.author.type === "VETERINARIAN"
+                            ? "수의사"
+                            : "병원"}{" "}
+                          • {selectedPost.createdAt}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box
+                      sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}
+                    >
+                      {getCategoryTag(selectedPost.category)}
+                      {getStatusTag(selectedPost.isActive)}
+                    </Box>
+                    <Typography
+                      variant="body1"
+                      sx={{ color: "#3b394d", mb: 2, lineHeight: 1.7 }}
+                    >
+                      {selectedPost.content}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 0.5,
+                        mb: 3,
+                      }}
+                    >
+                      {selectedPost.tags.map((tag, index) => (
+                        <Chip
+                          key={index}
+                          label={`#${tag}`}
+                          size="small"
+                          variant="outlined"
+                          sx={{ color: "#ff8796", borderColor: "#ff8796" }}
+                        />
+                      ))}
+                    </Box>
                   </Box>
-                  {selectedJob.reportCount > 0 && (
-                    <Alert severity="warning" sx={{ mt: 2 }}>
-                      <strong>주의:</strong> 이 공고는 {selectedJob.reportCount}
-                      건의 신고를 받았습니다.
-                    </Alert>
-                  )}
-                  {selectedJob.status === "PENDING" && (
-                    <Alert severity="info" sx={{ mt: 2 }}>
-                      <strong>알림:</strong> 이 공고는 관리자 승인을 기다리고
-                      있습니다.
-                    </Alert>
-                  )}
+
+                  <Box sx={{ display: "flex", gap: 4 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}
+                      >
+                        참여 통계
+                      </Typography>
+                      <Stack spacing={1}>
+                        <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                          조회수: {selectedPost.viewCount.toLocaleString()}회
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                          좋아요: {selectedPost.likeCount}개
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                          댓글: {selectedPost.commentCount}개
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  </Box>
+                </Stack>
+              )}
+
+              {actionType === "toggle" && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body1" sx={{ color: "#3b394d" }}>
+                    '{selectedPost.title}' 게시물을{" "}
+                    {selectedPost.isActive ? "비활성화" : "활성화"}하시겠습니까?
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#4f5866", mt: 1 }}>
+                    {selectedPost.isActive
+                      ? "비활성화된 게시물은 사용자에게 노출되지 않습니다."
+                      : "활성화된 게시물은 다시 사용자에게 노출됩니다."}
+                  </Typography>
                 </Box>
-              )}
-
-              {actionType === "approve" && (
-                <Alert severity="success">
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <CheckCircle />
-                    <Typography>
-                      <strong>{selectedJob.title}</strong> 공고를
-                      승인하시겠습니까?
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    승인된 공고는 사용자에게 공개됩니다.
-                  </Typography>
-                </Alert>
-              )}
-
-              {actionType === "suspend" && (
-                <Alert severity="warning">
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Warning />
-                    <Typography>
-                      <strong>{selectedJob.title}</strong> 공고를
-                      정지하시겠습니까?
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    정지된 공고는 사용자에게 표시되지 않습니다.
-                  </Typography>
-                </Alert>
-              )}
-
-              {actionType === "delete" && (
-                <Alert severity="error">
-                  <Typography>
-                    <strong>{selectedJob.title}</strong> 공고를
-                    삭제하시겠습니까?
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    삭제된 공고는 복구할 수 없습니다.
-                  </Typography>
-                </Alert>
               )}
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setModalVisible(false)} color="inherit">
-            취소
+            {actionType === "view" ? "닫기" : "취소"}
           </Button>
           {actionType !== "view" && (
             <Button
               onClick={confirmAction}
               color={
-                actionType === "approve"
-                  ? "success"
-                  : actionType === "delete"
-                  ? "error"
-                  : "warning"
+                actionType === "toggle"
+                  ? selectedPost?.isActive
+                    ? "warning"
+                    : "success"
+                  : "primary"
               }
               variant="contained"
             >
-              {actionType === "approve" && "승인"}
-              {actionType === "suspend" && "정지"}
-              {actionType === "delete" && "삭제"}
+              {actionType === "toggle" &&
+                (selectedPost?.isActive ? "비활성화" : "활성화")}
             </Button>
           )}
         </DialogActions>

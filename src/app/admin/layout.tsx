@@ -18,34 +18,110 @@ import {
   Container,
   Breadcrumbs,
   Link,
-  Collapse,
+  Avatar,
+  Menu as MenuComponent,
+  MenuItem,
 } from "@mui/material";
 import {
   People,
-  Article,
-  BarChart,
-  Settings,
+  WorkOutline,
+  Stars,
+  OndemandVideo,
+  CurrencyExchange,
+  MarkChatUnread,
   Dashboard,
   Menu,
-  ExpandLess,
-  ExpandMore,
-  Speed,
+  Sell,
+  Forum,
+  AccountCircle,
+  Logout,
 } from "@mui/icons-material";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import NextLink from "next/link";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ReactElement;
+}
+
 const drawerWidth = 280;
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarShow, setSidebarShow] = React.useState(true);
-  const [postsExpanded, setPostsExpanded] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  const [adminEmail, setAdminEmail] = React.useState("");
 
-  const navigation = [
+  // 로그인 상태 확인
+  React.useEffect(() => {
+    const checkAuth = () => {
+      // 로그인 페이지는 인증 체크에서 제외
+      if (pathname === "/admin/login") {
+        return;
+      }
+
+      const loggedIn = localStorage.getItem("isAdminLoggedIn");
+      const email = localStorage.getItem("adminEmail");
+      
+      if (loggedIn === "true" && email) {
+        setIsLoggedIn(true);
+        setAdminEmail(email);
+      } else {
+        // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
+        router.push("/admin/login");
+      }
+    };
+
+    checkAuth();
+  }, [pathname, router]);
+
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("adminEmail");
+    setIsLoggedIn(false);
+    setAdminEmail("");
+    handleProfileMenuClose();
+    router.push("/admin/login");
+  };
+
+  // 로그인 페이지일 경우 레이아웃 없이 children만 반환
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
+
+  // 로그인되지 않은 상태에서는 로딩 표시
+  if (!isLoggedIn) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "var(--Box_Light)",
+        }}
+      >
+        <Typography>로그인 확인 중...</Typography>
+      </Box>
+    );
+  }
+
+  const navigation: NavigationItem[] = [
     {
       name: "대시보드",
       href: "/admin",
@@ -56,30 +132,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: "/admin/users",
       icon: <People />,
     },
+    { name: "채용공고", href: "/admin/jobs", icon: <WorkOutline /> },
+    { name: "인재정보", href: "/admin/resumes", icon: <Stars /> },
+    { name: "강의영상", href: "/admin/lectures", icon: <OndemandVideo /> },
+    { name: "양도양수", href: "/admin/transfers", icon: <CurrencyExchange /> },
+    { name: "임상포럼", href: "/admin/forums", icon: <Forum /> },
     {
-      name: "게시물 관리",
-      icon: <Article />,
-      children: [
-        { name: "채용 공고", href: "/admin/posts/jobs" },
-        { name: "교육 콘텐츠", href: "/admin/posts/lectures" },
-        { name: "양도양수", href: "/admin/posts/transfers" },
-        { name: "신고 관리", href: "/admin/posts/reports" },
-      ],
+      name: "알림/메시지",
+      href: "/admin/messages",
+      icon: <MarkChatUnread />,
     },
     {
-      name: "AI 매칭 모니터링",
-      href: "/admin/ai-monitoring",
-      icon: <Speed />,
-    },
-    {
-      name: "통계/리포트",
-      href: "/admin/statistics",
-      icon: <BarChart />,
-    },
-    {
-      name: "설정",
-      href: "/admin/settings",
-      icon: <Settings />,
+      name: "광고배너 관리",
+      href: "/admin/advertise",
+      icon: <Sell />,
     },
   ];
 
@@ -101,127 +167,55 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </Typography>
       </Toolbar>
       <List sx={{ px: 2, py: 3 }}>
-        {navigation.map((item, index) => {
-          if (item.children) {
-            return (
-              <React.Fragment key={index}>
-                <ListItem disablePadding sx={{ mb: 1 }}>
-                  <ListItemButton
-                    onClick={() => setPostsExpanded(!postsExpanded)}
-                    sx={{
-                      borderRadius: 2,
-                      "&:hover": {
-                        bgcolor: "rgba(105, 140, 252, 0.08)",
-                      },
-                      py: 1.5,
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{ color: "var(--Keycolor1)", minWidth: 40 }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.name}
-                      primaryTypographyProps={{
-                        fontWeight: 500,
-                        fontSize: "0.95rem",
-                        color: "text.primary",
-                      }}
-                    />
-                    {postsExpanded ? <ExpandLess /> : <ExpandMore />}
-                  </ListItemButton>
-                </ListItem>
-                <Collapse in={postsExpanded} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding sx={{ mb: 1 }}>
-                    {item.children.map((child, childIndex) => (
-                      <ListItem key={childIndex} disablePadding>
-                        <ListItemButton
-                          component={NextLink}
-                          href={child.href}
-                          sx={{
-                            pl: 6,
-                            py: 1,
-                            borderRadius: 2,
-                            mx: 1,
-                            "&:hover": {
-                              bgcolor: "rgba(105, 140, 252, 0.08)",
-                            },
-                            "&.Mui-selected": {
-                              bgcolor: "rgba(105, 140, 252, 0.15)",
-                              "&:hover": {
-                                bgcolor: "rgba(105, 140, 252, 0.2)",
-                              },
-                            },
-                          }}
-                          selected={pathname === child.href}
-                        >
-                          <ListItemText
-                            primary={child.name}
-                            primaryTypographyProps={{
-                              fontWeight: pathname === child.href ? 600 : 400,
-                              fontSize: "0.875rem",
-                              color:
-                                pathname === child.href
-                                  ? "var(--Keycolor1)"
-                                  : "text.secondary",
-                            }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                </Collapse>
-              </React.Fragment>
-            );
-          } else {
-            return (
-              <ListItem key={index} disablePadding sx={{ mb: 1 }}>
-                <ListItemButton
-                  component={NextLink}
-                  href={item.href}
-                  selected={pathname === item.href}
-                  sx={{
-                    borderRadius: 2,
-                    py: 1.5,
-                    "&:hover": {
-                      bgcolor: "rgba(105, 140, 252, 0.08)",
-                    },
-                    "&.Mui-selected": {
-                      bgcolor: "rgba(105, 140, 252, 0.15)",
-                      "&:hover": {
-                        bgcolor: "rgba(105, 140, 252, 0.2)",
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      color:
-                        pathname === item.href
-                          ? "var(--Keycolor1)"
-                          : "text.secondary",
-                      minWidth: 40,
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.name}
-                    primaryTypographyProps={{
+        {navigation.map((item, index) => (
+          <ListItem key={index} disablePadding sx={{ mb: 1 }}>
+            <ListItemButton
+              component={NextLink}
+              href={item.href}
+              selected={pathname === item.href}
+              sx={{
+                borderRadius: 2,
+                py: 1.5,
+                "&:hover": {
+                  bgcolor: "rgba(105, 140, 252, 0.08)",
+                },
+                "&.Mui-selected": {
+                  bgcolor: "rgba(105, 140, 252, 0.15)",
+                  "&:hover": {
+                    bgcolor: "rgba(105, 140, 252, 0.2)",
+                  },
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  color:
+                    pathname === item.href
+                      ? "var(--Keycolor1)"
+                      : "text.secondary",
+                  minWidth: 40,
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.name}
+                slotProps={{
+                  primary: {
+                    sx: {
                       fontWeight: pathname === item.href ? 600 : 500,
                       fontSize: "0.95rem",
                       color:
                         pathname === item.href
                           ? "var(--Keycolor1)"
                           : "text.primary",
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          }
-        })}
+                    },
+                  },
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </List>
     </div>
   );
@@ -250,7 +244,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           >
             <Menu />
           </IconButton>
-          <Breadcrumbs aria-label="breadcrumb" sx={{ color: "text.secondary" }}>
+          <Breadcrumbs aria-label="breadcrumb" sx={{ color: "text.secondary", flexGrow: 1 }}>
             <Link
               component={NextLink}
               underline="hover"
@@ -266,6 +260,45 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </Typography>
             )}
           </Breadcrumbs>
+          
+          {/* 사용자 프로필 영역 */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              {adminEmail}
+            </Typography>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleProfileMenuOpen}
+              color="inherit"
+            >
+              <AccountCircle />
+            </IconButton>
+            <MenuComponent
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleProfileMenuClose}
+            >
+              <MenuItem onClick={handleLogout}>
+                <ListItemIcon>
+                  <Logout fontSize="small" />
+                </ListItemIcon>
+                로그아웃
+              </MenuItem>
+            </MenuComponent>
+          </Box>
         </Toolbar>
       </AppBar>
       <Box

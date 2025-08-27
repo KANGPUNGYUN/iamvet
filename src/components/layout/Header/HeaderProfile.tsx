@@ -14,7 +14,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   // 외부 클릭 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -36,6 +39,16 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 
   const handleHospitalDashboard = () => {
     window.location.href = "/dashboard/hospital";
+    setIsDropdownOpen(false);
+  };
+
+  const handleLogin = () => {
+    window.location.href = "/member-select";
+    setIsDropdownOpen(false);
+  };
+
+  const handleAdminLogin = () => {
+    window.location.href = "/admin/login";
     setIsDropdownOpen(false);
   };
 
@@ -136,7 +149,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               backgroundColor: "white",
               border: "1px solid #EFEFF0",
               borderRadius: "8px",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              boxShadow:
+                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
               zIndex: 50,
               minWidth: "160px",
             }}
@@ -189,6 +203,56 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               }}
             >
               병원 마이페이지
+            </button>
+            <button
+              onClick={handleAdminLogin}
+              style={{
+                display: "block",
+                width: "100%",
+                padding: "12px 16px",
+                textAlign: "left",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "SUIT",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#3B394D",
+                borderBottom: "1px solid #EFEFF0",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#F8F9FA";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              로그인
+            </button>
+            <button
+              onClick={handleLogin}
+              style={{
+                display: "block",
+                width: "100%",
+                padding: "12px 16px",
+                textAlign: "left",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "SUIT",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#3B394D",
+                borderBottom: "1px solid #EFEFF0",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#F8F9FA";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              어드민 페이지
             </button>
           </div>
         )}
