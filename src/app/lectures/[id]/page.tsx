@@ -38,7 +38,7 @@ export default function LectureDetailPage({
   >({});
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
-  
+
   // 현재 로그인한 사용자 (예시용)
   const currentUser = "김수의사";
 
@@ -125,25 +125,27 @@ export default function LectureDetailPage({
 
   const handleSaveEdit = (commentId: string) => {
     if (!editContent.trim()) return;
-    
+
     setComments((prev) =>
       prev.map((comment) => {
         if (comment.id === commentId) {
           return { ...comment, content: editContent };
         }
         // 대댓글 수정
-        if (comment.replies.some(reply => reply.id === commentId)) {
+        if (comment.replies.some((reply) => reply.id === commentId)) {
           return {
             ...comment,
-            replies: comment.replies.map(reply => 
-              reply.id === commentId ? { ...reply, content: editContent } : reply
-            )
+            replies: comment.replies.map((reply) =>
+              reply.id === commentId
+                ? { ...reply, content: editContent }
+                : reply
+            ),
           };
         }
         return comment;
       })
     );
-    
+
     setEditingCommentId(null);
     setEditContent("");
   };
@@ -157,11 +159,13 @@ export default function LectureDetailPage({
     if (window.confirm("댓글을 삭제하시겠습니까?")) {
       setComments((prev) => {
         // 메인 댓글 삭제
-        const filteredComments = prev.filter(comment => comment.id !== commentId);
+        const filteredComments = prev.filter(
+          (comment) => comment.id !== commentId
+        );
         // 대댓글 삭제
-        return filteredComments.map(comment => ({
+        return filteredComments.map((comment) => ({
           ...comment,
-          replies: comment.replies.filter(reply => reply.id !== commentId)
+          replies: comment.replies.filter((reply) => reply.id !== commentId),
         }));
       });
     }
@@ -171,7 +175,6 @@ export default function LectureDetailPage({
 
   return (
     <>
-
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
           <div className="xl:flex xl:gap-[30px] py-8">
@@ -371,16 +374,23 @@ export default function LectureDetailPage({
                             {comment.author === currentUser && (
                               <div className="flex items-center gap-1">
                                 <button
-                                  onClick={() => handleEditComment(comment.id, comment.content)}
+                                  onClick={() =>
+                                    handleEditComment(
+                                      comment.id,
+                                      comment.content
+                                    )
+                                  }
                                   className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                                 >
-                                  <EditIcon size="14" currentColor="#9098A4" />
+                                  <EditIcon size="20" currentColor="#9098A4" />
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteComment(comment.id)}
+                                  onClick={() =>
+                                    handleDeleteComment(comment.id)
+                                  }
                                   className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                                 >
-                                  <TrashIcon size="14" currentColor="#9098A4" />
+                                  <TrashIcon currentColor="#9098A4" />
                                 </button>
                               </div>
                             )}
@@ -422,15 +432,12 @@ export default function LectureDetailPage({
                                 {expandedReplies[comment.id] ? (
                                   <>
                                     답글 {comment.replies.length}개
-                                    <UpIcon size="14" currentColor="#FF8796" />
+                                    <UpIcon currentColor="#FF8796" />
                                   </>
                                 ) : (
                                   <>
                                     답글 {comment.replies.length}개
-                                    <DownIcon
-                                      size="14"
-                                      currentColor="#FF8796"
-                                    />
+                                    <DownIcon currentColor="#FF8796" />
                                   </>
                                 )}
                               </button>
@@ -442,15 +449,12 @@ export default function LectureDetailPage({
                                 {expandedReplies[comment.id] ? (
                                   <>
                                     답글 달기
-                                    <UpIcon size="14" currentColor="#9098A4" />
+                                    <UpIcon currentColor="#9098A4" />
                                   </>
                                 ) : (
                                   <>
                                     답글 달기
-                                    <DownIcon
-                                      size="14"
-                                      currentColor="#9098A4"
-                                    />
+                                    <DownIcon currentColor="#9098A4" />
                                   </>
                                 )}
                               </button>
@@ -485,16 +489,23 @@ export default function LectureDetailPage({
                                     {reply.author === currentUser && (
                                       <div className="flex items-center gap-1">
                                         <button
-                                          onClick={() => handleEditComment(reply.id, reply.content)}
+                                          onClick={() =>
+                                            handleEditComment(
+                                              reply.id,
+                                              reply.content
+                                            )
+                                          }
                                           className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                                         >
-                                          <EditIcon size="12" currentColor="#9098A4" />
+                                          <EditIcon currentColor="#9098A4" />
                                         </button>
                                         <button
-                                          onClick={() => handleDeleteComment(reply.id)}
+                                          onClick={() =>
+                                            handleDeleteComment(reply.id)
+                                          }
                                           className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                                         >
-                                          <TrashIcon size="12" currentColor="#9098A4" />
+                                          <TrashIcon currentColor="#9098A4" />
                                         </button>
                                       </div>
                                     )}
@@ -503,7 +514,9 @@ export default function LectureDetailPage({
                                     <div>
                                       <textarea
                                         value={editContent}
-                                        onChange={(e) => setEditContent(e.target.value)}
+                                        onChange={(e) =>
+                                          setEditContent(e.target.value)
+                                        }
                                         className="w-full min-h-[60px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
                                       />
                                       <div className="flex justify-end gap-2 mt-2">
@@ -514,7 +527,9 @@ export default function LectureDetailPage({
                                           취소
                                         </button>
                                         <button
-                                          onClick={() => handleSaveEdit(reply.id)}
+                                          onClick={() =>
+                                            handleSaveEdit(reply.id)
+                                          }
                                           className="px-3 py-1 bg-[#FF8796] text-white rounded-[4px] text-[12px] font-medium hover:bg-[#FF7A8A] transition-colors"
                                         >
                                           저장

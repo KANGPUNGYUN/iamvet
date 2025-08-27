@@ -577,7 +577,7 @@ export default function ForumsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {forumPosts.filter((p) => p.status === "DRAFT").length}
+                    {forumPosts.filter((p) => !p.isActive).length}
                   </Typography>
                   <Typography
                     variant="body2"

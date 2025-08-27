@@ -43,11 +43,6 @@ export default function AdminLoginPage() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleLogin();
-    }
-  };
 
   return (
     <>
@@ -86,7 +81,6 @@ export default function AdminLoginPage() {
                 placeholder="관리자 이메일을 입력하세요"
                 type="email"
                 clearable={false}
-                onKeyPress={handleKeyPress}
               />
             </div>
 
@@ -101,7 +95,6 @@ export default function AdminLoginPage() {
                 placeholder="비밀번호를 입력하세요"
                 type="password"
                 clearable={false}
-                onKeyPress={handleKeyPress}
               />
             </div>
 
