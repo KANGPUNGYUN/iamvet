@@ -205,7 +205,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               병원 마이페이지
             </button>
             <button
-              onClick={handleAdminLogin}
+              onClick={handleLogin}
               style={{
                 display: "block",
                 width: "100%",
@@ -230,7 +230,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               로그인
             </button>
             <button
-              onClick={handleLogin}
+              onClick={handleAdminLogin}
               style={{
                 display: "block",
                 width: "100%",
