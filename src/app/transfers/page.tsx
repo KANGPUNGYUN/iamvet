@@ -424,7 +424,6 @@ export default function TransfersPage() {
 
   return (
     <>
-
       <main className="bg-white">
         <div className="max-w-[1320px] mx-auto px-4 xl:px-[60px] py-[30px]">
           <div className="flex flex-col xl:flex-row xl:justify-between xl:items-center mb-[30px] gap-4">
@@ -870,7 +869,7 @@ export default function TransfersPage() {
 
           {/* 양도 게시글 목록 */}
           <div className="flex flex-col gap-[20px]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
               {/* 9로 나눈 나머지가 1인 위치에 광고 표시 */}
               {shouldShowAd && (
                 <AdCard

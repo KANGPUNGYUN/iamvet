@@ -293,7 +293,6 @@ export default function ResumesPage() {
 
   return (
     <>
-
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
           <div className="hidden xl:flex xl:gap-[30px] xl:py-8">
@@ -534,7 +533,7 @@ export default function ResumesPage() {
               </div>
 
               {/* 이력서 목록 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-wrap gap-[20px]">
                 {resumeData.map((resume) => (
                   <ResumeCard
                     key={resume.id}
@@ -716,7 +715,6 @@ export default function ResumesPage() {
           )}
         </div>
       </main>
-
     </>
   );
 }

@@ -42,7 +42,7 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
 
   return (
     <div
-      className="bg-white rounded-xl border border-[#E5E5E5] w-full max-w-[343px] max-h-[414px] mx-auto hover:shadow-md transition-shadow duration-200 cursor-pointer p-[20px] flex flex-col gap-[8px] justify-between"
+      className="bg-white flex-1 min-w-[300px] max-w-sm rounded-xl border border-[#E5E5E5] w-full max-w-[343px] max-h-[414px] mx-auto hover:shadow-md transition-shadow duration-200 cursor-pointer p-[20px] flex flex-col gap-[8px] justify-between"
       onClick={onClick}
     >
       {/* 헤더 - 신규 태그와 북마크 */}
@@ -52,24 +52,47 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
             신규
           </Tag>
         ) : (
-          <span className="none w-[59px] h-[31px]"></span>
+          <div className="lg:block hidden lg:w-[59px] lg:h-[31px] w-[0px] h-[0px]"></div>
         )}
-        {/* 프로필 이미지 */}
-        <div className="flex justify-center">
-          <div className="w-[150px] h-[150px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center">
-            {profileImage ? (
-              <Image
-                src={profileImage}
-                alt={`${name} 프로필`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <Image
-                src={defaultProfileImg}
-                alt="기본 프로필"
-                className="w-full h-full object-cover"
-              />
-            )}
+        {/* lg 미만에서는 프로필과 이름을 함께 표시 */}
+        <div className="flex justify-between lg:block">
+          <div className="lg:hidden flex items-center gap-2 flex-wrap mb-[20px] lg:mb-[0px]">
+            <div className="w-[36px] h-[36px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center">
+              {profileImage ? (
+                <Image
+                  src={profileImage}
+                  alt={`${name} 프로필`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={defaultProfileImg}
+                  alt="기본 프로필"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            <h3 className="font-text text-[20px] font-bold text-[#3B394D]">
+              {name}
+            </h3>
+          </div>
+          {/* lg 이상에서는 기존대로 프로필만 표시 */}
+          <div className="hidden lg:block">
+            <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center mt-[40px]">
+              {profileImage ? (
+                <Image
+                  src={profileImage}
+                  alt={`${name} 프로필`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={defaultProfileImg}
+                  alt="기본 프로필"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
           </div>
         </div>
         <div
@@ -85,8 +108,8 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
       </div>
 
       <div>
-        {/* 이름 */}
-        <div className="text-left">
+        {/* lg 이상에서만 이름 표시 */}
+        <div className="text-left hidden lg:block">
           <h3 className="font-text text-[20px] font-bold text-[#3B394D] mb-[13px]">
             {name}
           </h3>

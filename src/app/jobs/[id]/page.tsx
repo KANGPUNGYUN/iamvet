@@ -65,15 +65,20 @@ export default function JobDetailPage({
   };
 
   const handleContactSubmit = () => {
-    if (!contactForm.subject || !contactForm.message || !contactForm.senderName || !contactForm.senderEmail) {
+    if (
+      !contactForm.subject ||
+      !contactForm.message ||
+      !contactForm.senderName ||
+      !contactForm.senderEmail
+    ) {
       alert("모든 필수 항목을 입력해 주세요.");
       return;
     }
-    
+
     // 여기에 메시지 전송 로직 추가
-    console.log('메시지 전송:', contactForm);
-    alert('메시지가 성공적으로 전송되었습니다!');
-    
+    console.log("메시지 전송:", contactForm);
+    alert("메시지가 성공적으로 전송되었습니다!");
+
     // 폼 초기화 및 모달 닫기
     setContactForm({
       subject: "",
@@ -152,7 +157,7 @@ export default function JobDetailPage({
                 </div>
               </div>
 
-              <div className="flex flex-col lg:flex-row gap-4 mb-4">
+              <div className="flex flex-col lg:flex-row gap-[40px] mb-4">
                 <div className="flex items-center gap-2">
                   <WalletIcon currentColor="#4F5866" />
                   <span className="font-text text-[16px] text-primary">
@@ -190,7 +195,7 @@ export default function JobDetailPage({
                 근무 조건
               </h2>
               <div className="space-y-4">
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     근무 형태
                   </span>
@@ -198,7 +203,7 @@ export default function JobDetailPage({
                     {jobData.workConditions.workType}
                   </span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     근무 요일
                   </span>
@@ -206,7 +211,7 @@ export default function JobDetailPage({
                     {jobData.workConditions.workDays}
                   </span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     근무 시간
                   </span>
@@ -214,7 +219,7 @@ export default function JobDetailPage({
                     {jobData.workConditions.workHours}
                   </span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     급여
                   </span>
@@ -222,7 +227,7 @@ export default function JobDetailPage({
                     {jobData.workConditions.salary}
                   </span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     복리후생
                   </span>
@@ -239,7 +244,7 @@ export default function JobDetailPage({
                 자격 요구사항
               </h2>
               <div className="space-y-4">
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     학력
                   </span>
@@ -247,7 +252,7 @@ export default function JobDetailPage({
                     {jobData.qualifications.education}
                   </span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     자격증/면허
                   </span>
@@ -255,7 +260,7 @@ export default function JobDetailPage({
                     {jobData.qualifications.certificates}
                   </span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-[40px]">
                   <span className="font-text text-[16px] text-bold text-sub w-[80px] flex-shrink-0">
                     경력
                   </span>
@@ -268,16 +273,23 @@ export default function JobDetailPage({
 
             {/* 우대사항 */}
             <div className="mt-[60px] border-b border-[#EFEFF0] pb-[40px]">
-              <h2 className="font-text text-[20px] font-semibold text-primary mb-[20px]">
-                우대사항
-              </h2>
-              <ul className="space-y-2">
-                {jobData.preferredQualifications.map((qualification, index) => (
-                  <li key={index} className="font-text text-[16px] text-sub">
-                    • {qualification}
-                  </li>
-                ))}
-              </ul>
+              <div className="flex gap-[40px]">
+                <h2 className="font-text text-[20px] font-semibold text-primary mb-[20px]">
+                  우대사항
+                </h2>
+                <ul className="space-y-2">
+                  {jobData.preferredQualifications.map(
+                    (qualification, index) => (
+                      <li
+                        key={index}
+                        className="font-text text-[16px] text-sub"
+                      >
+                        • {qualification}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
             </div>
 
             {/* 병원 정보 */}
@@ -290,11 +302,15 @@ export default function JobDetailPage({
               <HospitalCard hospital={jobData.hospital} />
 
               {/* 지원하기 버튼 */}
-              <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 mt-[30px]">
+              <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-[40px] mt-[30px]">
                 <Button variant="default" size="large">
                   지원하기
                 </Button>
-                <Button variant="weak" size="large" onClick={handleContactClick}>
+                <Button
+                  variant="weak"
+                  size="large"
+                  onClick={handleContactClick}
+                >
                   문의하기
                 </Button>
               </div>
@@ -330,7 +346,7 @@ export default function JobDetailPage({
             {/* 모바일 가로 스크롤 */}
             <div className="lg:hidden overflow-x-auto">
               <div
-                className="flex gap-4 pb-4"
+                className="flex gap-[40px] pb-4"
                 style={{ width: `${relatedJobsData.length * 310}px` }}
               >
                 {relatedJobsData.map((job) => (
@@ -363,11 +379,11 @@ export default function JobDetailPage({
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">문의하기</h3>
               <p className="text-gray-600 mb-6">
-                {jobData.hospital.name}에 {jobData.title} 포지션에 대해 문의하세요.
+                {jobData.hospital.name}에 {jobData.title} 포지션에 대해
+                문의하세요.
               </p>
-              
+
               <div className="space-y-4">
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     제목 *
@@ -375,26 +391,36 @@ export default function JobDetailPage({
                   <input
                     type="text"
                     value={contactForm.subject}
-                    onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
+                    onChange={(e) =>
+                      setContactForm((prev) => ({
+                        ...prev,
+                        subject: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent"
                     placeholder="문의 제목을 입력하세요"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     문의 내용 *
                   </label>
                   <textarea
                     value={contactForm.message}
-                    onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                    onChange={(e) =>
+                      setContactForm((prev) => ({
+                        ...prev,
+                        message: e.target.value,
+                      }))
+                    }
                     rows={5}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent resize-none"
                     placeholder="문의하실 내용을 자세히 작성해 주세요..."
                   />
                 </div>
               </div>
-              
+
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={resetContactForm}

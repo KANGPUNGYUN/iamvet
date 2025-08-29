@@ -303,10 +303,10 @@ export default function ResumeDetailPage({
 
           <section>
             {/* 프로필 섹션 */}
-            <div className="p-[30px] bg-white border border-[1px] border-[#EFEFF0] rounded-[16px] flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+            <div className="p-[30px] bg-white border border-[1px] border-[#EFEFF0] rounded-[16px] flex flex-col lg:flex-row lg:items-start gap-[10px] lg:gap-8">
               {/* 프로필 이미지와 모바일 북마크 */}
               <div className="flex justify-between lg:justify-start items-start">
-                <div className="w-[92px] h-[92px] lg:w-[240px] lg:h-[240px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center">
+                <div className="w-[92px] h-[92px] lg:w-[240px] lg:h-[240px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center mt-[20px] lg:mt-[0px]">
                   <Image
                     src={resumeData.profileImage || profileImg}
                     alt={`${resumeData.name} 프로필`}
