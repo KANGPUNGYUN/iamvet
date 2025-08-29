@@ -335,7 +335,7 @@ export default function ResumeDetailPage({
                     <h1 className="font-text text-[32px] font-normal text-primary mb-2">
                       {resumeData.name}
                     </h1>
-                    <p className="font-text text-[16px] text-sub mb-4">
+                    <p className="font-text text-[16px] text-sub mb-4 lg:mr-[60px] mr-[30px]">
                       {resumeData.summary}
                     </p>
 

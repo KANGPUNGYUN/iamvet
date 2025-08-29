@@ -150,7 +150,7 @@ export default function HospitalDetailPage({
                 <h3 className="font-text text-[20px] font-semibold text-primary mb-2">
                   {hospitalData.name}
                 </h3>
-                <p className="font-text text-[14px] text-sub mb-4 leading-relaxed">
+                <p className="font-text text-[14px] text-sub mb-4 leading-relaxed lg:mr-[60px] mr-[30px]">
                   {hospitalData.summary}
                 </p>
 
