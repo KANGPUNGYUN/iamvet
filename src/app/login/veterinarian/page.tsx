@@ -6,13 +6,13 @@ import { SocialLoginButton } from "@/components/ui/SocialLoginButton";
 import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
 import { useState } from "react";
-import { login } from "@/actions/auth";
+import { useLogin } from "@/hooks/api/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function VeterinarianLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const loginMutation = useLogin();
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -22,11 +22,10 @@ export default function VeterinarianLoginPage() {
       return;
     }
 
-    setIsLoading(true);
     setError("");
 
     try {
-      const result = await login({
+      const result = await loginMutation.mutateAsync({
         email,
         password,
         userType: "VETERINARIAN",
@@ -41,8 +40,6 @@ export default function VeterinarianLoginPage() {
     } catch (error) {
       console.error("Login error:", error);
       setError("로그인 중 오류가 발생했습니다.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -121,9 +118,9 @@ export default function VeterinarianLoginPage() {
               type="submit"
               fullWidth={true}
               className="mt-8"
-              disabled={isLoading}
+              disabled={loginMutation.isPending}
             >
-              {isLoading ? "로그인 중..." : "로그인"}
+              {loginMutation.isPending ? "로그인 중..." : "로그인"}
             </Button>
 
             {/* 링크들 */}

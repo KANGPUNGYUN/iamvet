@@ -1,15 +1,42 @@
 import { create } from 'zustand';
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  type: 'veterinarian' | 'hospital';
+}
+
 interface AuthState {
-  user: any | null;
+  // 인증 상태 (서버 상태와 동기화)
   isAuthenticated: boolean;
-  login: (user: any) => void;
-  logout: () => void;
+  
+  // UI 상태 (클라이언트 전용)
+  isLoginModalOpen: boolean;
+  isLoading: boolean;
+  
+  // 액션들
+  setAuthenticated: (authenticated: boolean) => void;
+  setLoginModalOpen: (open: boolean) => void;
+  setLoading: (loading: boolean) => void;
+  reset: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+  // 초기 상태
   isAuthenticated: false,
-  login: (user) => set({ user, isAuthenticated: true }),
-  logout: () => set({ user: null, isAuthenticated: false }),
+  isLoginModalOpen: false,
+  isLoading: false,
+  
+  // 액션들
+  setAuthenticated: (authenticated) => set({ isAuthenticated: authenticated }),
+  setLoginModalOpen: (open) => set({ isLoginModalOpen: open }),
+  setLoading: (loading) => set({ isLoading: loading }),
+  reset: () => set({
+    isAuthenticated: false,
+    isLoginModalOpen: false,
+    isLoading: false,
+  }),
 }));
+
+export type { User };

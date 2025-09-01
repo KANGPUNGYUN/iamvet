@@ -270,82 +270,41 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                 ))}
 
                 {/* 로그인된 경우 마이페이지 섹션 */}
-                {isLoggedIn && (
+                {isLoggedIn && actualUserType && (
                   <>
                     <h3 className="text-gray-700 block px-4 py-3 font-title text-base font-medium rounded-lg transition-colors duration-200">
                       마이페이지
                     </h3>
 
-                    {/* 수의사 마이페이지 */}
-                    <div className="space-y-1">
-                      <h4 className="text-gray-600 px-4 py-2 text-sm font-medium">
-                        수의사 마이페이지
-                      </h4>
-                      <div className="pl-4 space-y-1">
-                        {getDashboardMenuItems("veterinarian").map((item) => {
-                          const IconComponent = item.icon;
-                          const active = isActive(item.href, "veterinarian");
+                    {/* 사용자 계정 유형에 따른 마이페이지만 표시 */}
+                    <div className="pl-4 space-y-1">
+                      {dashboardItems.map((item) => {
+                        const IconComponent = item.icon;
+                        const active = isActive(item.href, actualUserType);
 
-                          return (
-                            <Link
-                              key={`vet-${item.id}`}
-                              href={item.href}
-                              onClick={onToggle}
-                              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative ${
-                                active
-                                  ? "text-[#FF8796] bg-[#FFF7F7]"
-                                  : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
-                              }`}
-                            >
-                              <IconComponent
-                                currentColor={active ? "#FF8796" : "#4F5866"}
-                              />
-                              <span className="ml-3">{item.label}</span>
-                              {item.badge && item.badge > 0 && (
-                                <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                  {item.badge}
-                                </span>
-                              )}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* 병원 마이페이지 */}
-                    <div className="space-y-1 mt-4">
-                      <h4 className="text-gray-600 px-4 py-2 text-sm font-medium">
-                        병원 마이페이지
-                      </h4>
-                      <div className="pl-4 space-y-1">
-                        {getDashboardMenuItems("hospital").map((item) => {
-                          const IconComponent = item.icon;
-                          const active = isActive(item.href, "hospital");
-
-                          return (
-                            <Link
-                              key={`hospital-${item.id}`}
-                              href={item.href}
-                              onClick={onToggle}
-                              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative ${
-                                active
-                                  ? "text-[#FF8796] bg-[#FFF7F7]"
-                                  : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
-                              }`}
-                            >
-                              <IconComponent
-                                currentColor={active ? "#FF8796" : "#4F5866"}
-                              />
-                              <span className="ml-3">{item.label}</span>
-                              {item.badge && item.badge > 0 && (
-                                <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                  {item.badge}
-                                </span>
-                              )}
-                            </Link>
-                          );
-                        })}
-                      </div>
+                        return (
+                          <Link
+                            key={item.id}
+                            href={item.href}
+                            onClick={onToggle}
+                            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative ${
+                              active
+                                ? "text-[#FF8796] bg-[#FFF7F7]"
+                                : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                            }`}
+                          >
+                            <IconComponent
+                              currentColor={active ? "#FF8796" : "#4F5866"}
+                            />
+                            <span className="ml-3">{item.label}</span>
+                            {item.badge && item.badge > 0 && (
+                              <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {item.badge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </>
                 )}

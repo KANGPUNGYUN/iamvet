@@ -3,7 +3,6 @@ import { HeaderProfileProps } from "./types";
 
 export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   user,
-  onProfileClick,
   onNotificationClick,
   onLogout,
   className = "",
@@ -28,7 +27,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
     };
   }, []);
 
-  const handleMyPageClick = () => {
+  const handleAvatarClick = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
@@ -42,14 +41,12 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
     setIsDropdownOpen(false);
   };
 
-  const handleLogin = () => {
-    window.location.href = "/member-select";
-    setIsDropdownOpen(false);
-  };
 
-  const handleAdminLogin = () => {
-    window.location.href = "/admin/login";
+  const handleLogout = async () => {
     setIsDropdownOpen(false);
+    if (onLogout) {
+      onLogout();
+    }
   };
 
   return (
@@ -91,10 +88,11 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
         </svg>
       </button>
 
-      {/* 마이페이지 드롭다운 */}
+
+      {/* 프로필 아바타 및 이름 드롭다운 */}
       <div className="hidden lg:flex relative" ref={dropdownRef}>
         <button
-          onClick={handleMyPageClick}
+          onClick={handleAvatarClick}
           style={{
             display: "flex",
             alignItems: "center",
@@ -104,8 +102,48 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             cursor: "pointer",
             padding: "0",
           }}
+          onMouseEnter={(e) => {
+            const nameSpan = e.currentTarget.querySelector(".user-name");
+            if (nameSpan) {
+              (nameSpan as HTMLElement).style.textDecoration = "underline";
+            }
+          }}
+          onMouseLeave={(e) => {
+            const nameSpan = e.currentTarget.querySelector(".user-name");
+            if (nameSpan) {
+              (nameSpan as HTMLElement).style.textDecoration = "none";
+            }
+          }}
         >
+          {/* 아바타 */}
+          <div
+            style={{
+              display: "flex",
+              width: "30px",
+              height: "30px",
+              padding: "10px",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "10px",
+              flexShrink: 0,
+              borderRadius: "27px",
+              background: "var(--Keycolor1, #FF8796)",
+              color: "var(--Keycolor5, #FFF7F7)",
+              textAlign: "center",
+              fontFamily: "var(--font-title)",
+              fontSize: "15px",
+              fontStyle: "normal",
+              fontWeight: "400",
+              lineHeight: "28px",
+            }}
+          >
+            {user.name.charAt(0)}
+          </div>
+          
+          {/* 이름 */}
           <span
+            className="user-name"
             style={{
               color: "var(--Text, #3B394D)",
               fontFamily: "SUIT",
@@ -113,29 +151,11 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               fontStyle: "normal",
               fontWeight: "600",
               lineHeight: "135%",
+              transition: "text-decoration 0.2s ease",
             }}
           >
-            마이페이지
+            {user.name}님
           </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            style={{
-              transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.2s ease-in-out",
-            }}
-          >
-            <path
-              d="M4 6L8 10L12 6"
-              stroke="#3B394D"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
         </button>
 
         {/* 드롭다운 메뉴 */}
@@ -155,8 +175,65 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               minWidth: "160px",
             }}
           >
+            {/* 사용자 타입에 따른 마이페이지 링크 */}
+            {user.type === "veterinarian" && (
+              <button
+                onClick={handleVeterinarianDashboard}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "12px 16px",
+                  textAlign: "left",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "SUIT",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#3B394D",
+                  borderBottom: "1px solid #EFEFF0",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#F8F9FA";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                마이페이지
+              </button>
+            )}
+            {user.type === "hospital" && (
+              <button
+                onClick={handleHospitalDashboard}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "12px 16px",
+                  textAlign: "left",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "SUIT",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#3B394D",
+                  borderBottom: "1px solid #EFEFF0",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#F8F9FA";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                마이페이지
+              </button>
+            )}
+            
+            {/* 로그아웃 버튼 */}
             <button
-              onClick={handleVeterinarianDashboard}
+              onClick={handleLogout}
               style={{
                 display: "block",
                 width: "100%",
@@ -169,7 +246,6 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                 fontSize: "14px",
                 fontWeight: "500",
                 color: "#3B394D",
-                borderBottom: "1px solid #EFEFF0",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#F8F9FA";
@@ -178,115 +254,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                 e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
-              수의사 마이페이지
-            </button>
-            <button
-              onClick={handleHospitalDashboard}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "12px 16px",
-                textAlign: "left",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "SUIT",
-                fontSize: "14px",
-                fontWeight: "500",
-                color: "#3B394D",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#F8F9FA";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
-              병원 마이페이지
-            </button>
-            <button
-              onClick={handleLogin}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "12px 16px",
-                textAlign: "left",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "SUIT",
-                fontSize: "14px",
-                fontWeight: "500",
-                color: "#3B394D",
-                borderBottom: "1px solid #EFEFF0",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#F8F9FA";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
-              로그인
-            </button>
-            <button
-              onClick={handleAdminLogin}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "12px 16px",
-                textAlign: "left",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "SUIT",
-                fontSize: "14px",
-                fontWeight: "500",
-                color: "#3B394D",
-                borderBottom: "1px solid #EFEFF0",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#F8F9FA";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
-              어드민 페이지
+              로그아웃
             </button>
           </div>
         )}
-      </div>
-
-      {/* 프로필 아바타 */}
-      <div className="hidden lg:flex items-center">
-        <button
-          onClick={onProfileClick}
-          style={{
-            display: "flex",
-            width: "30px",
-            height: "30px",
-            padding: "10px",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "10px",
-            flexShrink: 0,
-            borderRadius: "27px",
-            background: "var(--Keycolor1, #FF8796)",
-            color: "var(--Keycolor5, #FFF7F7)",
-            textAlign: "center",
-            fontFamily: "var(--font-title)",
-            fontSize: "15px",
-            fontStyle: "normal",
-            fontWeight: "400",
-            lineHeight: "28px",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          {user.name.charAt(0)}
-        </button>
       </div>
     </div>
   );
