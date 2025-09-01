@@ -44,7 +44,8 @@ model User {
   resumeBookmarks     ResumeBookmark[]
   lectureBookmarks    LectureBookmark[]
   transferBookmarks   TransferBookmark[]
-  hospitalEvaluations HospitalEvaluation[]
+  hospitalEvaluations HospitalEvaluation[] @relation("HospitalEvaluations")
+  userHospitalEvaluations HospitalEvaluation[] @relation("UserHospitalEvaluations")
   resumeEvaluations   ResumeEvaluation[]
   lectureComments     LectureComment[]
   commentReplies      CommentReply[]
@@ -221,8 +222,8 @@ model LectureComment {
   updatedAt DateTime @updatedAt
   deletedAt DateTime? // Soft delete
 
-  lecture User            @relation(fields: [userId], references: [id])
-  user    Lecture         @relation(fields: [lectureId], references: [id])
+  lecture Lecture @relation(fields: [lectureId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
   replies CommentReply[]
 
   @@map("lecture_comments")
@@ -377,8 +378,8 @@ model HospitalEvaluation {
   updatedAt DateTime @updatedAt
   deletedAt DateTime? // Soft delete
 
-  hospital User @relation(fields: [hospitalId], references: [id])
-  user     User @relation(fields: [userId], references: [id])
+  hospital User @relation("HospitalEvaluations", fields: [hospitalId], references: [id])
+  user     User @relation("UserHospitalEvaluations", fields: [userId], references: [id])
 
   @@unique([hospitalId, userId])
   @@map("hospital_evaluations")

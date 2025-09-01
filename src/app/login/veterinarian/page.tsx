@@ -6,13 +6,44 @@ import { SocialLoginButton } from "@/components/ui/SocialLoginButton";
 import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
 import { useState } from "react";
+import { login } from "@/actions/auth";
+import { useRouter } from "next/navigation";
 
 export default function VeterinarianLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleLogin = () => {
-    console.log("로그인 시도:", { email, password });
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setError("이메일과 비밀번호를 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const result = await login({
+        email,
+        password,
+        userType: "VETERINARIAN",
+      });
+
+      if (result.success) {
+        // 로그인 성공 시 대시보드로 이동
+        router.push("/dashboard/veterinarian");
+      } else {
+        setError(result.error || "로그인에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("로그인 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSocialLogin = (type: string) => {
@@ -35,7 +66,27 @@ export default function VeterinarianLoginPage() {
           </div>
 
           {/* 로그인 폼 */}
-          <div className="space-y-6">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+            className="space-y-6"
+          >
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* 테스트 계정 안내 */}
+            <div className="bg-blue-50 border border-blue-200 text-blue-600 px-4 py-3 rounded-md text-sm">
+              <strong>테스트 계정:</strong><br />
+              이메일: vet@test.com<br />
+              비밀번호: vet123!
+            </div>
+
             {/* 아이디 입력 */}
             <div>
               <label className="block text-[20px] text-medium text-[#3B394D] mb-3">
@@ -67,11 +118,12 @@ export default function VeterinarianLoginPage() {
             {/* 로그인 버튼 */}
             <Button
               variant="keycolor"
-              onClick={handleLogin}
+              type="submit"
               fullWidth={true}
               className="mt-8"
+              disabled={isLoading}
             >
-              로그인
+              {isLoading ? "로그인 중..." : "로그인"}
             </Button>
 
             {/* 링크들 */}
@@ -111,7 +163,7 @@ export default function VeterinarianLoginPage() {
                 onClick={() => handleSocialLogin("구글")}
               />
             </div>
-          </div>
+          </form>
         </div>
       </main>
     </>

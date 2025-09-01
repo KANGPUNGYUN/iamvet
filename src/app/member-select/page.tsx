@@ -26,6 +26,7 @@ export default function MemberSelectPage() {
               width={200}
               height={200}
               className="object-contain md:w-[200px] md:h-[200px] w-[77px] h-[77px] md:mt-[0px] mt-[10px]"
+              style={{ width: 'auto', height: 'auto' }}
             />
           </Link>
           <Link
@@ -41,6 +42,7 @@ export default function MemberSelectPage() {
               width={200}
               height={200}
               className="object-contain md:w-[200px] md:h-[200px] w-[77px] h-[77px] md:mt-[0px] mt-[24px]"
+              style={{ width: 'auto', height: 'auto' }}
             />
           </Link>
         </div>
