@@ -70,8 +70,8 @@ export interface HospitalProfileData {
 
 // Auth actions
 export async function login(credentials: LoginCredentials) {
+  const { email, password, userType } = credentials;
   try {
-    const { email, password, userType } = credentials;
 
     // Get user by email and userType (if specified)
     const result = userType 
