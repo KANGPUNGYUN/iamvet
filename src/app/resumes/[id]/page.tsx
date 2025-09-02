@@ -303,10 +303,10 @@ export default function ResumeDetailPage({
 
           <section>
             {/* 프로필 섹션 */}
-            <div className="p-[30px] bg-white border border-[1px] border-[#EFEFF0] rounded-[16px] flex flex-col lg:flex-row lg:items-start gap-[10px] lg:gap-8">
+            <div className="p-[30px] bg-white border border-[1px] lg:items-center border-[#EFEFF0] rounded-[16px] flex flex-col lg:flex-row lg:items-start gap-[10px] lg:gap-8">
               {/* 프로필 이미지와 모바일 북마크 */}
-              <div className="flex justify-between lg:justify-start items-start">
-                <div className="w-[92px] h-[92px] lg:w-[240px] lg:h-[240px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center mt-[20px] lg:mt-[0px]">
+              <div className="flex justify-between lg:justify-start lg:items-start">
+                <div className="w-[92px] h-[92px] lg:w-[160px] lg:h-[160px] rounded-full overflow-hidden flex items-center justify-center lg:m-[30px] mt-[20px] lg:mt-[0px] lg:h-[240px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center mt-[20px] lg:mt-[0px]">
                   <Image
                     src={resumeData.profileImage || profileImg}
                     alt={`${resumeData.name} 프로필`}
@@ -329,7 +329,7 @@ export default function ResumeDetailPage({
               </div>
 
               {/* 프로필 정보 */}
-              <div className="flex-1">
+              <div className="w-full">
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   <div>
                     <h1 className="font-text text-[32px] font-normal text-primary mb-2">
