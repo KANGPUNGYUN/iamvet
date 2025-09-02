@@ -408,7 +408,7 @@ export default function ResumesPage() {
             <div className="flex-1 space-y-6">
               {/* 제목 */}
               <div className="flex justify-between items-center self-stretch">
-                <h1 className="text-[28px] font-title title-medium text-[#3B394D]">
+                <h1 className="text-[28px] font-title title-bold text-[#3B394D]">
                   인재 채용
                 </h1>
 
@@ -475,7 +475,7 @@ export default function ResumesPage() {
             <div className="space-y-4">
               {/* 제목과 필터 버튼 */}
               <div className="flex justify-between items-center">
-                <h1 className="font-title text-[28px] title-light text-[#3B394D]">
+                <h1 className="font-title text-[28px] title-bold text-[#3B394D]">
                   인재 채용
                 </h1>
                 <button

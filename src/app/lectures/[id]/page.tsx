@@ -241,7 +241,7 @@ export default function LectureDetailPage({
               {/* 영상 소개 */}
               <section className="border border-[#EFEFF0] rounded-[16px] p-[40px]">
                 <div>
-                  <h2 className="text-[24px] font-title font-light text-sub">
+                  <h2 className="text-[24px] font-title title-medium text-sub">
                     영상 소개
                   </h2>
 
@@ -251,8 +251,8 @@ export default function LectureDetailPage({
                 </div>
 
                 {/* 참고자료 */}
-                <div className="p-[20px] bg-box rounded-[16px]">
-                  <h2 className="text-[20px] font-title font-light text-sub mb-[20px]">
+                <div className="p-[20px] bg-[#FAFAFA] rounded-[16px]">
+                  <h2 className="text-[20px] font-title title-light text-sub mb-[20px]">
                     참고자료
                   </h2>
                   <div className="space-y-3">
@@ -295,14 +295,9 @@ export default function LectureDetailPage({
                               </svg>
                             )}
                           </div>
-                          <div>
-                            <p className="text-[14px] font-semibold text-[#3B394D]">
-                              {file.name}
-                            </p>
-                            <p className="text-[12px] text-[#9098A4]">
-                              {file.size}
-                            </p>
-                          </div>
+                          <p className="text-[14px] font-semibold text-[#3B394D]">
+                            {file.name}
+                          </p>
                         </div>
                         <button className="flex items-center justify-center w-[32px] h-[32px] rounded-[8px] transition-colors">
                           <DownloadIcon currentColor="#9098A4" />
@@ -315,7 +310,7 @@ export default function LectureDetailPage({
 
               {/* 댓글 섹션 */}
               <div className="border border-[#EFEFF0] rounded-[16px] p-[40px] mt-[30px]">
-                <h2 className="text-[24px] font-title font-light text-sub mb-4">
+                <h2 className="text-[24px] font-title title-medium text-sub mb-4">
                   댓글 ({comments.length}개)
                 </h2>
 

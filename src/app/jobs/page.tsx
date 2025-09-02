@@ -232,7 +232,6 @@ export default function JobsPage() {
 
   return (
     <>
-
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
           <div className="hidden xl:flex xl:gap-[30px] xl:py-8">
@@ -320,7 +319,7 @@ export default function JobsPage() {
             <div className="flex-1 space-y-6">
               {/* 제목 */}
               <div className="flex justify-between items-center self-stretch">
-                <h1 className="text-[28px] font-title title-medium text-[#3B394D]">
+                <h1 className="text-[28px] font-title title-bold text-[#3B394D]">
                   채용 공고
                 </h1>
 
