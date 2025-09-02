@@ -43,13 +43,10 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
     ? "bg-white rounded-lg border border-[#E5E5E5] p-6 w-full hover:shadow-md transition-shadow duration-200 cursor-pointer"
     : "bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] mx-auto hover:shadow-md transition-shadow duration-200 cursor-pointer flex-shrink-0";
 
-  const titleClass = isWide
-    ? "font-text text-extrabold text-primary text-[20px]"
-    : "font-text text-extrabold text-primary text-[16px]";
+  const titleClass = "font-text text-extrabold text-primary text-[16px]";
 
-  const positionClass = isWide
-    ? "font-text text-semibold text-primary text-[16px] mb-1"
-    : "font-text text-semibold text-primary text-[24px] mb-6";
+  const positionClass =
+    "font-text text-semibold text-primary text-[24px] my-[18px]";
 
   return (
     <div className={containerClass} onClick={onClick}>
@@ -57,7 +54,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h3 className={titleClass}>{hospital}</h3>
         <div className="flex items-center space-x-2">
-          {isNew && <Tag variant={1}>신규</Tag>}
+          {showDeadline && <Tag variant={1}>{dDay}</Tag>}
           <div className="w-6 h-6 flex items-center justify-center cursor-pointer">
             {isBookmarked ? (
               <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
@@ -69,7 +66,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
       </div>
 
       {/* 직책 */}
-      {!isWide && <h4 className={positionClass}>{position}</h4>}
+      <h4 className={positionClass}>{position}</h4>
 
       {/* 위치 정보 */}
       <div className={`${isWide ? "space-y-1 mb-3" : "space-y-3 mb-6"}`}>
@@ -112,11 +109,6 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
             </Tag>
           ))}
         </div>
-        {isWide && showDeadline && (
-          <span className="font-text text-bold text-[16px] text-[#9098A4]">
-            {dDay}
-          </span>
-        )}
       </div>
     </div>
   );
