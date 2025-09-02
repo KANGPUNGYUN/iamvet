@@ -14,7 +14,7 @@ interface TransferCardProps {
   date: string;
   views: number;
   imageUrl?: string;
-  categories?: string[]; // 병원양도, 기계장치, 의료장비, 인테리어 등
+  categories?: string; // 병원양도, 기계장치, 의료장비, 인테리어 등
   isAd?: boolean; // 광고 여부
   isLiked?: boolean;
   onLike?: () => void;
@@ -31,7 +31,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
   date = "2025-04-09",
   views = 127,
   imageUrl,
-  categories = ["병원양도"],
+  categories = "병원양도",
   isAd = false,
   isLiked = false,
   onLike,
@@ -56,15 +56,17 @@ const TransferCard: React.FC<TransferCardProps> = ({
   // 카드 내용을 렌더링하는 함수
   const renderCardContent = (isMobileLayout = false) => {
     const cardClassName = isMobileLayout
-      ? "w-full bg-transparent shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[8px] border border-[1px] border-[#EFEFF0] flex flex-row"
-      : "w-full bg-transparent shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[16px] border border-[1px] border-[#EFEFF0]";
+      ? "w-full bg-transparent hover:shadow-md transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[8px] flex flex-row"
+      : "w-full bg-transparent hover:shadow-md transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[16px]";
 
-    const cardStyle = isMobileLayout ? {
-      display: "flex",
-      width: "100%",
-      height: "130px",
-      alignItems: "flex-start",
-    } : {};
+    const cardStyle = isMobileLayout
+      ? {
+          display: "flex",
+          width: "100%",
+          height: "130px",
+          alignItems: "flex-start",
+        }
+      : {};
 
     const content = (
       <div className={cardClassName} style={cardStyle} onClick={onClick}>
@@ -99,11 +101,19 @@ const TransferCard: React.FC<TransferCardProps> = ({
         {/* 카테고리 태그들 */}
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">
           {isAd && <Tag variant={4}>AD</Tag>}
-          {categories.map((category, index) => (
-            <Tag key={index} variant={1}>
-              {category}
-            </Tag>
-          ))}
+          <Tag
+            variant={
+              categories === "병원양도"
+                ? 2
+                : categories === "기계장치"
+                ? 1
+                : categories === "의료장비"
+                ? 4
+                : 3
+            }
+          >
+            {categories}
+          </Tag>
         </div>
 
         {/* 좋아요 버튼 */}
@@ -168,7 +178,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
         style={{
           width: "min(130px, 35vw)",
           height: "130px",
-          minWidth: "100px",
+          minWidth: "130px",
         }}
       >
         <Image
@@ -212,42 +222,51 @@ const TransferCard: React.FC<TransferCardProps> = ({
         {/* 상단 그룹: 카테고리 + 제목 + 병원정보 + 가격 */}
         <div className="flex flex-col gap-1 w-full min-w-0">
           {/* 카테고리 태그들 - 작은 화면에서는 숨김 */}
-          <div className="flex flex-wrap gap-1 mb-1 min-[400px]:flex hidden">
+          <div className="flex flex-wrap gap-1 mb-1">
             {isAd && <Tag variant={4}>AD</Tag>}
-            {categories.slice(0, 1).map((category, index) => (
-              <Tag key={index} variant={1}>
-                {category}
-              </Tag>
-            ))}
+            <Tag
+              variant={
+                categories === "병원양도"
+                  ? 1
+                  : categories === "기계장치"
+                  ? 2
+                  : categories === "의료장비"
+                  ? 4
+                  : 3
+              }
+            >
+              {categories}
+            </Tag>
           </div>
 
-          <h3 className="text-[11px] min-[400px]:text-[14px] text-semibold text-gray-900 leading-tight line-clamp-1 mb-1">
+          <h3 className="text-[14px] text-normal text-gray-900 leading-tight line-clamp-1 mb-1">
             {title}
           </h3>
 
-          <div className="flex items-center text-[9px] min-[400px]:text-[12px] text-medium text-subtext2 mb-1">
+          <div className="flex items-center text-[12px] text-medium text-subtext2 mb-1">
             <span className="truncate">{location}</span>
             <span className="mx-1 flex-shrink-0">·</span>
             <span className="truncate">{hospitalType}</span>
             <span className="mx-1 flex-shrink-0">·</span>
             <span className="flex-shrink-0">{area}평</span>
           </div>
-
-          <div className="text-right">
-            <span className="font-text text-[12px] min-[400px]:text-[14px] text-extrabold leading-[150%] text-key1">
-              {price}
-            </span>
-          </div>
         </div>
 
         {/* 하단 그룹: 등록일과 조회수 */}
-        <div className="flex items-center justify-between w-full mt-auto">
-          <span className="font-text text-[9px] min-[400px]:text-[10px] text-medium text-subtext2 truncate">
-            {date}
-          </span>
-          <span className="font-text text-[9px] min-[400px]:text-[10px] text-medium text-subtext2 flex-shrink-0 ml-2">
-            조회 {views.toLocaleString()}
-          </span>
+        <div className="flex flex-col w-full">
+          <div className="text-right">
+            <span className="font-text text-[14px] text-extrabold leading-[150%] text-key1">
+              {price}
+            </span>
+          </div>
+          <div className="flex items-center justify-between w-full mt-auto">
+            <span className="font-text text-[10px] text-medium text-subtext2 truncate">
+              {date}
+            </span>
+            <span className="font-text text-[10px] text-medium text-subtext2 flex-shrink-0 ml-2">
+              조회 {views.toLocaleString()}
+            </span>
+          </div>
         </div>
       </div>
     </>

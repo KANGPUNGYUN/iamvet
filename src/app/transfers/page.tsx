@@ -914,7 +914,7 @@ export default function TransfersPage() {
                     date="2025-01-01"
                     views={0}
                     imageUrl=""
-                    categories={[]}
+                    categories=""
                     isAd={false}
                     isLiked={false}
                     onLike={() => {}}

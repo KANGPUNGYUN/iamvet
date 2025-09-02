@@ -19,7 +19,7 @@ interface TransferData {
   date: string;
   views: number;
   imageUrl?: string;
-  categories: string[];
+  categories: string;
   isAd?: boolean;
   isLiked: boolean;
 }
@@ -51,10 +51,7 @@ export default function HospitalTransferBookmarksPage() {
     price: `${3 + (i % 5)}억 양도`,
     date: `2025-04-${String((i % 30) + 1).padStart(2, "0")}`,
     views: 100 + i * 27,
-    categories: [
-      transferCategories[i % transferCategories.length],
-      ...(i % 3 === 0 ? ["기계장치"] : []),
-    ],
+    categories: transferCategories[i % transferCategories.length],
     isAd: i % 8 === 0,
     isLiked: true, // 찜 목록이므로 모두 좋아요 상태
   }));
@@ -69,9 +66,7 @@ export default function HospitalTransferBookmarksPage() {
 
       const matchesCategory =
         selectedCategories.length === 0 ||
-        selectedCategories.some((category) =>
-          transfer.categories.includes(category)
-        );
+        selectedCategories.includes(transfer.categories);
 
       return matchesSearch && matchesCategory;
     });
