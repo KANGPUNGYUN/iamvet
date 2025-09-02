@@ -37,6 +37,15 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
     router.push("/member-select");
   };
 
+  // 알림 클릭 처리
+  const handleNotificationClick = () => {
+    if (user?.type === "veterinarian") {
+      router.push("/dashboard/veterinarian/messages");
+    } else if (user?.type === "hospital") {
+      router.push("/dashboard/hospital/messages");
+    }
+  };
+
   // 관리자 페이지는 헤더/푸터 없이 렌더링
   if (isAdminPage) {
     return <>{children}</>;
@@ -70,6 +79,7 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
         onSignup={handleSignup}
         onLogout={handleLogout}
         onProfileClick={() => console.log("프로필 클릭")}
+        onNotificationClick={handleNotificationClick}
       />
       {children}
       <Footer />
