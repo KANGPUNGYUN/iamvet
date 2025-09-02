@@ -551,7 +551,7 @@ export default function HomePage() {
             </Tab.List>
             <Tab.Content value="internal">
               <div
-                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar"
+                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar pb-4"
                 style={{ alignSelf: "stretch" }}
               >
                 {jobPostings.map((job) => (
@@ -571,7 +571,7 @@ export default function HomePage() {
             </Tab.Content>
             <Tab.Content value="surgery">
               <div
-                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar"
+                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar pb-4"
                 style={{ alignSelf: "stretch" }}
               >
                 {resumePostings.map((resume) => (
