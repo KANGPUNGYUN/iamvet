@@ -273,7 +273,7 @@ export default function JobDetailPage({
 
             {/* 우대사항 */}
             <div className="mt-[60px] border-b border-[#EFEFF0] pb-[40px]">
-              <div className="flex gap-[40px]">
+              <div className="flex gap-[50px]">
                 <h2 className="font-text text-[20px] font-semibold text-primary mb-[20px]">
                   우대사항
                 </h2>
