@@ -165,8 +165,8 @@ export async function register(data: RegisterData, profileData?: VeterinarianPro
     // Create user
     const userResult = await sql`
       INSERT INTO users (
-        username, email, phone, password_hash, user_type, profile_image,
-        terms_agreed_at, privacy_agreed_at, marketing_agreed_at
+        username, email, phone, "passwordHash", "userType", "profileImage",
+        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt"
       )
       VALUES (
         ${username}, ${email}, ${phone}, ${passwordHash}, ${userType}, ${profileImage},
@@ -182,7 +182,7 @@ export async function register(data: RegisterData, profileData?: VeterinarianPro
       const vetData = profileData as VeterinarianProfileData;
       await sql`
         INSERT INTO veterinarian_profiles (
-          user_id, nickname, birth_date, license_image, experience, specialty, introduction
+          "userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction
         )
         VALUES (
           ${user.id}, ${vetData.nickname}, ${vetData.birthDate}, ${vetData.licenseImage}, 
@@ -193,7 +193,7 @@ export async function register(data: RegisterData, profileData?: VeterinarianPro
       const hospitalData = profileData as HospitalProfileData;
       await sql`
         INSERT INTO hospital_profiles (
-          user_id, hospital_name, business_number, address, phone, website, description, business_license
+          "userId", "hospitalName", "businessNumber", address, phone, website, description, "businessLicense"
         )
         VALUES (
           ${user.id}, ${hospitalData.hospitalName}, ${hospitalData.businessNumber}, 
@@ -209,7 +209,7 @@ export async function register(data: RegisterData, profileData?: VeterinarianPro
         id: user.id,
         username: user.username,
         email: user.email,
-        userType: user.user_type,
+        userType: user.userType,
       },
     };
   } catch (error) {
