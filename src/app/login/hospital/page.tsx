@@ -34,6 +34,8 @@ export default function HospitalLoginPage() {
         // 로그인 성공 시 대시보드로 이동
         router.push("/dashboard/hospital");
       } else {
+        // 로그인 실패 시 alert 표시
+        alert("아이디 또는 비밀번호를 다시 확인해주세요.");
         setError(result.error || "로그인에 실패했습니다.");
       }
     } catch (error) {
@@ -44,7 +46,6 @@ export default function HospitalLoginPage() {
 
   return (
     <>
-
       <main className="pt-[50px] pb-[224px] px-[16px] bg-white flex flex-col">
         <div className="flex-1 max-w-md mx-auto w-full">
           {/* 헤더 */}
@@ -58,7 +59,7 @@ export default function HospitalLoginPage() {
           </div>
 
           {/* 로그인 폼 */}
-          <form 
+          <form
             onSubmit={(e) => {
               e.preventDefault();
               handleLogin();
@@ -71,13 +72,6 @@ export default function HospitalLoginPage() {
                 {error}
               </div>
             )}
-
-            {/* 테스트 계정 안내 */}
-            <div className="bg-blue-50 border border-blue-200 text-blue-600 px-4 py-3 rounded-md text-sm">
-              <strong>테스트 계정:</strong><br />
-              이메일: hospital@test.com<br />
-              비밀번호: hospital123!
-            </div>
 
             {/* 아이디 입력 */}
             <div>
