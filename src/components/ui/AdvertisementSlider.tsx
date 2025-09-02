@@ -5,10 +5,9 @@ import Image from "next/image";
 
 interface Advertisement {
   id: string;
-  title: string;
   imageUrl: string;
+  imageLargeUrl: string;
   linkUrl?: string;
-  description?: string;
 }
 
 interface AdvertisementSliderProps {
@@ -68,47 +67,39 @@ const AdvertisementSlider: React.FC<AdvertisementSliderProps> = ({
 
   return (
     <div
-      className={`relative w-full h-[140px] md:h-[144px] rounded-[16px] overflow-hidden bg-[#D8F9FB] ${className}`}
+      className={`relative w-full h-[140px] md:h-[144px] rounded-[16px] overflow-hidden ${className}`}
     >
-      {/* 메인 광고 컨테이너 */}
+      {/* 이미지 컨테이너 */}
       <div
-        className="relative w-full h-full cursor-pointer group px-[60px] py-[45px]"
+        className="relative w-full h-full cursor-pointer group"
         onClick={handleAdClick}
       >
-        {/* 배경 이미지 - 가운데 정렬로 280px 너비 */}
-        <div className="absolute right-[20%] top-1/2 -translate-y-1/2 lg:w-[280px] w-[160px] h-full">
-          <Image
-            src={currentAd.imageUrl}
-            alt={currentAd.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="280px"
-          />
-        </div>
+        {/* 모바일용 이미지 */}
+        <Image
+          src={currentAd.imageUrl}
+          alt={`Advertisement ${currentIndex + 1}`}
+          fill
+          className="md:hidden object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="100vw"
+        />
+        
+        {/* 데스크톱용 이미지 */}
+        <Image
+          src={currentAd.imageLargeUrl}
+          alt={`Advertisement ${currentIndex + 1}`}
+          fill
+          className="hidden md:block object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 1200px) 100vw, 1200px"
+        />
 
-        {/* 콘텐츠 */}
-        <div className="absolute inset-0 flex flex-row-reverse justify-between p-[20px] md:p-[32px] text-black">
-          <div className="flex justify-end">
-            {/* 페이지 인디케이터 */}
-            <div className="flex items-start gap-[8px] px-[12px] py-[6px] rounded-full">
-              <span className="font-text text-[12px] md:text-[14px] font-medium">
-                {currentIndex + 1}
-                <span className="text-subtext2">/{advertisements.length}</span>
-              </span>
-            </div>
+        {/* 페이지 인디케이터 */}
+        {advertisements.length > 1 && (
+          <div className="absolute top-4 right-4 bg-black bg-opacity-50 rounded-full px-3 py-1">
+            <span className="text-white text-sm font-medium">
+              {currentIndex + 1}/{advertisements.length}
+            </span>
           </div>
-
-          <div className="flex flex-col justify-center gap-[8px] md:gap-[12px]">
-            <h3 className="font-title text-[18px] md:text-[24px] font-bold leading-[130%] line-clamp-2">
-              {currentAd.title}
-            </h3>
-            {currentAd.description && (
-              <p className="font-text text-[14px] md:text-[16px] text-black/90 line-clamp-2">
-                {currentAd.description}
-              </p>
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
