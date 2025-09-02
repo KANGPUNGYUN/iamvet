@@ -460,6 +460,7 @@ export default function HospitalDetailPage({
                               onClick={() => {
                                 window.location.href = `/jobs/${job.id}`;
                               }}
+                              className="w-full"
                             />
                           ))}
                       </div>
@@ -825,9 +826,7 @@ export default function HospitalDetailPage({
                 </div>
                 <textarea
                   value={comments.staff}
-                  onChange={(e) =>
-                    handleCommentChange("staff", e.target.value)
-                  }
+                  onChange={(e) => handleCommentChange("staff", e.target.value)}
                   placeholder="직원 전문성에 대한 평가를 자세히 작성해 주세요."
                   className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
                   maxLength={500}
@@ -860,7 +859,9 @@ export default function HospitalDetailPage({
                 </div>
                 <textarea
                   value={comments.service}
-                  onChange={(e) => handleCommentChange("service", e.target.value)}
+                  onChange={(e) =>
+                    handleCommentChange("service", e.target.value)
+                  }
                   placeholder="서비스 품질에 대한 평가를 자세히 작성해 주세요."
                   className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
                   maxLength={500}
@@ -1040,9 +1041,7 @@ export default function HospitalDetailPage({
                 </div>
                 <textarea
                   value={comments.staff}
-                  onChange={(e) =>
-                    handleCommentChange("staff", e.target.value)
-                  }
+                  onChange={(e) => handleCommentChange("staff", e.target.value)}
                   placeholder="직원 전문성에 대한 평가를 자세히 작성해 주세요."
                   className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
                   maxLength={500}
@@ -1075,7 +1074,9 @@ export default function HospitalDetailPage({
                 </div>
                 <textarea
                   value={comments.service}
-                  onChange={(e) => handleCommentChange("service", e.target.value)}
+                  onChange={(e) =>
+                    handleCommentChange("service", e.target.value)
+                  }
                   placeholder="서비스 품질에 대한 평가를 자세히 작성해 주세요."
                   className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
                   maxLength={500}

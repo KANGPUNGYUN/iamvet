@@ -339,6 +339,7 @@ export default function JobDetailPage({
                   onClick={() => {
                     window.location.href = `/jobs/${job.id}`;
                   }}
+                  className="w-full"
                 />
               ))}
             </div>

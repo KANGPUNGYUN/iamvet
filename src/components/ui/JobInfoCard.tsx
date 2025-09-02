@@ -21,6 +21,7 @@ interface JobInfoCardProps {
   showDeadline?: boolean; // 마감일 표시 여부
   isNew?: boolean; // 신규 공고 여부
   id?: number; // 채용공고 ID 추가
+  className?: string;
 }
 
 const JobInfoCard: React.FC<JobInfoCardProps> = ({
@@ -35,6 +36,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
   variant = "default",
   showDeadline = false,
   isNew = false,
+  className,
 }) => {
   const isWide = variant === "wide";
 
@@ -49,7 +51,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
     "font-text text-semibold text-primary text-[24px] my-[18px]";
 
   return (
-    <div className={containerClass} onClick={onClick}>
+    <div className={`${containerClass} ${className || ""}`} onClick={onClick}>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h3 className={titleClass}>{hospital}</h3>
