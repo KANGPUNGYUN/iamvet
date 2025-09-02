@@ -122,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
 
   return (
     <aside
-      className={`w-[240px] bg-white h-screen flex-col hidden lg:flex ${className}`}
+      className={`w-[240px] bg-white flex-col hidden h-auto lg:flex ${className}`}
     >
       {/* Header */}
       <div className="p-6">

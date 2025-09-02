@@ -52,7 +52,7 @@ const MobileApplicantCard: React.FC<{ applicant: ApplicantData }> = ({
             {applicant.applicant}
           </span>
         </div>
-        <Link href={`/dashboard/hospital/applicants/${applicant.id}`}>
+        <Link href={`/resumes/${applicant.id}`}>
           <ArrowRightIcon size="20" />
         </Link>
       </div>
@@ -70,9 +70,7 @@ const MobileApplicantCard: React.FC<{ applicant: ApplicantData }> = ({
           <span className="text-[14px] text-gray-500 block w-[70px]">
             연락처
           </span>
-          <span className="text-[14px] text-gray-700">
-            {applicant.contact}
-          </span>
+          <span className="text-[14px] text-gray-700">{applicant.contact}</span>
         </div>
       </div>
 
@@ -131,10 +129,7 @@ const ApplicantsTable: React.FC<ApplicantsTableProps> = ({
       {/* 모바일 버전 (xl 이하) */}
       <div className="block xl:hidden">
         {applicants.slice(0, 3).map((applicant) => (
-          <MobileApplicantCard
-            key={applicant.id}
-            applicant={applicant}
-          />
+          <MobileApplicantCard key={applicant.id} applicant={applicant} />
         ))}
       </div>
 
@@ -185,7 +180,7 @@ const ApplicantsTable: React.FC<ApplicantsTableProps> = ({
                 </td>
                 <td className="py-[22px] pr-[30px]">
                   <Link
-                    href={`/dashboard/hospital/applicants/${applicant.id}`}
+                    href={`/resumes/${applicant.id}`}
                     className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
                   >
                     상세보기
