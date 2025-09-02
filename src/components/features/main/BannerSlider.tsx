@@ -77,6 +77,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
         style={{
           aspectRatio: "982 / 485",
           maxWidth: "982px",
+          maxHeight: "485px",
           borderRadius: "clamp(8px, 3.1vw, 30px)",
         }}
         onMouseEnter={handleMouseEnter}

@@ -500,10 +500,10 @@ export default function HomePage() {
   return (
     <>
       <div className="w-full">
-        <div className="max-w-[1320px] mx-auto md:px-[60px] py-[30px] px-[15px]">
+        <div className="max-w-[1440px] mx-auto md:px-[60px] py-[30px] px-[15px]">
           {/* 데스크톱: 가로 배치, 모바일: 세로 배치 */}
           <div className="flex flex-col xl:flex-row xl:items-start xl:gap-[30px] gap-8">
-            <div className="flex-1">
+            <div className="flex-1 max-w-[982px]">
               <BannerSlider
                 banners={sampleBanners}
                 autoSlideInterval={4000}
