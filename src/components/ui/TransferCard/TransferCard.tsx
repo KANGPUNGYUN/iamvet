@@ -38,6 +38,12 @@ const TransferCard: React.FC<TransferCardProps> = ({
   onClick,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [localIsLiked, setLocalIsLiked] = useState(isLiked);
+
+  const handleLike = () => {
+    setLocalIsLiked(!localIsLiked);
+    onLike?.();
+  };
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -118,15 +124,19 @@ const TransferCard: React.FC<TransferCardProps> = ({
 
         {/* 좋아요 버튼 */}
         <button
-          className="absolute top-[12px] right-[12px] w-[28px] h-[28px] bg-[rgba(121,116,126,0.34)] bg-opacity-90 backdrop-blur-sm rounded-full hover:bg-opacity-100 transition-all duration-200"
+          className={`absolute top-[12px] right-[12px] w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-all duration-200 ${
+            localIsLiked
+              ? "bg-[#FF8796] hover:bg-[#FF6B7D]"
+              : "bg-[rgba(121,116,126,0.34)] bg-opacity-90 hover:bg-opacity-100"
+          }`}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onLike?.();
+            handleLike();
           }}
         >
-          {isLiked ? (
-            <HeartFilledIcon size="28px" currentColor="var(--Keycolor1)" />
+          {localIsLiked ? (
+            <HeartFilledIcon size="28px" currentColor="white" />
           ) : (
             <HeartIcon size="28px" currentColor="white" />
           )}
@@ -191,15 +201,19 @@ const TransferCard: React.FC<TransferCardProps> = ({
 
         {/* 좋아요 버튼 - 작은 화면에서는 더 작게 */}
         <button
-          className="absolute left-[6px] top-[6px] w-[24px] h-[24px] min-[400px]:left-[8px] min-[400px]:top-[7px] bg-[rgba(121,116,126,0.34)] bg-opacity-90 backdrop-blur-sm rounded-full hover:bg-opacity-100 transition-all duration-200"
+          className={`absolute left-[6px] top-[6px] w-[24px] h-[24px] min-[400px]:left-[8px] min-[400px]:top-[7px] rounded-full backdrop-blur-sm transition-all duration-200 ${
+            localIsLiked
+              ? "bg-[#FF8796] hover:bg-[#FF6B7D]"
+              : "bg-[rgba(121,116,126,0.34)] bg-opacity-90 hover:bg-opacity-100"
+          }`}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onLike?.();
+            handleLike();
           }}
         >
-          {isLiked ? (
-            <HeartFilledIcon size="24px" currentColor="var(--Keycolor1)" />
+          {localIsLiked ? (
+            <HeartFilledIcon size="24px" currentColor="white" />
           ) : (
             <HeartIcon size="24px" currentColor="white" />
           )}

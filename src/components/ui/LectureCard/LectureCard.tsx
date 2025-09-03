@@ -24,6 +24,13 @@ const LectureCard: React.FC<LectureCardProps> = ({
   onLike,
   onClick,
 }) => {
+  const [localIsLiked, setLocalIsLiked] = React.useState(isLiked);
+  
+  const handleLike = () => {
+    setLocalIsLiked(!localIsLiked);
+    onLike?.();
+  };
+  
   const defaultImage =
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' viewBox='0 0 400 240'%3E%3Crect width='400' height='240' fill='%23f3f4f6'/%3E%3Ctext x='200' y='120' font-family='Arial' font-size='16' fill='%239ca3af' text-anchor='middle' dominant-baseline='middle'%3E강의 이미지%3C/text%3E%3C/svg%3E";
 
@@ -51,14 +58,18 @@ const LectureCard: React.FC<LectureCardProps> = ({
 
         {/* 좋아요 버튼 */}
         <button
-          className="absolute top-[12px] right-[12px] w-[28px] h-[28px] bg-[rgba(121,116,126,0.34)] bg-opacity-90 backdrop-blur-sm rounded-full hover:bg-opacity-100 transition-all duration-200"
+          className={`absolute top-[12px] right-[12px] w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-all duration-200 ${
+            localIsLiked
+              ? "bg-[#FF8796] hover:bg-[#FF6B7D]"
+              : "bg-[rgba(121,116,126,0.34)] bg-opacity-90 hover:bg-opacity-100"
+          }`}
           onClick={(e) => {
             e.stopPropagation();
-            onLike?.();
+            handleLike();
           }}
         >
-          {isLiked ? (
-            <HeartFilledIcon size="28px" currentColor="var(--Keycolor1)" />
+          {localIsLiked ? (
+            <HeartFilledIcon size="28px" currentColor="white" />
           ) : (
             <HeartIcon size="28px" currentColor="white" />
           )}
