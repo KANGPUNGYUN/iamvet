@@ -21,6 +21,7 @@ export interface TextareaProps {
   resize?: "none" | "vertical" | "horizontal" | "both";
   state?: TextareaState;
   className?: string;
+  fullWidth?: boolean;
   children?: React.ReactNode;
 }
 

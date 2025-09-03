@@ -291,7 +291,7 @@ export default function CreateTransferPage() {
               <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
                 주소 검색
               </label>
-              <div className="w-full max-w-[649px]">
+              <div className="w-full">
                 <AddressSearch
                   address={formData.address}
                   detailAddress={formData.detailAddress}

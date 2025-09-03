@@ -25,6 +25,7 @@ export const TextareaItem: React.FC<TextareaProps> = ({
   resize = "vertical",
   state: externalState,
   className = "",
+  fullWidth = false,
   children,
 }) => {
   const [internalValue, setInternalValue] = useState(defaultValue);
@@ -115,15 +116,15 @@ export const TextareaItem: React.FC<TextareaProps> = ({
   const getContainerClasses = (state: TextareaState) => {
     const baseClasses = [
       "flex",
-      "w-full max-w-[758px]",
+      fullWidth ? "w-full min-w-0" : "w-full max-w-[758px]",
       "min-h-[270px]",
       "px-5 py-4",
       "items-start",
       "gap-2.5",
-      "flex-shrink-0",
+      fullWidth ? "" : "flex-shrink-0",
       "rounded-md",
       "transition-all duration-200",
-    ];
+    ].filter(cls => cls !== "");
 
     return baseClasses.join(" ");
   };

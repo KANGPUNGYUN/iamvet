@@ -1189,7 +1189,7 @@ export default function VeterinarianResumePage() {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col gap-[10px]">
+                <div className="flex flex-col gap-[10px] w-full">
                   <div className="w-full">
                     <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                       역량 설명
@@ -1209,6 +1209,7 @@ export default function VeterinarianResumePage() {
                       }}
                       placeholder="역량 설명 입력"
                       rows={3}
+                      fullWidth
                       className="w-full"
                     />
                   </div>
@@ -1231,6 +1232,7 @@ export default function VeterinarianResumePage() {
                       }}
                       placeholder="기타 사항 입력"
                       rows={3}
+                      fullWidth
                       className="w-full"
                     />
                   </div>
@@ -1253,7 +1255,7 @@ export default function VeterinarianResumePage() {
         </div>
 
         {/* 자기소개 */}
-        <div className="px-[30px] mt-[80px]">
+        <div className="px-[30px] mt-[80px] w-full">
           <h2 className="font-text text-[20px] font-medium text-primary mb-[30px] pb-2 border-b">
             자기소개
           </h2>
@@ -1266,6 +1268,7 @@ export default function VeterinarianResumePage() {
             rows={6}
             maxLength={1000}
             resize="vertical"
+            fullWidth
           />
         </div>
 
