@@ -189,7 +189,6 @@ const CheckboxItem: React.FC<CheckboxProps> = ({
     alignItems: "center" as const,
     gap: "8px",
     cursor: isDisabled ? "not-allowed" : "pointer",
-    width: "100px",
   };
 
   const iconStyle = {

@@ -580,6 +580,7 @@ export default function TransfersPage() {
 
                     {/* 전체 선택 체크박스 */}
                     <Checkbox
+                      className="w-[100px]"
                       value={activeSido}
                       checked={selectedSido.includes(activeSido)}
                       onChange={(checked) => {
@@ -620,6 +621,7 @@ export default function TransfersPage() {
                       activeSido as keyof typeof regionOptions
                     ].map((district) => (
                       <Checkbox
+                        className="w-[100px]"
                         key={district}
                         value={district}
                         checked={tempFilters.regions.includes(

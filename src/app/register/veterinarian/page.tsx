@@ -138,7 +138,6 @@ export default function VeterinarianRegisterPage() {
 
   return (
     <>
-
       <main className="pt-[50px] pb-[262px] px-[16px] bg-white">
         <div className="max-w-[1155px] mx-auto w-full flex flex-col mb-[100px] gap-[10px]">
           <Link href="/login/veterinarian" className="mr-4">
@@ -346,7 +345,7 @@ export default function VeterinarianRegisterPage() {
                   <Checkbox
                     checked={agreements.terms}
                     onChange={handleAgreementChange("terms")}
-                    className="text-[16px] text-[#35313C]"
+                    className="text-[16px] text-[#35313C] w-full"
                   >
                     <Link href="/terms" className="text-[#35313C] underline">
                       이용약관
@@ -357,7 +356,7 @@ export default function VeterinarianRegisterPage() {
                   <Checkbox
                     checked={agreements.privacy}
                     onChange={handleAgreementChange("privacy")}
-                    className="text-[16px] text-[#35313C]"
+                    className="text-[16px] text-[#35313C] w-full"
                   >
                     <Link href="/privacy" className="text-[#35313C] underline">
                       개인정보처리방침
@@ -368,7 +367,7 @@ export default function VeterinarianRegisterPage() {
                   <Checkbox
                     checked={agreements.marketing}
                     onChange={handleAgreementChange("marketing")}
-                    className="text-[16px] text-[#35313C]"
+                    className="text-[16px] text-[#35313C] w-full"
                   >
                     <Link
                       href="/marketing"
@@ -404,7 +403,6 @@ export default function VeterinarianRegisterPage() {
           </div>
         </div>
       </main>
-
     </>
   );
 }
