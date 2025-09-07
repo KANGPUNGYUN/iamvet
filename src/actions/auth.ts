@@ -52,7 +52,7 @@ export interface RegisterData {
 export interface VeterinarianProfileData {
   nickname: string;
   birthDate?: Date;
-  licenseImage: string;
+  licenseImage?: string;
   experience?: string;
   specialty?: string;
   introduction?: string;
@@ -72,9 +72,8 @@ export interface HospitalProfileData {
 export async function login(credentials: LoginCredentials) {
   const { email, password, userType } = credentials;
   try {
-
     // Get user by email and userType (if specified)
-    const result = userType 
+    const result = userType
       ? await sql`SELECT * FROM users WHERE email = ${email} AND "userType" = ${userType} AND "isActive" = true`
       : await sql`SELECT * FROM users WHERE email = ${email} AND "isActive" = true`;
 
@@ -86,7 +85,10 @@ export async function login(credentials: LoginCredentials) {
 
     // Verify password
     if (!user.passwordHash) {
-      return { success: false, error: "소셜 로그인 계정입니다. 소셜 로그인을 이용해주세요." };
+      return {
+        success: false,
+        error: "소셜 로그인 계정입니다. 소셜 로그인을 이용해주세요.",
+      };
     }
 
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
@@ -96,10 +98,10 @@ export async function login(credentials: LoginCredentials) {
 
     // Generate JWT token
     const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        userType: user.userType 
+      {
+        userId: user.id,
+        email: user.email,
+        userType: user.userType,
       },
       JWT_SECRET,
       { expiresIn: "7d" }
@@ -127,16 +129,24 @@ export async function login(credentials: LoginCredentials) {
   } catch (error) {
     console.error("Login error:", error);
     console.error("Error details:", {
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
       email,
-      userType
+      userType,
     });
-    return { success: false, error: `로그인 중 오류가 발생했습니다: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    return {
+      success: false,
+      error: `로그인 중 오류가 발생했습니다: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    };
   }
 }
 
-export async function register(data: RegisterData, profileData?: VeterinarianProfileData | HospitalProfileData) {
+export async function register(
+  data: RegisterData,
+  profileData?: VeterinarianProfileData | HospitalProfileData
+) {
   try {
     const {
       username,
@@ -156,7 +166,10 @@ export async function register(data: RegisterData, profileData?: VeterinarianPro
     `;
 
     if (existingUser.length > 0) {
-      return { success: false, error: "이미 가입된 이메일 또는 전화번호입니다." };
+      return {
+        success: false,
+        error: "이미 가입된 이메일 또는 전화번호입니다.",
+      };
     }
 
     // Hash password
@@ -170,7 +183,9 @@ export async function register(data: RegisterData, profileData?: VeterinarianPro
       )
       VALUES (
         ${username}, ${email}, ${phone}, ${passwordHash}, ${userType}, ${profileImage},
-        ${termsAgreed ? new Date() : null}, ${privacyAgreed ? new Date() : null}, ${marketingAgreed ? new Date() : null}
+        ${termsAgreed ? new Date() : null}, ${
+      privacyAgreed ? new Date() : null
+    }, ${marketingAgreed ? new Date() : null}
       )
       RETURNING *
     `;
@@ -229,7 +244,11 @@ export async function logout() {
   }
 }
 
-export async function getCurrentUser(): Promise<{ success: boolean; user?: User; error?: string }> {
+export async function getCurrentUser(): Promise<{
+  success: boolean;
+  user?: User;
+  error?: string;
+}> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth-token")?.value;
@@ -272,11 +291,17 @@ export async function getCurrentUser(): Promise<{ success: boolean; user?: User;
     };
   } catch (error) {
     console.error("Get current user error:", error);
-    return { success: false, error: "사용자 정보를 가져오는 중 오류가 발생했습니다." };
+    return {
+      success: false,
+      error: "사용자 정보를 가져오는 중 오류가 발생했습니다.",
+    };
   }
 }
 
-export async function updatePassword(currentPassword: string, newPassword: string) {
+export async function updatePassword(
+  currentPassword: string,
+  newPassword: string
+) {
   try {
     const userResult = await getCurrentUser();
     if (!userResult.success || !userResult.user) {
@@ -297,7 +322,10 @@ export async function updatePassword(currentPassword: string, newPassword: strin
     const user = result[0];
 
     // Verify current password
-    const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash
+    );
     if (!isValidPassword) {
       return { success: false, error: "현재 비밀번호가 올바르지 않습니다." };
     }
@@ -359,7 +387,10 @@ export async function deleteAccount(password: string) {
   }
 }
 
-export async function getUserByEmail(email: string, userType?: "VETERINARIAN" | "HOSPITAL") {
+export async function getUserByEmail(
+  email: string,
+  userType?: "VETERINARIAN" | "HOSPITAL"
+) {
   try {
     const result = userType
       ? await sql`SELECT * FROM users WHERE email = ${email} AND "userType" = ${userType} AND "isActive" = true`
@@ -400,8 +431,12 @@ export async function createSocialUser(userData: {
         "termsAgreedAt", "privacyAgreedAt", "createdAt", "updatedAt"
       )
       VALUES (
-        ${createId()}, ${userData.username}, ${userData.email}, ${userData.userType}, 
-        ${userData.profileImage}, ${userData.provider}, NOW(), NOW(), NOW(), NOW()
+        ${createId()}, ${userData.username}, ${userData.email}, ${
+      userData.userType
+    }, 
+        ${userData.profileImage}, ${
+      userData.provider
+    }, NOW(), NOW(), NOW(), NOW()
       )
       RETURNING *
     `;
@@ -413,7 +448,9 @@ export async function createSocialUser(userData: {
       INSERT INTO social_accounts (
         id, "userId", provider, "providerId", "createdAt", "updatedAt"
       )
-      VALUES (${createId()}, ${user.id}, ${userData.provider}, ${userData.providerId}, NOW(), NOW())
+      VALUES (${createId()}, ${user.id}, ${userData.provider}, ${
+      userData.providerId
+    }, NOW(), NOW())
     `;
 
     return {
@@ -429,5 +466,227 @@ export async function createSocialUser(userData: {
   } catch (error) {
     console.error("Create social user error:", error);
     return { success: false, error: "소셜 계정 생성 중 오류가 발생했습니다." };
+  }
+}
+
+export async function checkUserIdDuplicate(username: string) {
+  try {
+    console.log("Checking username duplicate for:", username);
+
+    // 먼저 모든 사용자 확인
+    const allUsers = await sql`SELECT username FROM users LIMIT 10`;
+    console.log(
+      "All usernames in DB:",
+      allUsers.map((u) => u.username)
+    );
+
+    // 특정 username 검색
+    const result = await sql`
+      SELECT id, username, "isActive" FROM users WHERE username = ${username}
+    `;
+    console.log("Username duplicate check result:", result);
+    console.log("Result length:", result.length);
+
+    // isActive가 true인 사용자만 확인
+    const activeResult = await sql`
+      SELECT id, username, "isActive" FROM users WHERE username = ${username} AND "isActive" = true
+    `;
+    console.log("Active username check result:", activeResult);
+
+    const isDuplicate = activeResult.length > 0;
+    return {
+      success: true,
+      isDuplicate,
+      message: isDuplicate
+        ? "이미 사용 중인 아이디입니다."
+        : "사용 가능한 아이디입니다.",
+    };
+  } catch (error) {
+    console.error("Check username duplicate error:", error);
+    return {
+      success: false,
+      error: "아이디 중복 확인 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+export async function checkEmailDuplicate(email: string) {
+  try {
+    console.log("Checking email duplicate for:", email);
+
+    // 먼저 모든 이메일 확인
+    const allEmails = await sql`SELECT email FROM users LIMIT 10`;
+    console.log(
+      "All emails in DB:",
+      allEmails.map((u) => u.email)
+    );
+
+    // 특정 email 검색
+    const result = await sql`
+      SELECT id, email, "isActive" FROM users WHERE email = ${email}
+    `;
+    console.log("Email duplicate check result:", result);
+    console.log("Result length:", result.length);
+
+    // isActive가 true인 사용자만 확인
+    const activeResult = await sql`
+      SELECT id, email, "isActive" FROM users WHERE email = ${email} AND "isActive" = true
+    `;
+    console.log("Active email check result:", activeResult);
+
+    const isDuplicate = activeResult.length > 0;
+    return {
+      success: true,
+      isDuplicate,
+      message: isDuplicate
+        ? "이미 사용 중인 이메일입니다."
+        : "사용 가능한 이메일입니다.",
+    };
+  } catch (error) {
+    console.error("Check email duplicate error:", error);
+    return {
+      success: false,
+      error: "이메일 중복 확인 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+export interface VeterinarianRegisterData {
+  userId: string;
+  password: string;
+  nickname: string;
+  phone: string;
+  email: string;
+  birthDate: string;
+  profileImage?: string;
+  licenseImage?: string;
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed?: boolean;
+}
+
+export async function registerVeterinarian(data: VeterinarianRegisterData) {
+  try {
+    console.log("SERVER: registerVeterinarian called with data:", data);
+
+    const {
+      userId,
+      password,
+      nickname,
+      phone,
+      email,
+      birthDate,
+      profileImage,
+      licenseImage,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    } = data;
+
+    console.log("SERVER: Extracted data:", {
+      userId,
+      password: "[HIDDEN]",
+      nickname,
+      phone,
+      email,
+      birthDate,
+      profileImage,
+      licenseImage,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    });
+
+    // Check if user already exists
+    console.log("SERVER: Checking for existing user...");
+    const existingUser = await sql`
+      SELECT id FROM users WHERE username = ${userId} OR email = ${email} OR phone = ${phone}
+    `;
+    console.log("SERVER: Existing user check result:", existingUser);
+
+    if (existingUser.length > 0) {
+      console.log("SERVER: User already exists");
+      return {
+        success: false,
+        error: "이미 가입된 아이디, 이메일 또는 전화번호입니다.",
+      };
+    }
+
+    // Hash password
+    console.log("SERVER: Hashing password...");
+    const passwordHash = await bcrypt.hash(password, 12);
+    console.log("SERVER: Password hashed successfully");
+
+    // Create user - userId는 username 필드에 저장
+    console.log("SERVER: Creating user...");
+    const generatedId = createId();
+    console.log("SERVER: Generated ID:", generatedId);
+
+    const userResult = await sql`
+      INSERT INTO users (
+        id, username, email, phone, "passwordHash", "userType", "profileImage", provider,
+        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${generatedId}, ${userId}, ${email}, ${phone}, ${passwordHash}, 'VETERINARIAN', ${profileImage}, 'NORMAL',
+        ${termsAgreed ? new Date() : null}, ${
+      privacyAgreed ? new Date() : null
+    }, ${marketingAgreed ? new Date() : null},
+        true, NOW(), NOW()
+      )
+      RETURNING *
+    `;
+    console.log("SERVER: User created successfully:", userResult[0]);
+
+    const user = userResult[0];
+
+    // Create veterinarian profile
+    console.log("SERVER: Creating veterinarian profile...");
+    const profileId = createId();
+    console.log("SERVER: Generated profile ID:", profileId);
+
+    const vetProfileResult = await sql`
+      INSERT INTO veterinarian_profiles (
+        id, "userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${profileId}, ${user.id}, ${nickname}, ${
+      birthDate ? new Date(birthDate) : null
+    }, ${licenseImage || null},
+        NOW(), NOW()
+      )
+      RETURNING *
+    `;
+    console.log(
+      "SERVER: Veterinarian profile created successfully:",
+      vetProfileResult
+    );
+
+    console.log("SERVER: Registration completed successfully");
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        userType: user.userType,
+      },
+    };
+  } catch (error) {
+    console.error("SERVER: Register veterinarian error:", error);
+    console.error("SERVER: Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      data,
+    });
+    return {
+      success: false,
+      error: `수의사 회원가입 실패: ${
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다."
+      }`,
+    };
   }
 }

@@ -63,7 +63,7 @@ model VeterinarianProfile {
   userId       String    @unique
   nickname     String
   birthDate    DateTime?
-  licenseImage String
+  licenseImage String?
   experience   String?
   specialty    String?
   introduction String?

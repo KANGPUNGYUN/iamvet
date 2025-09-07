@@ -47,7 +47,9 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
 
   const handleUploadClick = () => {
     if (!disabled) {
-      fileInputRef.current?.click();
+      alert("이미지업로드 기능은 아직 작업중입니다.");
+      return;
+      // fileInputRef.current?.click();
     }
   };
 
