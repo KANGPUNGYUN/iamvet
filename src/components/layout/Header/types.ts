@@ -6,6 +6,7 @@ export interface User {
   email: string;
   avatar?: string;
   type?: "veterinarian" | "hospital";
+  profileName?: string; // 수의사: 닉네임, 병원: 병원명
 }
 
 export interface NavigationItem {

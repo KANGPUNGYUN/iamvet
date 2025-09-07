@@ -27,6 +27,7 @@ export function useCurrentUser() {
           name: result.user.username,
           email: result.user.email,
           type: result.user.userType === "VETERINARIAN" ? "veterinarian" : "hospital",
+          profileName: result.user.profileName,
         };
       }
       return null;

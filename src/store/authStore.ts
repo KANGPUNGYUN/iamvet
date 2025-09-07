@@ -5,6 +5,7 @@ interface User {
   name: string;
   email: string;
   type: 'veterinarian' | 'hospital';
+  profileName?: string; // 수의사: 닉네임, 병원: 병원명
 }
 
 interface AuthState {

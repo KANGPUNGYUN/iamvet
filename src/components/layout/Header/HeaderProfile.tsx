@@ -41,7 +41,6 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
     setIsDropdownOpen(false);
   };
 
-
   const handleLogout = async () => {
     setIsDropdownOpen(false);
     if (onLogout) {
@@ -87,7 +86,6 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
           />
         </svg>
       </button>
-
 
       {/* 프로필 아바타 및 이름 드롭다운 */}
       <div className="hidden lg:flex relative" ref={dropdownRef}>
@@ -138,9 +136,9 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               lineHeight: "28px",
             }}
           >
-            {user.name.charAt(0)}
+            {(user.profileName || user.name).charAt(0)}
           </div>
-          
+
           {/* 이름 */}
           <span
             className="user-name"
@@ -154,7 +152,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               transition: "text-decoration 0.2s ease",
             }}
           >
-            {user.name}님
+            {user.profileName || user.name}님
           </span>
         </button>
 
@@ -230,7 +228,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                 마이페이지
               </button>
             )}
-            
+
             {/* 로그아웃 버튼 */}
             <button
               onClick={handleLogout}

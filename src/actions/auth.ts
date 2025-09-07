@@ -29,6 +29,7 @@ export interface User {
   marketingAgreedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  profileName?: string; // 수의사: 닉네임, 병원: 병원명
 }
 
 export interface LoginCredentials {
@@ -271,6 +272,25 @@ export async function getCurrentUser(): Promise<{
 
     const user = result[0];
 
+    // Get profile-specific information based on user type
+    let profileName = user.username; // fallback to username
+    
+    if (user.userType === 'VETERINARIAN') {
+      const vetProfile = await sql`
+        SELECT nickname FROM veterinarian_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
+      `;
+      if (vetProfile.length > 0) {
+        profileName = vetProfile[0].nickname;
+      }
+    } else if (user.userType === 'HOSPITAL') {
+      const hospitalProfile = await sql`
+        SELECT "hospitalName" FROM hospital_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
+      `;
+      if (hospitalProfile.length > 0) {
+        profileName = hospitalProfile[0].hospitalName;
+      }
+    }
+
     return {
       success: true,
       user: {
@@ -287,6 +307,7 @@ export async function getCurrentUser(): Promise<{
         marketingAgreedAt: user.marketingAgreedAt,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        profileName: profileName, // Add profile-specific name
       },
     };
   } catch (error) {
@@ -565,6 +586,22 @@ export interface VeterinarianRegisterData {
   marketingAgreed?: boolean;
 }
 
+export interface HospitalRegisterData {
+  userId: string;
+  password: string;
+  hospitalName: string;
+  businessNumber: string;
+  phone: string;
+  email: string;
+  website?: string;
+  address: string;
+  profileImage?: string;
+  businessLicense?: string;
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed?: boolean;
+}
+
 export async function registerVeterinarian(data: VeterinarianRegisterData) {
   try {
     console.log("SERVER: registerVeterinarian called with data:", data);
@@ -683,6 +720,143 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
     return {
       success: false,
       error: `수의사 회원가입 실패: ${
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다."
+      }`,
+    };
+  }
+}
+
+export async function registerHospital(data: HospitalRegisterData) {
+  try {
+    console.log("SERVER: registerHospital called with data:", data);
+    
+    const {
+      userId,
+      password,
+      hospitalName,
+      businessNumber,
+      phone,
+      email,
+      website,
+      address,
+      profileImage,
+      businessLicense,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    } = data;
+
+    console.log("SERVER: Extracted data:", {
+      userId,
+      password: "[HIDDEN]",
+      hospitalName,
+      businessNumber,
+      phone,
+      email,
+      website,
+      address,
+      profileImage,
+      businessLicense,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    });
+
+    // Check if user already exists
+    console.log("SERVER: Checking for existing user...");
+    const existingUser = await sql`
+      SELECT id FROM users WHERE username = ${userId} OR email = ${email} OR phone = ${phone}
+    `;
+    console.log("SERVER: Existing user check result:", existingUser);
+
+    if (existingUser.length > 0) {
+      console.log("SERVER: User already exists");
+      return {
+        success: false,
+        error: "이미 가입된 아이디, 이메일 또는 전화번호입니다.",
+      };
+    }
+
+    // Check if business number already exists
+    const existingBusiness = await sql`
+      SELECT id FROM hospital_profiles WHERE "businessNumber" = ${businessNumber}
+    `;
+    
+    if (existingBusiness.length > 0) {
+      return {
+        success: false,
+        error: "이미 가입된 사업자등록번호입니다.",
+      };
+    }
+
+    // Hash password
+    console.log("SERVER: Hashing password...");
+    const passwordHash = await bcrypt.hash(password, 12);
+    console.log("SERVER: Password hashed successfully");
+
+    // Create user - userId는 username 필드에 저장
+    console.log("SERVER: Creating user...");
+    const generatedId = createId();
+    console.log("SERVER: Generated ID:", generatedId);
+
+    const userResult = await sql`
+      INSERT INTO users (
+        id, username, email, phone, "passwordHash", "userType", "profileImage", provider,
+        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${generatedId}, ${userId}, ${email}, ${phone}, ${passwordHash}, 'HOSPITAL', ${profileImage}, 'NORMAL',
+        ${termsAgreed ? new Date() : null}, ${
+      privacyAgreed ? new Date() : null
+    }, ${marketingAgreed ? new Date() : null},
+        true, NOW(), NOW()
+      )
+      RETURNING *
+    `;
+    console.log("SERVER: User created successfully:", userResult[0]);
+
+    const user = userResult[0];
+
+    // Create hospital profile
+    console.log("SERVER: Creating hospital profile...");
+    const profileId = createId();
+    console.log("SERVER: Generated profile ID:", profileId);
+
+    const hospitalProfileResult = await sql`
+      INSERT INTO hospital_profiles (
+        id, "userId", "hospitalName", "businessNumber", address, phone, website, "businessLicense", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${profileId}, ${user.id}, ${hospitalName}, ${businessNumber}, ${address}, ${phone}, ${website || null}, ${businessLicense || null},
+        NOW(), NOW()
+      )
+      RETURNING *
+    `;
+    console.log("SERVER: Hospital profile created successfully:", hospitalProfileResult);
+
+    console.log("SERVER: Registration completed successfully");
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        userType: user.userType,
+      },
+    };
+  } catch (error) {
+    console.error("SERVER: Register hospital error:", error);
+    console.error("SERVER: Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      data,
+    });
+    return {
+      success: false,
+      error: `병원 회원가입 실패: ${
         error instanceof Error
           ? error.message
           : "알 수 없는 오류가 발생했습니다."
