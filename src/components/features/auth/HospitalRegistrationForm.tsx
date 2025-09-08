@@ -298,7 +298,7 @@ export const HospitalRegistrationForm: React.FC<
 
   const handleRegister = () => {
     // 모든 필드 검증
-    const fields: (keyof typeof inputErrors)[] = [
+    const fields: (keyof Pick<HospitalRegistrationData, "userId" | "password" | "passwordConfirm" | "hospitalName" | "businessNumber" | "phone" | "email" | "address">)[] = [
       "userId",
       "password",
       "passwordConfirm",
@@ -324,6 +324,7 @@ export const HospitalRegistrationForm: React.FC<
           phone: "연락처",
           email: "이메일",
           address: "주소",
+          detailAddress: "상세주소",
         }[field];
         errors.push(`${fieldName}을 입력해주세요.`);
       }
