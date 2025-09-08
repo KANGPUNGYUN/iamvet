@@ -4,21 +4,56 @@ import React from "react";
 import Link from "next/link";
 import { Tag } from "./Tag";
 import Image from "next/image";
-import profileImg from "@/assets/images/profile.png";
+import { useVeterinarianProfile } from "@/hooks/api/useVeterinarianProfile";
 
 interface MyResumeCardProps {
-  name: string;
-  description: string;
-  profileImage: string;
-  keywords: string[];
+  // props를 선택적으로 만들어서 실제 데이터를 우선 사용
+  name?: string;
+  description?: string;
+  profileImage?: string;
+  keywords?: string[];
 }
 
 const MyResumeCard: React.FC<MyResumeCardProps> = ({
-  name = "김수의",
-  description = "소동물 임상 5년 경력/책임 다수",
-  profileImage = "/profile-placeholder.png",
-  keywords = ["내과", "외과", "정규직", "케어직", "파트타임"],
+  name: propName,
+  description: propDescription,
+  profileImage: propProfileImage,
+  keywords: propKeywords,
 }) => {
+  const { data: profile, isLoading } = useVeterinarianProfile();
+
+  // 실제 프로필 데이터가 있으면 사용하고, 없으면 props나 기본값 사용
+  const name = profile?.nickname || propName || "닉네임을 설정해주세요";
+  const description = profile?.introduction || profile?.experience || propDescription || "자기소개를 작성해주세요";
+  const keywords = propKeywords || ["전문 분야를 설정해주세요"];
+  
+  // 프로필 이미지가 있는지 확인 (현재는 기본 이미지만 사용하므로 항상 false)
+  const hasProfileImage = false;
+
+  if (isLoading) {
+    return (
+      <div className="bg-white w-full lg:max-w-[395px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[20px] font-bold text-primary">내 이력서</h2>
+          <div className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="flex flex-col gap-[16px]">
+          <div className="flex gap-[18px] items-center">
+            <div className="w-[92px] h-[92px] bg-gray-200 rounded-full animate-pulse"></div>
+            <div className="flex flex-col gap-[6px]">
+              <div className="w-32 h-5 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-48 h-4 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-16 h-6 bg-gray-200 rounded animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white w-full lg:max-w-[395px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
       <div className="flex items-center justify-between mb-6">
@@ -33,13 +68,54 @@ const MyResumeCard: React.FC<MyResumeCardProps> = ({
 
       <div className="flex flex-col gap-[16px]">
         <div className="flex gap-[18px] items-center">
-          <Image
-            src={profileImg}
-            alt="내 프로필"
-            width={92}
-            height={92}
-            className="w-[92px] h-[92px] rounded-full object-cover"
-          />
+          {hasProfileImage ? (
+            <Image
+              src={propProfileImage!}
+              alt="내 프로필"
+              width={92}
+              height={92}
+              className="w-[92px] h-[92px] rounded-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = "none";
+                // 이미지 로드 실패 시 대체 div를 보여주기 위해 부모에게 이벤트 전달
+                const parent = target.parentElement;
+                if (parent) {
+                  const fallbackDiv = parent.querySelector('.fallback-avatar');
+                  if (fallbackDiv) {
+                    (fallbackDiv as HTMLElement).style.display = "flex";
+                  }
+                }
+              }}
+            />
+          ) : null}
+          
+          {/* 기본 아바타 (이미지가 없거나 로드 실패 시) */}
+          <div
+            className={`fallback-avatar ${hasProfileImage ? "hidden" : "flex"}`}
+            style={{
+              display: hasProfileImage ? "none" : "flex",
+              width: "92px",
+              height: "92px",
+              padding: "0",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "10px",
+              flexShrink: 0,
+              borderRadius: "50%",
+              background: "var(--Keycolor1, #FF8796)",
+              color: "var(--Keycolor5, #FFF7F7)",
+              textAlign: "center",
+              fontFamily: "var(--font-title)",
+              fontSize: "24px",
+              fontStyle: "normal",
+              fontWeight: "400",
+              lineHeight: "1",
+            }}
+          >
+            {name.charAt(0)}
+          </div>
 
           <div className="flex flex-col gap-[6px]">
             <h3 className="text-[20px] font-text text-bold text-primary">

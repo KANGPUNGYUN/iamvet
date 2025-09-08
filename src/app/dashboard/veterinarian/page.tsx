@@ -20,12 +20,7 @@ export default function VeterinarianDashboardPage() {
           {/* 왼쪽 열 */}
           <div className="flex gap-[24px] lg:flex-row flex-col lg:justify-between">
             {/* 내 이력서 */}
-            <MyResumeCard
-              name="김수의"
-              description="소동물 임상 5년 경력/책임 다수"
-              profileImage="/profile-placeholder.png"
-              keywords={["내과", "외과", "정규직", "케어직", "파트타임"]}
-            />
+            <MyResumeCard />
 
             {/* 지원현황 */}
             <ApplicationStatusCard />

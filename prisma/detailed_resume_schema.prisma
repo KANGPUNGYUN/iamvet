@@ -1,0 +1,124 @@
+// 상세 이력서 스키마 (기존 schema.prisma에 추가 필요)
+
+// 상세 이력서 메인 테이블
+model DetailedResume {
+  id                    String   @id @default(cuid())
+  userId                String   @unique // 수의사 한 명당 하나의 상세 이력서
+  
+  // 기본 정보
+  photo                 String?  // 이력서 사진 URL
+  name                  String
+  birthDate             String?
+  introduction          String?  // 한 줄 소개
+  phone                 String?
+  email                 String?
+  phonePublic           Boolean  @default(false)
+  emailPublic           Boolean  @default(false)
+  
+  // 희망 근무 조건
+  position              String?
+  specialties           String[] // JSON 배열로 저장
+  preferredRegions      String[] // JSON 배열로 저장
+  expectedSalary        String?
+  workTypes             String[] // JSON 배열로 저장
+  startDate             String?
+  preferredWeekdays     String[] // JSON 배열로 저장
+  weekdaysNegotiable    Boolean  @default(false)
+  workStartTime         String?
+  workEndTime           String?
+  workTimeNegotiable    Boolean  @default(false)
+  
+  // 자기소개
+  selfIntroduction      String?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  deletedAt             DateTime? // Soft delete
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiences           ResumeExperience[]
+  licenses              ResumeLicense[]
+  educations            ResumeEducation[]
+  medicalCapabilities   ResumeMedicalCapability[]
+
+  @@map("detailed_resumes")
+}
+
+// 경력 사항
+model ResumeExperience {
+  id            String   @id @default(cuid())
+  resumeId      String
+  hospitalName  String
+  mainTasks     String
+  startDate     DateTime?
+  endDate       DateTime?
+  sortOrder     Int      @default(0)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  resume        DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_experiences")
+}
+
+// 자격증/면허
+model ResumeLicense {
+  id            String   @id @default(cuid())
+  resumeId      String
+  name          String
+  issuer        String
+  grade         String?
+  acquiredDate  DateTime?
+  sortOrder     Int      @default(0)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  resume        DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_licenses")
+}
+
+// 학력
+model ResumeEducation {
+  id                String   @id @default(cuid())
+  resumeId          String
+  degree            String
+  graduationStatus  String
+  schoolName        String
+  major             String
+  gpa               String?
+  totalGpa          String?
+  startDate         DateTime?
+  endDate           DateTime?
+  sortOrder         Int      @default(0)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  resume            DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_educations")
+}
+
+// 진료상세역량
+model ResumeMedicalCapability {
+  id            String   @id @default(cuid())
+  resumeId      String
+  field         String
+  proficiency   String
+  description   String?
+  others        String?
+  sortOrder     Int      @default(0)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  resume        DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_medical_capabilities")
+}
+
+// User 모델에 추가해야 할 관계
+// detailedResume    DetailedResume?

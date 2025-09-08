@@ -864,3 +864,879 @@ export async function registerHospital(data: HospitalRegisterData) {
     };
   }
 }
+
+export interface HospitalProfile {
+  id: string;
+  userId: string;
+  hospitalName: string;
+  businessNumber: string;
+  address: string;
+  phone: string;
+  website?: string;
+  description?: string;
+  businessLicense?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function getHospitalProfile(): Promise<{
+  success: boolean;
+  profile?: HospitalProfile;
+  error?: string;
+}> {
+  try {
+    const userResult = await getCurrentUser();
+    if (!userResult.success || !userResult.user) {
+      return { success: false, error: "인증되지 않은 사용자입니다." };
+    }
+
+    if (userResult.user.userType !== "HOSPITAL") {
+      return { success: false, error: "병원 계정이 아닙니다." };
+    }
+
+    const result = await sql`
+      SELECT * FROM hospital_profiles 
+      WHERE "userId" = ${userResult.user.id} 
+      AND "deletedAt" IS NULL
+    `;
+
+    if (result.length === 0) {
+      return { success: false, error: "병원 프로필을 찾을 수 없습니다." };
+    }
+
+    const profile = result[0];
+
+    return {
+      success: true,
+      profile: {
+        id: profile.id,
+        userId: profile.userId,
+        hospitalName: profile.hospitalName,
+        businessNumber: profile.businessNumber,
+        address: profile.address,
+        phone: profile.phone,
+        website: profile.website,
+        description: profile.description,
+        businessLicense: profile.businessLicense,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
+      },
+    };
+  } catch (error) {
+    console.error("Get hospital profile error:", error);
+    return {
+      success: false,
+      error: "병원 프로필 조회 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+export interface VeterinarianProfile {
+  id: string;
+  userId: string;
+  nickname: string;
+  birthDate?: Date;
+  licenseImage?: string;
+  experience?: string;
+  specialty?: string;
+  introduction?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function getVeterinarianProfile(): Promise<{
+  success: boolean;
+  profile?: VeterinarianProfile;
+  error?: string;
+}> {
+  try {
+    const userResult = await getCurrentUser();
+    if (!userResult.success || !userResult.user) {
+      return { success: false, error: "인증되지 않은 사용자입니다." };
+    }
+
+    if (userResult.user.userType !== "VETERINARIAN") {
+      return { success: false, error: "수의사 계정이 아닙니다." };
+    }
+
+    const result = await sql`
+      SELECT * FROM veterinarian_profiles 
+      WHERE "userId" = ${userResult.user.id} 
+      AND "deletedAt" IS NULL
+    `;
+
+    if (result.length === 0) {
+      return { success: false, error: "수의사 프로필을 찾을 수 없습니다." };
+    }
+
+    const profile = result[0];
+
+    return {
+      success: true,
+      profile: {
+        id: profile.id,
+        userId: profile.userId,
+        nickname: profile.nickname,
+        birthDate: profile.birthDate,
+        licenseImage: profile.licenseImage,
+        experience: profile.experience,
+        specialty: profile.specialty,
+        introduction: profile.introduction,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
+      },
+    };
+  } catch (error) {
+    console.error("Get veterinarian profile error:", error);
+    return {
+      success: false,
+      error: "수의사 프로필 조회 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// 상세 이력서 타입 정의
+export interface DetailedResumeData {
+  // 기본 정보
+  photo?: string;
+  name: string;
+  birthDate?: string;
+  introduction?: string;
+  phone?: string;
+  email?: string;
+  phonePublic: boolean;
+  emailPublic: boolean;
+  
+  // 희망 근무 조건
+  position?: string;
+  specialties: string[];
+  preferredRegions: string[];
+  expectedSalary?: string;
+  workTypes: string[];
+  startDate?: string;
+  preferredWeekdays: string[];
+  weekdaysNegotiable: boolean;
+  workStartTime?: string;
+  workEndTime?: string;
+  workTimeNegotiable: boolean;
+  
+  // 자기소개
+  selfIntroduction?: string;
+  
+  // 복잡한 객체들
+  experiences: Array<{
+    hospitalName: string;
+    mainTasks: string;
+    startDate?: Date;
+    endDate?: Date;
+  }>;
+  licenses: Array<{
+    name: string;
+    issuer: string;
+    grade?: string;
+    acquiredDate?: Date;
+  }>;
+  educations: Array<{
+    degree: string;
+    graduationStatus: string;
+    schoolName: string;
+    major: string;
+    gpa?: string;
+    totalGpa?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }>;
+  medicalCapabilities: Array<{
+    field: string;
+    proficiency: string;
+    description?: string;
+    others?: string;
+  }>;
+}
+
+export interface DetailedResume {
+  id: string;
+  userId: string;
+  photo?: string;
+  name: string;
+  birthDate?: string;
+  introduction?: string;
+  phone?: string;
+  email?: string;
+  phonePublic: boolean;
+  emailPublic: boolean;
+  position?: string;
+  specialties: string[];
+  preferredRegions: string[];
+  expectedSalary?: string;
+  workTypes: string[];
+  startDate?: string;
+  preferredWeekdays: string[];
+  weekdaysNegotiable: boolean;
+  workStartTime?: string;
+  workEndTime?: string;
+  workTimeNegotiable: boolean;
+  selfIntroduction?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  experiences: Array<{
+    id: string;
+    hospitalName: string;
+    mainTasks: string;
+    startDate?: Date;
+    endDate?: Date;
+  }>;
+  licenses: Array<{
+    id: string;
+    name: string;
+    issuer: string;
+    grade?: string;
+    acquiredDate?: Date;
+  }>;
+  educations: Array<{
+    id: string;
+    degree: string;
+    graduationStatus: string;
+    schoolName: string;
+    major: string;
+    gpa?: string;
+    totalGpa?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }>;
+  medicalCapabilities: Array<{
+    id: string;
+    field: string;
+    proficiency: string;
+    description?: string;
+    others?: string;
+  }>;
+}
+
+// 상세 이력서 조회
+export async function getDetailedResume(): Promise<{
+  success: boolean;
+  resume?: DetailedResume;
+  error?: string;
+}> {
+  try {
+    const userResult = await getCurrentUser();
+    if (!userResult.success || !userResult.user) {
+      return { success: false, error: "인증되지 않은 사용자입니다." };
+    }
+
+    if (userResult.user.userType !== "VETERINARIAN") {
+      return { success: false, error: "수의사 계정이 아닙니다." };
+    }
+
+    // 메인 이력서 정보 조회
+    const resumeResult = await sql`
+      SELECT * FROM detailed_resumes 
+      WHERE "userId" = ${userResult.user.id} 
+      AND "deletedAt" IS NULL
+    `;
+
+    if (resumeResult.length === 0) {
+      return { success: false, error: "이력서를 찾을 수 없습니다." };
+    }
+
+    const resume = resumeResult[0];
+
+    // 관련 데이터들 조회
+    const [experiences, licenses, educations, medicalCapabilities] = await Promise.all([
+      sql`SELECT * FROM resume_experiences WHERE "resumeId" = ${resume.id} ORDER BY "sortOrder", "createdAt"`,
+      sql`SELECT * FROM resume_licenses WHERE "resumeId" = ${resume.id} ORDER BY "sortOrder", "createdAt"`,
+      sql`SELECT * FROM resume_educations WHERE "resumeId" = ${resume.id} ORDER BY "sortOrder", "createdAt"`,
+      sql`SELECT * FROM resume_medical_capabilities WHERE "resumeId" = ${resume.id} ORDER BY "sortOrder", "createdAt"`
+    ]);
+
+    return {
+      success: true,
+      resume: {
+        id: resume.id,
+        userId: resume.userId,
+        photo: resume.photo,
+        name: resume.name,
+        birthDate: resume.birthDate,
+        introduction: resume.introduction,
+        phone: resume.phone,
+        email: resume.email,
+        phonePublic: resume.phonePublic,
+        emailPublic: resume.emailPublic,
+        position: resume.position,
+        specialties: resume.specialties,
+        preferredRegions: resume.preferredRegions,
+        expectedSalary: resume.expectedSalary,
+        workTypes: resume.workTypes,
+        startDate: resume.startDate,
+        preferredWeekdays: resume.preferredWeekdays,
+        weekdaysNegotiable: resume.weekdaysNegotiable,
+        workStartTime: resume.workStartTime,
+        workEndTime: resume.workEndTime,
+        workTimeNegotiable: resume.workTimeNegotiable,
+        selfIntroduction: resume.selfIntroduction,
+        createdAt: resume.createdAt,
+        updatedAt: resume.updatedAt,
+        experiences: experiences.map(exp => ({
+          id: exp.id,
+          hospitalName: exp.hospitalName,
+          mainTasks: exp.mainTasks,
+          startDate: exp.startDate,
+          endDate: exp.endDate,
+        })),
+        licenses: licenses.map(lic => ({
+          id: lic.id,
+          name: lic.name,
+          issuer: lic.issuer,
+          grade: lic.grade,
+          acquiredDate: lic.acquiredDate,
+        })),
+        educations: educations.map(edu => ({
+          id: edu.id,
+          degree: edu.degree,
+          graduationStatus: edu.graduationStatus,
+          schoolName: edu.schoolName,
+          major: edu.major,
+          gpa: edu.gpa,
+          totalGpa: edu.totalGpa,
+          startDate: edu.startDate,
+          endDate: edu.endDate,
+        })),
+        medicalCapabilities: medicalCapabilities.map(cap => ({
+          id: cap.id,
+          field: cap.field,
+          proficiency: cap.proficiency,
+          description: cap.description,
+          others: cap.others,
+        })),
+      },
+    };
+  } catch (error) {
+    console.error("Get detailed resume error:", error);
+    return {
+      success: false,
+      error: "이력서 조회 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// 상세 이력서 저장/업데이트
+export async function saveDetailedResume(data: DetailedResumeData): Promise<{
+  success: boolean;
+  resumeId?: string;
+  error?: string;
+}> {
+  try {
+    const userResult = await getCurrentUser();
+    if (!userResult.success || !userResult.user) {
+      return { success: false, error: "인증되지 않은 사용자입니다." };
+    }
+
+    if (userResult.user.userType !== "VETERINARIAN") {
+      return { success: false, error: "수의사 계정이 아닙니다." };
+    }
+
+    const userId = userResult.user.id;
+
+    // 기존 이력서가 있는지 확인
+    const existingResume = await sql`
+      SELECT id FROM detailed_resumes 
+      WHERE "userId" = ${userId} 
+      AND "deletedAt" IS NULL
+    `;
+
+    let resumeId: string;
+
+    if (existingResume.length > 0) {
+      // 업데이트
+      resumeId = existingResume[0].id;
+      
+      await sql`
+        UPDATE detailed_resumes SET
+          photo = ${data.photo || null},
+          name = ${data.name},
+          "birthDate" = ${data.birthDate || null},
+          introduction = ${data.introduction || null},
+          phone = ${data.phone || null},
+          email = ${data.email || null},
+          "phonePublic" = ${data.phonePublic},
+          "emailPublic" = ${data.emailPublic},
+          position = ${data.position || null},
+          specialties = ${data.specialties},
+          "preferredRegions" = ${data.preferredRegions},
+          "expectedSalary" = ${data.expectedSalary || null},
+          "workTypes" = ${data.workTypes},
+          "startDate" = ${data.startDate || null},
+          "preferredWeekdays" = ${data.preferredWeekdays},
+          "weekdaysNegotiable" = ${data.weekdaysNegotiable},
+          "workStartTime" = ${data.workStartTime || null},
+          "workEndTime" = ${data.workEndTime || null},
+          "workTimeNegotiable" = ${data.workTimeNegotiable},
+          "selfIntroduction" = ${data.selfIntroduction || null},
+          "updatedAt" = NOW()
+        WHERE id = ${resumeId}
+      `;
+
+      // 기존 관련 데이터 삭제
+      await Promise.all([
+        sql`DELETE FROM resume_experiences WHERE "resumeId" = ${resumeId}`,
+        sql`DELETE FROM resume_licenses WHERE "resumeId" = ${resumeId}`,
+        sql`DELETE FROM resume_educations WHERE "resumeId" = ${resumeId}`,
+        sql`DELETE FROM resume_medical_capabilities WHERE "resumeId" = ${resumeId}`
+      ]);
+    } else {
+      // 생성
+      resumeId = createId();
+      
+      await sql`
+        INSERT INTO detailed_resumes (
+          id, "userId", photo, name, "birthDate", introduction, phone, email,
+          "phonePublic", "emailPublic", position, specialties, "preferredRegions",
+          "expectedSalary", "workTypes", "startDate", "preferredWeekdays",
+          "weekdaysNegotiable", "workStartTime", "workEndTime", "workTimeNegotiable",
+          "selfIntroduction", "createdAt", "updatedAt"
+        ) VALUES (
+          ${resumeId}, ${userId}, ${data.photo || null}, ${data.name},
+          ${data.birthDate || null}, ${data.introduction || null},
+          ${data.phone || null}, ${data.email || null}, ${data.phonePublic},
+          ${data.emailPublic}, ${data.position || null}, ${data.specialties},
+          ${data.preferredRegions}, ${data.expectedSalary || null}, ${data.workTypes},
+          ${data.startDate || null}, ${data.preferredWeekdays}, ${data.weekdaysNegotiable},
+          ${data.workStartTime || null}, ${data.workEndTime || null}, ${data.workTimeNegotiable},
+          ${data.selfIntroduction || null}, NOW(), NOW()
+        )
+      `;
+    }
+
+    // 경력사항 저장
+    if (data.experiences && data.experiences.length > 0) {
+      for (let i = 0; i < data.experiences.length; i++) {
+        const exp = data.experiences[i];
+        await sql`
+          INSERT INTO resume_experiences (
+            id, "resumeId", "hospitalName", "mainTasks", "startDate", "endDate", "sortOrder", "createdAt", "updatedAt"
+          ) VALUES (
+            ${createId()}, ${resumeId}, ${exp.hospitalName}, ${exp.mainTasks},
+            ${exp.startDate || null}, ${exp.endDate || null}, ${i}, NOW(), NOW()
+          )
+        `;
+      }
+    }
+
+    // 자격증 저장
+    if (data.licenses && data.licenses.length > 0) {
+      for (let i = 0; i < data.licenses.length; i++) {
+        const lic = data.licenses[i];
+        await sql`
+          INSERT INTO resume_licenses (
+            id, "resumeId", name, issuer, grade, "acquiredDate", "sortOrder", "createdAt", "updatedAt"
+          ) VALUES (
+            ${createId()}, ${resumeId}, ${lic.name}, ${lic.issuer},
+            ${lic.grade || null}, ${lic.acquiredDate || null}, ${i}, NOW(), NOW()
+          )
+        `;
+      }
+    }
+
+    // 학력 저장
+    if (data.educations && data.educations.length > 0) {
+      for (let i = 0; i < data.educations.length; i++) {
+        const edu = data.educations[i];
+        await sql`
+          INSERT INTO resume_educations (
+            id, "resumeId", degree, "graduationStatus", "schoolName", major,
+            gpa, "totalGpa", "startDate", "endDate", "sortOrder", "createdAt", "updatedAt"
+          ) VALUES (
+            ${createId()}, ${resumeId}, ${edu.degree}, ${edu.graduationStatus},
+            ${edu.schoolName}, ${edu.major}, ${edu.gpa || null}, ${edu.totalGpa || null},
+            ${edu.startDate || null}, ${edu.endDate || null}, ${i}, NOW(), NOW()
+          )
+        `;
+      }
+    }
+
+    // 진료상세역량 저장
+    if (data.medicalCapabilities && data.medicalCapabilities.length > 0) {
+      for (let i = 0; i < data.medicalCapabilities.length; i++) {
+        const cap = data.medicalCapabilities[i];
+        await sql`
+          INSERT INTO resume_medical_capabilities (
+            id, "resumeId", field, proficiency, description, others, "sortOrder", "createdAt", "updatedAt"
+          ) VALUES (
+            ${createId()}, ${resumeId}, ${cap.field}, ${cap.proficiency},
+            ${cap.description || null}, ${cap.others || null}, ${i}, NOW(), NOW()
+          )
+        `;
+      }
+    }
+
+    return {
+      success: true,
+      resumeId: resumeId,
+    };
+  } catch (error) {
+    console.error("Save detailed resume error:", error);
+    return {
+      success: false,
+      error: "이력서 저장 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// 상세 병원 프로필 타입 정의
+export interface DetailedHospitalProfileData {
+  // 기본 정보
+  hospitalLogo?: string;
+  hospitalName: string;
+  businessNumber: string;
+  address: string;
+  phone: string;
+  website?: string;
+  description?: string;
+  businessLicense?: string;
+  
+  // 추가 상세 정보
+  establishedDate?: string;
+  detailAddress?: string;
+  email?: string;
+  treatmentAnimals: string[];
+  treatmentFields: string[];
+  
+  // 운영 정보
+  operatingHours?: any; // JSON 데이터
+  emergencyService: boolean;
+  parkingAvailable: boolean;
+  publicTransportInfo?: string;
+  
+  // 시설 정보
+  totalBeds?: number;
+  surgeryRooms?: number;
+  xrayRoom: boolean;
+  ctScan: boolean;
+  ultrasound: boolean;
+  
+  // 추가 서비스
+  grooming: boolean;
+  boarding: boolean;
+  petTaxi: boolean;
+  
+  // 인증 정보
+  certifications: string[];
+  awards: string[];
+  
+  // 관계 데이터
+  staff?: Array<{
+    name: string;
+    position: string;
+    specialization?: string;
+    experience?: string;
+    education?: string;
+    profileImage?: string;
+    introduction?: string;
+  }>;
+  equipments?: Array<{
+    name: string;
+    category: string;
+    manufacturer?: string;
+    model?: string;
+    purchaseDate?: Date;
+    description?: string;
+    image?: string;
+  }>;
+}
+
+export interface DetailedHospitalProfile {
+  id: string;
+  userId: string;
+  hospitalLogo?: string;
+  hospitalName: string;
+  businessNumber: string;
+  address: string;
+  phone: string;
+  website?: string;
+  description?: string;
+  businessLicense?: string;
+  establishedDate?: string;
+  detailAddress?: string;
+  email?: string;
+  treatmentAnimals: string[];
+  treatmentFields: string[];
+  operatingHours?: any;
+  emergencyService: boolean;
+  parkingAvailable: boolean;
+  publicTransportInfo?: string;
+  totalBeds?: number;
+  surgeryRooms?: number;
+  xrayRoom: boolean;
+  ctScan: boolean;
+  ultrasound: boolean;
+  grooming: boolean;
+  boarding: boolean;
+  petTaxi: boolean;
+  certifications: string[];
+  awards: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  staff: Array<{
+    id: string;
+    name: string;
+    position: string;
+    specialization?: string;
+    experience?: string;
+    education?: string;
+    profileImage?: string;
+    introduction?: string;
+  }>;
+  equipments: Array<{
+    id: string;
+    name: string;
+    category: string;
+    manufacturer?: string;
+    model?: string;
+    purchaseDate?: Date;
+    description?: string;
+    image?: string;
+  }>;
+}
+
+// 상세 병원 프로필 조회
+export async function getDetailedHospitalProfile(): Promise<{
+  success: boolean;
+  profile?: DetailedHospitalProfile;
+  error?: string;
+}> {
+  try {
+    const userResult = await getCurrentUser();
+    if (!userResult.success || !userResult.user) {
+      return { success: false, error: "인증되지 않은 사용자입니다." };
+    }
+
+    if (userResult.user.userType !== "HOSPITAL") {
+      return { success: false, error: "병원 계정이 아닙니다." };
+    }
+
+    // 메인 프로필 정보 조회
+    const profileResult = await sql`
+      SELECT * FROM detailed_hospital_profiles 
+      WHERE "userId" = ${userResult.user.id} 
+      AND "deletedAt" IS NULL
+    `;
+
+    if (profileResult.length === 0) {
+      return { success: false, error: "병원 프로필을 찾을 수 없습니다." };
+    }
+
+    const profile = profileResult[0];
+
+    // 관련 데이터들 조회
+    const [staff, equipments] = await Promise.all([
+      sql`SELECT * FROM hospital_staff WHERE "hospitalProfileId" = ${profile.id} ORDER BY "sortOrder", "createdAt"`,
+      sql`SELECT * FROM hospital_equipments WHERE "hospitalProfileId" = ${profile.id} ORDER BY "sortOrder", "createdAt"`
+    ]);
+
+    return {
+      success: true,
+      profile: {
+        id: profile.id,
+        userId: profile.userId,
+        hospitalLogo: profile.hospitalLogo,
+        hospitalName: profile.hospitalName,
+        businessNumber: profile.businessNumber,
+        address: profile.address,
+        phone: profile.phone,
+        website: profile.website,
+        description: profile.description,
+        businessLicense: profile.businessLicense,
+        establishedDate: profile.establishedDate,
+        detailAddress: profile.detailAddress,
+        email: profile.email,
+        treatmentAnimals: profile.treatmentAnimals,
+        treatmentFields: profile.treatmentFields,
+        operatingHours: profile.operatingHours,
+        emergencyService: profile.emergencyService,
+        parkingAvailable: profile.parkingAvailable,
+        publicTransportInfo: profile.publicTransportInfo,
+        totalBeds: profile.totalBeds,
+        surgeryRooms: profile.surgeryRooms,
+        xrayRoom: profile.xrayRoom,
+        ctScan: profile.ctScan,
+        ultrasound: profile.ultrasound,
+        grooming: profile.grooming,
+        boarding: profile.boarding,
+        petTaxi: profile.petTaxi,
+        certifications: profile.certifications,
+        awards: profile.awards,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
+        staff: staff.map(s => ({
+          id: s.id,
+          name: s.name,
+          position: s.position,
+          specialization: s.specialization,
+          experience: s.experience,
+          education: s.education,
+          profileImage: s.profileImage,
+          introduction: s.introduction,
+        })),
+        equipments: equipments.map(e => ({
+          id: e.id,
+          name: e.name,
+          category: e.category,
+          manufacturer: e.manufacturer,
+          model: e.model,
+          purchaseDate: e.purchaseDate,
+          description: e.description,
+          image: e.image,
+        })),
+      },
+    };
+  } catch (error) {
+    console.error("Get detailed hospital profile error:", error);
+    return {
+      success: false,
+      error: "병원 프로필 조회 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// 상세 병원 프로필 저장/업데이트
+export async function saveDetailedHospitalProfile(data: DetailedHospitalProfileData): Promise<{
+  success: boolean;
+  profileId?: string;
+  error?: string;
+}> {
+  try {
+    const userResult = await getCurrentUser();
+    if (!userResult.success || !userResult.user) {
+      return { success: false, error: "인증되지 않은 사용자입니다." };
+    }
+
+    if (userResult.user.userType !== "HOSPITAL") {
+      return { success: false, error: "병원 계정이 아닙니다." };
+    }
+
+    const userId = userResult.user.id;
+
+    // 기존 프로필이 있는지 확인
+    const existingProfile = await sql`
+      SELECT id FROM detailed_hospital_profiles 
+      WHERE "userId" = ${userId} 
+      AND "deletedAt" IS NULL
+    `;
+
+    let profileId: string;
+
+    if (existingProfile.length > 0) {
+      // 업데이트
+      profileId = existingProfile[0].id;
+      
+      await sql`
+        UPDATE detailed_hospital_profiles SET
+          "hospitalLogo" = ${data.hospitalLogo || null},
+          "hospitalName" = ${data.hospitalName},
+          "businessNumber" = ${data.businessNumber},
+          address = ${data.address},
+          phone = ${data.phone},
+          website = ${data.website || null},
+          description = ${data.description || null},
+          "businessLicense" = ${data.businessLicense || null},
+          "establishedDate" = ${data.establishedDate || null},
+          "detailAddress" = ${data.detailAddress || null},
+          email = ${data.email || null},
+          "treatmentAnimals" = ${data.treatmentAnimals},
+          "treatmentFields" = ${data.treatmentFields},
+          "operatingHours" = ${data.operatingHours || null},
+          "emergencyService" = ${data.emergencyService},
+          "parkingAvailable" = ${data.parkingAvailable},
+          "publicTransportInfo" = ${data.publicTransportInfo || null},
+          "totalBeds" = ${data.totalBeds || null},
+          "surgeryRooms" = ${data.surgeryRooms || null},
+          "xrayRoom" = ${data.xrayRoom},
+          "ctScan" = ${data.ctScan},
+          ultrasound = ${data.ultrasound},
+          grooming = ${data.grooming},
+          boarding = ${data.boarding},
+          "petTaxi" = ${data.petTaxi},
+          certifications = ${data.certifications},
+          awards = ${data.awards},
+          "updatedAt" = NOW()
+        WHERE id = ${profileId}
+      `;
+
+      // 기존 관련 데이터 삭제
+      await Promise.all([
+        sql`DELETE FROM hospital_staff WHERE "hospitalProfileId" = ${profileId}`,
+        sql`DELETE FROM hospital_equipments WHERE "hospitalProfileId" = ${profileId}`
+      ]);
+    } else {
+      // 생성
+      profileId = createId();
+      
+      await sql`
+        INSERT INTO detailed_hospital_profiles (
+          id, "userId", "hospitalLogo", "hospitalName", "businessNumber", address, phone,
+          website, description, "businessLicense", "establishedDate", "detailAddress",
+          email, "treatmentAnimals", "treatmentFields", "operatingHours", "emergencyService",
+          "parkingAvailable", "publicTransportInfo", "totalBeds", "surgeryRooms", "xrayRoom",
+          "ctScan", ultrasound, grooming, boarding, "petTaxi", certifications, awards,
+          "createdAt", "updatedAt"
+        ) VALUES (
+          ${profileId}, ${userId}, ${data.hospitalLogo || null}, ${data.hospitalName},
+          ${data.businessNumber}, ${data.address}, ${data.phone}, ${data.website || null},
+          ${data.description || null}, ${data.businessLicense || null}, ${data.establishedDate || null},
+          ${data.detailAddress || null}, ${data.email || null}, ${data.treatmentAnimals},
+          ${data.treatmentFields}, ${data.operatingHours || null}, ${data.emergencyService},
+          ${data.parkingAvailable}, ${data.publicTransportInfo || null}, ${data.totalBeds || null},
+          ${data.surgeryRooms || null}, ${data.xrayRoom}, ${data.ctScan}, ${data.ultrasound},
+          ${data.grooming}, ${data.boarding}, ${data.petTaxi}, ${data.certifications},
+          ${data.awards}, NOW(), NOW()
+        )
+      `;
+    }
+
+    // 직원 정보 저장
+    if (data.staff && data.staff.length > 0) {
+      for (let i = 0; i < data.staff.length; i++) {
+        const staff = data.staff[i];
+        await sql`
+          INSERT INTO hospital_staff (
+            id, "hospitalProfileId", name, position, specialization, experience, education,
+            "profileImage", introduction, "sortOrder", "createdAt", "updatedAt"
+          ) VALUES (
+            ${createId()}, ${profileId}, ${staff.name}, ${staff.position},
+            ${staff.specialization || null}, ${staff.experience || null}, ${staff.education || null},
+            ${staff.profileImage || null}, ${staff.introduction || null}, ${i}, NOW(), NOW()
+          )
+        `;
+      }
+    }
+
+    // 장비 정보 저장
+    if (data.equipments && data.equipments.length > 0) {
+      for (let i = 0; i < data.equipments.length; i++) {
+        const equipment = data.equipments[i];
+        await sql`
+          INSERT INTO hospital_equipments (
+            id, "hospitalProfileId", name, category, manufacturer, model, "purchaseDate",
+            description, image, "sortOrder", "createdAt", "updatedAt"
+          ) VALUES (
+            ${createId()}, ${profileId}, ${equipment.name}, ${equipment.category},
+            ${equipment.manufacturer || null}, ${equipment.model || null}, ${equipment.purchaseDate || null},
+            ${equipment.description || null}, ${equipment.image || null}, ${i}, NOW(), NOW()
+          )
+        `;
+      }
+    }
+
+    return {
+      success: true,
+      profileId: profileId,
+    };
+  } catch (error) {
+    console.error("Save detailed hospital profile error:", error);
+    return {
+      success: false,
+      error: "병원 프로필 저장 중 오류가 발생했습니다.",
+    };
+  }
+}

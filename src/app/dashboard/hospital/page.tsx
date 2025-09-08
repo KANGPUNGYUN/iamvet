@@ -1,6 +1,5 @@
 "use client";
 
-import hospitalPlaceholder from "@/assets/images/transfer/transfer1.jpg";
 import HospitalProfileCard from "@/components/ui/HospitalProfileCard";
 import RecruitmentStatusCard from "@/components/ui/RecruitmentStatusCard";
 import UrgentJobsCard from "@/components/ui/UrgentJobsCard";
@@ -21,12 +20,7 @@ export default function HospitalDashboardPage() {
           {/* 첫 번째 행 */}
           <div className="flex gap-[24px] lg:flex-row flex-col lg:justify-between">
             {/* 병원 프로필 */}
-            <HospitalProfileCard
-              name="서울 강남 동물병원"
-              description="내 동물병원 지료하는 반려동물 종양병원입니다. 반려인과 고양이 내과병원"
-              profileImage={hospitalPlaceholder}
-              keywords={["반려견", "고양이", "소동물", "내과", "외과", "행동 교정"]}
-            />
+            <HospitalProfileCard />
 
             {/* 채용 현황 */}
             <RecruitmentStatusCard />

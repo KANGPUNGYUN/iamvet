@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -8,6 +8,10 @@ import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { ProfileImageUpload } from "@/components/features/profile/ProfileImageUpload";
 import { Textarea } from "@/components/ui/Input/Textarea";
+import { useDetailedHospitalProfile, useSaveDetailedHospitalProfile } from "@/hooks/api/useDetailedHospitalProfile";
+import { useHospitalProfile } from "@/hooks/api/useHospitalProfile";
+import { useCurrentUser } from "@/hooks/api/useAuth";
+import type { DetailedHospitalProfileData } from "@/actions/auth";
 import hospitalImage from "@/assets/images/hospital.png";
 
 interface HospitalProfileData {
@@ -26,32 +30,119 @@ interface HospitalProfileData {
 }
 
 export default function HospitalProfileEditPage() {
-  // 초기 병원 데이터 (실제로는 API에서 가져올 데이터)
-  const initialData: HospitalProfileData = {
-    hospitalLogo: hospitalImage.src,
-    hospitalName: "클로버 동물병원",
-    establishedDate: "2024-06-19",
-    address: "서울시 강남구 주요도로 주요",
-    detailAddress: "상세주소 주요 주요",
-    website: "https://www.example.com",
-    phone: "010-0000-0000",
-    businessNumber: "1234-3235-3356",
-    email: "ceo@hospital.com",
-    treatmentAnimals: ["호러치", "고양이", "파충류"],
-    treatmentFields: ["내과", "외과", "치과", "피부과"],
-    description: "병원을 간단하게 소개해 주세요",
-  };
+  const { data: detailedProfile, isLoading: detailedLoading, error: detailedError } = useDetailedHospitalProfile();
+  const { data: basicProfile, isLoading: basicLoading, error: basicError } = useHospitalProfile();
+  const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
+  const saveProfileMutation = useSaveDetailedHospitalProfile();
 
-  const [formData, setFormData] = useState<HospitalProfileData>(initialData);
+  const [formData, setFormData] = useState<HospitalProfileData>({
+    hospitalLogo: hospitalImage.src,
+    hospitalName: "",
+    establishedDate: "2024-01-01",
+    address: "",
+    detailAddress: "",
+    website: "",
+    phone: "",
+    businessNumber: "",
+    email: "",
+    treatmentAnimals: [],
+    treatmentFields: [],
+    description: "",
+  });
+
+  // 프로필 데이터가 로드되면 폼에 반영
+  useEffect(() => {
+    if (detailedProfile) {
+      setFormData({
+        hospitalLogo: detailedProfile.hospitalLogo || hospitalImage.src,
+        hospitalName: detailedProfile.hospitalName,
+        establishedDate: detailedProfile.establishedDate || "2024-01-01",
+        address: detailedProfile.address,
+        detailAddress: detailedProfile.detailAddress || "",
+        website: detailedProfile.website || "",
+        phone: detailedProfile.phone,
+        businessNumber: detailedProfile.businessNumber,
+        email: detailedProfile.email || "",
+        treatmentAnimals: detailedProfile.treatmentAnimals,
+        treatmentFields: detailedProfile.treatmentFields,
+        description: detailedProfile.description || "",
+      });
+    } else if (basicProfile && currentUser) {
+      // 상세 프로필이 없으면 기본 프로필로 초기화
+      setFormData({
+        hospitalLogo: hospitalImage.src,
+        hospitalName: basicProfile.hospitalName,
+        establishedDate: "2024-01-01",
+        address: basicProfile.address,
+        detailAddress: "",
+        website: basicProfile.website || "",
+        phone: basicProfile.phone,
+        businessNumber: basicProfile.businessNumber,
+        email: currentUser.email,
+        treatmentAnimals: [],
+        treatmentFields: [],
+        description: basicProfile.description || "",
+      });
+    }
+  }, [detailedProfile, basicProfile, currentUser]);
 
   const handleCancel = () => {
     window.location.href = "/dashboard/hospital/profile";
   };
 
-  const handleSave = () => {
-    // 실제로는 API 호출해서 데이터 저장
-    console.log("저장할 데이터:", formData);
-    window.location.href = "/dashboard/hospital/profile";
+  const handleSave = async () => {
+    try {
+      // 폼 데이터를 DetailedHospitalProfileData 형식으로 변환
+      const saveData: DetailedHospitalProfileData = {
+        hospitalLogo: formData.hospitalLogo === hospitalImage.src ? undefined : formData.hospitalLogo,
+        hospitalName: formData.hospitalName,
+        businessNumber: formData.businessNumber,
+        address: formData.address,
+        phone: formData.phone,
+        website: formData.website || undefined,
+        description: formData.description || undefined,
+        businessLicense: undefined, // TODO: 실제 비즈니스 라이센스 처리
+        establishedDate: formData.establishedDate || undefined,
+        detailAddress: formData.detailAddress || undefined,
+        email: formData.email || undefined,
+        treatmentAnimals: formData.treatmentAnimals,
+        treatmentFields: formData.treatmentFields,
+        
+        // 운영 정보 (기본값)
+        operatingHours: undefined,
+        emergencyService: false,
+        parkingAvailable: false,
+        publicTransportInfo: undefined,
+        
+        // 시설 정보 (기본값)
+        totalBeds: undefined,
+        surgeryRooms: undefined,
+        xrayRoom: false,
+        ctScan: false,
+        ultrasound: false,
+        
+        // 추가 서비스 (기본값)
+        grooming: false,
+        boarding: false,
+        petTaxi: false,
+        
+        // 인증 정보 (기본값)
+        certifications: [],
+        awards: [],
+        
+        // 관계 데이터 (기본값)
+        staff: undefined,
+        equipments: undefined,
+      };
+
+      await saveProfileMutation.mutateAsync(saveData);
+      
+      alert(detailedProfile ? "프로필이 수정되었습니다." : "프로필이 생성되었습니다.");
+      window.location.href = "/dashboard/hospital/profile";
+    } catch (error) {
+      console.error("프로필 저장 실패:", error);
+      alert("프로필 저장에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   // 진료 동물 옵션
@@ -78,6 +169,38 @@ export default function HospitalProfileEditPage() {
     { value: "행동의학", label: "행동의학" },
     { value: "기타", label: "기타" },
   ];
+
+  // 로딩 상태
+  if (detailedLoading || basicLoading || userLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
+        <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">프로필 정보를 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (basicError || userError) {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
+        <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">프로필 정보를 불러오는데 실패했습니다.</p>
+              <Button onClick={() => window.location.reload()}>다시 시도</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
@@ -257,9 +380,10 @@ export default function HospitalProfileEditPage() {
                 variant="default"
                 size="medium"
                 onClick={handleSave}
+                disabled={saveProfileMutation.isPending}
                 className="px-[40px]"
               >
-                저장하기
+                {saveProfileMutation.isPending ? "저장 중..." : detailedProfile ? "수정하기" : "저장하기"}
               </Button>
             </div>
           </div>

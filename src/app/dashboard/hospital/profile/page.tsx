@@ -8,6 +8,9 @@ import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { ProfileImageUpload } from "@/components/features/profile/ProfileImageUpload";
 import { Textarea } from "@/components/ui/Input/Textarea";
+import { useDetailedHospitalProfile } from "@/hooks/api/useDetailedHospitalProfile";
+import { useHospitalProfile } from "@/hooks/api/useHospitalProfile";
+import { useCurrentUser } from "@/hooks/api/useAuth";
 import hospitalImage from "@/assets/images/hospital.png";
 
 interface HospitalProfileData {
@@ -26,20 +29,56 @@ interface HospitalProfileData {
 }
 
 export default function HospitalProfilePage() {
-  // 더미 병원 데이터 (실제로는 API에서 가져올 데이터)
+  const { data: detailedProfile, isLoading: detailedLoading, error: detailedError } = useDetailedHospitalProfile();
+  const { data: basicProfile, isLoading: basicLoading, error: basicError } = useHospitalProfile();
+  const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
+
+  // 로딩 상태
+  if (detailedLoading || basicLoading || userLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
+        <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">프로필 정보를 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (basicError || userError) {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
+        <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">프로필 정보를 불러오는데 실패했습니다.</p>
+              <Button onClick={() => window.location.reload()}>다시 시도</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 프로필 데이터 결합 (상세 프로필이 있으면 우선, 없으면 기본 프로필 사용)
   const hospitalData: HospitalProfileData = {
-    hospitalLogo: hospitalImage.src,
-    hospitalName: "클로버 동물병원",
-    establishedDate: "2024-06-19",
-    address: "서울시 강남구 주요도로 주요",
-    detailAddress: "상세주소 주요 주요",
-    website: "https://www.example.com",
-    phone: "010-0000-0000",
-    businessNumber: "1234-3235-3356",
-    email: "ceo@hospital.com",
-    treatmentAnimals: ["호러치", "고양이", "파충류"],
-    treatmentFields: ["내과", "외과", "치과", "피부과"],
-    description: "병원을 간단하게 소개해 주세요",
+    hospitalLogo: detailedProfile?.hospitalLogo || hospitalImage.src,
+    hospitalName: detailedProfile?.hospitalName || basicProfile?.hospitalName || "병원명",
+    establishedDate: detailedProfile?.establishedDate || "2024-01-01",
+    address: detailedProfile?.address || basicProfile?.address || "",
+    detailAddress: detailedProfile?.detailAddress || "",
+    website: detailedProfile?.website || basicProfile?.website || "",
+    phone: detailedProfile?.phone || basicProfile?.phone || "",
+    businessNumber: detailedProfile?.businessNumber || basicProfile?.businessNumber || "",
+    email: detailedProfile?.email || currentUser?.email || "",
+    treatmentAnimals: detailedProfile?.treatmentAnimals || [],
+    treatmentFields: detailedProfile?.treatmentFields || [],
+    description: detailedProfile?.description || basicProfile?.description || "",
   };
 
   const handleEdit = () => {

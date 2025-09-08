@@ -19,7 +19,7 @@ export const authKeys = {
 export function useCurrentUser() {
   return useQuery({
     queryKey: authKeys.currentUser,
-    queryFn: async (): Promise<User | null> => {
+    queryFn: async (): Promise<(User & { phone?: string }) | null> => {
       const result = await getCurrentUser();
       if (result.success && result.user) {
         return {
@@ -28,6 +28,7 @@ export function useCurrentUser() {
           email: result.user.email,
           type: result.user.userType === "VETERINARIAN" ? "veterinarian" : "hospital",
           profileName: result.user.profileName,
+          phone: result.user.phone, // Add phone field
         };
       }
       return null;
