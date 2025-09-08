@@ -682,6 +682,9 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
     const profileId = createId();
     console.log("SERVER: Generated profile ID:", profileId);
 
+    // Ensure licenseImage is handled properly for database constraints
+    const processedLicenseImage = licenseImage || "";
+    
     const vetProfileResult = await sql`
       INSERT INTO veterinarian_profiles (
         id, "userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
@@ -689,7 +692,7 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
       VALUES (
         ${profileId}, ${user.id}, ${nickname}, ${
       birthDate ? new Date(birthDate) : null
-    }, ${licenseImage || null},
+    }, ${processedLicenseImage},
         NOW(), NOW()
       )
       RETURNING *
