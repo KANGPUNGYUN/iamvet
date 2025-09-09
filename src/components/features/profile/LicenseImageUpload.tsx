@@ -2,10 +2,11 @@
 
 import { UploadIcon } from "public/icons";
 import React, { useState, useRef } from "react";
+import { uploadImage, deleteImage, isS3Url } from "@/actions/s3";
 
 interface LicenseImageUploadProps {
   value?: string;
-  onChange?: (file: File | null) => void;
+  onChange?: (url: string | null) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -17,48 +18,76 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
   className = "",
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(value || null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
-    if (file) {
-      // 파일 크기 제한 (10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("파일 크기는 10MB 이하로 선택해주세요.");
-        return;
+    if (!file) return;
+
+    // 파일 크기 제한 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("파일 크기는 10MB 이하로 선택해주세요.");
+      return;
+    }
+
+    // 파일 타입 제한
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 선택 가능합니다.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // 기존 S3 이미지가 있다면 먼저 삭제
+      if (value && isS3Url(value)) {
+        await deleteImage(value);
       }
 
-      // 파일 타입 제한
-      if (!file.type.startsWith("image/")) {
-        alert("이미지 파일만 선택 가능합니다.");
-        return;
+      // S3에 업로드
+      const result = await uploadImage(file, 'licenses');
+      
+      if (result.success && result.url) {
+        setPreviewUrl(result.url);
+        onChange?.(result.url);
+      } else {
+        alert(result.error || "이미지 업로드에 실패했습니다.");
       }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      onChange?.(file);
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert("이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleUploadClick = () => {
-    if (!disabled) {
-      alert("이미지업로드 기능은 아직 작업중입니다.");
-      return;
-      // fileInputRef.current?.click();
+    if (!disabled && !isUploading) {
+      fileInputRef.current?.click();
     }
   };
 
-  const handleRemove = (e: React.MouseEvent) => {
+  const handleRemove = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setPreviewUrl(null);
-    onChange?.(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    
+    if (isUploading) return;
+
+    try {
+      // S3에서 이미지 삭제
+      if (previewUrl && isS3Url(previewUrl)) {
+        await deleteImage(previewUrl);
+      }
+
+      setPreviewUrl(null);
+      onChange?.(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert("이미지 삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -66,7 +95,7 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
     <div className={`w-full ${className}`}>
       <div
         className={`relative w-full max-w-[280px] h-[368px] border-2 border-dashed rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
-          disabled ? "cursor-not-allowed opacity-50" : "hover:border-gray-400"
+          disabled || isUploading ? "cursor-not-allowed opacity-50" : "hover:border-gray-400"
         }`}
         onClick={handleUploadClick}
         style={{
@@ -81,7 +110,7 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
               alt="면허증 미리보기"
               className="w-full h-full object-contain"
             />
-            {!disabled && (
+            {!disabled && !isUploading && (
               <button
                 type="button"
                 onClick={handleRemove}
@@ -94,31 +123,59 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
           </>
         ) : (
           <div className="flex flex-col gap-[22px] items-center justify-center h-full text-center p-4">
-            <UploadIcon currentColor="#9098A4" />
-            <div>
-              <p
-                style={{
-                  color: "#9098A4",
-                  fontFamily: "SUIT, sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  lineHeight: "135%",
-                }}
-              >
-                클릭하여 이미지 업로드
-              </p>
-              <p
-                style={{
-                  color: "#9098A4",
-                  fontFamily: "SUIT, sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  lineHeight: "135%",
-                }}
-              >
-                최대 5MB
-              </p>
-            </div>
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-[#FF8796]" />
+                <div>
+                  <p
+                    style={{
+                      color: "#9098A4",
+                      fontFamily: "SUIT, sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      lineHeight: "135%",
+                    }}
+                  >
+                    업로드 중...
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <UploadIcon currentColor="#9098A4" />
+                <div>
+                  <p
+                    style={{
+                      color: "#9098A4",
+                      fontFamily: "SUIT, sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      lineHeight: "135%",
+                    }}
+                  >
+                    클릭하여 이미지 업로드
+                  </p>
+                  <p
+                    style={{
+                      color: "#9098A4",
+                      fontFamily: "SUIT, sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      lineHeight: "135%",
+                    }}
+                  >
+                    최대 5MB
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        
+        {/* 업로드 중 오버레이 */}
+        {isUploading && previewUrl && (
+          <div className="absolute inset-0 bg-black bg-opacity-30 rounded-lg flex items-center justify-center">
+            <div className="text-white text-sm font-medium">업로드 중...</div>
           </div>
         )}
       </div>

@@ -13,8 +13,8 @@ interface VeterinarianFormData {
   phone: string;
   email: string;
   birthDate: string;
-  profileImage: File | null;
-  licenseImage: File | null;
+  profileImage: string | null;
+  licenseImage: string | null;
   agreements: {
     terms: boolean;
     privacy: boolean;
@@ -29,9 +29,9 @@ export default function VeterinarianRegisterPage() {
     try {
       console.log("CLIENT: handleSubmit called with data:", formData);
       
-      // TODO: S3에 이미지 업로드 후 URL 받기 (현재는 undefined로 처리)
-      const profileImageUrl = formData.profileImage ? undefined : undefined;
-      const licenseImageUrl = formData.licenseImage ? undefined : undefined;
+      // 이미지는 이미 S3에 업로드되어 URL로 전달됨
+      const profileImageUrl = formData.profileImage;
+      const licenseImageUrl = formData.licenseImage;
 
       const registerData: VeterinarianRegisterData = {
         userId: formData.userId,
@@ -40,8 +40,8 @@ export default function VeterinarianRegisterPage() {
         phone: formData.phone,
         email: formData.email,
         birthDate: formData.birthDate,
-        profileImage: profileImageUrl,
-        licenseImage: licenseImageUrl,
+        profileImage: profileImageUrl || undefined,
+        licenseImage: licenseImageUrl || undefined,
         termsAgreed: formData.agreements.terms,
         privacyAgreed: formData.agreements.privacy,
         marketingAgreed: formData.agreements.marketing,

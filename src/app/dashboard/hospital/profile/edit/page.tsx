@@ -340,15 +340,10 @@ export default function HospitalProfileEditPage() {
               <div className="flex justify-center">
                 <ProfileImageUpload
                   value={formData.hospitalLogo}
-                  onChange={(file) => {
-                    if (file) {
-                      // 실제로는 파일을 서버에 업로드하고 URL을 받아옴
-                      const url = URL.createObjectURL(file);
-                      setFormData({ ...formData, hospitalLogo: url });
-                    } else {
-                      setFormData({ ...formData, hospitalLogo: undefined });
-                    }
+                  onChange={(url) => {
+                    setFormData({ ...formData, hospitalLogo: url || undefined });
                   }}
+                  folder="hospitals"
                 />
               </div>
             </div>

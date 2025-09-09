@@ -19,8 +19,8 @@ interface VeterinarianRegistrationData {
   phone: string;
   email: string;
   birthDate: string;
-  profileImage: File | null;
-  licenseImage: File | null;
+  profileImage: string | null;
+  licenseImage: string | null;
   agreements: {
     terms: boolean;
     privacy: boolean;
@@ -166,8 +166,8 @@ export const VeterinarianRegistrationForm: React.FC<
   };
 
   const handleImageChange =
-    (field: "profileImage" | "licenseImage") => (file: File | null) => {
-      setFormData((prev) => ({ ...prev, [field]: file }));
+    (field: "profileImage" | "licenseImage") => (url: string | null) => {
+      setFormData((prev) => ({ ...prev, [field]: url }));
     };
 
   const handleEmailDuplicateCheckForUserId = async () => {
@@ -440,12 +440,9 @@ export const VeterinarianRegistrationForm: React.FC<
               프로필 사진
             </label>
             <ProfileImageUpload
-              value={
-                formData.profileImage
-                  ? URL.createObjectURL(formData.profileImage)
-                  : undefined
-              }
+              value={formData.profileImage || undefined}
               onChange={handleImageChange("profileImage")}
+              folder="profiles"
             />
           </div>
 
@@ -532,11 +529,7 @@ export const VeterinarianRegistrationForm: React.FC<
               수의사 면허증
             </label>
             <LicenseImageUpload
-              value={
-                formData.licenseImage
-                  ? URL.createObjectURL(formData.licenseImage)
-                  : undefined
-              }
+              value={formData.licenseImage || undefined}
               className="flex justify-center"
               onChange={handleImageChange("licenseImage")}
             />

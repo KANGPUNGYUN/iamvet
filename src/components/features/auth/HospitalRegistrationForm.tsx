@@ -19,8 +19,8 @@ interface HospitalRegistrationData {
   website: string;
   address: string;
   detailAddress: string;
-  profileImage: File | null;
-  businessLicense: File | null;
+  profileImage: string | null;
+  businessLicense: string | null;
   agreements: {
     terms: boolean;
     privacy: boolean;
@@ -181,8 +181,8 @@ export const HospitalRegistrationForm: React.FC<
   };
 
   const handleImageChange =
-    (field: "profileImage" | "businessLicense") => (file: File | null) => {
-      setFormData((prev) => ({ ...prev, [field]: file }));
+    (field: "profileImage" | "businessLicense") => (url: string | null) => {
+      setFormData((prev) => ({ ...prev, [field]: url }));
     };
 
   const handleEmailDuplicateCheckForUserId = async () => {
@@ -458,12 +458,9 @@ export const HospitalRegistrationForm: React.FC<
               병원 로고
             </label>
             <ProfileImageUpload
-              value={
-                formData.profileImage
-                  ? URL.createObjectURL(formData.profileImage)
-                  : undefined
-              }
+              value={formData.profileImage || undefined}
               onChange={handleImageChange("profileImage")}
+              folder="hospitals"
             />
           </div>
 
@@ -570,13 +567,10 @@ export const HospitalRegistrationForm: React.FC<
               사업자등록증 (선택)
             </label>
             <ProfileImageUpload
-              value={
-                formData.businessLicense
-                  ? URL.createObjectURL(formData.businessLicense)
-                  : undefined
-              }
+              value={formData.businessLicense || undefined}
               className="flex justify-center"
               onChange={handleImageChange("businessLicense")}
+              folder="hospitals"
             />
           </div>
         </section>

@@ -17,8 +17,8 @@ interface HospitalFormData {
   website: string;
   address: string;
   detailAddress: string;
-  profileImage: File | null;
-  businessLicense: File | null;
+  profileImage: string | null;
+  businessLicense: string | null;
   agreements: {
     terms: boolean;
     privacy: boolean;
@@ -33,9 +33,9 @@ export default function HospitalRegisterPage() {
     try {
       console.log("CLIENT: handleSubmit called with data:", formData);
       
-      // TODO: S3에 이미지 업로드 후 URL 받기 (현재는 undefined로 처리)
-      const profileImageUrl = formData.profileImage ? undefined : undefined;
-      const businessLicenseUrl = formData.businessLicense ? undefined : undefined;
+      // 이미지는 이미 S3에 업로드되어 URL로 전달됨
+      const profileImageUrl = formData.profileImage;
+      const businessLicenseUrl = formData.businessLicense;
 
       const registerData: HospitalRegisterData = {
         userId: formData.userId,
@@ -46,8 +46,8 @@ export default function HospitalRegisterPage() {
         email: formData.email,
         website: formData.website,
         address: formData.detailAddress ? `${formData.address} ${formData.detailAddress}` : formData.address,
-        profileImage: profileImageUrl,
-        businessLicense: businessLicenseUrl,
+        profileImage: profileImageUrl || undefined,
+        businessLicense: businessLicenseUrl || undefined,
         termsAgreed: formData.agreements.terms,
         privacyAgreed: formData.agreements.privacy,
         marketingAgreed: formData.agreements.marketing,

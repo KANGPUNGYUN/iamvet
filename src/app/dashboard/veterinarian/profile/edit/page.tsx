@@ -44,11 +44,8 @@ export default function VeterinarianProfileEditPage() {
     };
 
   const handleImageChange =
-    (field: "profileImage" | "licenseImage") => (file: File | null) => {
-      if (file) {
-        const imageUrl = URL.createObjectURL(file);
-        setFormData((prev) => ({ ...prev, [field]: imageUrl }));
-      }
+    (field: "profileImage" | "licenseImage") => (url: string | null) => {
+      setFormData((prev) => ({ ...prev, [field]: url }));
     };
 
   const handleSave = () => {
@@ -102,6 +99,7 @@ export default function VeterinarianProfileEditPage() {
                 <ProfileImageUpload
                   value={formData.profileImage}
                   onChange={handleImageChange("profileImage")}
+                  folder="profiles"
                 />
               </div>
             </section>
