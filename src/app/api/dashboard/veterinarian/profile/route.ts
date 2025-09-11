@@ -27,15 +27,32 @@ export const GET = withAuth(async (request: NextRequest) => {
 export const PUT = withAuth(async (request: NextRequest) => {
   try {
     const user = (request as any).user;
-    console.log('[API] PUT /api/dashboard/veterinarian/profile - User:', user.userId);
+    console.log('[API] PUT /api/dashboard/veterinarian/profile - User:', user);
+    console.log('[API] User ID:', user.userId);
+    console.log('[API] User Type:', user.userType);
+    
+    if (!user || !user.userId) {
+      console.error('[API] Invalid user object:', user);
+      return NextResponse.json(
+        createErrorResponse("사용자 정보가 올바르지 않습니다"),
+        { status: 400 }
+      );
+    }
     
     const formData = await request.formData();
     console.log('[API] FormData keys:', Array.from(formData.keys()));
+    
+    // FormData 내용 상세 로깅
+    const keys = Array.from(formData.keys());
+    for (const key of keys) {
+      console.log(`[API] FormData ${key}:`, formData.get(key));
+    }
 
     const profileData: any = {
       nickname: formData.get("nickname") as string,
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
+      realName: formData.get("realName") as string, // 실명 추가
       birthDate: formData.get("birthDate") as string,
     };
 

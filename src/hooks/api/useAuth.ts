@@ -26,6 +26,7 @@ export function useCurrentUser() {
           id: result.user.id,
           name: result.user.username,
           email: result.user.email,
+          realName: result.user.realName, // 실명 추가
           type: result.user.userType === "VETERINARIAN" ? "veterinarian" : "hospital",
           profileName: result.user.profileName,
           profileImage: result.user.profileImage, // 프로필 이미지 추가

@@ -11,6 +11,8 @@ import {
 } from "@/components/features/profile";
 import { useAuth } from "@/hooks/api/useAuth";
 import { getVeterinarianProfile, getCurrentUser } from "@/actions/auth";
+import { useQueryClient } from "@tanstack/react-query";
+import { authKeys } from "@/hooks/api/useAuth";
 
 interface VeterinarianProfileEditData {
   profileImage?: string;
@@ -27,7 +29,9 @@ interface VeterinarianProfileEditData {
 
 export default function VeterinarianProfileEditPage() {
   const { user, isLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // 폼 상태 관리
@@ -106,7 +110,7 @@ export default function VeterinarianProfileEditPage() {
       setFormData((prev) => ({ ...prev, [field]: url }));
     };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // 비밀번호 확인
     if (formData.password && formData.password !== formData.passwordConfirm) {
       alert("비밀번호가 일치하지 않습니다.");
@@ -125,11 +129,88 @@ export default function VeterinarianProfileEditPage() {
       return;
     }
 
-    console.log("프로필 수정 데이터:", formData);
-    alert("프로필이 수정되었습니다!");
+    setSaving(true);
+    
+    try {
+      console.log("프로필 수정 데이터:", formData);
+      
+      // FormData 생성
+      const updateData = new FormData();
+      updateData.append("realName", formData.realName);
+      updateData.append("nickname", formData.nickname);
+      updateData.append("phone", formData.phone);
+      updateData.append("email", formData.email);
+      updateData.append("birthDate", formData.birthDate);
+      
+      if (formData.profileImage) {
+        updateData.append("profileImage", formData.profileImage);
+      }
+      if (formData.licenseImage) {
+        updateData.append("licenseImage", formData.licenseImage);
+      }
+      if (formData.password) {
+        updateData.append("password", formData.password);
+      }
 
-    // 프로필 페이지로 이동
-    window.location.href = "/dashboard/veterinarian/profile";
+      // FormData 로깅
+      console.log("FormData 내용:");
+      console.log("realName:", updateData.get("realName"));
+      console.log("nickname:", updateData.get("nickname"));
+      console.log("phone:", updateData.get("phone"));
+      console.log("email:", updateData.get("email"));
+      console.log("birthDate:", updateData.get("birthDate"));
+      console.log("profileImage:", updateData.get("profileImage"));
+      console.log("licenseImage:", updateData.get("licenseImage"));
+      console.log("password:", updateData.get("password") ? "[SET]" : "[NOT SET]");
+
+      // API 호출
+      console.log("API 호출 시작...");
+      const response = await fetch("/api/dashboard/veterinarian/profile", {
+        method: "PUT",
+        body: updateData,
+      });
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("HTTP Error Response:", errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      // 응답을 텍스트로 먼저 읽어서 내용 확인
+      const responseText = await response.text();
+      console.log("Raw Response Text:", responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log("Parsed API Response:", result);
+      } catch (parseError) {
+        console.error("JSON Parse Error:", parseError);
+        console.error("Response was not valid JSON:", responseText);
+        throw new Error("서버 응답 형식이 올바르지 않습니다.");
+      }
+
+      if (result.status === "success") {
+        // React Query 캐시 무효화하여 실시간 업데이트
+        await queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
+        
+        alert(result.message || "프로필이 수정되었습니다!");
+        
+        // 프로필 페이지로 이동
+        window.location.href = "/dashboard/veterinarian/profile";
+      } else {
+        console.error("API Error Result:", result);
+        alert(`프로필 수정 실패: ${result.message || "알 수 없는 오류가 발생했습니다."}`);
+      }
+    } catch (error) {
+      console.error("프로필 수정 오류:", error);
+      alert("프로필 수정 중 오류가 발생했습니다.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -342,9 +423,10 @@ export default function VeterinarianProfileEditPage() {
                 variant="keycolor"
                 size="medium"
                 onClick={handleSave}
+                disabled={saving}
                 className="px-[40px]"
               >
-                수정하기
+                {saving ? "저장 중..." : "수정하기"}
               </Button>
             </div>
           </div>

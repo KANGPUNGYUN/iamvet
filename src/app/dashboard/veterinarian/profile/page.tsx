@@ -9,7 +9,7 @@ import {
   LicenseImageUpload,
 } from "@/components/features/profile";
 import { useAuth } from "@/hooks/api/useAuth";
-import { getVeterinarianProfile, getCurrentUser } from "@/actions/auth";
+import { getVeterinarianProfile } from "@/actions/auth";
 
 interface VeterinarianProfileData {
   profileImage?: string;
@@ -28,7 +28,7 @@ export default function VeterinarianProfilePage() {
   const [isLoadingProfile, setIsLoadingProfile] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // 사용자 프로필 데이터 로드
+  // 사용자 프로필 데이터 로드 - useAuth에서 실시간 데이터 사용
   React.useEffect(() => {
     const loadProfile = async () => {
       if (!user) {
@@ -39,29 +39,27 @@ export default function VeterinarianProfilePage() {
       try {
         console.log('[VeterinarianProfile] 프로필 로딩 시작:', user);
         
-        // getCurrentUser로 완전한 사용자 정보 가져오기
-        const currentUserResult = await getCurrentUser();
+        // getVeterinarianProfile로 veterinarian 전용 데이터 가져오기
         const profileResult = await getVeterinarianProfile();
         
-        console.log('[VeterinarianProfile] 사용자 결과:', currentUserResult);
         console.log('[VeterinarianProfile] 프로필 결과:', profileResult);
         
-        if (currentUserResult.success && currentUserResult.user && profileResult.success && profileResult.profile) {
-          const userData = currentUserResult.user;
+        if (profileResult.success && profileResult.profile) {
           const profile = profileResult.profile;
           
+          // user는 이미 useAuth에서 realName 포함된 최신 데이터
           setProfileData({
-            profileImage: userData.profileImage, // users 테이블의 profileImage
-            userId: userData.username || userData.email,
-            realName: userData.realName, // 실명 추가
+            profileImage: user.profileImage, // users 테이블의 profileImage
+            userId: user.name || user.email,
+            realName: user.realName, // 실명 - useAuth에서 실시간 업데이트됨
             nickname: profile.nickname,
-            phone: userData.phone,
-            email: userData.email,
+            phone: user.phone,
+            email: user.email,
             birthDate: typeof profile.birthDate === 'string' ? profile.birthDate : profile.birthDate?.toISOString().split('T')[0] || '',
             licenseImage: profile.licenseImage, // veterinarian_profiles 테이블의 licenseImage
           });
         } else {
-          setError(currentUserResult.error || profileResult.error || '프로필을 불러올 수 없습니다.');
+          setError(profileResult.error || '프로필을 불러올 수 없습니다.');
         }
       } catch (err) {
         console.error('[VeterinarianProfile] 프로필 로딩 오류:', err);
@@ -72,7 +70,7 @@ export default function VeterinarianProfilePage() {
     };
 
     loadProfile();
-  }, [user]);
+  }, [user]); // user가 변경되면 (React Query 캐시 무효화 시) 자동으로 리로드
 
   // 로딩 상태
   if (isLoading || isLoadingProfile) {

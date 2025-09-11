@@ -4,6 +4,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  realName?: string; // 실명 추가
   type: 'veterinarian' | 'hospital';
   profileName?: string; // 수의사: 닉네임, 병원: 병원명
   profileImage?: string; // 프로필 이미지 URL

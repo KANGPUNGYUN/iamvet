@@ -7,22 +7,28 @@ import { verifyToken } from "./auth";
 export const withAuth = (handler: Function) => {
   return async (request: NextRequest, ...args: any[]) => {
     try {
-      const authorization = request.headers.get("authorization");
+      let token: string | null = null;
+      let payload: any = null;
 
-      if (!authorization || !authorization.startsWith("Bearer ")) {
+      // 1. Authorization 헤더에서 토큰 확인 (기존 방식)
+      const authorization = request.headers.get("authorization");
+      if (authorization && authorization.startsWith("Bearer ")) {
+        token = authorization.slice(7);
+        payload = verifyToken(token);
+      }
+
+      // 2. 쿠키에서 토큰 확인 (새로운 방식)
+      if (!payload) {
+        const cookieToken = request.cookies.get("auth-token")?.value;
+        if (cookieToken) {
+          payload = verifyToken(cookieToken);
+        }
+      }
+
+      if (!payload) {
         return NextResponse.json(createErrorResponse("인증이 필요합니다"), {
           status: 401,
         });
-      }
-
-      const token = authorization.slice(7);
-      const payload = verifyToken(token);
-
-      if (!payload) {
-        return NextResponse.json(
-          createErrorResponse("유효하지 않은 토큰입니다"),
-          { status: 401 }
-        );
       }
 
       // 요청 객체에 사용자 정보 추가
@@ -30,6 +36,7 @@ export const withAuth = (handler: Function) => {
 
       return handler(request, ...args);
     } catch (error) {
+      console.error("withAuth middleware error:", error);
       return NextResponse.json(
         createErrorResponse("인증 처리 중 오류가 발생했습니다"),
         { status: 500 }
