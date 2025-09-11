@@ -15,7 +15,6 @@ interface VeterinaryStudentRegistrationData {
   realName: string;
   nickname: string;
   phone: string;
-  email: string;
   universityEmail: string;
   birthDate: string;
   profileImage: string | null;
@@ -42,7 +41,6 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     realName: "",
     nickname: "",
     phone: "",
-    email: "",
     universityEmail: "",
     birthDate: "",
     profileImage: null,
@@ -73,7 +71,6 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     realName: "",
     nickname: "",
     phone: "",
-    email: "",
     universityEmail: "",
     birthDate: "",
   });
@@ -107,11 +104,8 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 
     switch (field) {
       case "userId":
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value.trim()) {
-          error = "이메일을 입력해주세요.";
-        } else if (!emailRegex.test(value)) {
-          error = "올바른 이메일 형식을 입력해주세요.";
+          error = "아이디를 입력해주세요.";
         }
         break;
 
@@ -156,15 +150,6 @@ export const VeterinaryStudentRegistrationForm: React.FC<
         }
         break;
 
-      case "email":
-        const emailRegex2 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!value.trim()) {
-          error = "이메일을 입력해주세요.";
-        } else if (!emailRegex2.test(value)) {
-          error = "올바른 이메일 형식을 입력해주세요.";
-        }
-        break;
-
       case "universityEmail":
         const emailRegex3 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value.trim()) {
@@ -172,7 +157,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
         } else if (!emailRegex3.test(value)) {
           error = "올바른 이메일 형식을 입력해주세요.";
         } else if (!validateUniversityEmail(value)) {
-          error = "인증된 대학교 이메일을 입력해주세요.";
+          error = "수의학과가 있는 대학교의 이메일을 입력해주세요.";
         }
         break;
 
@@ -189,22 +174,28 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     setInputErrors((prev) => ({ ...prev, [field]: error }));
   };
 
-  // 대학교 이메일 검증
+  // 대학교 이메일 검증 (수의학과가 있는 대학교만)
   const validateUniversityEmail = (email: string): boolean => {
-    const universityDomains = [
-      'snu.ac.kr', 'yonsei.ac.kr', 'korea.ac.kr', 'konkuk.ac.kr', 
-      'kangwon.ac.kr', 'chungbuk.ac.kr', 'chonnam.ac.kr', 'kyungpook.ac.kr',
-      'pusan.ac.kr', 'jnu.ac.kr', 'ac.kr'
+    const veterinaryUniversityDomains = [
+      "kangwon.ac.kr", // 강원대
+      "konkuk.ac.kr", // 건국대
+      "knu.ac.kr", // 경북대
+      "gnu.ac.kr", // 경상국립대
+      "snu.ac.kr", // 서울대
+      "jnu.ac.kr", // 전남대
+      "jbnu.ac.kr", // 전북대
+      "stu.jejunu.ac.kr", // 제주대
+      "o.cnu.ac.kr", // 충남대
+      "chungbuk.ac.kr", // 충북대
     ];
 
-    const domain = email.split('@')[1]?.toLowerCase();
-    return universityDomains.some(uniDomain => domain?.endsWith(uniDomain));
+    const domain = email.split("@")[1]?.toLowerCase();
+    return veterinaryUniversityDomains.includes(domain || "");
   };
 
-  const handleImageChange =
-    (field: "profileImage") => (url: string | null) => {
-      setFormData((prev) => ({ ...prev, [field]: url }));
-    };
+  const handleImageChange = (field: "profileImage") => (url: string | null) => {
+    setFormData((prev) => ({ ...prev, [field]: url }));
+  };
 
   const handleEmailDuplicateCheckForUserId = async () => {
     console.log("CLIENT: handleEmailDuplicateCheckForUserId called");
@@ -285,18 +276,23 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 
     // 대학교 이메일 도메인 검증
     if (!validateUniversityEmail(formData.universityEmail)) {
-      alert("인증된 대학교 이메일을 입력해주세요.");
+      alert("수의학과가 있는 대학교의 이메일을 입력해주세요.");
       return;
     }
 
-    console.log("CLIENT: About to call checkEmailDuplicate for university email");
+    console.log(
+      "CLIENT: About to call checkEmailDuplicate for university email"
+    );
     setDuplicateCheck((prev) => ({
       ...prev,
       universityEmail: { ...prev.universityEmail, isChecking: true },
     }));
 
     try {
-      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.universityEmail);
+      console.log(
+        "CLIENT: Calling checkEmailDuplicate with:",
+        formData.universityEmail
+      );
       const result = await checkEmailDuplicate(formData.universityEmail);
       console.log("CLIENT: checkEmailDuplicate result:", result);
 
@@ -322,7 +318,9 @@ export const VeterinaryStudentRegistrationForm: React.FC<
           ...prev,
           universityEmail: { ...prev.universityEmail, isChecking: false },
         }));
-        alert(result.error || "대학교 이메일 중복 확인 중 오류가 발생했습니다.");
+        alert(
+          result.error || "대학교 이메일 중복 확인 중 오류가 발생했습니다."
+        );
       }
     } catch (error) {
       console.error("CLIENT: 대학교 이메일 중복 확인 오류:", error);
@@ -393,7 +391,6 @@ export const VeterinaryStudentRegistrationForm: React.FC<
       "realName",
       "nickname",
       "phone",
-      "email",
       "universityEmail",
       "birthDate",
     ];
@@ -479,8 +476,8 @@ export const VeterinaryStudentRegistrationForm: React.FC<
               <InputBox
                 value={formData.userId}
                 onChange={handleInputChange("userId")}
-                placeholder="이메일 주소를 입력해주세요"
-                type="email"
+                placeholder="아이디를 입력해주세요"
+                type="text"
                 duplicateCheck={{
                   buttonText: "중복 확인",
                   onCheck: handleEmailDuplicateCheckForUserId,
@@ -493,7 +490,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
                   inputErrors.userId
                     ? { text: inputErrors.userId, type: "error" }
                     : duplicateCheck.userId.isValid
-                    ? { text: "사용 가능한 이메일입니다", type: "success" }
+                    ? { text: "사용 가능한 아이디입니다", type: "success" }
                     : undefined
                 }
               />
@@ -613,25 +610,6 @@ export const VeterinaryStudentRegistrationForm: React.FC<
               />
             </div>
 
-            {/* 이메일 */}
-            <div>
-              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-                이메일
-              </label>
-              <InputBox
-                value={formData.email}
-                onChange={handleInputChange("email")}
-                placeholder="이메일을 입력해 주세요"
-                type="email"
-                error={!!inputErrors.email}
-                guide={
-                  inputErrors.email
-                    ? { text: inputErrors.email, type: "error" }
-                    : undefined
-                }
-              />
-            </div>
-
             {/* 대학교 이메일 */}
             <div>
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
@@ -643,7 +621,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
               <InputBox
                 value={formData.universityEmail}
                 onChange={handleInputChange("universityEmail")}
-                placeholder="대학교 이메일을 입력해주세요 (예: student@snu.ac.kr)"
+                placeholder="수의학과 대학교 이메일을 입력해주세요 (예: student@snu.ac.kr)"
                 type="email"
                 duplicateCheck={{
                   buttonText: "인증",
@@ -657,7 +635,10 @@ export const VeterinaryStudentRegistrationForm: React.FC<
                   inputErrors.universityEmail
                     ? { text: inputErrors.universityEmail, type: "error" }
                     : duplicateCheck.universityEmail.isValid
-                    ? { text: "인증된 대학교 이메일입니다", type: "success" }
+                    ? {
+                        text: "인증된 수의학과 대학교 이메일입니다",
+                        type: "success",
+                      }
                     : undefined
                 }
               />

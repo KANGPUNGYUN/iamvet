@@ -1,7 +1,10 @@
 "use client";
 
 import { VeterinaryStudentRegistrationForm } from "@/components/features/auth/VeterinaryStudentRegistrationForm";
-import { registerVeterinaryStudent, VeterinaryStudentRegisterData } from "@/actions/auth";
+import {
+  registerVeterinaryStudent,
+  VeterinaryStudentRegisterData,
+} from "@/actions/auth";
 import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,7 +15,6 @@ interface VeterinaryStudentFormData {
   realName: string;
   nickname: string;
   phone: string;
-  email: string;
   universityEmail: string; // 대학교 이메일 추가
   birthDate: string;
   profileImage: string | null;
@@ -29,7 +31,7 @@ export default function VeterinaryStudentRegisterPage() {
   const handleSubmit = async (formData: VeterinaryStudentFormData) => {
     try {
       console.log("CLIENT: handleSubmit called with data:", formData);
-      
+
       // 이미지는 이미 S3에 업로드되어 URL로 전달됨
       const profileImageUrl = formData.profileImage;
 
@@ -39,7 +41,6 @@ export default function VeterinaryStudentRegisterPage() {
         realName: formData.realName,
         nickname: formData.nickname,
         phone: formData.phone,
-        email: formData.email,
         universityEmail: formData.universityEmail,
         birthDate: formData.birthDate,
         profileImage: profileImageUrl || undefined,
@@ -48,25 +49,34 @@ export default function VeterinaryStudentRegisterPage() {
         marketingAgreed: formData.agreements.marketing,
       };
 
-      console.log("CLIENT: Calling registerVeterinaryStudent with:", registerData);
+      console.log(
+        "CLIENT: Calling registerVeterinaryStudent with:",
+        registerData
+      );
       const result = await registerVeterinaryStudent(registerData);
       console.log("CLIENT: registerVeterinaryStudent result:", result);
-      
+
       if (result.success) {
         alert("수의학과 학생 회원가입이 완료되었습니다!");
         router.push("/login/veterinary-student");
       } else {
         console.error("CLIENT: Registration failed:", result.error);
-        alert(`회원가입 실패: ${result.error || "알 수 없는 오류가 발생했습니다."}`);
+        alert(
+          `회원가입 실패: ${result.error || "알 수 없는 오류가 발생했습니다."}`
+        );
       }
     } catch (error) {
       console.error("CLIENT: 회원가입 예외 발생:", error);
       console.error("CLIENT: Error details:", {
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: error instanceof Error ? error.message : "Unknown error",
         stack: error instanceof Error ? error.stack : undefined,
-        formData
+        formData,
       });
-      alert(`회원가입 중 예외 발생: ${error instanceof Error ? error.message : "알 수 없는 오류"}`);
+      alert(
+        `회원가입 중 예외 발생: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
     }
   };
 
