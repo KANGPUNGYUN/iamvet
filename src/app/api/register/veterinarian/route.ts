@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { VeterinarianRegisterRequest } from "@/lib/types";
 import { hashPassword } from "@/lib/auth";
-import { uploadFile } from "@/lib/upload"; // S3 업로드 함수
+import { uploadFile } from "@/lib/s3"; // S3 업로드 함수
 import {
   checkUserExists,
   createUser,

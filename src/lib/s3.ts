@@ -14,7 +14,8 @@ const s3Client = new S3Client({
 });
 
 // 버킷 이름에서 ARN 부분 제거
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME?.replace('arn:aws:s3:::', '') || 'iamvet-bucket';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME?.replace('arn:aws:s3:::', '') || 
+                   process.env.AWS_S3_BUCKET || 'iamvet-bucket';
 
 export interface UploadResult {
   success: boolean;
@@ -22,7 +23,29 @@ export interface UploadResult {
   error?: string;
 }
 
-// 이미지 업로드
+// S3 URL 관련 유틸리티 함수들
+export function isS3Url(url: string): boolean {
+  const publicBucketName = process.env.NEXT_PUBLIC_S3_BUCKET_NAME || BUCKET_NAME;
+  return url.includes(publicBucketName) && url.includes('amazonaws.com');
+}
+
+export function extractS3Key(url: string): string | null {
+  try {
+    const publicBucketName = process.env.NEXT_PUBLIC_S3_BUCKET_NAME || BUCKET_NAME;
+    const urlParts = url.split('/');
+    const bucketIndex = urlParts.findIndex(part => part.includes(publicBucketName));
+    
+    if (bucketIndex === -1) {
+      return null;
+    }
+
+    return urlParts.slice(bucketIndex + 1).join('/');
+  } catch {
+    return null;
+  }
+}
+
+// 이미지 업로드 (File 객체로부터)
 export async function uploadImage(
   file: File,
   folder: 'profiles' | 'licenses' | 'hospitals' | 'resumes' = 'profiles'
@@ -60,64 +83,9 @@ export async function uploadImage(
     // 파일을 Buffer로 변환
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // S3에 업로드
-    const command = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: fileName,
-      Body: buffer,
-      ContentType: file.type,
-      // ACL: 'public-read', // ACL 비활성화된 버킷에서는 제거
-    });
-
-    console.log('[S3] S3 업로드 명령 실행 중...', {
-      bucket: BUCKET_NAME,
-      key: fileName,
-      contentType: file.type,
-      bufferSize: buffer.length
-    });
-
-    const result = await s3Client.send(command);
-    console.log('[S3] S3 업로드 성공:', result);
-
-    // S3 URL 생성
-    const url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-    
-    console.log('[S3] 최종 URL 생성:', url);
-    
-    return {
-      success: true,
-      url,
-    };
+    return await uploadToS3(fileName, buffer, file.type);
   } catch (error) {
-    console.error('[S3] 업로드 에러 상세:', {
-      error,
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined,
-      // cause: error instanceof Error ? error.cause : undefined // ES2022 이후 지원
-    });
-    
-    // AWS SDK 특정 에러 처리
-    let errorMessage = '이미지 업로드 중 오류가 발생했습니다.';
-    
-    if (error instanceof Error) {
-      if (error.name === 'CredentialsProviderError') {
-        errorMessage = 'AWS 자격 증명 오류: 환경 변수를 확인해주세요.';
-      } else if (error.name === 'AccessDenied') {
-        errorMessage = 'S3 접근 권한이 없습니다. IAM 설정을 확인해주세요.';
-      } else if (error.name === 'NoSuchBucket') {
-        errorMessage = 'S3 버킷을 찾을 수 없습니다.';
-      } else if (error.message.includes('Network')) {
-        errorMessage = '네트워크 오류: 인터넷 연결을 확인해주세요.';
-      } else {
-        errorMessage = `업로드 오류: ${error.message}`;
-      }
-    }
-    
-    return {
-      success: false,
-      error: errorMessage,
-    };
+    return handleS3Error(error, '이미지 업로드 중 오류가 발생했습니다.');
   }
 }
 
@@ -165,54 +133,45 @@ export async function uploadImageFromBase64(
     const extension = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : mimeType.split('/')[1];
     const generatedFileName = fileName || `${folder}/${createId()}.${extension}`;
 
-    // S3에 업로드
-    const command = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: generatedFileName,
-      Body: buffer,
-      ContentType: mimeType,
-      // ACL: 'public-read', // ACL 비활성화된 버킷에서는 제거
-    });
-
-    await s3Client.send(command);
-
-    // S3 URL 생성
-    const url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${generatedFileName}`;
-
-    return {
-      success: true,
-      url,
-    };
+    return await uploadToS3(generatedFileName, buffer, mimeType);
   } catch (error) {
-    console.error('S3 upload from base64 error:', error);
-    return {
-      success: false,
-      error: '이미지 업로드 중 오류가 발생했습니다.',
-    };
+    return handleS3Error(error, '이미지 업로드 중 오류가 발생했습니다.');
+  }
+}
+
+// 일반 파일 업로드 (src/lib/upload.ts 대체용)
+export async function uploadFile(
+  file: File,
+  folder: string
+): Promise<string> {
+  try {
+    const fileExtension = file.name.split(".").pop();
+    const fileName = `${folder}/${createId()}.${fileExtension}`;
+
+    const buffer = await file.arrayBuffer();
+
+    const result = await uploadToS3(fileName, new Uint8Array(buffer), file.type, 'inline');
+    
+    if (!result.success) {
+      throw new Error(result.error || '파일 업로드에 실패했습니다');
+    }
+
+    return result.url!;
+  } catch (error) {
+    console.error("File upload error:", error);
+    throw new Error("파일 업로드에 실패했습니다");
   }
 }
 
 // 이미지 삭제
 export async function deleteImage(imageUrl: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // URL에서 키 추출
-    const urlParts = imageUrl.split('/');
-    const bucketIndex = urlParts.findIndex(part => part.includes(BUCKET_NAME));
+    const key = extractS3Key(imageUrl);
     
-    if (bucketIndex === -1) {
-      return {
-        success: false,
-        error: '잘못된 이미지 URL입니다.',
-      };
-    }
-
-    // 키는 버킷명 다음부터의 모든 부분
-    const key = urlParts.slice(bucketIndex + 1).join('/');
-
     if (!key) {
       return {
         success: false,
-        error: '이미지 키를 찾을 수 없습니다.',
+        error: '잘못된 이미지 URL입니다.',
       };
     }
 
@@ -260,3 +219,75 @@ export async function getSignedImageUrl(
   }
 }
 
+// 내부 헬퍼 함수들
+
+async function uploadToS3(
+  key: string, 
+  body: Buffer | Uint8Array, 
+  contentType: string, 
+  contentDisposition?: string
+): Promise<UploadResult> {
+  try {
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      ...(contentDisposition && { ContentDisposition: contentDisposition }),
+    });
+
+    console.log('[S3] S3 업로드 명령 실행 중...', {
+      bucket: BUCKET_NAME,
+      key,
+      contentType,
+      bodySize: body.length
+    });
+
+    const result = await s3Client.send(command);
+    console.log('[S3] S3 업로드 성공:', result);
+
+    // S3 URL 생성
+    const url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    
+    console.log('[S3] 최종 URL 생성:', url);
+    
+    return {
+      success: true,
+      url,
+    };
+  } catch (error) {
+    console.error('[S3] 업로드 에러 상세:', error);
+    throw error;
+  }
+}
+
+function handleS3Error(error: unknown, defaultMessage: string): UploadResult {
+  console.error('[S3] 에러 처리:', {
+    error,
+    message: error instanceof Error ? error.message : 'Unknown error',
+    stack: error instanceof Error ? error.stack : undefined,
+    name: error instanceof Error ? error.name : undefined,
+  });
+  
+  // AWS SDK 특정 에러 처리
+  let errorMessage = defaultMessage;
+  
+  if (error instanceof Error) {
+    if (error.name === 'CredentialsProviderError') {
+      errorMessage = 'AWS 자격 증명 오류: 환경 변수를 확인해주세요.';
+    } else if (error.name === 'AccessDenied') {
+      errorMessage = 'S3 접근 권한이 없습니다. IAM 설정을 확인해주세요.';
+    } else if (error.name === 'NoSuchBucket') {
+      errorMessage = 'S3 버킷을 찾을 수 없습니다.';
+    } else if (error.message.includes('Network')) {
+      errorMessage = '네트워크 오류: 인터넷 연결을 확인해주세요.';
+    } else {
+      errorMessage = `업로드 오류: ${error.message}`;
+    }
+  }
+  
+  return {
+    success: false,
+    error: errorMessage,
+  };
+}

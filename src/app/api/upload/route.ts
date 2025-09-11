@@ -1,4 +1,4 @@
-import { uploadFile } from "@/lib/upload";
+import { uploadFile } from "@/lib/s3";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";

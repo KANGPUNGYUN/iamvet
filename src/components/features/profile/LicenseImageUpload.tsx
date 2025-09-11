@@ -2,8 +2,7 @@
 
 import { UploadIcon } from "public/icons";
 import React, { useState, useRef } from "react";
-import { uploadImage, deleteImage } from "@/actions/s3";
-import { isS3Url } from "@/utils/s3";
+import { uploadImage, deleteImage, isS3Url } from "@/lib/s3";
 
 interface LicenseImageUploadProps {
   value?: string;
