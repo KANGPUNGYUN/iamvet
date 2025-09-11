@@ -21,7 +21,7 @@ export interface User {
   email: string;
   phone: string;
   realName?: string; // 실명 추가
-  userType: "VETERINARIAN" | "HOSPITAL";
+  userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
   profileImage?: string;
   provider: "NORMAL" | "GOOGLE" | "KAKAO" | "NAVER";
   isActive: boolean;
@@ -36,7 +36,7 @@ export interface User {
 export interface LoginCredentials {
   email: string;
   password: string;
-  userType?: "VETERINARIAN" | "HOSPITAL";
+  userType?: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
 }
 
 export interface RegisterData {
@@ -45,7 +45,7 @@ export interface RegisterData {
   phone: string;
   realName?: string; // 실명 추가
   password: string;
-  userType: "VETERINARIAN" | "HOSPITAL";
+  userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
   profileImage?: string;
   termsAgreed: boolean;
   privacyAgreed: boolean;
@@ -447,7 +447,7 @@ export async function createSocialUser(userData: {
   profileImage?: string;
   provider: "GOOGLE" | "KAKAO" | "NAVER";
   providerId: string;
-  userType: "VETERINARIAN" | "HOSPITAL";
+  userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
 }) {
   try {
     // Create user
@@ -629,6 +629,21 @@ export interface VeterinarianRegisterData {
   marketingAgreed?: boolean;
 }
 
+export interface VeterinaryStudentRegisterData {
+  userId: string;
+  password: string;
+  nickname: string;
+  phone: string;
+  email: string;
+  universityEmail: string; // 대학교 이메일 추가
+  realName?: string;
+  birthDate: string;
+  profileImage?: string;
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed?: boolean;
+}
+
 export interface HospitalRegisterData {
   userId: string;
   password: string;
@@ -767,6 +782,128 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
     return {
       success: false,
       error: `수의사 회원가입 실패: ${
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다."
+      }`,
+    };
+  }
+}
+
+export async function registerVeterinaryStudent(data: VeterinaryStudentRegisterData) {
+  try {
+    console.log("SERVER: registerVeterinaryStudent called with data:", data);
+
+    const {
+      userId,
+      password,
+      nickname,
+      phone,
+      email,
+      universityEmail,
+      realName,
+      birthDate,
+      profileImage,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    } = data;
+
+    console.log("SERVER: Extracted data:", {
+      userId,
+      password: "[HIDDEN]",
+      nickname,
+      phone,
+      email,
+      universityEmail,
+      realName,
+      birthDate,
+      profileImage,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    });
+
+    // Check if user already exists
+    console.log("SERVER: Checking for existing user...");
+    const existingUser = await sql`
+      SELECT id FROM users WHERE username = ${userId} OR email = ${email} OR phone = ${phone}
+    `;
+    console.log("SERVER: Existing user check result:", existingUser);
+
+    if (existingUser.length > 0) {
+      console.log("SERVER: User already exists");
+      return {
+        success: false,
+        error: "이미 가입된 아이디, 이메일 또는 전화번호입니다.",
+      };
+    }
+
+    // Check if university email already exists
+    console.log("SERVER: Checking for existing university email...");
+    const existingUniversityEmail = await sql`
+      SELECT id FROM veterinary_student_profiles WHERE university_email = ${universityEmail}
+    `;
+    console.log("SERVER: Existing university email check result:", existingUniversityEmail);
+
+    if (existingUniversityEmail.length > 0) {
+      console.log("SERVER: University email already exists");
+      return {
+        success: false,
+        error: "이미 가입된 대학교 이메일입니다.",
+      };
+    }
+
+    // Hash password
+    console.log("SERVER: Hashing password...");
+    const hashedPassword = await bcrypt.hash(password, 12);
+    console.log("SERVER: Password hashed successfully");
+
+    // Create user
+    console.log("SERVER: Creating user...");
+    const userId_generated = createId();
+    const user = await sql`
+      INSERT INTO users (
+        id, username, email, phone, real_name, password, user_type, profile_image,
+        provider, is_active, terms_agreed_at, privacy_agreed_at, marketing_agreed_at
+      ) VALUES (
+        ${userId_generated}, ${userId}, ${email}, ${phone}, ${realName}, ${hashedPassword}, 
+        'VETERINARY_STUDENT', ${profileImage}, 'NORMAL', true,
+        ${termsAgreed ? new Date() : null},
+        ${privacyAgreed ? new Date() : null}, 
+        ${marketingAgreed ? new Date() : null}
+      )
+      RETURNING id, username, email, phone, real_name, user_type, profile_image
+    `;
+    console.log("SERVER: User created:", user[0]);
+
+    // Create veterinary student profile
+    console.log("SERVER: Creating veterinary student profile...");
+    const profileId = createId();
+    await sql`
+      INSERT INTO veterinary_student_profiles (
+        id, user_id, nickname, birth_date, university_email
+      ) VALUES (
+        ${profileId}, ${user[0].id}, ${nickname}, ${birthDate}, ${universityEmail}
+      )
+    `;
+    console.log("SERVER: Veterinary student profile created successfully");
+
+    return {
+      success: true,
+      message: "수의학과 학생 회원가입이 완료되었습니다.",
+    };
+  } catch (error) {
+    console.error("SERVER: Veterinary student registration error:", error);
+    console.error("SERVER: Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      data,
+    });
+
+    return {
+      success: false,
+      error: `수의학과 학생 회원가입 중 오류가 발생했습니다: ${
         error instanceof Error
           ? error.message
           : "알 수 없는 오류가 발생했습니다."

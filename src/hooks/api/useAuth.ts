@@ -7,7 +7,7 @@ import type { User } from '@/store/authStore';
 interface LoginCredentials {
   email: string;
   password: string;
-  userType?: "VETERINARIAN" | "HOSPITAL";
+  userType?: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
 }
 
 // React Query 키 상수

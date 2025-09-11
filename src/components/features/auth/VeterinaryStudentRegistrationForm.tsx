@@ -3,15 +3,12 @@
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
-import {
-  ProfileImageUpload,
-  LicenseImageUpload,
-} from "@/components/features/profile";
+import { ProfileImageUpload } from "@/components/features/profile";
 import { checkEmailDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
 
-interface VeterinarianRegistrationData {
+interface VeterinaryStudentRegistrationData {
   userId: string;
   password: string;
   passwordConfirm: string;
@@ -19,9 +16,9 @@ interface VeterinarianRegistrationData {
   nickname: string;
   phone: string;
   email: string;
+  universityEmail: string;
   birthDate: string;
   profileImage: string | null;
-  licenseImage: string | null;
   agreements: {
     terms: boolean;
     privacy: boolean;
@@ -29,16 +26,16 @@ interface VeterinarianRegistrationData {
   };
 }
 
-interface VeterinarianRegistrationFormProps {
-  onSubmit?: (data: VeterinarianRegistrationData) => void;
+interface VeterinaryStudentRegistrationFormProps {
+  onSubmit?: (data: VeterinaryStudentRegistrationData) => void;
   onCancel?: () => void;
 }
 
-export const VeterinarianRegistrationForm: React.FC<
-  VeterinarianRegistrationFormProps
+export const VeterinaryStudentRegistrationForm: React.FC<
+  VeterinaryStudentRegistrationFormProps
 > = ({ onSubmit, onCancel }) => {
   // 폼 상태 관리
-  const [formData, setFormData] = useState<VeterinarianRegistrationData>({
+  const [formData, setFormData] = useState<VeterinaryStudentRegistrationData>({
     userId: "",
     password: "",
     passwordConfirm: "",
@@ -46,9 +43,9 @@ export const VeterinarianRegistrationForm: React.FC<
     nickname: "",
     phone: "",
     email: "",
+    universityEmail: "",
     birthDate: "",
     profileImage: null,
-    licenseImage: null,
     agreements: {
       terms: false,
       privacy: false,
@@ -59,6 +56,10 @@ export const VeterinarianRegistrationForm: React.FC<
   // 중복확인 상태
   const [duplicateCheck, setDuplicateCheck] = useState({
     userId: {
+      isChecking: false,
+      isValid: false,
+    },
+    universityEmail: {
       isChecking: false,
       isValid: false,
     },
@@ -73,6 +74,7 @@ export const VeterinarianRegistrationForm: React.FC<
     nickname: "",
     phone: "",
     email: "",
+    universityEmail: "",
     birthDate: "",
   });
 
@@ -85,7 +87,7 @@ export const VeterinarianRegistrationForm: React.FC<
   });
 
   const handleInputChange =
-    (field: keyof VeterinarianRegistrationData) => (value: string) => {
+    (field: keyof VeterinaryStudentRegistrationData) => (value: string) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
 
       // 입력 시 해당 필드 에러 초기화
@@ -98,7 +100,7 @@ export const VeterinarianRegistrationForm: React.FC<
     };
 
   const validateField = (
-    field: keyof VeterinarianRegistrationData,
+    field: keyof VeterinaryStudentRegistrationData,
     value: string
   ) => {
     let error = "";
@@ -163,6 +165,17 @@ export const VeterinarianRegistrationForm: React.FC<
         }
         break;
 
+      case "universityEmail":
+        const emailRegex3 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value.trim()) {
+          error = "대학교 이메일을 입력해주세요.";
+        } else if (!emailRegex3.test(value)) {
+          error = "올바른 이메일 형식을 입력해주세요.";
+        } else if (!validateUniversityEmail(value)) {
+          error = "인증된 대학교 이메일을 입력해주세요.";
+        }
+        break;
+
       case "birthDate":
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!value.trim()) {
@@ -176,8 +189,20 @@ export const VeterinarianRegistrationForm: React.FC<
     setInputErrors((prev) => ({ ...prev, [field]: error }));
   };
 
+  // 대학교 이메일 검증
+  const validateUniversityEmail = (email: string): boolean => {
+    const universityDomains = [
+      'snu.ac.kr', 'yonsei.ac.kr', 'korea.ac.kr', 'konkuk.ac.kr', 
+      'kangwon.ac.kr', 'chungbuk.ac.kr', 'chonnam.ac.kr', 'kyungpook.ac.kr',
+      'pusan.ac.kr', 'jnu.ac.kr', 'ac.kr'
+    ];
+
+    const domain = email.split('@')[1]?.toLowerCase();
+    return universityDomains.some(uniDomain => domain?.endsWith(uniDomain));
+  };
+
   const handleImageChange =
-    (field: "profileImage" | "licenseImage") => (url: string | null) => {
+    (field: "profileImage") => (url: string | null) => {
       setFormData((prev) => ({ ...prev, [field]: url }));
     };
 
@@ -242,6 +267,73 @@ export const VeterinarianRegistrationForm: React.FC<
     }
   };
 
+  const handleUniversityEmailDuplicateCheck = async () => {
+    console.log("CLIENT: handleUniversityEmailDuplicateCheck called");
+    console.log("CLIENT: formData.universityEmail =", formData.universityEmail);
+
+    if (!formData.universityEmail.trim()) {
+      alert("대학교 이메일을 입력해주세요.");
+      return;
+    }
+
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.universityEmail)) {
+      alert("올바른 이메일 형식을 입력해주세요.");
+      return;
+    }
+
+    // 대학교 이메일 도메인 검증
+    if (!validateUniversityEmail(formData.universityEmail)) {
+      alert("인증된 대학교 이메일을 입력해주세요.");
+      return;
+    }
+
+    console.log("CLIENT: About to call checkEmailDuplicate for university email");
+    setDuplicateCheck((prev) => ({
+      ...prev,
+      universityEmail: { ...prev.universityEmail, isChecking: true },
+    }));
+
+    try {
+      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.universityEmail);
+      const result = await checkEmailDuplicate(formData.universityEmail);
+      console.log("CLIENT: checkEmailDuplicate result:", result);
+
+      if (result.success) {
+        const isValid = !result.isDuplicate;
+        console.log(
+          "CLIENT: isDuplicate =",
+          result.isDuplicate,
+          "isValid =",
+          isValid
+        );
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          universityEmail: {
+            isChecking: false,
+            isValid,
+          },
+        }));
+        alert(result.message);
+      } else {
+        console.log("CLIENT: checkEmailDuplicate failed:", result.error);
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          universityEmail: { ...prev.universityEmail, isChecking: false },
+        }));
+        alert(result.error || "대학교 이메일 중복 확인 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("CLIENT: 대학교 이메일 중복 확인 오류:", error);
+      setDuplicateCheck((prev) => ({
+        ...prev,
+        universityEmail: { ...prev.universityEmail, isChecking: false },
+      }));
+      alert("대학교 이메일 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleAgreementChange =
     (field: keyof typeof agreements) => (checked: boolean) => {
       setAgreements((prev) => {
@@ -302,13 +394,14 @@ export const VeterinarianRegistrationForm: React.FC<
       "nickname",
       "phone",
       "email",
+      "universityEmail",
       "birthDate",
     ];
     const errors: string[] = [];
 
     fields.forEach((field) => {
       const value = formData[field] as string;
-      validateField(field as keyof VeterinarianRegistrationData, value);
+      validateField(field as keyof VeterinaryStudentRegistrationData, value);
 
       if (!value?.trim()) {
         const fieldName = {
@@ -319,6 +412,7 @@ export const VeterinarianRegistrationForm: React.FC<
           nickname: "닉네임",
           phone: "연락처",
           email: "이메일",
+          universityEmail: "대학교 이메일",
           birthDate: "생년월일",
         }[field];
         errors.push(`${fieldName}를 입력해주세요.`);
@@ -328,6 +422,10 @@ export const VeterinarianRegistrationForm: React.FC<
     // 중복확인 검증
     if (!duplicateCheck.userId.isValid) {
       errors.push("이메일 중복확인을 완료해주세요.");
+    }
+
+    if (!duplicateCheck.universityEmail.isValid) {
+      errors.push("대학교 이메일 인증을 완료해주세요.");
     }
 
     // 약관 동의 검증
@@ -534,6 +632,37 @@ export const VeterinarianRegistrationForm: React.FC<
               />
             </div>
 
+            {/* 대학교 이메일 */}
+            <div>
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                대학교 이메일
+                <span className="text-sm text-gray-500 ml-2">
+                  (수의학과 인증용)
+                </span>
+              </label>
+              <InputBox
+                value={formData.universityEmail}
+                onChange={handleInputChange("universityEmail")}
+                placeholder="대학교 이메일을 입력해주세요 (예: student@snu.ac.kr)"
+                type="email"
+                duplicateCheck={{
+                  buttonText: "인증",
+                  onCheck: handleUniversityEmailDuplicateCheck,
+                  isChecking: duplicateCheck.universityEmail.isChecking,
+                  isValid: duplicateCheck.universityEmail.isValid,
+                }}
+                success={duplicateCheck.universityEmail.isValid}
+                error={!!inputErrors.universityEmail}
+                guide={
+                  inputErrors.universityEmail
+                    ? { text: inputErrors.universityEmail, type: "error" }
+                    : duplicateCheck.universityEmail.isValid
+                    ? { text: "인증된 대학교 이메일입니다", type: "success" }
+                    : undefined
+                }
+              />
+            </div>
+
             {/* 생년월일 */}
             <div>
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
@@ -552,18 +681,6 @@ export const VeterinarianRegistrationForm: React.FC<
                 }
               />
             </div>
-          </div>
-
-          {/* 수의사 면허증 */}
-          <div className="mt-6">
-            <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-              수의사 면허증
-            </label>
-            <LicenseImageUpload
-              value={formData.licenseImage || undefined}
-              className="flex justify-center"
-              onChange={handleImageChange("licenseImage")}
-            />
           </div>
         </section>
 

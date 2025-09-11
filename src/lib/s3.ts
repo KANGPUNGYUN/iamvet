@@ -23,13 +23,8 @@ export interface UploadResult {
   error?: string;
 }
 
-// S3 URL 관련 유틸리티 함수들
-export function isS3Url(url: string): boolean {
-  const publicBucketName = process.env.NEXT_PUBLIC_S3_BUCKET_NAME || BUCKET_NAME;
-  return url.includes(publicBucketName) && url.includes('amazonaws.com');
-}
-
-export function extractS3Key(url: string): string | null {
+// Server-side S3 key extraction helper (async for server actions compliance)
+export async function extractS3Key(url: string): Promise<string | null> {
   try {
     const publicBucketName = process.env.NEXT_PUBLIC_S3_BUCKET_NAME || BUCKET_NAME;
     const urlParts = url.split('/');
@@ -166,7 +161,7 @@ export async function uploadFile(
 // 이미지 삭제
 export async function deleteImage(imageUrl: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const key = extractS3Key(imageUrl);
+    const key = await extractS3Key(imageUrl);
     
     if (!key) {
       return {
