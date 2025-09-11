@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon } from "public/icons";
 import { Button } from "@/components/ui/Button";
@@ -9,12 +9,13 @@ import {
   ProfileImageUpload,
   LicenseImageUpload,
 } from "@/components/features/profile";
-import veterinarianImage from "@/assets/images/veterinarian.png";
-import hospitalImage from "@/assets/images/hospital.png";
+import { useAuth } from "@/hooks/api/useAuth";
+import { getVeterinarianProfile, getCurrentUser } from "@/actions/auth";
 
-interface UserProfileData {
+interface VeterinarianProfileEditData {
   profileImage?: string;
   userId: string;
+  realName: string; // 실명 추가
   nickname: string;
   phone: string;
   email: string;
@@ -25,21 +26,78 @@ interface UserProfileData {
 }
 
 export default function VeterinarianProfileEditPage() {
+  const { user, isLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   // 폼 상태 관리
-  const [formData, setFormData] = useState<UserProfileData>({
-    profileImage: veterinarianImage.src,
-    userId: "qwerwer12", // 읽기 전용
-    nickname: "김수의",
-    phone: "02-2423-2342",
-    email: "qwerwer12@naver.com",
-    birthDate: "1994-08-09",
-    licenseImage: hospitalImage.src,
+  const [formData, setFormData] = useState<VeterinarianProfileEditData>({
+    profileImage: undefined,
+    userId: "",
+    realName: "",
+    nickname: "",
+    phone: "",
+    email: "",
+    birthDate: "",
+    licenseImage: undefined,
     password: "",
     passwordConfirm: "",
   });
 
+  // 사용자 데이터 로드
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) return;
+
+      try {
+        setLoading(true);
+        const profileResult = await getVeterinarianProfile();
+
+        if (profileResult.success && profileResult.profile) {
+          // getVeterinarianProfile returns only the profile data, we need user data from getCurrentUser
+          const currentUserResult = await getCurrentUser();
+          if (currentUserResult.success && currentUserResult.user) {
+            const userData = currentUserResult.user;
+            const profileData = profileResult.profile;
+
+            setFormData({
+              profileImage: userData.profileImage || undefined,
+              userId: userData.username || "",
+              realName: userData.realName || "",
+              nickname: profileData.nickname || "",
+              phone: userData.phone || "",
+              email: userData.email || "",
+              birthDate: profileData.birthDate
+                ? new Date(profileData.birthDate).toISOString().split("T")[0]
+                : "",
+              licenseImage: profileData.licenseImage || undefined,
+              password: "",
+              passwordConfirm: "",
+            });
+          } else {
+            setError("사용자 정보를 불러올 수 없습니다.");
+          }
+        } else {
+          setError(profileResult.error || "프로필 정보를 불러올 수 없습니다.");
+        }
+      } catch (err) {
+        console.error("프로필 로드 오류:", err);
+        setError("프로필 정보 로드 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user && !isLoading) {
+      loadUserData();
+    } else if (!isLoading && !user) {
+      // 로그인하지 않은 경우 리다이렉트
+      window.location.href = "/auth/login";
+    }
+  }, [user, isLoading]);
+
   const handleInputChange =
-    (field: keyof UserProfileData) => (value: string) => {
+    (field: keyof VeterinarianProfileEditData) => (value: string) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
@@ -57,6 +115,7 @@ export default function VeterinarianProfileEditPage() {
 
     // 필수 필드 검증
     if (
+      !formData.realName ||
       !formData.nickname ||
       !formData.phone ||
       !formData.email ||
@@ -78,6 +137,34 @@ export default function VeterinarianProfileEditPage() {
       window.location.href = "/dashboard/veterinarian/profile";
     }
   };
+
+  if (isLoading || loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-[#666666]">프로필 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <Button
+            variant="keycolor"
+            size="medium"
+            onClick={() => window.location.reload()}
+          >
+            다시 시도
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
@@ -117,6 +204,18 @@ export default function VeterinarianProfileEditPage() {
                   </div>
                 </div>
 
+                {/* 실명 */}
+                <div>
+                  <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                    성함
+                  </label>
+                  <InputBox
+                    value={formData.realName}
+                    onChange={handleInputChange("realName")}
+                    placeholder="실명을 입력해주세요"
+                  />
+                </div>
+
                 {/* 닉네임 */}
                 <div>
                   <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
@@ -126,10 +225,6 @@ export default function VeterinarianProfileEditPage() {
                     value={formData.nickname}
                     onChange={handleInputChange("nickname")}
                     placeholder="닉네임을 입력해주세요"
-                    guide={{
-                      text: "동물병원에서 이름 제한이 있습니다",
-                      type: "info",
-                    }}
                   />
                 </div>
 

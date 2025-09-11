@@ -23,13 +23,24 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('[LicenseUpload] 파일 선택 이벤트 발생');
     const file = event.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      console.log('[LicenseUpload] 파일이 선택되지 않음');
+      return;
+    }
+    
+    console.log('[LicenseUpload] 선택된 파일:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    });
 
-    // 파일 크기 제한 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB 이하로 선택해주세요.");
+    // 파일 크기 제한 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("파일 크기는 5MB 이하로 선택해주세요.");
       return;
     }
 
@@ -39,27 +50,42 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
       return;
     }
 
+    console.log('[LicenseUpload] 업로드 시작');
     setIsUploading(true);
 
     try {
       // 기존 S3 이미지가 있다면 먼저 삭제
       if (value && isS3Url(value)) {
+        console.log('[LicenseUpload] 기존 이미지 삭제 중:', value);
         await deleteImage(value);
+        console.log('[LicenseUpload] 기존 이미지 삭제 완료');
       }
 
       // S3에 업로드
+      console.log('[LicenseUpload] uploadImage 호출 시작');
       const result = await uploadImage(file, 'licenses');
+      console.log('[LicenseUpload] uploadImage 결과:', result);
       
       if (result.success && result.url) {
+        console.log('[LicenseUpload] 업로드 성공:', result.url);
         setPreviewUrl(result.url);
         onChange?.(result.url);
       } else {
+        console.error('[LicenseUpload] 업로드 실패:', result.error);
         alert(result.error || "이미지 업로드에 실패했습니다.");
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      alert("이미지 업로드 중 오류가 발생했습니다.");
+      console.error('[LicenseUpload] 예외 발생:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined
+      });
+      
+      const errorMessage = error instanceof Error ? error.message : "이미지 업로드 중 예상치 못한 오류가 발생했습니다.";
+      alert(`업로드 오류: ${errorMessage}`);
     } finally {
+      console.log('[LicenseUpload] 업로드 프로세스 종료');
       setIsUploading(false);
     }
   };
@@ -88,7 +114,8 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
       }
     } catch (error) {
       console.error('Delete error:', error);
-      alert("이미지 삭제 중 오류가 발생했습니다.");
+      const errorMessage = error instanceof Error ? error.message : "이미지 삭제 중 오류가 발생했습니다.";
+      alert(`삭제 오류: ${errorMessage}`);
     }
   };
 
@@ -165,7 +192,7 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
                       lineHeight: "135%",
                     }}
                   >
-                    최대 5MB
+                    최대 5MB (JPEG, PNG, WebP)
                   </p>
                 </div>
               </>
@@ -184,7 +211,7 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,.pdf"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
         onChange={handleFileSelect}
         className="hidden"
         disabled={disabled}

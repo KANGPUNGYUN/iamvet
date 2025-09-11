@@ -20,6 +20,7 @@ export interface User {
   username: string;
   email: string;
   phone: string;
+  realName?: string; // 실명 추가
   userType: "VETERINARIAN" | "HOSPITAL";
   profileImage?: string;
   provider: "NORMAL" | "GOOGLE" | "KAKAO" | "NAVER";
@@ -42,6 +43,7 @@ export interface RegisterData {
   username: string;
   email: string;
   phone: string;
+  realName?: string; // 실명 추가
   password: string;
   userType: "VETERINARIAN" | "HOSPITAL";
   profileImage?: string;
@@ -123,6 +125,7 @@ export async function login(credentials: LoginCredentials) {
         id: user.id,
         username: user.username,
         email: user.email,
+        realName: user.realName,
         userType: user.userType,
         profileImage: user.profileImage,
       },
@@ -153,6 +156,7 @@ export async function register(
       username,
       email,
       phone,
+      realName,
       password,
       userType,
       profileImage,
@@ -179,11 +183,11 @@ export async function register(
     // Create user
     const userResult = await sql`
       INSERT INTO users (
-        username, email, phone, "passwordHash", "userType", "profileImage",
+        username, email, phone, "realName", "passwordHash", "userType", "profileImage",
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt"
       )
       VALUES (
-        ${username}, ${email}, ${phone}, ${passwordHash}, ${userType}, ${profileImage},
+        ${username}, ${email}, ${phone}, ${realName}, ${passwordHash}, ${userType}, ${profileImage},
         ${termsAgreed ? new Date() : null}, ${
       privacyAgreed ? new Date() : null
     }, ${marketingAgreed ? new Date() : null}
@@ -298,6 +302,7 @@ export async function getCurrentUser(): Promise<{
         username: user.username,
         email: user.email,
         phone: user.phone,
+        realName: user.realName,
         userType: user.userType,
         profileImage: user.profileImage,
         provider: user.provider,
@@ -531,6 +536,43 @@ export async function checkUserIdDuplicate(username: string) {
   }
 }
 
+// 아이디 중복확인
+export async function checkUsernameDuplicate(username: string): Promise<{
+  success: boolean;
+  isDuplicate?: boolean;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    console.log('[SERVER] checkUsernameDuplicate called with:', username);
+    
+    if (!username || username.trim() === "") {
+      return { success: false, error: "아이디를 입력해주세요." };
+    }
+
+    const existingUser = await sql`
+      SELECT id FROM users WHERE username = ${username} AND "isActive" = true
+    `;
+    
+    const isDuplicate = existingUser.length > 0;
+    
+    return {
+      success: true,
+      isDuplicate,
+      message: isDuplicate 
+        ? "이미 사용 중인 아이디입니다." 
+        : "사용 가능한 아이디입니다."
+    };
+  } catch (error) {
+    console.error('[SERVER] checkUsernameDuplicate error:', error);
+    return {
+      success: false,
+      error: "아이디 중복확인 중 오류가 발생했습니다."
+    };
+  }
+}
+
+// 이메일 중복확인
 export async function checkEmailDuplicate(email: string) {
   try {
     console.log("Checking email duplicate for:", email);
@@ -578,6 +620,7 @@ export interface VeterinarianRegisterData {
   nickname: string;
   phone: string;
   email: string;
+  realName?: string; // 실명 추가
   birthDate: string;
   profileImage?: string;
   licenseImage?: string;
@@ -612,6 +655,7 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
       nickname,
       phone,
       email,
+      realName,
       birthDate,
       profileImage,
       licenseImage,
@@ -661,11 +705,11 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
 
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, "passwordHash", "userType", "profileImage", provider,
+        id, username, email, phone, "realName", "passwordHash", "userType", "profileImage", provider,
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${generatedId}, ${userId}, ${email}, ${phone}, ${passwordHash}, 'VETERINARIAN', ${profileImage}, 'NORMAL',
+        ${generatedId}, ${userId}, ${email}, ${phone}, ${realName}, ${passwordHash}, 'VETERINARIAN', ${profileImage}, 'NORMAL',
         ${termsAgreed ? new Date() : null}, ${
       privacyAgreed ? new Date() : null
     }, ${marketingAgreed ? new Date() : null},

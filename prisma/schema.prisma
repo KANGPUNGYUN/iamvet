@@ -14,6 +14,7 @@ model User {
   username        String    @unique
   email           String    @unique
   phone           String    @unique
+  realName        String?
   passwordHash    String?   // 소셜 로그인 사용자는 null 가능
   profileImage    String?
   userType        UserType

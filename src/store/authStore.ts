@@ -6,6 +6,7 @@ interface User {
   email: string;
   type: 'veterinarian' | 'hospital';
   profileName?: string; // 수의사: 닉네임, 병원: 병원명
+  profileImage?: string; // 프로필 이미지 URL
 }
 
 interface AuthState {

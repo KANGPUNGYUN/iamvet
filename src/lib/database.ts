@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { sql } from "@/lib/db";
 
 // Type definitions
 type NotificationType = 
@@ -977,63 +978,56 @@ export const updateVeterinarianProfile = async (
   userId: string,
   profileData: any
 ) => {
-  const fields: string[] = [];
-  const values: any[] = [];
-  let paramCount = 0;
-
-  // 동적으로 업데이트할 필드 구성
-  Object.entries(profileData).forEach(([key, value]) => {
-    if (value !== undefined) {
-      paramCount++;
-      fields.push(`${key} = ${paramCount}`);
-      values.push(value);
-    }
-  });
-
-  if (fields.length === 0) return;
-
-  // users 테이블 업데이트 (email, phone 등)
-  const userFields = ["email", "phone", "profile_image"];
-  const userUpdateFields: string[] = [];
-  const userUpdateValues: any[] = [];
-  let userParamCount = 0;
-
-  userFields.forEach((field) => {
-    if (profileData[field] !== undefined) {
-      userParamCount++;
-      userUpdateFields.push(`${field} = ${userParamCount}`);
-      userUpdateValues.push(profileData[field]);
-    }
-  });
-
-  await pool.query("BEGIN");
-
   try {
-    // users 테이블 업데이트
-    if (userUpdateFields.length > 0) {
-      const userQuery = `UPDATE users SET ${userUpdateFields.join(
-        ", "
-      )}, updated_at = CURRENT_TIMESTAMP WHERE id = ${userParamCount + 1}`;
-      await pool.query(userQuery, [...userUpdateValues, userId]);
+    console.log('[DB] updateVeterinarianProfile called with:', { userId, profileData });
+
+    // users 테이블 업데이트 (email, phone, profileImage, realName)
+    if (profileData.email !== undefined) {
+      await sql`UPDATE users SET email = ${profileData.email}, "updatedAt" = NOW() WHERE id = ${userId}`;
+      console.log('[DB] Updated user email');
+    }
+    if (profileData.phone !== undefined) {
+      await sql`UPDATE users SET phone = ${profileData.phone}, "updatedAt" = NOW() WHERE id = ${userId}`;
+      console.log('[DB] Updated user phone');
+    }
+    if (profileData.profileImage !== undefined) {
+      await sql`UPDATE users SET "profileImage" = ${profileData.profileImage}, "updatedAt" = NOW() WHERE id = ${userId}`;
+      console.log('[DB] Updated user profileImage');
+    }
+    if (profileData.realName !== undefined) {
+      await sql`UPDATE users SET "realName" = ${profileData.realName}, "updatedAt" = NOW() WHERE id = ${userId}`;
+      console.log('[DB] Updated user realName');
     }
 
-    // veterinarians 테이블 업데이트
-    const vetFields = fields.filter(
-      (field) => !userFields.some((uf) => field.includes(uf))
-    );
-    if (vetFields.length > 0) {
-      const vetQuery = `UPDATE veterinarians SET ${vetFields.join(
-        ", "
-      )}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ${paramCount + 1}`;
-      const vetValues = values.filter(
-        (_, index) => !userFields.some((uf) => fields[index].includes(uf))
-      );
-      await pool.query(vetQuery, [...vetValues, userId]);
+    // veterinarian_profiles 테이블 업데이트
+    if (profileData.nickname !== undefined || profileData.birthDate !== undefined || profileData.licenseImage !== undefined) {
+      // First check if profile exists
+      const existingProfile = await sql`SELECT id FROM veterinarian_profiles WHERE "userId" = ${userId}`;
+      
+      if (existingProfile.length > 0) {
+        // Update existing profile
+        if (profileData.nickname !== undefined) {
+          await sql`UPDATE veterinarian_profiles SET nickname = ${profileData.nickname}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
+        }
+        if (profileData.birthDate !== undefined) {
+          await sql`UPDATE veterinarian_profiles SET "birthDate" = ${profileData.birthDate}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
+        }
+        if (profileData.licenseImage !== undefined) {
+          await sql`UPDATE veterinarian_profiles SET "licenseImage" = ${profileData.licenseImage}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
+        }
+      } else {
+        // Create new profile
+        await sql`
+          INSERT INTO veterinarian_profiles ("userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt")
+          VALUES (${userId}, ${profileData.nickname || null}, ${profileData.birthDate || null}, ${profileData.licenseImage || null}, NOW(), NOW())
+        `;
+      }
+      console.log('[DB] Updated veterinarian profile');
     }
 
-    await pool.query("COMMIT");
+    return { success: true };
   } catch (error) {
-    await pool.query("ROLLBACK");
+    console.error('[DB] Error updating veterinarian profile:', error);
     throw error;
   }
 };

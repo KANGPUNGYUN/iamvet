@@ -28,6 +28,7 @@ export function useCurrentUser() {
           email: result.user.email,
           type: result.user.userType === "VETERINARIAN" ? "veterinarian" : "hospital",
           profileName: result.user.profileName,
+          profileImage: result.user.profileImage, // 프로필 이미지 추가
           phone: result.user.phone, // Add phone field
         };
       }

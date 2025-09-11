@@ -60,7 +60,8 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert("이미지 업로드 중 오류가 발생했습니다.");
+      const errorMessage = error instanceof Error ? error.message : "이미지 업로드 중 오류가 발생했습니다.";
+      alert(`업로드 오류: ${errorMessage}`);
     } finally {
       setIsUploading(false);
     }
@@ -90,7 +91,8 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
       }
     } catch (error) {
       console.error('Delete error:', error);
-      alert("이미지 삭제 중 오류가 발생했습니다.");
+      const errorMessage = error instanceof Error ? error.message : "이미지 삭제 중 오류가 발생했습니다.";
+      alert(`삭제 오류: ${errorMessage}`);
     }
   };
 

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 interface VeterinarianFormData {
   userId: string;
   password: string;
+  realName: string; // 실명 추가
   nickname: string;
   phone: string;
   email: string;
@@ -36,6 +37,7 @@ export default function VeterinarianRegisterPage() {
       const registerData: VeterinarianRegisterData = {
         userId: formData.userId,
         password: formData.password,
+        realName: formData.realName, // 실명 추가
         nickname: formData.nickname,
         phone: formData.phone,
         email: formData.email,

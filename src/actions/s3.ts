@@ -27,6 +27,13 @@ export async function uploadImage(
   file: File,
   folder: 'profiles' | 'licenses' | 'hospitals' | 'resumes' = 'profiles'
 ): Promise<UploadResult> {
+  console.log('[S3] uploadImage 시작:', {
+    fileName: file.name,
+    fileSize: file.size,
+    fileType: file.type,
+    folder
+  });
+  
   try {
     // 파일 확장자 확인
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -59,23 +66,57 @@ export async function uploadImage(
       Key: fileName,
       Body: buffer,
       ContentType: file.type,
-      ACL: 'public-read', // 공개 읽기 권한
+      // ACL: 'public-read', // ACL 비활성화된 버킷에서는 제거
     });
 
-    await s3Client.send(command);
+    console.log('[S3] S3 업로드 명령 실행 중...', {
+      bucket: BUCKET_NAME,
+      key: fileName,
+      contentType: file.type,
+      bufferSize: buffer.length
+    });
+
+    const result = await s3Client.send(command);
+    console.log('[S3] S3 업로드 성공:', result);
 
     // S3 URL 생성
     const url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-
+    
+    console.log('[S3] 최종 URL 생성:', url);
+    
     return {
       success: true,
       url,
     };
   } catch (error) {
-    console.error('S3 upload error:', error);
+    console.error('[S3] 업로드 에러 상세:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      // cause: error instanceof Error ? error.cause : undefined // ES2022 이후 지원
+    });
+    
+    // AWS SDK 특정 에러 처리
+    let errorMessage = '이미지 업로드 중 오류가 발생했습니다.';
+    
+    if (error instanceof Error) {
+      if (error.name === 'CredentialsProviderError') {
+        errorMessage = 'AWS 자격 증명 오류: 환경 변수를 확인해주세요.';
+      } else if (error.name === 'AccessDenied') {
+        errorMessage = 'S3 접근 권한이 없습니다. IAM 설정을 확인해주세요.';
+      } else if (error.name === 'NoSuchBucket') {
+        errorMessage = 'S3 버킷을 찾을 수 없습니다.';
+      } else if (error.message.includes('Network')) {
+        errorMessage = '네트워크 오류: 인터넷 연결을 확인해주세요.';
+      } else {
+        errorMessage = `업로드 오류: ${error.message}`;
+      }
+    }
+    
     return {
       success: false,
-      error: '이미지 업로드 중 오류가 발생했습니다.',
+      error: errorMessage,
     };
   }
 }
@@ -130,7 +171,7 @@ export async function uploadImageFromBase64(
       Key: generatedFileName,
       Body: buffer,
       ContentType: mimeType,
-      ACL: 'public-read', // 공개 읽기 권한
+      // ACL: 'public-read', // ACL 비활성화된 버킷에서는 제거
     });
 
     await s3Client.send(command);
