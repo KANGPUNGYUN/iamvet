@@ -2,6 +2,7 @@ import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentUser, login as loginAction, logout as logoutAction } from '@/actions/auth';
 import { useAuthStore } from '@/store/authStore';
+import { syncTokensWithCookie, removeAuthCookie } from '@/lib/auth';
 import type { User } from '@/store/authStore';
 
 interface LoginCredentials {
@@ -81,6 +82,12 @@ export function useLogout() {
       // Zustand 상태 초기화
       reset();
       
+      // localStorage와 쿠키에서 토큰 제거
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      removeAuthCookie();
+      
       // React Query 캐시 클리어
       queryClient.setQueryData(authKeys.currentUser, null);
       queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
@@ -92,6 +99,11 @@ export function useLogout() {
 export function useAuth() {
   const { data: user, isLoading: isUserLoading, error } = useCurrentUser();
   const { isAuthenticated, isLoading: isAuthLoading, setAuthenticated } = useAuthStore();
+  
+  // localStorage 토큰을 쿠키로 동기화
+  React.useEffect(() => {
+    syncTokensWithCookie();
+  }, []);
   
   // 서버 상태와 클라이언트 상태 동기화
   const actuallyAuthenticated = !!user && !error;

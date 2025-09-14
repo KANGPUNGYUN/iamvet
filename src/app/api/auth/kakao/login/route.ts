@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const userType = searchParams.get("userType") || "veterinarian";
 
     // Validate userType
-    if (!["veterinarian", "hospital"].includes(userType)) {
+    if (!["veterinarian", "hospital", "veterinary-student"].includes(userType)) {
       return NextResponse.json(
         createErrorResponse("유효하지 않은 사용자 타입입니다"),
         { status: 400 }

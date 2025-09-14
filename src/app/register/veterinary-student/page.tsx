@@ -7,7 +7,8 @@ import {
 } from "@/actions/auth";
 import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 interface VeterinaryStudentFormData {
   userId: string;
@@ -15,7 +16,7 @@ interface VeterinaryStudentFormData {
   realName: string;
   nickname: string;
   phone: string;
-  universityEmail: string; // 대학교 이메일 추가
+  email: string; // 대학교 이메일로 통합
   birthDate: string;
   profileImage: string | null;
   agreements: {
@@ -25,8 +26,16 @@ interface VeterinaryStudentFormData {
   };
 }
 
-export default function VeterinaryStudentRegisterPage() {
+function VeterinaryStudentRegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Parse social login data from URL parameters
+  const socialData = searchParams.get('social') === 'true' ? {
+    email: searchParams.get('email') || '',
+    name: searchParams.get('name') || '',
+    profileImage: searchParams.get('profileImage') || undefined,
+  } : undefined;
 
   const handleSubmit = async (formData: VeterinaryStudentFormData) => {
     try {
@@ -41,7 +50,7 @@ export default function VeterinaryStudentRegisterPage() {
         realName: formData.realName,
         nickname: formData.nickname,
         phone: formData.phone,
-        universityEmail: formData.universityEmail,
+        universityEmail: formData.email,
         birthDate: formData.birthDate,
         profileImage: profileImageUrl || undefined,
         termsAgreed: formData.agreements.terms,
@@ -98,8 +107,17 @@ export default function VeterinaryStudentRegisterPage() {
         <VeterinaryStudentRegistrationForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          socialData={socialData}
         />
       </main>
     </>
+  );
+}
+
+export default function VeterinaryStudentRegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VeterinaryStudentRegisterContent />
+    </Suspense>
   );
 }

@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getUserByEmail,
-  getUserBySocialProvider,
-  createSocialUser,
-  linkSocialAccount,
-  generateTokens,
-} from "@/lib/database";
+import { AuthService } from "@/services/AuthService";
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,61 +85,45 @@ export async function GET(request: NextRequest) {
       return createErrorPage("Kakao 로그인 실패", "이메일 정보가 필요합니다");
     }
 
-    // Check if user exists
-    let user = await getUserBySocialProvider("kakao", kakaoUser.id.toString());
-    let isNewUser = false;
+    // Use AuthService to handle social authentication
+    const authResult = await AuthService.handleSocialAuth({
+      email: email,
+      name: profile.nickname || email.split("@")[0],
+      profileImage: profile.profile_image_url,
+      userType,
+      provider: "KAKAO",
+      providerId: kakaoUser.id.toString(),
+      socialData: kakaoUser,
+    });
 
-    if (!user) {
-      // Check if user exists with same email
-      const existingUser = await getUserByEmail(email);
-
-      if (existingUser) {
-        // Link Kakao account to existing user
-        await linkSocialAccount(existingUser.id, {
-          provider: "kakao",
-          providerId: kakaoUser.id.toString(),
-          email: email,
-          name: profile.nickname || email.split("@")[0],
-          profileImage: profile.profile_image_url,
-        });
-        user = existingUser;
-      } else {
-        // Create new user
-        user = await createSocialUser({
-          email: email,
-          name: profile.nickname || email.split("@")[0],
-          profileImage: profile.profile_image_url,
-          userType,
-          provider: "kakao",
-          providerId: kakaoUser.id.toString(),
-          socialData: kakaoUser,
-        });
-        isNewUser = true;
-      }
+    if (!authResult.success || !authResult.data) {
+      return createErrorPage(
+        "Kakao 로그인 실패",
+        authResult.error || "인증 처리 실패"
+      );
     }
 
-    // Generate JWT tokens
-    const tokens = await generateTokens(user);
+    const responseData = authResult.data;
 
-    // Create success response data
-    const responseData = {
-      user: {
-        id: user.id,
-        email: email,
-        name: profile.nickname || email.split("@")[0],
-        profileImage: profile.profile_image_url,
-        provider: "kakao",
-        providerId: kakaoUser.id.toString(),
-        userType: user.userType,
-        nickname: profile.nickname,
-        ageRange: kakaoUser.kakao_account?.age_range,
-        birthday: kakaoUser.kakao_account?.birthday,
-        gender: kakaoUser.kakao_account?.gender,
-        socialAccounts: user.socialAccounts || [],
-      },
-      tokens,
-      isNewUser,
-    };
+    // Handle new user case - redirect to registration completion
+    if (
+      responseData.isNewUser &&
+      !responseData.user &&
+      responseData.socialData
+    ) {
+      const socialData = responseData.socialData;
+      const registrationUrl = `/register/social-complete/${userType}?email=${encodeURIComponent(
+        socialData.email
+      )}&name=${encodeURIComponent(
+        socialData.name
+      )}&profileImage=${encodeURIComponent(
+        socialData.profileImage || ""
+      )}&provider=${socialData.provider}&providerId=${encodeURIComponent(
+        socialData.providerId
+      )}`;
+
+      return NextResponse.redirect(new URL(registrationUrl, request.url));
+    }
 
     // Return success page that posts message to parent window
     return createSuccessPage("Kakao 로그인 성공", responseData);
@@ -156,10 +134,27 @@ export async function GET(request: NextRequest) {
 }
 
 function createSuccessPage(message: string, data: any) {
+  // Generate redirect URL using AuthService
+  const userType = data.user?.userType || data.socialData?.userType;
+  const redirectUrl = AuthService.generateRedirectUrl(
+    data.isProfileComplete,
+    userType,
+    data.isProfileComplete
+      ? undefined
+      : data.user
+      ? {
+          email: data.user.email,
+          name: data.user.name,
+          profileImage: data.user.profileImage,
+        }
+      : data.socialData
+  );
+
   const html = `
     <!DOCTYPE html>
     <html>
     <head>
+      <meta charset="UTF-8">
       <title>로그인 성공</title>
       <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
@@ -170,24 +165,46 @@ function createSuccessPage(message: string, data: any) {
       <h2 class="success">${message}</h2>
       <p>로그인이 완료되었습니다. 잠시 후 자동으로 닫힙니다.</p>
       <script>
-        if (window.opener) {
-          window.opener.postMessage({
-            type: 'SOCIAL_LOGIN_SUCCESS',
-            data: ${JSON.stringify(data)}
-          }, window.location.origin);
-          window.close();
-        } else {
-          // If not in popup, redirect to dashboard
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: 'SOCIAL_LOGIN_SUCCESS',
+              data: ${JSON.stringify(data)}
+            }, window.location.origin);
+            
+            setTimeout(function() {
+              try {
+                window.close();
+              } catch (e) {
+                // Ignore close errors
+              }
+            }, 100);
+          } else {
+            localStorage.setItem('accessToken', '${data.tokens.accessToken}');
+            localStorage.setItem('refreshToken', '${data.tokens.refreshToken}');
+            localStorage.setItem('user', JSON.stringify(${JSON.stringify(
+              data.user
+            )}));
+            
+            // 토큰을 쿠키로도 동기화
+            const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+            
+            window.location.href = '${redirectUrl}';
+          }
+        } catch (error) {
+          console.error('OAuth callback error:', error);
           localStorage.setItem('accessToken', '${data.tokens.accessToken}');
           localStorage.setItem('refreshToken', '${data.tokens.refreshToken}');
           localStorage.setItem('user', JSON.stringify(${JSON.stringify(
             data.user
           )}));
-          window.location.href = '/${
-            data.user.userType === "hospital"
-              ? "dashboard/hospital"
-              : "dashboard/veterinarian"
-          }';
+          
+          // 토큰을 쿠키로도 동기화
+          const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+          
+          window.location.href = '${redirectUrl}';
         }
       </script>
     </body>
@@ -204,6 +221,7 @@ function createErrorPage(message: string, error: string) {
     <!DOCTYPE html>
     <html>
     <head>
+      <meta charset="UTF-8">
       <title>로그인 실패</title>
       <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
@@ -215,15 +233,31 @@ function createErrorPage(message: string, error: string) {
       <p>${error}</p>
       <button onclick="window.close()">닫기</button>
       <script>
-        if (window.opener) {
-          window.opener.postMessage({
-            type: 'SOCIAL_LOGIN_ERROR',
-            message: '${message}',
-            error: '${error}'
-          }, window.location.origin);
-          setTimeout(() => window.close(), 3000);
-        } else {
-          setTimeout(() => window.location.href = '/login', 3000);
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: 'SOCIAL_LOGIN_ERROR',
+              message: '${message}',
+              error: '${error}'
+            }, window.location.origin);
+            
+            setTimeout(function() {
+              try {
+                window.close();
+              } catch (e) {
+                // Ignore close errors
+              }
+            }, 3000);
+          } else {
+            setTimeout(function() {
+              window.location.href = '/member-select';
+            }, 3000);
+          }
+        } catch (error) {
+          console.error('OAuth error callback error:', error);
+          setTimeout(function() {
+            window.location.href = '/member-select';
+          }, 3000);
         }
       </script>
     </body>

@@ -60,3 +60,32 @@ export const verifyPassword = async (
 ): Promise<boolean> => {
   return bcrypt.compare(password, hash);
 };
+
+// 클라이언트 사이드 토큰 관리
+export const setAuthCookie = (token: string, expires?: Date) => {
+  if (typeof window === 'undefined') return;
+  
+  const expireDate = expires || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7일
+  document.cookie = `auth-token=${token}; expires=${expireDate.toUTCString()}; path=/; secure; samesite=strict`;
+};
+
+export const removeAuthCookie = () => {
+  if (typeof window === 'undefined') return;
+  
+  document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+};
+
+export const getAuthTokenFromStorage = () => {
+  if (typeof window === 'undefined') return null;
+  
+  return localStorage.getItem('accessToken');
+};
+
+export const syncTokensWithCookie = () => {
+  if (typeof window === 'undefined') return;
+  
+  const accessToken = localStorage.getItem('accessToken');
+  if (accessToken) {
+    setAuthCookie(accessToken);
+  }
+};

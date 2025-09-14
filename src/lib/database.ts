@@ -34,7 +34,7 @@ const pool = new Pool({
 
 export const getUserByEmail = async (email: string, userType?: string) => {
   const query = userType
-    ? "SELECT * FROM users WHERE email = $1 AND user_type = $2"
+    ? 'SELECT * FROM users WHERE email = $1 AND "userType" = $2'
     : "SELECT * FROM users WHERE email = $1";
 
   const params = userType ? [email, userType] : [email];
@@ -44,14 +44,19 @@ export const getUserByEmail = async (email: string, userType?: string) => {
 };
 
 export const createUser = async (userData: any) => {
+  // Generate UUID for id field
+  const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  
+  const currentDate = new Date();
   const query = `
-    INSERT INTO users (username, email, password_hash, user_type, phone, profile_image, 
-                      terms_agreed_at, privacy_agreed_at, marketing_agreed_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    INSERT INTO users (id, username, email, "passwordHash", "userType", phone, "profileImage", 
+                      "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     RETURNING *
   `;
 
   const values = [
+    userId,
     userData.username,
     userData.email,
     userData.passwordHash,
@@ -61,6 +66,8 @@ export const createUser = async (userData: any) => {
     userData.termsAgreedAt,
     userData.privacyAgreedAt,
     userData.marketingAgreedAt,
+    currentDate,
+    currentDate,
   ];
 
   const result = await pool.query(query, values);
@@ -68,9 +75,10 @@ export const createUser = async (userData: any) => {
 };
 
 export const createVeterinarianProfile = async (profileData: any) => {
+  const currentDate = new Date();
   const query = `
-    INSERT INTO veterinarians (user_id, nickname, birth_date, license_image)
-    VALUES ($1, $2, $3, $4)
+    INSERT INTO veterinarian_profiles ("userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *
   `;
 
@@ -79,6 +87,34 @@ export const createVeterinarianProfile = async (profileData: any) => {
     profileData.nickname,
     profileData.birthDate,
     profileData.licenseImage,
+    currentDate,
+    currentDate,
+  ];
+
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+export const createVeterinaryStudentProfile = async (profileData: any) => {
+  // Use veterinarian_profiles table for veterinary students
+  const currentDate = new Date();
+  const query = `
+    INSERT INTO veterinarian_profiles ("userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction, "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    RETURNING *
+  `;
+
+  const universityDomain = profileData.universityEmail?.split('@')[1] || 'unknown';
+  const values = [
+    profileData.userId,
+    profileData.nickname,
+    profileData.birthDate,
+    null, // No license image for students
+    `Student at ${universityDomain}`,
+    'Veterinary Student',
+    `University Email: ${profileData.universityEmail || 'Not provided'}`,
+    currentDate,
+    currentDate
   ];
 
   const result = await pool.query(query, values);
@@ -2547,8 +2583,8 @@ export const getRecentTalents = async (limit: number = 10) => {
 export const getUserBySocialProvider = async (provider: string, providerId: string) => {
   const query = `
     SELECT u.*, sa.* FROM users u 
-    JOIN social_accounts sa ON u.id = sa.user_id 
-    WHERE sa.provider = $1 AND sa.provider_id = $2
+    JOIN social_accounts sa ON u.id = sa."userId" 
+    WHERE sa.provider = $1 AND sa."providerId" = $2
   `;
   const result = await pool.query(query, [provider, providerId]);
   return result.rows[0] || null;
@@ -2556,7 +2592,7 @@ export const getUserBySocialProvider = async (provider: string, providerId: stri
 
 export const linkSocialAccount = async (userId: string, socialData: any) => {
   const query = `
-    INSERT INTO social_accounts (user_id, provider, provider_id, access_token, refresh_token)
+    INSERT INTO social_accounts ("userId", provider, "providerId", "accessToken", "refreshToken")
     VALUES ($1, $2, $3, $4, $5)
     RETURNING *
   `;
@@ -2566,7 +2602,44 @@ export const linkSocialAccount = async (userId: string, socialData: any) => {
 };
 
 export const createSocialUser = async (userData: any) => {
-  return await createUser(userData);
+  const user = await createUser({
+    username: userData.name || userData.email,
+    email: userData.email,
+    passwordHash: null, // SNS 로그인은 패스워드 없음
+    userType: userData.userType.toUpperCase(),
+    phone: userData.phone || null,
+    profileImage: userData.profileImage || null,
+    termsAgreedAt: new Date(),
+    privacyAgreedAt: new Date(),
+    marketingAgreedAt: null,
+  });
+
+  // 소셜 계정 연결
+  await linkSocialAccount(user.id, {
+    provider: userData.provider,
+    providerId: userData.providerId,
+    accessToken: userData.accessToken,
+    refreshToken: userData.refreshToken,
+  });
+
+  return user;
+};
+
+export const isUserProfileComplete = async (userId: string, userType: string) => {
+  if (userType === 'VETERINARIAN' || userType === 'veterinary-student') {
+    // Check veterinarian_profiles table for profile completion
+    const profileQuery = `SELECT id FROM veterinarian_profiles WHERE "userId" = $1`;
+    
+    const profileResult = await pool.query(profileQuery, [userId]);
+    
+    // Profile is complete if veterinarian_profiles record exists
+    return profileResult.rows.length > 0;
+  } else if (userType === 'HOSPITAL' || userType === 'hospital') {
+    const query = `SELECT id FROM hospitals WHERE user_id = $1 OR "userId" = $1`;
+    const result = await pool.query(query, [userId]);
+    return result.rows.length > 0;
+  }
+  return false;
 };
 
 export const getSocialUserInfo = async (provider: string, accessToken: string) => {
@@ -2575,7 +2648,7 @@ export const getSocialUserInfo = async (provider: string, accessToken: string) =
 };
 
 export const unlinkSocialAccount = async (userId: string, provider: string) => {
-  const query = `DELETE FROM social_accounts WHERE user_id = $1 AND provider = $2`;
+  const query = `DELETE FROM social_accounts WHERE "userId" = $1 AND provider = $2`;
   const result = await pool.query(query, [userId, provider]);
   return (result.rowCount ?? 0) > 0;
 };
@@ -2616,7 +2689,7 @@ export const verifyPassword = async (password: string, hash: string) => {
 };
 
 export const updateUserPassword = async (userId: string, newPasswordHash: string) => {
-  const query = `UPDATE users SET password_hash = $1 WHERE id = $2`;
+  const query = `UPDATE users SET "passwordHash" = $1 WHERE id = $2`;
   const result = await pool.query(query, [newPasswordHash, userId]);
   return (result.rowCount ?? 0) > 0;
 };
@@ -3183,9 +3256,20 @@ export const restoreUserData = async (userId: string) => {
 };
 
 export const generateTokens = async (user: any) => {
-  // 실제 구현에서는 JWT 라이브러리 사용
+  const jwt = require('jsonwebtoken');
+  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+  
+  const payload = {
+    userId: user.id,
+    userType: user.userType,
+    email: user.email,
+  };
+  
+  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+  const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+  
   return {
-    accessToken: `access_${user.id}_${Date.now()}`,
-    refreshToken: `refresh_${user.id}_${Date.now()}`,
+    accessToken,
+    refreshToken,
   };
 };

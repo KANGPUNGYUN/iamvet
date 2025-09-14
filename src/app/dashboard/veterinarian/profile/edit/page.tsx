@@ -96,7 +96,7 @@ export default function VeterinarianProfileEditPage() {
       loadUserData();
     } else if (!isLoading && !user) {
       // 로그인하지 않은 경우 리다이렉트
-      window.location.href = "/auth/login";
+      window.location.href = "/member-select";
     }
   }, [user, isLoading]);
 
@@ -130,10 +130,10 @@ export default function VeterinarianProfileEditPage() {
     }
 
     setSaving(true);
-    
+
     try {
       console.log("프로필 수정 데이터:", formData);
-      
+
       // FormData 생성
       const updateData = new FormData();
       updateData.append("realName", formData.realName);
@@ -141,7 +141,7 @@ export default function VeterinarianProfileEditPage() {
       updateData.append("phone", formData.phone);
       updateData.append("email", formData.email);
       updateData.append("birthDate", formData.birthDate);
-      
+
       if (formData.profileImage) {
         updateData.append("profileImage", formData.profileImage);
       }
@@ -161,7 +161,10 @@ export default function VeterinarianProfileEditPage() {
       console.log("birthDate:", updateData.get("birthDate"));
       console.log("profileImage:", updateData.get("profileImage"));
       console.log("licenseImage:", updateData.get("licenseImage"));
-      console.log("password:", updateData.get("password") ? "[SET]" : "[NOT SET]");
+      console.log(
+        "password:",
+        updateData.get("password") ? "[SET]" : "[NOT SET]"
+      );
 
       // API 호출
       console.log("API 호출 시작...");
@@ -182,7 +185,7 @@ export default function VeterinarianProfileEditPage() {
       // 응답을 텍스트로 먼저 읽어서 내용 확인
       const responseText = await response.text();
       console.log("Raw Response Text:", responseText);
-      
+
       let result;
       try {
         result = JSON.parse(responseText);
@@ -196,14 +199,18 @@ export default function VeterinarianProfileEditPage() {
       if (result.status === "success") {
         // React Query 캐시 무효화하여 실시간 업데이트
         await queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
-        
+
         alert(result.message || "프로필이 수정되었습니다!");
-        
+
         // 프로필 페이지로 이동
         window.location.href = "/dashboard/veterinarian/profile";
       } else {
         console.error("API Error Result:", result);
-        alert(`프로필 수정 실패: ${result.message || "알 수 없는 오류가 발생했습니다."}`);
+        alert(
+          `프로필 수정 실패: ${
+            result.message || "알 수 없는 오류가 발생했습니다."
+          }`
+        );
       }
     } catch (error) {
       console.error("프로필 수정 오류:", error);

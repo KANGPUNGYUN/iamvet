@@ -45,8 +45,14 @@ export default function VeterinarianLoginPage() {
     }
   };
 
-  const handleSocialLogin = (type: string) => {
-    console.log(`${type} 로그인 시도`);
+
+  const handleSocialLogin = (provider: "google" | "kakao" | "naver") => {
+    // Direct redirect instead of using popup-based hooks
+    const baseUrl = window.location.origin;
+    const socialLoginUrl = `${baseUrl}/api/auth/${provider}/login?userType=veterinarian`;
+    
+    // Force redirect in current window
+    window.location.href = socialLoginUrl;
   };
 
   return (
@@ -143,15 +149,15 @@ export default function VeterinarianLoginPage() {
             <div className="flex flex-col md:grid md:grid-cols-3 gap-3">
               <SocialLoginButton
                 type="naver"
-                onClick={() => handleSocialLogin("네이버")}
+                onClick={() => handleSocialLogin("naver")}
               />
               <SocialLoginButton
                 type="kakao"
-                onClick={() => handleSocialLogin("카카오")}
+                onClick={() => handleSocialLogin("kakao")}
               />
               <SocialLoginButton
                 type="google"
-                onClick={() => handleSocialLogin("구글")}
+                onClick={() => handleSocialLogin("google")}
               />
             </div>
           </form>

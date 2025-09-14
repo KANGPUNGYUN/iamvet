@@ -33,7 +33,7 @@ export default function VeterinaryStudentLoginPage() {
 
       if (result.success) {
         // 로그인 성공 시 대시보드로 이동
-        router.push("/dashboard/veterinary-student");
+        router.push("/dashboard/veterinarian");
       } else {
         // 로그인 실패 시 alert 표시
         alert("아이디 또는 비밀번호를 다시 확인해주세요.");
@@ -45,8 +45,13 @@ export default function VeterinaryStudentLoginPage() {
     }
   };
 
-  const handleSocialLogin = (type: string) => {
-    console.log(`${type} 로그인 시도`);
+  const handleSocialLogin = (provider: "google" | "kakao" | "naver") => {
+    // Direct redirect instead of using popup-based hooks
+    const baseUrl = window.location.origin;
+    const socialLoginUrl = `${baseUrl}/api/auth/${provider}/login?userType=veterinary-student`;
+
+    // Force redirect in current window
+    window.location.href = socialLoginUrl;
   };
 
   return (
@@ -143,15 +148,15 @@ export default function VeterinaryStudentLoginPage() {
             <div className="flex flex-col md:grid md:grid-cols-3 gap-3">
               <SocialLoginButton
                 type="naver"
-                onClick={() => handleSocialLogin("네이버")}
+                onClick={() => handleSocialLogin("naver")}
               />
               <SocialLoginButton
                 type="kakao"
-                onClick={() => handleSocialLogin("카카오")}
+                onClick={() => handleSocialLogin("kakao")}
               />
               <SocialLoginButton
                 type="google"
-                onClick={() => handleSocialLogin("구글")}
+                onClick={() => handleSocialLogin("google")}
               />
             </div>
           </form>

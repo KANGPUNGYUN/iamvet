@@ -15,7 +15,7 @@ interface VeterinaryStudentRegistrationData {
   realName: string;
   nickname: string;
   phone: string;
-  universityEmail: string;
+  email: string;
   birthDate: string;
   profileImage: string | null;
   agreements: {
@@ -28,25 +28,30 @@ interface VeterinaryStudentRegistrationData {
 interface VeterinaryStudentRegistrationFormProps {
   onSubmit?: (data: VeterinaryStudentRegistrationData) => void;
   onCancel?: () => void;
+  socialData?: {
+    email: string;
+    name: string;
+    profileImage?: string;
+  };
 }
 
 export const VeterinaryStudentRegistrationForm: React.FC<
   VeterinaryStudentRegistrationFormProps
-> = ({ onSubmit, onCancel }) => {
+> = ({ onSubmit, onCancel, socialData }) => {
   // 폼 상태 관리
   const [formData, setFormData] = useState<VeterinaryStudentRegistrationData>({
     userId: "",
-    password: "",
-    passwordConfirm: "",
-    realName: "",
+    password: socialData ? "" : "", // SNS 로그인 시 패스워드 불필요
+    passwordConfirm: socialData ? "" : "",
+    realName: socialData?.name || "",
     nickname: "",
     phone: "",
-    universityEmail: "",
+    email: "", // 대학 이메일은 별도 입력 필요
     birthDate: "",
-    profileImage: null,
+    profileImage: socialData?.profileImage || null,
     agreements: {
-      terms: false,
-      privacy: false,
+      terms: !!socialData, // SNS 로그인 시 자동 동의
+      privacy: !!socialData,
       marketing: false,
     },
   });
@@ -57,7 +62,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
       isChecking: false,
       isValid: false,
     },
-    universityEmail: {
+    email: {
       isChecking: false,
       isValid: false,
     },
@@ -71,7 +76,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     realName: "",
     nickname: "",
     phone: "",
-    universityEmail: "",
+    email: "",
     birthDate: "",
   });
 
@@ -106,6 +111,8 @@ export const VeterinaryStudentRegistrationForm: React.FC<
       case "userId":
         if (!value.trim()) {
           error = "아이디를 입력해주세요.";
+        } else if (value.length < 4) {
+          error = "아이디는 4자 이상이어야 합니다.";
         }
         break;
 
@@ -150,11 +157,11 @@ export const VeterinaryStudentRegistrationForm: React.FC<
         }
         break;
 
-      case "universityEmail":
-        const emailRegex3 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      case "email":
+        const emailRegex2 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value.trim()) {
           error = "대학교 이메일을 입력해주세요.";
-        } else if (!emailRegex3.test(value)) {
+        } else if (!emailRegex2.test(value)) {
           error = "올바른 이메일 형식을 입력해주세요.";
         } else if (!validateUniversityEmail(value)) {
           error = "수의학과가 있는 대학교의 이메일을 입력해주세요.";
@@ -197,23 +204,21 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     setFormData((prev) => ({ ...prev, [field]: url }));
   };
 
-  const handleEmailDuplicateCheckForUserId = async () => {
-    console.log("CLIENT: handleEmailDuplicateCheckForUserId called");
+  const handleUserIdDuplicateCheck = async () => {
+    console.log("CLIENT: handleUserIdDuplicateCheck called");
     console.log("CLIENT: formData.userId =", formData.userId);
 
     if (!formData.userId.trim()) {
-      alert("이메일을 입력해주세요.");
+      alert("아이디를 입력해주세요.");
       return;
     }
 
-    // 이메일 형식 검증
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.userId)) {
-      alert("올바른 이메일 형식을 입력해주세요.");
+    if (formData.userId.length < 4) {
+      alert("아이디는 4자 이상이어야 합니다.");
       return;
     }
 
-    console.log("CLIENT: About to call checkEmailDuplicate");
+    console.log("CLIENT: About to call checkEmailDuplicate for userId");
     setDuplicateCheck((prev) => ({
       ...prev,
       userId: { ...prev.userId, isChecking: true },
@@ -221,6 +226,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 
     try {
       console.log("CLIENT: Calling checkEmailDuplicate with:", formData.userId);
+      // 임시로 checkEmailDuplicate 사용 (나중에 checkUsernameDuplicate로 변경 필요)
       const result = await checkEmailDuplicate(formData.userId);
       console.log("CLIENT: checkEmailDuplicate result:", result);
 
@@ -246,54 +252,49 @@ export const VeterinaryStudentRegistrationForm: React.FC<
           ...prev,
           userId: { ...prev.userId, isChecking: false },
         }));
-        alert(result.error || "이메일 중복 확인 중 오류가 발생했습니다.");
+        alert(result.error || "아이디 중복 확인 중 오류가 발생했습니다.");
       }
     } catch (error) {
-      console.error("CLIENT: 이메일 중복 확인 오류:", error);
+      console.error("CLIENT: 아이디 중복 확인 오류:", error);
       setDuplicateCheck((prev) => ({
         ...prev,
         userId: { ...prev.userId, isChecking: false },
       }));
-      alert("이메일 중복 확인 중 오류가 발생했습니다.");
+      alert("아이디 중복 확인 중 오류가 발생했습니다.");
     }
   };
 
-  const handleUniversityEmailDuplicateCheck = async () => {
-    console.log("CLIENT: handleUniversityEmailDuplicateCheck called");
-    console.log("CLIENT: formData.universityEmail =", formData.universityEmail);
+  const handleEmailDuplicateCheck = async () => {
+    console.log("CLIENT: handleEmailDuplicateCheck called");
+    console.log("CLIENT: formData.email =", formData.email);
 
-    if (!formData.universityEmail.trim()) {
+    if (!formData.email.trim()) {
       alert("대학교 이메일을 입력해주세요.");
       return;
     }
 
     // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.universityEmail)) {
+    if (!emailRegex.test(formData.email)) {
       alert("올바른 이메일 형식을 입력해주세요.");
       return;
     }
 
     // 대학교 이메일 도메인 검증
-    if (!validateUniversityEmail(formData.universityEmail)) {
+    if (!validateUniversityEmail(formData.email)) {
       alert("수의학과가 있는 대학교의 이메일을 입력해주세요.");
       return;
     }
 
-    console.log(
-      "CLIENT: About to call checkEmailDuplicate for university email"
-    );
+    console.log("CLIENT: About to call checkEmailDuplicate");
     setDuplicateCheck((prev) => ({
       ...prev,
-      universityEmail: { ...prev.universityEmail, isChecking: true },
+      email: { ...prev.email, isChecking: true },
     }));
 
     try {
-      console.log(
-        "CLIENT: Calling checkEmailDuplicate with:",
-        formData.universityEmail
-      );
-      const result = await checkEmailDuplicate(formData.universityEmail);
+      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.email);
+      const result = await checkEmailDuplicate(formData.email);
       console.log("CLIENT: checkEmailDuplicate result:", result);
 
       if (result.success) {
@@ -306,7 +307,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
         );
         setDuplicateCheck((prev) => ({
           ...prev,
-          universityEmail: {
+          email: {
             isChecking: false,
             isValid,
           },
@@ -316,19 +317,17 @@ export const VeterinaryStudentRegistrationForm: React.FC<
         console.log("CLIENT: checkEmailDuplicate failed:", result.error);
         setDuplicateCheck((prev) => ({
           ...prev,
-          universityEmail: { ...prev.universityEmail, isChecking: false },
+          email: { ...prev.email, isChecking: false },
         }));
-        alert(
-          result.error || "대학교 이메일 중복 확인 중 오류가 발생했습니다."
-        );
+        alert(result.error || "이메일 중복 확인 중 오류가 발생했습니다.");
       }
     } catch (error) {
-      console.error("CLIENT: 대학교 이메일 중복 확인 오류:", error);
+      console.error("CLIENT: 이메일 중복 확인 오류:", error);
       setDuplicateCheck((prev) => ({
         ...prev,
-        universityEmail: { ...prev.universityEmail, isChecking: false },
+        email: { ...prev.email, isChecking: false },
       }));
-      alert("대학교 이메일 중복 확인 중 오류가 발생했습니다.");
+      alert("이메일 중복 확인 중 오류가 발생했습니다.");
     }
   };
 
@@ -383,45 +382,40 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     };
 
   const handleRegister = () => {
-    // 모든 필드 검증
-    const fields: (keyof typeof inputErrors)[] = [
-      "userId",
-      "password",
-      "passwordConfirm",
-      "realName",
-      "nickname",
-      "phone",
-      "universityEmail",
-      "birthDate",
-    ];
+    // SNS 로그인 시에는 userId, password, passwordConfirm 필드 제외
+    const requiredFields: (keyof typeof inputErrors)[] = socialData 
+      ? ["realName", "nickname", "phone", "email", "birthDate"]
+      : ["userId", "password", "passwordConfirm", "realName", "nickname", "phone", "email", "birthDate"];
     const errors: string[] = [];
 
-    fields.forEach((field) => {
+    requiredFields.forEach((field) => {
       const value = formData[field] as string;
       validateField(field as keyof VeterinaryStudentRegistrationData, value);
 
       if (!value?.trim()) {
         const fieldName = {
-          userId: "이메일 (아이디)",
+          userId: "아이디",
           password: "비밀번호",
           passwordConfirm: "비밀번호 확인",
           realName: "실명",
           nickname: "닉네임",
           phone: "연락처",
-          email: "이메일",
-          universityEmail: "대학교 이메일",
+          email: "대학교 이메일",
           birthDate: "생년월일",
         }[field];
         errors.push(`${fieldName}를 입력해주세요.`);
       }
     });
 
-    // 중복확인 검증
-    if (!duplicateCheck.userId.isValid) {
-      errors.push("이메일 중복확인을 완료해주세요.");
+    // SNS 로그인이 아닐 때만 중복확인 검증
+    if (!socialData) {
+      if (!duplicateCheck.userId.isValid) {
+        errors.push("아이디 중복확인을 완료해주세요.");
+      }
     }
 
-    if (!duplicateCheck.universityEmail.isValid) {
+    // 대학교 이메일 인증은 SNS 사용자도 필요
+    if (!duplicateCheck.email.isValid) {
       errors.push("대학교 이메일 인증을 완료해주세요.");
     }
 
@@ -435,7 +429,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
       alert(errors[0]);
 
       // 첫 번째 에러 필드 찾기 및 포커스
-      for (const field of fields) {
+      for (const field of requiredFields) {
         if (!formData[field]?.toString().trim() || inputErrors[field]) {
           const element = document.querySelector(
             `input[placeholder*="${field}"]`
@@ -468,71 +462,76 @@ export const VeterinaryStudentRegistrationForm: React.FC<
           </h2>
 
           <div className="space-y-6">
-            {/* 아이디 */}
-            <div>
-              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-                아이디
-              </label>
-              <InputBox
-                value={formData.userId}
-                onChange={handleInputChange("userId")}
-                placeholder="아이디를 입력해주세요"
-                type="text"
-                duplicateCheck={{
-                  buttonText: "중복 확인",
-                  onCheck: handleEmailDuplicateCheckForUserId,
-                  isChecking: duplicateCheck.userId.isChecking,
-                  isValid: duplicateCheck.userId.isValid,
-                }}
-                success={duplicateCheck.userId.isValid}
-                error={!!inputErrors.userId}
-                guide={
-                  inputErrors.userId
-                    ? { text: inputErrors.userId, type: "error" }
-                    : duplicateCheck.userId.isValid
-                    ? { text: "사용 가능한 아이디입니다", type: "success" }
-                    : undefined
-                }
-              />
-            </div>
+            {/* SNS 로그인이 아닐 때만 아이디 필드 표시 */}
+            {!socialData && (
+              <div>
+                <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                  아이디
+                </label>
+                <InputBox
+                  value={formData.userId}
+                  onChange={handleInputChange("userId")}
+                  placeholder="아이디를 입력해주세요"
+                  type="text"
+                  duplicateCheck={{
+                    buttonText: "중복 확인",
+                    onCheck: handleUserIdDuplicateCheck,
+                    isChecking: duplicateCheck.userId.isChecking,
+                    isValid: duplicateCheck.userId.isValid,
+                  }}
+                  success={duplicateCheck.userId.isValid}
+                  error={!!inputErrors.userId}
+                  guide={
+                    inputErrors.userId
+                      ? { text: inputErrors.userId, type: "error" }
+                      : duplicateCheck.userId.isValid
+                      ? { text: "사용 가능한 아이디입니다", type: "success" }
+                      : undefined
+                  }
+                />
+              </div>
+            )}
 
-            {/* 비밀번호 */}
-            <div>
-              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-                비밀번호
-              </label>
-              <InputBox
-                value={formData.password}
-                onChange={handleInputChange("password")}
-                placeholder="비밀번호를 입력해주세요"
-                type="password"
-                error={!!inputErrors.password}
-                guide={
-                  inputErrors.password
-                    ? { text: inputErrors.password, type: "error" }
-                    : { text: "비밀번호는 8자 이상 입력해주세요", type: "info" }
-                }
-              />
-            </div>
+            {/* SNS 로그인이 아닐 때만 비밀번호 필드 표시 */}
+            {!socialData && (
+              <>
+                <div>
+                  <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                    비밀번호
+                  </label>
+                  <InputBox
+                    value={formData.password}
+                    onChange={handleInputChange("password")}
+                    placeholder="비밀번호를 입력해주세요"
+                    type="password"
+                    error={!!inputErrors.password}
+                    guide={
+                      inputErrors.password
+                        ? { text: inputErrors.password, type: "error" }
+                        : { text: "비밀번호는 8자 이상 입력해주세요", type: "info" }
+                    }
+                  />
+                </div>
 
-            {/* 비밀번호 확인 */}
-            <div>
-              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-                비밀번호 확인
-              </label>
-              <InputBox
-                value={formData.passwordConfirm}
-                onChange={handleInputChange("passwordConfirm")}
-                placeholder="비밀번호를 다시 입력해주세요"
-                type="password"
-                error={!!inputErrors.passwordConfirm}
-                guide={
-                  inputErrors.passwordConfirm
-                    ? { text: inputErrors.passwordConfirm, type: "error" }
-                    : undefined
-                }
-              />
-            </div>
+                <div>
+                  <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                    비밀번호 확인
+                  </label>
+                  <InputBox
+                    value={formData.passwordConfirm}
+                    onChange={handleInputChange("passwordConfirm")}
+                    placeholder="비밀번호를 다시 입력해주세요"
+                    type="password"
+                    error={!!inputErrors.passwordConfirm}
+                    guide={
+                      inputErrors.passwordConfirm
+                        ? { text: inputErrors.passwordConfirm, type: "error" }
+                        : undefined
+                    }
+                  />
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -564,8 +563,11 @@ export const VeterinaryStudentRegistrationForm: React.FC<
                 value={formData.realName}
                 onChange={handleInputChange("realName")}
                 placeholder="실명을 입력해주세요"
+                readOnly={!!socialData}
+                success={!!socialData}
                 error={!!inputErrors.realName}
                 guide={
+                  socialData ? { text: "SNS 계정에서 가져온 이름입니다", type: "success" } :
                   inputErrors.realName
                     ? { text: inputErrors.realName, type: "error" }
                     : undefined
@@ -618,23 +620,29 @@ export const VeterinaryStudentRegistrationForm: React.FC<
                   (수의학과 인증용)
                 </span>
               </label>
+              {socialData && (
+                <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700">
+                  <p><strong>SNS 계정:</strong> {socialData.email}</p>
+                  <p>수의학과 인증을 위해 별도로 대학교 이메일을 입력해주세요.</p>
+                </div>
+              )}
               <InputBox
-                value={formData.universityEmail}
-                onChange={handleInputChange("universityEmail")}
+                value={formData.email}
+                onChange={handleInputChange("email")}
                 placeholder="수의학과 대학교 이메일을 입력해주세요 (예: student@snu.ac.kr)"
                 type="email"
                 duplicateCheck={{
                   buttonText: "인증",
-                  onCheck: handleUniversityEmailDuplicateCheck,
-                  isChecking: duplicateCheck.universityEmail.isChecking,
-                  isValid: duplicateCheck.universityEmail.isValid,
+                  onCheck: handleEmailDuplicateCheck,
+                  isChecking: duplicateCheck.email.isChecking,
+                  isValid: duplicateCheck.email.isValid,
                 }}
-                success={duplicateCheck.universityEmail.isValid}
-                error={!!inputErrors.universityEmail}
+                success={duplicateCheck.email.isValid}
+                error={!!inputErrors.email}
                 guide={
-                  inputErrors.universityEmail
-                    ? { text: inputErrors.universityEmail, type: "error" }
-                    : duplicateCheck.universityEmail.isValid
+                  inputErrors.email
+                    ? { text: inputErrors.email, type: "error" }
+                    : duplicateCheck.email.isValid
                     ? {
                         text: "인증된 수의학과 대학교 이메일입니다",
                         type: "success",

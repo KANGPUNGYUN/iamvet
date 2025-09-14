@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
 import { sql } from "@/lib/db";
+import { generateTokens } from "@/lib/database";
 
 // JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
@@ -826,7 +827,7 @@ export async function registerVeterinaryStudent(
     // Check if user already exists
     console.log("SERVER: Checking for existing user...");
     const existingUser = await sql`
-      SELECT id FROM users WHERE username = ${userId} OR universityEmail = ${universityEmail} OR phone = ${phone}
+      SELECT id FROM users WHERE username = ${userId} OR email = ${universityEmail} OR phone = ${phone}
     `;
     console.log("SERVER: Existing user check result:", existingUser);
 
@@ -838,24 +839,6 @@ export async function registerVeterinaryStudent(
       };
     }
 
-    // Check if university email already exists
-    console.log("SERVER: Checking for existing university email...");
-    const existingUniversityEmail = await sql`
-      SELECT id FROM veterinary_student_profiles WHERE university_email = ${universityEmail}
-    `;
-    console.log(
-      "SERVER: Existing university email check result:",
-      existingUniversityEmail
-    );
-
-    if (existingUniversityEmail.length > 0) {
-      console.log("SERVER: University email already exists");
-      return {
-        success: false,
-        error: "이미 가입된 대학교 이메일입니다.",
-      };
-    }
-
     // Hash password
     console.log("SERVER: Hashing password...");
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -864,29 +847,36 @@ export async function registerVeterinaryStudent(
     // Create user
     console.log("SERVER: Creating user...");
     const userId_generated = createId();
+    const currentDate = new Date();
     const user = await sql`
       INSERT INTO users (
-        id, username, email, phone, real_name, password, user_type, profile_image,
-        provider, is_active, terms_agreed_at, privacy_agreed_at, marketing_agreed_at
+        id, username, email, phone, "passwordHash", "userType", "profileImage",
+        provider, "isActive", "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt",
+        "createdAt", "updatedAt"
       ) VALUES (
-        ${userId_generated}, ${userId}, ${universityEmail}, ${phone}, ${realName}, ${hashedPassword}, 
-        'VETERINARY_STUDENT', ${profileImage}, 'NORMAL', true,
+        ${userId_generated}, ${userId}, ${universityEmail}, ${phone}, ${hashedPassword}, 
+        'VETERINARIAN', ${profileImage}, 'NORMAL', true,
         ${termsAgreed ? new Date() : null},
         ${privacyAgreed ? new Date() : null}, 
-        ${marketingAgreed ? new Date() : null}
+        ${marketingAgreed ? new Date() : null},
+        ${currentDate}, ${currentDate}
       )
-      RETURNING id, username, email, phone, real_name, user_type, profile_image
+      RETURNING id, username, email, phone, "userType", "profileImage"
     `;
     console.log("SERVER: User created:", user[0]);
 
-    // Create veterinary student profile
+    // Create veterinarian profile for veterinary student (using existing table)
     console.log("SERVER: Creating veterinary student profile...");
     const profileId = createId();
+    const universityDomain = universityEmail.split('@')[1] || 'unknown';
     await sql`
-      INSERT INTO veterinary_student_profiles (
-        id, user_id, nickname, birth_date, university_email
+      INSERT INTO veterinarian_profiles (
+        id, "userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction,
+        "createdAt", "updatedAt"
       ) VALUES (
-        ${profileId}, ${user[0].id}, ${nickname}, ${birthDate}, ${universityEmail}
+        ${profileId}, ${user[0].id}, ${nickname}, ${new Date(birthDate)}, null, 
+        ${'Student at ' + universityDomain}, 'Veterinary Student', 
+        ${'University Email: ' + universityEmail}, ${currentDate}, ${currentDate}
       )
     `;
     console.log("SERVER: Veterinary student profile created successfully");
@@ -1971,6 +1961,280 @@ export async function saveDetailedHospitalProfile(
     return {
       success: false,
       error: "병원 프로필 저장 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// Social Registration Completion Functions
+interface SocialVeterinarianRegistrationData {
+  email: string;
+  name: string;
+  profileImage?: string;
+  provider: string;
+  providerId: string;
+  nickname: string;
+  phone: string;
+  birthDate: string;
+  licenseImage?: string;
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed: boolean;
+}
+
+interface SocialVeterinaryStudentRegistrationData {
+  email: string;
+  name: string;
+  profileImage?: string;
+  provider: string;
+  providerId: string;
+  nickname: string;
+  phone: string;
+  universityEmail: string;
+  birthDate: string;
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed: boolean;
+}
+
+export async function completeSocialVeterinarianRegistration(
+  data: SocialVeterinarianRegistrationData
+) {
+  try {
+    console.log("SERVER: completeSocialVeterinarianRegistration called with data:", data);
+
+    const {
+      email,
+      name,
+      profileImage,
+      provider,
+      providerId,
+      nickname,
+      phone,
+      birthDate,
+      licenseImage,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    } = data;
+
+    // Check if social user already exists
+    const existingSocialUser = await sql`
+      SELECT u.*, sa.* FROM users u 
+      JOIN social_accounts sa ON u.id = sa."userId" 
+      WHERE sa.provider = ${provider} AND sa."providerId" = ${providerId}
+    `;
+
+    if (existingSocialUser.length > 0) {
+      return {
+        success: false,
+        error: "이미 가입된 소셜 계정입니다.",
+      };
+    }
+
+    // Check if email already exists
+    const existingEmailUser = await sql`
+      SELECT id FROM users WHERE email = ${email}
+    `;
+
+    if (existingEmailUser.length > 0) {
+      return {
+        success: false,
+        error: "이미 가입된 이메일입니다.",
+      };
+    }
+
+    // Create user
+    const userId = createId();
+    const currentDate = new Date();
+    
+    const userResult = await sql`
+      INSERT INTO users (
+        id, username, email, phone, "realName", "passwordHash", "userType", "profileImage", provider,
+        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${userId}, ${email}, ${email}, ${phone}, ${name}, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
+        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        true, ${currentDate}, ${currentDate}
+      )
+      RETURNING *
+    `;
+
+    const user = userResult[0];
+
+    // Create social account link
+    const socialAccountId = createId();
+    await sql`
+      INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
+      VALUES (${socialAccountId}, ${user.id}, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
+    `;
+
+    // Create veterinarian profile
+    const profileId = createId();
+    await sql`
+      INSERT INTO veterinarian_profiles (
+        id, "userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${profileId}, ${user.id}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${licenseImage || null},
+        ${currentDate}, ${currentDate}
+      )
+    `;
+
+    // Generate tokens for the new user
+    const tokens = await generateTokens(user);
+    
+    // Set auth cookie
+    const cookieStore = await cookies();
+    const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    cookieStore.set("auth-token", tokens.accessToken, {
+      expires: expireDate,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        userType: user.userType,
+      },
+      tokens,
+    };
+  } catch (error) {
+    console.error("SERVER: Complete social veterinarian registration error:", error);
+    return {
+      success: false,
+      error: `소셜 수의사 회원가입 완료 실패: ${
+        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
+      }`,
+    };
+  }
+}
+
+export async function completeSocialVeterinaryStudentRegistration(
+  data: SocialVeterinaryStudentRegistrationData
+) {
+  try {
+    console.log("SERVER: completeSocialVeterinaryStudentRegistration called with data:", data);
+
+    const {
+      // email: socialEmail, // Not used in veterinary student registration  
+      name,
+      profileImage,
+      provider,
+      providerId,
+      nickname,
+      phone,
+      universityEmail,
+      birthDate,
+      termsAgreed,
+      privacyAgreed,
+      marketingAgreed,
+    } = data;
+
+    // Check if social user already exists
+    const existingSocialUser = await sql`
+      SELECT u.*, sa.* FROM users u 
+      JOIN social_accounts sa ON u.id = sa."userId" 
+      WHERE sa.provider = ${provider} AND sa."providerId" = ${providerId}
+    `;
+
+    if (existingSocialUser.length > 0) {
+      return {
+        success: false,
+        error: "이미 가입된 소셜 계정입니다.",
+      };
+    }
+
+    // Check if university email already exists
+    const existingEmailUser = await sql`
+      SELECT id FROM users WHERE email = ${universityEmail}
+    `;
+
+    if (existingEmailUser.length > 0) {
+      return {
+        success: false,
+        error: "이미 가입된 대학교 이메일입니다.",
+      };
+    }
+
+    // Create user
+    const userId = createId();
+    const currentDate = new Date();
+    
+    const userResult = await sql`
+      INSERT INTO users (
+        id, username, email, phone, "realName", "passwordHash", "userType", "profileImage", provider,
+        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${userId}, ${universityEmail}, ${universityEmail}, ${phone}, ${name}, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
+        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        true, ${currentDate}, ${currentDate}
+      )
+      RETURNING *
+    `;
+
+    const user = userResult[0];
+
+    // Create social account link
+    const socialAccountId = createId();
+    await sql`
+      INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
+      VALUES (${socialAccountId}, ${user.id}, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
+    `;
+
+    // Create veterinarian profile for veterinary student
+    const profileId = createId();
+    const universityDomain = universityEmail.split('@')[1] || 'unknown';
+    await sql`
+      INSERT INTO veterinarian_profiles (
+        id, "userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction,
+        "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${profileId}, ${user.id}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, null,
+        ${'Student at ' + universityDomain}, 'Veterinary Student',
+        ${'University Email: ' + universityEmail}, ${currentDate}, ${currentDate}
+      )
+    `;
+
+    // Generate tokens for the new user
+    const tokens = await generateTokens(user);
+    
+    // Set auth cookie
+    const cookieStore = await cookies();
+    const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    cookieStore.set("auth-token", tokens.accessToken, {
+      expires: expireDate,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        userType: user.userType,
+      },
+      tokens,
+    };
+  } catch (error) {
+    console.error("SERVER: Complete social veterinary student registration error:", error);
+    return {
+      success: false,
+      error: `소셜 수의학과 학생 회원가입 완료 실패: ${
+        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
+      }`,
     };
   }
 }

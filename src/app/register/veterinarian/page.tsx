@@ -4,7 +4,8 @@ import { VeterinarianRegistrationForm } from "@/components/features/auth/Veterin
 import { registerVeterinarian, VeterinarianRegisterData } from "@/actions/auth";
 import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 interface VeterinarianFormData {
   userId: string;
@@ -23,8 +24,16 @@ interface VeterinarianFormData {
   };
 }
 
-export default function VeterinarianRegisterPage() {
+function VeterinarianRegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Parse social login data from URL parameters
+  const socialData = searchParams.get('social') === 'true' ? {
+    email: searchParams.get('email') || '',
+    name: searchParams.get('name') || '',
+    profileImage: searchParams.get('profileImage') || undefined,
+  } : undefined;
 
   const handleSubmit = async (formData: VeterinarianFormData) => {
     try {
@@ -89,8 +98,17 @@ export default function VeterinarianRegisterPage() {
         <VeterinarianRegistrationForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          socialData={socialData}
         />
       </main>
     </>
+  );
+}
+
+export default function VeterinarianRegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VeterinarianRegisterContent />
+    </Suspense>
   );
 }
