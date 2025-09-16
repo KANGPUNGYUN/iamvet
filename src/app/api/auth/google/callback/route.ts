@@ -181,30 +181,34 @@ function createSuccessPage(message: string, data: any) {
             }, 100);
           } else {
             // If not in popup or opener is closed, redirect using AuthService generated URL
-            localStorage.setItem('accessToken', '${data.tokens.accessToken}');
-            localStorage.setItem('refreshToken', '${data.tokens.refreshToken}');
-            localStorage.setItem('user', JSON.stringify(${JSON.stringify(
-              data.user
-            )}));
-            
-            // 토큰을 쿠키로도 동기화
-            const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+            if (${JSON.stringify(data.tokens)}) {
+              localStorage.setItem('accessToken', '${data.tokens?.accessToken || ''}');
+              localStorage.setItem('refreshToken', '${data.tokens?.refreshToken || ''}');
+              localStorage.setItem('user', JSON.stringify(${JSON.stringify(
+                data.user
+              )}));
+              
+              // 토큰을 쿠키로도 동기화
+              const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+              document.cookie = 'auth-token=${data.tokens?.accessToken || ''}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+            }
             
             window.location.href = '${redirectUrl}';
           }
         } catch (error) {
           console.error('OAuth callback error:', error);
           // Fallback to redirect flow
-          localStorage.setItem('accessToken', '${data.tokens.accessToken}');
-          localStorage.setItem('refreshToken', '${data.tokens.refreshToken}');
-          localStorage.setItem('user', JSON.stringify(${JSON.stringify(
-            data.user
-          )}));
-          
-          // 토큰을 쿠키로도 동기화
-          const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-          document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+          if (${JSON.stringify(data.tokens)}) {
+            localStorage.setItem('accessToken', '${data.tokens?.accessToken || ''}');
+            localStorage.setItem('refreshToken', '${data.tokens?.refreshToken || ''}');
+            localStorage.setItem('user', JSON.stringify(${JSON.stringify(
+              data.user
+            )}));
+            
+            // 토큰을 쿠키로도 동기화
+            const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            document.cookie = 'auth-token=${data.tokens?.accessToken || ''}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+          }
           
           window.location.href = '${redirectUrl}';
         }

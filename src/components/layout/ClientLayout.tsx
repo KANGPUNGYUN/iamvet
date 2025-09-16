@@ -13,10 +13,16 @@ interface ClientLayoutProps {
 export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const [isHydrated, setIsHydrated] = React.useState(false);
   
   // 새로운 상태 관리 시스템 사용
   const { user, isAuthenticated, isLoading } = useAuth();
   const logoutMutation = useLogout();
+
+  // 클라이언트 hydration 완료 체크
+  React.useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // 관리자 페이지인지 확인
   const isAdminPage = pathname.startsWith("/admin");
@@ -51,8 +57,8 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
     return <>{children}</>;
   }
 
-  // 로딩 중일 때는 헤더 없이 렌더링 (깜빡임 방지)
-  if (isLoading) {
+  // hydration이 완료되지 않았거나 로딩 중일 때는 헤더 없이 렌더링 (깜빡임 방지)
+  if (!isHydrated || isLoading) {
     return <>{children}</>;
   }
 
