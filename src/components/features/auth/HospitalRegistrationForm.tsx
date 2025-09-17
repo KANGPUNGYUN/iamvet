@@ -224,7 +224,9 @@ export const HospitalRegistrationForm: React.FC<
     setFormData((prev) => ({ ...prev, businessLicenseFile: file }));
   };
 
-  const handleCheckboxChange = (field: 'treatmentAnimals' | 'treatmentSpecialties') => (checked: boolean, value: string) => {
+  const handleCheckboxChange = (field: 'treatmentAnimals' | 'treatmentSpecialties') => (checked: boolean, value?: string) => {
+    if (!value) return; // value가 없으면 처리하지 않음
+    
     setFormData((prev) => ({
       ...prev,
       [field]: checked 
@@ -739,7 +741,7 @@ export const HospitalRegistrationForm: React.FC<
                       handleFacilityImagesChange([...formData.facilityImages, url]);
                     }
                   }}
-                  folder="hospitals/facilities"
+                  folder="hospitals"
                 />
               )}
             </div>

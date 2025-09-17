@@ -130,7 +130,7 @@ export class AuthService {
       // Get additional profile info from veterinarian_profiles if needed
       if (userType === 'veterinarian' || userType === 'veterinary-student') {
         try {
-          const profile = await prisma.veterinarianProfile.findUnique({
+          const profile = await prisma.veterinarian_profiles.findUnique({
             where: { userId: user.id },
           });
           if (profile) {
@@ -185,12 +185,12 @@ export class AuthService {
     try {
       if (userType === 'VETERINARIAN' || userType === 'veterinary-student') {
         // Check veterinarian_profiles table for profile completion
-        const profile = await prisma.veterinarianProfile.findUnique({
+        const profile = await prisma.veterinarian_profiles.findUnique({
           where: { userId },
         });
         return !!profile;
       } else if (userType === 'HOSPITAL' || userType === 'hospital') {
-        const profile = await prisma.hospitalProfile.findUnique({
+        const profile = await prisma.hospital_profiles.findUnique({
           where: { userId },
         });
         return !!profile;

@@ -10,15 +10,20 @@ interface HospitalFormData {
   loginId: string;
   password: string;
   passwordConfirm: string;
+  realName: string; // 대표자명 추가
   hospitalName: string;
+  establishedDate: string; // 병원 설립일 추가
   businessNumber: string;
   phone: string;
   email: string;
   website: string;
   address: string;
   detailAddress: string;
-  profileImage: string | null;
-  businessLicense: string | null;
+  hospitalLogo: string | null; // 병원 로고
+  facilityImages: string[]; // 병원 시설 이미지 (최대 10장)
+  treatmentAnimals: string[]; // 진료 가능 동물 추가
+  treatmentSpecialties: string[]; // 진료 분야 추가
+  businessLicenseFile: File | null; // 사업자등록증 파일 추가
   agreements: {
     terms: boolean;
     privacy: boolean;
@@ -34,8 +39,9 @@ export default function HospitalRegisterPage() {
       console.log("CLIENT: handleSubmit called with data:", formData);
       
       // 이미지는 이미 S3에 업로드되어 URL로 전달됨
-      const profileImageUrl = formData.profileImage;
-      const businessLicenseUrl = formData.businessLicense;
+      const profileImageUrl = formData.hospitalLogo;
+      // 파일 업로드는 추후 구현 (현재는 URL만 처리)
+      const businessLicenseUrl = formData.businessLicenseFile ? 'business-license-url-placeholder' : undefined;
 
       const registerData: HospitalRegisterData = {
         userId: formData.loginId,
@@ -47,7 +53,7 @@ export default function HospitalRegisterPage() {
         website: formData.website,
         address: formData.detailAddress ? `${formData.address} ${formData.detailAddress}` : formData.address,
         profileImage: profileImageUrl || undefined,
-        businessLicense: businessLicenseUrl || undefined,
+        businessLicense: businessLicenseUrl,
         termsAgreed: formData.agreements.terms,
         privacyAgreed: formData.agreements.privacy,
         marketingAgreed: formData.agreements.marketing,

@@ -12,10 +12,9 @@ import { Button } from "@/components/ui/Button";
 import { ResumeImageUpload } from "@/components/features/resume/ResumeImageUpload";
 import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
 import { PlusIcon, MinusIcon } from "public/icons";
-import { useVeterinarianProfile } from "@/hooks/api/useVeterinarianProfile";
-import { useCurrentUser } from "@/hooks/api/useAuth";
-import { useDetailedResume, useSaveDetailedResume } from "@/hooks/api/useDetailedResume";
-import type { DetailedResumeData } from "@/actions/auth";
+import { useVeterinarianProfile } from "@/hooks/useProfile";
+import { useVeterinarianResume, useSaveVeterinarianResume, type ResumeUpdateData, type VeterinarianResume } from "@/hooks/useResume";
+import { useAuthStore } from "@/stores/authStore";
 
 // 타입 정의
 interface Experience {
@@ -55,7 +54,7 @@ interface MedicalCapability {
 }
 
 interface ResumeData {
-  photo: File | null;
+  photo: string | null;
   name: string;
   birthDate: string;
   introduction: string;
@@ -193,22 +192,15 @@ const proficiencyOptions = [
 ];
 
 export default function VeterinarianResumePage() {
-  const {
-    data: veterinarianProfile,
-    isLoading: profileLoading,
-    error: profileError,
-  } = useVeterinarianProfile();
-  const {
-    data: currentUser,
-    isLoading: userLoading,
-    error: userError,
-  } = useCurrentUser();
-  const {
-    data: existingResume,
-    isLoading: resumeLoading,
-    error: resumeError,
-  } = useDetailedResume();
-  const saveResumeMutation = useSaveDetailedResume();
+  const { data: profile, isLoading: profileLoading, error: profileError } = useVeterinarianProfile();
+  const { data: existingResume, isLoading: resumeLoading, error: resumeError } = useVeterinarianResume();
+  const saveResumeMutation = useSaveVeterinarianResume();
+  const { isAuthenticated, checkAuth } = useAuthStore();
+
+  // 초기 인증 상태 확인
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     photo: null,
@@ -276,114 +268,90 @@ export default function VeterinarianResumePage() {
   // 기존 이력서 데이터가 있으면 폼에 반영
   useEffect(() => {
     if (existingResume) {
+      // 기존 이력서가 있는 경우 - 모든 필드 설정
       setResumeData(prev => ({
         ...prev,
-        photo: null, // File 객체는 나중에 처리
-        name: existingResume.name,
+        photo: existingResume.photo || null,
+        name: existingResume.name || "",
         birthDate: existingResume.birthDate || "",
         introduction: existingResume.introduction || "",
         phone: existingResume.phone || "",
         email: existingResume.email || "",
-        phonePublic: existingResume.phonePublic,
-        emailPublic: existingResume.emailPublic,
+        phonePublic: existingResume.phonePublic || false,
+        emailPublic: existingResume.emailPublic || false,
         position: existingResume.position || "",
-        specialties: existingResume.specialties,
-        preferredRegions: existingResume.preferredRegions,
+        specialties: existingResume.specialties || [],
+        preferredRegions: existingResume.preferredRegions || [],
         expectedSalary: existingResume.expectedSalary || "",
-        workTypes: existingResume.workTypes,
+        workTypes: existingResume.workTypes || [],
         startDate: existingResume.startDate || "",
-        preferredWeekdays: existingResume.preferredWeekdays,
-        weekdaysNegotiable: existingResume.weekdaysNegotiable,
+        preferredWeekdays: existingResume.preferredWeekdays || [],
+        weekdaysNegotiable: existingResume.weekdaysNegotiable || false,
         workStartTime: existingResume.workStartTime || "",
         workEndTime: existingResume.workEndTime || "",
-        workTimeNegotiable: existingResume.workTimeNegotiable,
-        experiences: existingResume.experiences.length > 0 
-          ? existingResume.experiences.map(exp => ({
-              id: exp.id,
-              hospitalName: exp.hospitalName,
-              mainTasks: exp.mainTasks,
-              startDate: exp.startDate || null,
-              endDate: exp.endDate || null,
-            }))
-          : [{
-              id: "default-1",
-              hospitalName: "",
-              mainTasks: "",
-              startDate: null,
-              endDate: null,
-            }],
-        licenses: existingResume.licenses.length > 0
-          ? existingResume.licenses.map(lic => ({
-              id: lic.id,
-              name: lic.name,
-              issuer: lic.issuer,
-              grade: lic.grade || "",
-              acquiredDate: lic.acquiredDate || null,
-            }))
-          : [{
-              id: "default-1",
-              name: "",
-              issuer: "",
-              grade: "",
-              acquiredDate: null,
-            }],
-        educations: existingResume.educations.length > 0
-          ? existingResume.educations.map(edu => ({
-              id: edu.id,
-              degree: edu.degree,
-              graduationStatus: edu.graduationStatus,
-              schoolName: edu.schoolName,
-              major: edu.major,
-              gpa: edu.gpa || "",
-              totalGpa: edu.totalGpa || "",
-              startDate: edu.startDate || null,
-              endDate: edu.endDate || null,
-            }))
-          : [{
-              id: "default-1",
-              degree: "",
-              graduationStatus: "",
-              schoolName: "",
-              major: "",
-              gpa: "",
-              totalGpa: "",
-              startDate: null,
-              endDate: null,
-            }],
-        medicalCapabilities: existingResume.medicalCapabilities.length > 0
-          ? existingResume.medicalCapabilities.map(cap => ({
-              id: cap.id,
-              field: cap.field,
-              proficiency: cap.proficiency,
-              description: cap.description || "",
-              others: cap.others || "",
-            }))
-          : [{
-              id: "default-1",
-              field: "",
-              proficiency: "",
-              description: "",
-              others: "",
-            }],
+        workTimeNegotiable: existingResume.workTimeNegotiable || false,
+        experiences: existingResume.experiences?.length > 0 ? existingResume.experiences : [
+          {
+            id: "default-1",
+            hospitalName: "",
+            mainTasks: "",
+            startDate: null,
+            endDate: null,
+          },
+        ],
+        licenses: existingResume.licenses?.length > 0 ? existingResume.licenses : [
+          {
+            id: "default-1",
+            name: "",
+            issuer: "",
+            grade: "",
+            acquiredDate: null,
+          },
+        ],
+        educations: existingResume.educations?.length > 0 ? existingResume.educations : [
+          {
+            id: "default-1",
+            degree: "",
+            graduationStatus: "",
+            schoolName: "",
+            major: "",
+            gpa: "",
+            totalGpa: "",
+            startDate: null,
+            endDate: null,
+          },
+        ],
+        medicalCapabilities: existingResume.medicalCapabilities?.length > 0 ? existingResume.medicalCapabilities : [
+          {
+            id: "default-1",
+            field: "",
+            proficiency: "",
+            description: "",
+            others: "",
+          },
+        ],
         selfIntroduction: existingResume.selfIntroduction || "",
       }));
-    } else {
-      // 기존 이력서가 없으면 프로필과 사용자 정보로 초기화
-      if (veterinarianProfile && currentUser) {
-        setResumeData(prev => ({
-          ...prev,
-          name: veterinarianProfile.nickname,
-          birthDate: veterinarianProfile.birthDate 
-            ? new Date(veterinarianProfile.birthDate).toISOString().split('T')[0]
-            : "",
-          introduction: veterinarianProfile.introduction || "",
-          selfIntroduction: veterinarianProfile.introduction || "",
-          email: currentUser.email,
-          phone: currentUser.phone || "",
-        }));
-      }
+    } else if (profile) {
+      // 기존 이력서가 없으면 프로필 정보로 초기화
+      const formatBirthDate = (birthDate?: string | Date) => {
+        if (!birthDate) return '';
+        if (typeof birthDate === 'string') return birthDate.split('T')[0];
+        if (birthDate instanceof Date) return birthDate.toISOString().split('T')[0];
+        return String(birthDate);
+      };
+
+      setResumeData(prev => ({
+        ...prev,
+        name: profile.realName || profile.nickname || "",
+        birthDate: formatBirthDate(profile.birthDate),
+        introduction: profile.experience || "",
+        selfIntroduction: profile.experience || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+      }));
     }
-  }, [existingResume, veterinarianProfile, currentUser]);
+  }, [existingResume, profile]);
 
   // 총 경력 계산 함수
   const calculateTotalExperience = (experiences: Experience[]) => {
@@ -514,65 +482,57 @@ export default function VeterinarianResumePage() {
 
   const handleSave = async () => {
     try {
-      // ResumeData를 DetailedResumeData 형식으로 변환
-      const saveData: DetailedResumeData = {
-        photo: resumeData.photo ? "photo-url-placeholder" : undefined, // TODO: 실제 파일 업로드 구현
+      // 필수 필드 검증
+      if (!resumeData.name.trim()) {
+        alert('이름을 입력해주세요.');
+        return;
+      }
+
+      // ResumeData를 ResumeUpdateData 형식으로 변환
+      const saveData: ResumeUpdateData = {
+        // 기본 정보
         name: resumeData.name,
-        birthDate: resumeData.birthDate || undefined,
-        introduction: resumeData.introduction || undefined,
-        phone: resumeData.phone || undefined,
-        email: resumeData.email || undefined,
+        introduction: resumeData.introduction,
+        selfIntroduction: resumeData.selfIntroduction,
+        photo: resumeData.photo || undefined,
+        birthDate: resumeData.birthDate,
+        phone: resumeData.phone,
+        email: resumeData.email,
         phonePublic: resumeData.phonePublic,
         emailPublic: resumeData.emailPublic,
-        position: resumeData.position || undefined,
+        
+        // 희망 근무 조건
+        position: resumeData.position,
         specialties: resumeData.specialties,
         preferredRegions: resumeData.preferredRegions,
-        expectedSalary: resumeData.expectedSalary || undefined,
+        expectedSalary: resumeData.expectedSalary,
         workTypes: resumeData.workTypes,
-        startDate: resumeData.startDate || undefined,
+        startDate: resumeData.startDate,
         preferredWeekdays: resumeData.preferredWeekdays,
         weekdaysNegotiable: resumeData.weekdaysNegotiable,
-        workStartTime: resumeData.workStartTime || undefined,
-        workEndTime: resumeData.workEndTime || undefined,
+        workStartTime: resumeData.workStartTime,
+        workEndTime: resumeData.workEndTime,
         workTimeNegotiable: resumeData.workTimeNegotiable,
-        selfIntroduction: resumeData.selfIntroduction || undefined,
-        experiences: resumeData.experiences
-          .filter(exp => exp.hospitalName.trim() && exp.mainTasks.trim())
-          .map(exp => ({
-            hospitalName: exp.hospitalName,
-            mainTasks: exp.mainTasks,
-            startDate: exp.startDate || undefined,
-            endDate: exp.endDate || undefined,
-          })),
-        licenses: resumeData.licenses
-          .filter(lic => lic.name.trim() && lic.issuer.trim())
-          .map(lic => ({
-            name: lic.name,
-            issuer: lic.issuer,
-            grade: lic.grade || undefined,
-            acquiredDate: lic.acquiredDate || undefined,
-          })),
-        educations: resumeData.educations
-          .filter(edu => edu.schoolName.trim() && edu.major.trim())
-          .map(edu => ({
-            degree: edu.degree,
-            graduationStatus: edu.graduationStatus,
-            schoolName: edu.schoolName,
-            major: edu.major,
-            gpa: edu.gpa || undefined,
-            totalGpa: edu.totalGpa || undefined,
-            startDate: edu.startDate || undefined,
-            endDate: edu.endDate || undefined,
-          })),
-        medicalCapabilities: resumeData.medicalCapabilities
-          .filter(cap => cap.field.trim() && cap.proficiency.trim())
-          .map(cap => ({
-            field: cap.field,
-            proficiency: cap.proficiency,
-            description: cap.description || undefined,
-            others: cap.others || undefined,
-          })),
+        
+        // 관계 데이터
+        experiences: resumeData.experiences.map(exp => ({
+          ...exp,
+          startDate: exp.startDate ? new Date(exp.startDate) : null,
+          endDate: exp.endDate ? new Date(exp.endDate) : null,
+        })),
+        licenses: resumeData.licenses.map(lic => ({
+          ...lic,
+          acquiredDate: lic.acquiredDate ? new Date(lic.acquiredDate) : null,
+        })),
+        educations: resumeData.educations.map(edu => ({
+          ...edu,
+          startDate: edu.startDate ? new Date(edu.startDate) : null,
+          endDate: edu.endDate ? new Date(edu.endDate) : null,
+        })),
+        medicalCapabilities: resumeData.medicalCapabilities,
       };
+
+      console.log('[VeterinarianResumePage] Saving resume data:', saveData);
 
       await saveResumeMutation.mutateAsync(saveData);
       
@@ -592,7 +552,7 @@ export default function VeterinarianResumePage() {
   };
 
   // 로딩 상태
-  if (profileLoading || userLoading || resumeLoading) {
+  if (profileLoading || resumeLoading) {
     return (
       <div className="bg-white">
         <div className="max-w-5xl mx-auto p-4 min-h-screen flex items-center justify-center">
@@ -606,7 +566,7 @@ export default function VeterinarianResumePage() {
   }
 
   // 에러 상태 (이력서 에러는 처음 작성하는 경우 정상이므로 제외)
-  if (profileError || userError) {
+  if (profileError) {
     return (
       <div className="bg-white">
         <div className="max-w-5xl mx-auto p-4 min-h-screen flex items-center justify-center">
@@ -638,13 +598,9 @@ export default function VeterinarianResumePage() {
                 이력서 사진
               </label>
               <ResumeImageUpload
-                value={
-                  resumeData.photo
-                    ? URL.createObjectURL(resumeData.photo)
-                    : undefined
-                }
-                onChange={(file) =>
-                  setResumeData((prev) => ({ ...prev, photo: file }))
+                value={resumeData.photo || undefined}
+                onChange={(imageUrl) =>
+                  setResumeData((prev) => ({ ...prev, photo: imageUrl }))
                 }
               />
             </div>
