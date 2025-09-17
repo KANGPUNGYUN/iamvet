@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 interface VeterinarianFormData {
-  userId: string;
+  loginId: string;
   password: string;
   realName: string; // 실명 추가
   nickname: string;
@@ -44,7 +44,7 @@ function VeterinarianRegisterContent() {
       const licenseImageUrl = formData.licenseImage;
 
       const registerData: VeterinarianRegisterData = {
-        userId: formData.userId,
+        userId: formData.loginId,
         password: formData.password,
         realName: formData.realName, // 실명 추가
         nickname: formData.nickname,

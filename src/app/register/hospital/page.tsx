@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface HospitalFormData {
-  userId: string;
+  loginId: string;
   password: string;
   passwordConfirm: string;
   hospitalName: string;
@@ -38,7 +38,7 @@ export default function HospitalRegisterPage() {
       const businessLicenseUrl = formData.businessLicense;
 
       const registerData: HospitalRegisterData = {
-        userId: formData.userId,
+        userId: formData.loginId,
         password: formData.password,
         hospitalName: formData.hospitalName,
         businessNumber: formData.businessNumber,

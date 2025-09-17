@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 interface VeterinaryStudentFormData {
-  userId: string;
+  loginId: string;
   password: string;
   realName: string;
   nickname: string;
@@ -45,7 +45,7 @@ function VeterinaryStudentRegisterContent() {
       const profileImageUrl = formData.profileImage;
 
       const registerData: VeterinaryStudentRegisterData = {
-        userId: formData.userId,
+        userId: formData.loginId,
         password: formData.password,
         realName: formData.realName,
         nickname: formData.nickname,

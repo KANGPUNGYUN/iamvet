@@ -63,7 +63,7 @@ export function useCurrentUser() {
           name: localUser.name || localUser.realName || localUser.email,
           email: localUser.email,
           realName: localUser.realName || localUser.name,
-          type: (localUser.userType === "veterinary-student" || localUser.userType === "VETERINARY_STUDENT") ? "veterinarian" as const : localUser.userType as const,
+          type: (localUser.userType === "veterinary-student" || localUser.userType === "VETERINARY_STUDENT") ? "veterinarian" : localUser.userType,
           profileName: localUser.profileName || localUser.name || localUser.realName,
           profileImage: localUser.profileImage,
           phone: localUser.phone,
