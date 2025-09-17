@@ -9,29 +9,82 @@ import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
 
 export const GET = withAuth(async (request: NextRequest) => {
+  console.log('=== GET API 호출됨 ===');
   try {
     const user = (request as any).user;
     console.log('[API] GET profile - user from middleware:', user);
     console.log('[API] userId:', user.userId);
     console.log('[API] userType:', user.userType);
+    console.log('[API] CRITICAL: Checking for userId discrepancy');
     
-    const profile = await getVeterinarianProfile(user.userId);
-    console.log('[API] getVeterinarianProfile result:', profile);
+    // JWT에서 추출한 userId가 실제 사용자 ID와 다를 수 있음
+    const potentialUserIds = [user.userId, user.id].filter(Boolean);
+    console.log('[API] Potential user IDs to try:', potentialUserIds);
+    
+    let profile = await getVeterinarianProfile(user.userId);
+    console.log('[API] getVeterinarianProfile result with JWT userId:', profile);
+    console.log('[API] profile is null:', profile === null);
+    console.log('[API] profile is undefined:', profile === undefined);
+    
+    // profile이 null이고 다른 userId가 있으면 시도
+    if (!profile && user.id && user.id !== user.userId) {
+      console.log('[API] Trying alternative userId:', user.id);
+      profile = await getVeterinarianProfile(user.id);
+      console.log('[API] getVeterinarianProfile result with alternative userId:', profile);
+    }
+    console.log('[API] 라이센스 이미지 세부 정보:', {
+      licenseImage: profile?.licenseImage,
+      licenseImageType: typeof profile?.licenseImage,
+      isNull: profile?.licenseImage === null,
+      isUndefined: profile?.licenseImage === undefined,
+      isEmpty: profile?.licenseImage === '',
+      allProfileKeys: profile ? Object.keys(profile) : 'no profile'
+    });
 
     // 사용자의 provider 정보를 데이터베이스에서 조회
     console.log('[API] User from middleware:', user);
     
+    // 실제로 profile을 찾은 userId를 사용 (fallback 처리)
+    const actualUserId = profile ? user.userId : (user.id || user.userId);
+    console.log('[API] Using userId for provider query:', actualUserId);
+    
     const userInfo = await sql`
-      SELECT provider FROM users WHERE id = ${user.userId}
+      SELECT provider FROM users WHERE id = ${actualUserId}
     `;
     
     console.log('[API] Database user info:', userInfo[0]);
     
+    // profile이 null인 경우 기본값 제공
     const responseData = {
-      ...profile,
+      ...(profile || {}),
       provider: userInfo[0]?.provider || 'NORMAL',
       userType: user.userType
     };
+    
+    // profile이 null인 경우를 처리
+    if (!profile) {
+      console.log('[API] WARNING: getVeterinarianProfile returned null, using fallback data');
+      // 기본 사용자 정보로 직접 조회
+      const fallbackUser = await sql`
+        SELECT id, email, phone, "profileImage", "loginId", nickname, "realName", "birthDate", 
+               "licenseImage", "userType", provider, "isActive", "updatedAt", "createdAt"
+        FROM users 
+        WHERE id = ${actualUserId} AND "isActive" = true
+      `;
+      
+      if (fallbackUser[0]) {
+        console.log('[API] Fallback user data found:', fallbackUser[0]);
+        Object.assign(responseData, fallbackUser[0]);
+      }
+    }
+
+    console.log('[API] 최종 응답 데이터:', responseData);
+    console.log('[API] 응답 데이터 라이센스 이미지 상세:', {
+      licenseImage: responseData.licenseImage,
+      licenseImageType: typeof responseData.licenseImage,
+      hasLicenseImage: !!responseData.licenseImage,
+      responseKeys: Object.keys(responseData)
+    });
 
     return NextResponse.json(
       createApiResponse("success", "프로필 조회 성공", responseData)
@@ -46,6 +99,9 @@ export const GET = withAuth(async (request: NextRequest) => {
 });
 
 export const PUT = withAuth(async (request: NextRequest) => {
+  console.log('=================================');
+  console.log('=== PUT API 호출됨 ===');
+  console.log('=================================');
   try {
     const user = (request as any).user;
     console.log('[API] PUT /api/dashboard/veterinarian/profile - User:', user);
@@ -107,6 +163,7 @@ export const PUT = withAuth(async (request: NextRequest) => {
     }
 
     console.log('[API] Profile data to update:', profileData);
+    console.log('[API] 라이센스 이미지 업데이트 확인:', profileData.licenseImage);
     
     // 프로필 업데이트
     await updateVeterinarianProfile(user.userId, profileData);

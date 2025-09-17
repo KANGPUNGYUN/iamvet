@@ -1,0 +1,60 @@
+// 새로운 모델들을 추가할 내용
+
+// 병원 시설 이미지 (1:N 관계)
+model HospitalFacilityImage {
+  id           String   @id @default(cuid())
+  userId       String
+  imageUrl     String
+  displayOrder Int      @default(0)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_facility_images")
+}
+
+// 병원 진료 가능 동물 (M:N 관계)
+model HospitalAnimal {
+  id         String     @id @default(cuid())
+  userId     String
+  animalType AnimalType
+  
+  createdAt  DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animalType])
+  @@map("hospital_animals")
+}
+
+// 병원 진료 분야 (M:N 관계)
+model HospitalSpecialty {
+  id        String        @id @default(cuid())
+  userId    String
+  specialty SpecialtyType
+  
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, specialty])
+  @@map("hospital_specialties")
+}
+
+// 병원 사업자등록증 파일 정보
+model HospitalBusinessLicense {
+  id         String   @id @default(cuid())
+  userId     String
+  fileName   String
+  fileUrl    String
+  fileType   String   // 'image', 'pdf', 'word' etc.
+  fileSize   BigInt?
+  
+  uploadedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_business_licenses")
+}

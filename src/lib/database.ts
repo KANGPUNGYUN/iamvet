@@ -1,5 +1,4 @@
 import { Pool } from "pg";
-import { sql } from "@/lib/db";
 
 // Type definitions
 type NotificationType = 
@@ -78,11 +77,14 @@ export const createUser = async (userData: any) => {
 };
 
 export const createVeterinarianProfile = async (profileData: any) => {
-  const currentDate = new Date();
+  // Since profile data is now stored in the users table, this function
+  // updates the existing user record with profile information
   const query = `
-    INSERT INTO veterinarian_profiles ("userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING *
+    UPDATE users 
+    SET nickname = $2, "birthDate" = $3, "licenseImage" = $4, "updatedAt" = NOW()
+    WHERE id = $1
+    RETURNING id, email, phone, "profileImage", "loginId", nickname, "realName", "birthDate", 
+             "licenseImage", "userType", provider, "isActive", "updatedAt", "createdAt"
   `;
 
   const values = [
@@ -90,36 +92,32 @@ export const createVeterinarianProfile = async (profileData: any) => {
     profileData.nickname,
     profileData.birthDate,
     profileData.licenseImage,
-    currentDate,
-    currentDate,
   ];
 
+  console.log('[DB] Creating veterinarian profile by updating user record:', values);
   const result = await pool.query(query, values);
   return result.rows[0];
 };
 
 export const createVeterinaryStudentProfile = async (profileData: any) => {
-  // Use veterinarian_profiles table for veterinary students
-  const currentDate = new Date();
+  // Since profile data is now stored in the users table, this function
+  // updates the existing user record with veterinary student profile information
   const query = `
-    INSERT INTO veterinarian_profiles ("userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction, "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    RETURNING *
+    UPDATE users 
+    SET nickname = $2, "birthDate" = $3, "licenseImage" = $4, "updatedAt" = NOW()
+    WHERE id = $1
+    RETURNING id, email, phone, "profileImage", "loginId", nickname, "realName", "birthDate", 
+             "licenseImage", "userType", provider, "isActive", "updatedAt", "createdAt"
   `;
 
-  const universityDomain = profileData.universityEmail?.split('@')[1] || 'unknown';
   const values = [
     profileData.userId,
     profileData.nickname,
     profileData.birthDate,
-    null, // No license image for students
-    `Student at ${universityDomain}`,
-    'Veterinary Student',
-    `University Email: ${profileData.universityEmail || 'Not provided'}`,
-    currentDate,
-    currentDate
+    null, // No license image for veterinary students
   ];
 
+  console.log('[DB] Creating veterinary student profile by updating user record:', values);
   const result = await pool.query(query, values);
   return result.rows[0];
 };
@@ -986,99 +984,41 @@ export const getStatusNotificationTitle = (
 export const getVeterinarianProfile = async (userId: string) => {
   console.log('[DB] getVeterinarianProfile called with userId:', userId);
   
-  // First, get user info to determine user type
-  const userQuery = `SELECT "userType", username, "loginId", nickname, email, "realName", phone, "profileImage", "birthDate", "isActive" FROM users WHERE id = $1`;
-  const userResult = await pool.query(userQuery, [userId]);
+  // Query the users table directly since veterinarian profile data is now stored there
+  const query = `
+    SELECT id, email, phone, "profileImage", "loginId", nickname, "realName", "birthDate", 
+           "licenseImage", "userType", provider, "isActive", "updatedAt", "createdAt"
+    FROM users 
+    WHERE id = $1 AND "isActive" = true
+  `;
+
+  console.log('[DB] Executing query:', query);
+  const result = await pool.query(query, [userId]);
+  console.log('[DB] User query result:', result.rows);
+  console.log('[DB] Number of rows returned:', result.rows.length);
   
-  console.log('[DB] User query result:', userResult.rows);
-  
-  if (userResult.rows.length === 0) {
+  if (result.rows.length === 0) {
     console.error('[DB] CRITICAL: No user found with id:', userId);
     console.error('[DB] This suggests JWT token contains invalid userId or user was deleted');
     return null;
   }
   
-  const user = userResult.rows[0];
+  const user = result.rows[0];
   console.log('[DB] Found user:', { 
     userType: user.userType, 
-    username: user.username, 
+    nickname: user.nickname, 
     email: user.email, 
-    isActive: user.isActive 
+    isActive: user.isActive,
+    licenseImage: user.licenseImage,
+    hasLicenseImage: !!user.licenseImage
   });
   
-  if (!user.isActive) {
-    console.error('[DB] User is not active:', userId);
-    return null;
-  }
-
   const userType = user.userType;
   console.log('[DB] User type:', userType);
   
   if (userType === 'VETERINARIAN' || userType === 'VETERINARY_STUDENT') {
-    // For veterinarians and veterinary students, query veterinarian_profiles table
-    const query = `
-      SELECT vp.*, u.email, u.phone, u."profileImage", u.username, u."loginId", u.nickname as user_nickname, u."realName", u."updatedAt" as last_login_at
-      FROM veterinarian_profiles vp
-      JOIN users u ON vp."userId" = u.id
-      WHERE vp."userId" = $1 AND u."isActive" = true AND vp."deletedAt" IS NULL
-    `;
-
-    console.log('[DB] Veterinarian profile query with userId:', userId);
-    console.log('[DB] Executing query:', query);
-    const result = await pool.query(query, [userId]);
-    console.log('[DB] Veterinarian profile result:', result.rows);
-    console.log('[DB] Number of rows returned:', result.rows.length);
-    
-    // 프로필이 없으면 기본 프로필 생성
-    if (result.rows.length === 0) {
-      console.log('[DB] No profile found, creating default profile for userId:', userId);
-      
-      // 사용자 정보 가져오기
-      const userInfoQuery = `SELECT username, email FROM users WHERE id = $1`;
-      const userInfo = await pool.query(userInfoQuery, [userId]);
-      
-      if (userInfo.rows.length > 0) {
-        const user = userInfo.rows[0];
-        const defaultNickname = user.username || user.email.split('@')[0];
-        
-        // 기본 프로필 생성 (수의학과 학생인 경우 적절한 experience 설정)
-        const isVeterinaryStudent = userType === 'VETERINARY_STUDENT';
-        const defaultExperience = isVeterinaryStudent ? 'Student at university' : null;
-        const defaultSpecialty = isVeterinaryStudent ? 'Veterinary Student' : null;
-        
-        console.log('[DB] Creating profile with data:', {
-          userId, 
-          defaultNickname, 
-          defaultExperience, 
-          defaultSpecialty, 
-          isVeterinaryStudent
-        });
-        
-        const createProfileQuery = `
-          INSERT INTO veterinarian_profiles ("userId", nickname, experience, specialty, "createdAt", "updatedAt")
-          VALUES ($1, $2, $3, $4, NOW(), NOW())
-          RETURNING *
-        `;
-        
-        try {
-          const createResult = await pool.query(createProfileQuery, [userId, defaultNickname, defaultExperience, defaultSpecialty]);
-          console.log('[DB] Created default profile:', createResult.rows[0]);
-          
-          // 생성된 프로필과 사용자 정보를 함께 반환하기 위해 다시 쿼리
-          const finalResult = await pool.query(query, [userId]);
-          console.log('[DB] Final query result after profile creation:', finalResult.rows);
-          return finalResult.rows[0] || null;
-        } catch (createError) {
-          console.error('[DB] Error creating profile:', createError);
-          return null;
-        }
-      } else {
-        console.log('[DB] No user info found for profile creation');
-        return null;
-      }
-    }
-    
-    return result.rows[0] || null;
+    // Return the user data directly as all profile data is now in the users table
+    return user;
   }
   
   console.log('[DB] User type is not VETERINARIAN:', userType);
@@ -1110,49 +1050,59 @@ export const updateVeterinarianProfile = async (
   try {
     console.log('[DB] updateVeterinarianProfile called with:', { userId, profileData });
 
-    // users 테이블 업데이트 (email, phone, profileImage, realName)
+    // Update users table - all profile data is now stored here
+    const updateFields = [];
+    const updateValues = [];
+    let paramIndex = 1;
+
     if (profileData.email !== undefined) {
-      await sql`UPDATE users SET email = ${profileData.email}, "updatedAt" = NOW() WHERE id = ${userId}`;
-      console.log('[DB] Updated user email');
+      updateFields.push(`email = $${paramIndex++}`);
+      updateValues.push(profileData.email);
+      console.log('[DB] Will update user email');
     }
     if (profileData.phone !== undefined) {
-      await sql`UPDATE users SET phone = ${profileData.phone}, "updatedAt" = NOW() WHERE id = ${userId}`;
-      console.log('[DB] Updated user phone');
+      updateFields.push(`phone = $${paramIndex++}`);
+      updateValues.push(profileData.phone);
+      console.log('[DB] Will update user phone');
     }
     if (profileData.profileImage !== undefined) {
-      await sql`UPDATE users SET "profileImage" = ${profileData.profileImage}, "updatedAt" = NOW() WHERE id = ${userId}`;
-      console.log('[DB] Updated user profileImage');
+      updateFields.push(`"profileImage" = $${paramIndex++}`);
+      updateValues.push(profileData.profileImage);
+      console.log('[DB] Will update user profileImage');
     }
     if (profileData.realName !== undefined) {
-      await sql`UPDATE users SET "realName" = ${profileData.realName}, "updatedAt" = NOW() WHERE id = ${userId}`;
-      console.log('[DB] Updated user realName');
+      updateFields.push(`"realName" = $${paramIndex++}`);
+      updateValues.push(profileData.realName);
+      console.log('[DB] Will update user realName');
+    }
+    if (profileData.nickname !== undefined) {
+      updateFields.push(`nickname = $${paramIndex++}`);
+      updateValues.push(profileData.nickname);
+      console.log('[DB] Will update user nickname');
+    }
+    if (profileData.birthDate !== undefined) {
+      updateFields.push(`"birthDate" = $${paramIndex++}`);
+      updateValues.push(profileData.birthDate);
+      console.log('[DB] Will update user birthDate');
+    }
+    if (profileData.licenseImage !== undefined) {
+      updateFields.push(`"licenseImage" = $${paramIndex++}`);
+      updateValues.push(profileData.licenseImage);
+      console.log('[DB] Will update user licenseImage');
     }
 
-    // veterinarian_profiles 테이블 업데이트
-    if (profileData.nickname !== undefined || profileData.birthDate !== undefined || profileData.licenseImage !== undefined) {
-      // First check if profile exists
-      const existingProfile = await sql`SELECT id FROM veterinarian_profiles WHERE "userId" = ${userId}`;
+    if (updateFields.length > 0) {
+      updateFields.push(`"updatedAt" = NOW()`);
+      updateValues.push(userId);
       
-      if (existingProfile.length > 0) {
-        // Update existing profile
-        if (profileData.nickname !== undefined) {
-          await sql`UPDATE veterinarian_profiles SET nickname = ${profileData.nickname}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
-        }
-        if (profileData.birthDate !== undefined) {
-          await sql`UPDATE veterinarian_profiles SET "birthDate" = ${profileData.birthDate}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
-        }
-        if (profileData.licenseImage !== undefined) {
-          await sql`UPDATE veterinarian_profiles SET "licenseImage" = ${profileData.licenseImage}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
-        }
-      } else {
-        // Create new profile
-        await sql`
-          INSERT INTO veterinarian_profiles ("userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt")
-          VALUES (${userId}, ${profileData.nickname || null}, ${profileData.birthDate || null}, ${profileData.licenseImage || null}, NOW(), NOW())
-        `;
-      }
-      console.log('[DB] Updated veterinarian profile');
+      const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = $${paramIndex}`;
+      console.log('[DB] Executing update query:', query, 'with values:', updateValues);
+      
+      await pool.query(query, updateValues);
+      console.log('[DB] Updated user profile in users table');
     }
+
+    // licenseImage is now managed only in users table for simplicity
 
     return { success: true };
   } catch (error) {
@@ -2719,14 +2669,23 @@ export const createSocialUser = async (userData: any) => {
 };
 
 export const isUserProfileComplete = async (userId: string, userType: string) => {
-  if (userType === 'VETERINARIAN' || userType === 'veterinary-student') {
-    // Check veterinarian_profiles table for profile completion
-    const profileQuery = `SELECT id FROM veterinarian_profiles WHERE "userId" = $1`;
+  if (userType === 'VETERINARIAN' || userType === 'VETERINARY_STUDENT' || userType === 'veterinary-student') {
+    // Check if the user has basic profile information in the users table
+    const profileQuery = `
+      SELECT id, nickname, "birthDate", "realName" 
+      FROM users 
+      WHERE id = $1 AND "isActive" = true
+    `;
     
     const profileResult = await pool.query(profileQuery, [userId]);
     
-    // Profile is complete if veterinarian_profiles record exists
-    return profileResult.rows.length > 0;
+    if (profileResult.rows.length === 0) {
+      return false;
+    }
+    
+    const user = profileResult.rows[0];
+    // Profile is complete if user has nickname and realName (birthDate is optional)
+    return !!(user.nickname && user.realName);
   } else if (userType === 'HOSPITAL' || userType === 'hospital') {
     const query = `SELECT id FROM hospitals WHERE user_id = $1 OR "userId" = $1`;
     const result = await pool.query(query, [userId]);
@@ -2760,10 +2719,9 @@ export const getApplicationById = async (applicationId: string) => {
 
 export const getHospitalApplicants = async (hospitalId: string) => {
   const query = `
-    SELECT a.*, u.username, v.nickname 
+    SELECT a.*, u.username, u.nickname 
     FROM applications a
     JOIN users u ON a.veterinarian_id = u.id
-    JOIN veterinarian_profiles v ON u.id = v.user_id
     WHERE a.job_id IN (SELECT id FROM jobs WHERE hospital_id = $1)
   `;
   const result = await pool.query(query, [hospitalId]);
@@ -2909,7 +2867,7 @@ export const incrementViewCount = async (
       forum: 'forum_posts',
       job: 'job_postings', 
       lecture: 'lectures',
-      resume: 'veterinarian_profiles',
+      resume: 'users', // Changed from veterinarian_profiles to users
       transfer: 'transfers'
     };
 

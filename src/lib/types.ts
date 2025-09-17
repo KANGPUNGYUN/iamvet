@@ -53,7 +53,90 @@ export interface LoginResponse {
   isNewUser: boolean;
 }
 
-// 회원가입 관련 타입
+// 수의사 회원가입 요청 타입 (업데이트됨)
+export interface VeterinarianSignupRequest {
+  // 공통 필수 필드
+  email: string;
+  phone: string;
+  realName: string;
+  
+  // 인증 정보 (SNS 로그인 시 제외)
+  loginId?: string;
+  password?: string;
+  
+  // 수의사 필수 필드
+  nickname: string;
+  birthDate: Date;
+  licenseImage: File;
+  
+  // 선택 필드
+  profileImage?: File;
+  
+  // 약관 동의 (필수)
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed?: boolean;
+}
+
+// 수의학과 학생 회원가입 요청 타입 (업데이트됨)
+export interface VeterinaryStudentSignupRequest {
+  // 공통 필수 필드
+  email: string;
+  phone: string;
+  realName: string;
+  
+  // 인증 정보 (SNS 로그인 시 제외)
+  loginId?: string;
+  password?: string;
+  
+  // 학생 필수 필드
+  nickname: string;
+  birthDate: Date;
+  universityEmail: string;
+  
+  // 선택 필드
+  profileImage?: File;
+  licenseImage?: File; // 학생은 선택사항
+  
+  // 약관 동의 (필수)
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed?: boolean;
+}
+
+// 병원 회원가입 요청 타입 (업데이트됨)
+export interface HospitalSignupRequest {
+  // 공통 필수 필드
+  email: string;
+  phone: string;
+  realName: string; // 병원 대표자명
+  
+  // 인증 정보
+  loginId: string;
+  password: string;
+  
+  // 병원 필수 필드
+  hospitalName: string;
+  establishedDate: Date;
+  businessNumber: string;
+  hospitalAddress: string;
+  treatmentAnimals: ('DOG' | 'CAT' | 'EXOTIC' | 'LARGE_ANIMAL')[];
+  treatmentSpecialties: ('INTERNAL_MEDICINE' | 'SURGERY' | 'DERMATOLOGY' | 'DENTISTRY' | 'OPHTHALMOLOGY' | 'NEUROLOGY' | 'ORTHOPEDICS')[];
+  businessLicenseFile: File;
+  
+  // 선택 필드
+  hospitalWebsite?: string;
+  hospitalLogo?: File;
+  hospitalAddressDetail?: string;
+  hospitalFacilityImages?: File[]; // 최대 10장
+  
+  // 약관 동의 (필수)
+  termsAgreed: boolean;
+  privacyAgreed: boolean;
+  marketingAgreed?: boolean;
+}
+
+// 기존 호환성을 위한 타입 (deprecated)
 export interface VeterinarianRegisterRequest {
   username: string;
   password?: string;
@@ -235,11 +318,10 @@ export interface User {
 }
 
 export interface VeterinarianProfile extends User {
-  nickname: string;
+  nickname?: string;
   birthDate?: string;
-  licenseImage: string;
-  experience?: string;
-  specializations?: string[];
+  licenseImage?: string;
+  realName: string;
 }
 
 export interface HospitalProfile extends User {
@@ -257,9 +339,47 @@ export interface HospitalProfile extends User {
 }
 
 // 기타 유틸리티 타입
-export type UserType = "veterinarian" | "hospital";
+export type UserType = "veterinarian" | "hospital" | "veterinary_student";
 export type LoginType = "normal" | "naver" | "kakao" | "google";
 export type SortOrder = "latest" | "oldest" | "deadline";
+
+// 동물 타입
+export type AnimalType = 'DOG' | 'CAT' | 'EXOTIC' | 'LARGE_ANIMAL';
+
+// 진료 분야 타입
+export type SpecialtyType = 'INTERNAL_MEDICINE' | 'SURGERY' | 'DERMATOLOGY' | 'DENTISTRY' | 'OPHTHALMOLOGY' | 'NEUROLOGY' | 'ORTHOPEDICS';
+
+// 파일 검증 타입
+export interface FileValidation {
+  maxSize: number; // bytes
+  allowedTypes: string[];
+  maxCount?: number;
+}
+
+// 회원가입 검증 설정
+export const SIGNUP_VALIDATION = {
+  profileImage: {
+    maxSize: 5 * 1024 * 1024, // 5MB
+    allowedTypes: ['image/jpeg', 'image/png', 'image/jpg']
+  },
+  licenseImage: {
+    maxSize: 10 * 1024 * 1024, // 10MB
+    allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+  },
+  hospitalLogo: {
+    maxSize: 5 * 1024 * 1024, // 5MB
+    allowedTypes: ['image/jpeg', 'image/png', 'image/jpg']
+  },
+  facilityImages: {
+    maxSize: 5 * 1024 * 1024, // 5MB per image
+    allowedTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+    maxCount: 10
+  },
+  businessLicense: {
+    maxSize: 10 * 1024 * 1024, // 10MB
+    allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+  }
+} as const;
 
 // API 응답 생성 함수들
 export function createApiResponse(status: string, message: string, data?: any) {

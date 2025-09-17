@@ -710,6 +710,7 @@ export interface HospitalRegisterData {
   marketingAgreed?: boolean;
 }
 
+// 새로운 통합 수의사 회원가입 업데이트
 export async function registerVeterinarian(data: VeterinarianRegisterData) {
   try {
     console.log("SERVER: registerVeterinarian called with data:", data);
@@ -729,29 +730,15 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
       marketingAgreed,
     } = data;
 
-    console.log("SERVER: Extracted data:", {
-      userId,
-      password: "[HIDDEN]",
-      nickname,
-      phone,
-      email,
-      birthDate,
-      profileImage,
-      licenseImage,
-      termsAgreed,
-      privacyAgreed,
-      marketingAgreed,
-    });
-
+    // 새로운 반정규화 스키마에 맞게 업데이트
     // Check if user already exists
-    console.log("SERVER: Checking for existing user...");
     const existingUser = await sql`
-      SELECT id FROM users WHERE username = ${userId} OR email = ${email} OR phone = ${phone}
+      SELECT id FROM users 
+      WHERE ("loginId" = ${userId} OR email = ${email} OR phone = ${phone}) 
+      AND "isActive" = true
     `;
-    console.log("SERVER: Existing user check result:", existingUser);
 
     if (existingUser.length > 0) {
-      console.log("SERVER: User already exists");
       return {
         success: false,
         error: "이미 가입된 아이디, 이메일 또는 전화번호입니다.",
@@ -759,87 +746,52 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
     }
 
     // Hash password
-    console.log("SERVER: Hashing password...");
     const passwordHash = await bcrypt.hash(password, 12);
-    console.log("SERVER: Password hashed successfully");
-
-    // Create user - userId는 username 필드에 저장
-    console.log("SERVER: Creating user...");
     const generatedId = createId();
-    console.log("SERVER: Generated ID:", generatedId);
+    const currentDate = new Date();
 
+    // 통합 users 테이블에 직접 저장
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, "realName", "passwordHash", "userType", "profileImage", provider,
-        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+        id, "loginId", email, phone, "realName", "passwordHash", "userType", 
+        nickname, "birthDate", "profileImage", "licenseImage", provider,
+        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
+        "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${generatedId}, ${userId}, ${email}, ${phone}, ${realName}, ${passwordHash}, 'VETERINARIAN', ${profileImage}, 'NORMAL',
-        ${termsAgreed ? new Date() : null}, ${
-      privacyAgreed ? new Date() : null
-    }, ${marketingAgreed ? new Date() : null},
-        true, NOW(), NOW()
+        ${generatedId}, ${userId}, ${email}, ${phone}, ${realName}, ${passwordHash}, 'VETERINARIAN',
+        ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${profileImage}, ${licenseImage}, 'NORMAL',
+        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        true, ${currentDate}, ${currentDate}
       )
       RETURNING *
     `;
-    console.log("SERVER: User created successfully:", userResult[0]);
 
     const user = userResult[0];
+    console.log("SERVER: User created successfully:", user.id);
 
-    // Create veterinarian profile
-    console.log("SERVER: Creating veterinarian profile...");
-    const profileId = createId();
-    console.log("SERVER: Generated profile ID:", profileId);
-
-    // Ensure licenseImage is handled properly for database constraints
-    const processedLicenseImage = licenseImage || "";
-
-    const vetProfileResult = await sql`
-      INSERT INTO veterinarian_profiles (
-        id, "userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
-      )
-      VALUES (
-        ${profileId}, ${user.id}, ${nickname}, ${
-      birthDate ? new Date(birthDate) : null
-    }, ${processedLicenseImage},
-        NOW(), NOW()
-      )
-      RETURNING *
-    `;
-    console.log(
-      "SERVER: Veterinarian profile created successfully:",
-      vetProfileResult
-    );
-
-    console.log("SERVER: Registration completed successfully");
     return {
       success: true,
       user: {
         id: user.id,
-        username: user.username,
+        loginId: user.loginId,
         email: user.email,
         userType: user.userType,
+        nickname: user.nickname,
       },
     };
   } catch (error) {
     console.error("SERVER: Register veterinarian error:", error);
-    console.error("SERVER: Error details:", {
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined,
-      data,
-    });
     return {
       success: false,
       error: `수의사 회원가입 실패: ${
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다."
+        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
       }`,
     };
   }
 }
 
+// 새로운 통합 수의학과 학생 회원가입 업데이트
 export async function registerVeterinaryStudent(
   data: VeterinaryStudentRegisterData
 ) {
@@ -860,29 +812,15 @@ export async function registerVeterinaryStudent(
       marketingAgreed,
     } = data;
 
-    console.log("SERVER: Extracted data:", {
-      userId,
-      password: "[HIDDEN]",
-      nickname,
-      phone,
-      universityEmail,
-      realName,
-      birthDate,
-      profileImage,
-      termsAgreed,
-      privacyAgreed,
-      marketingAgreed,
-    });
-
+    // 새로운 반정규화 스키마에 맞게 업데이트
     // Check if user already exists
-    console.log("SERVER: Checking for existing user...");
     const existingUser = await sql`
-      SELECT id FROM users WHERE username = ${userId} OR email = ${universityEmail} OR phone = ${phone}
+      SELECT id FROM users 
+      WHERE ("loginId" = ${userId} OR email = ${universityEmail} OR "universityEmail" = ${universityEmail} OR phone = ${phone}) 
+      AND "isActive" = true
     `;
-    console.log("SERVER: Existing user check result:", existingUser);
 
     if (existingUser.length > 0) {
-      console.log("SERVER: User already exists");
       return {
         success: false,
         error: "이미 가입된 아이디, 이메일 또는 전화번호입니다.",
@@ -890,72 +828,51 @@ export async function registerVeterinaryStudent(
     }
 
     // Hash password
-    console.log("SERVER: Hashing password...");
     const hashedPassword = await bcrypt.hash(password, 12);
-    console.log("SERVER: Password hashed successfully");
-
-    // Create user
-    console.log("SERVER: Creating user...");
     const userId_generated = createId();
     const currentDate = new Date();
+
+    // 통합 users 테이블에 직접 저장
     const user = await sql`
       INSERT INTO users (
-        id, username, email, phone, "passwordHash", "userType", "profileImage",
-        provider, "isActive", "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt",
-        "createdAt", "updatedAt"
+        id, "loginId", email, phone, "realName", "passwordHash", "userType", 
+        nickname, "birthDate", "profileImage", "universityEmail", provider,
+        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
+        "isActive", "createdAt", "updatedAt"
       ) VALUES (
-        ${userId_generated}, ${userId}, ${universityEmail}, ${phone}, ${hashedPassword}, 
-        'VETERINARIAN', ${profileImage}, 'NORMAL', true,
-        ${termsAgreed ? new Date() : null},
-        ${privacyAgreed ? new Date() : null}, 
-        ${marketingAgreed ? new Date() : null},
-        ${currentDate}, ${currentDate}
+        ${userId_generated}, ${userId}, ${universityEmail}, ${phone}, ${realName}, ${hashedPassword}, 'VETERINARY_STUDENT',
+        ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${profileImage}, ${universityEmail}, 'NORMAL',
+        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        true, ${currentDate}, ${currentDate}
       )
-      RETURNING id, username, email, phone, "userType", "profileImage"
+      RETURNING id, "loginId", email, phone, "userType", nickname
     `;
-    console.log("SERVER: User created:", user[0]);
 
-    // Create veterinarian profile for veterinary student (using existing table)
-    console.log("SERVER: Creating veterinary student profile...");
-    const profileId = createId();
-    const universityDomain = universityEmail.split("@")[1] || "unknown";
-    await sql`
-      INSERT INTO veterinarian_profiles (
-        id, "userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction,
-        "createdAt", "updatedAt"
-      ) VALUES (
-        ${profileId}, ${user[0].id}, ${nickname}, ${new Date(birthDate)}, null, 
-        ${"Student at " + universityDomain}, 'Veterinary Student', 
-        ${
-          "University Email: " + universityEmail
-        }, ${currentDate}, ${currentDate}
-      )
-    `;
-    console.log("SERVER: Veterinary student profile created successfully");
+    console.log("SERVER: Veterinary student created successfully:", user[0].id);
 
     return {
       success: true,
+      user: {
+        id: user[0].id,
+        loginId: user[0].loginId,
+        email: user[0].email,
+        userType: user[0].userType,
+        nickname: user[0].nickname,
+      },
       message: "수의학과 학생 회원가입이 완료되었습니다.",
     };
   } catch (error) {
     console.error("SERVER: Veterinary student registration error:", error);
-    console.error("SERVER: Error details:", {
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-      data,
-    });
-
     return {
       success: false,
       error: `수의학과 학생 회원가입 중 오류가 발생했습니다: ${
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다."
+        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
       }`,
     };
   }
 }
 
+// 새로운 통합 병원 회원가입 업데이트
 export async function registerHospital(data: HospitalRegisterData) {
   try {
     console.log("SERVER: registerHospital called with data:", data);
@@ -976,125 +893,62 @@ export async function registerHospital(data: HospitalRegisterData) {
       marketingAgreed,
     } = data;
 
-    console.log("SERVER: Extracted data:", {
-      userId,
-      password: "[HIDDEN]",
-      hospitalName,
-      businessNumber,
-      phone,
-      email,
-      website,
-      address,
-      profileImage,
-      businessLicense,
-      termsAgreed,
-      privacyAgreed,
-      marketingAgreed,
-    });
-
+    // 새로운 반정규화 스키마에 맞게 업데이트
     // Check if user already exists
-    console.log("SERVER: Checking for existing user...");
     const existingUser = await sql`
-      SELECT id FROM users WHERE username = ${userId} OR email = ${email} OR phone = ${phone}
+      SELECT id FROM users 
+      WHERE ("loginId" = ${userId} OR email = ${email} OR phone = ${phone} OR "businessNumber" = ${businessNumber}) 
+      AND "isActive" = true
     `;
-    console.log("SERVER: Existing user check result:", existingUser);
 
     if (existingUser.length > 0) {
-      console.log("SERVER: User already exists");
       return {
         success: false,
-        error: "이미 가입된 아이디, 이메일 또는 전화번호입니다.",
-      };
-    }
-
-    // Check if business number already exists
-    const existingBusiness = await sql`
-      SELECT id FROM hospital_profiles WHERE "businessNumber" = ${businessNumber}
-    `;
-
-    if (existingBusiness.length > 0) {
-      return {
-        success: false,
-        error: "이미 가입된 사업자등록번호입니다.",
+        error: "이미 가입된 아이디, 이메일, 전화번호 또는 사업자등록번호입니다.",
       };
     }
 
     // Hash password
-    console.log("SERVER: Hashing password...");
     const passwordHash = await bcrypt.hash(password, 12);
-    console.log("SERVER: Password hashed successfully");
-
-    // Create user - userId는 username 필드에 저장
-    console.log("SERVER: Creating user...");
     const generatedId = createId();
-    console.log("SERVER: Generated ID:", generatedId);
+    const currentDate = new Date();
 
+    // 통합 users 테이블에 직접 저장
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, "passwordHash", "userType", "profileImage", provider,
-        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+        id, "loginId", email, phone, "realName", "passwordHash", "userType", 
+        "hospitalName", "businessNumber", "hospitalWebsite", "hospitalAddress", 
+        "hospitalLogo", provider, "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
+        "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${generatedId}, ${userId}, ${email}, ${phone}, ${passwordHash}, 'HOSPITAL', ${profileImage}, 'NORMAL',
-        ${termsAgreed ? new Date() : null}, ${
-      privacyAgreed ? new Date() : null
-    }, ${marketingAgreed ? new Date() : null},
-        true, NOW(), NOW()
+        ${generatedId}, ${userId}, ${email}, ${phone}, ${address}, ${passwordHash}, 'HOSPITAL',
+        ${hospitalName}, ${businessNumber}, ${website}, ${address}, ${profileImage}, 'NORMAL',
+        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        true, ${currentDate}, ${currentDate}
       )
       RETURNING *
     `;
-    console.log("SERVER: User created successfully:", userResult[0]);
 
     const user = userResult[0];
+    console.log("SERVER: Hospital user created successfully:", user.id);
 
-    // Create hospital profile
-    console.log("SERVER: Creating hospital profile...");
-    const profileId = createId();
-    console.log("SERVER: Generated profile ID:", profileId);
-
-    const hospitalProfileResult = await sql`
-      INSERT INTO hospital_profiles (
-        id, "userId", "hospitalName", "businessNumber", address, phone, website, "businessLicense", "createdAt", "updatedAt"
-      )
-      VALUES (
-        ${profileId}, ${
-      user.id
-    }, ${hospitalName}, ${businessNumber}, ${address}, ${phone}, ${
-      website || null
-    }, ${businessLicense || null},
-        NOW(), NOW()
-      )
-      RETURNING *
-    `;
-    console.log(
-      "SERVER: Hospital profile created successfully:",
-      hospitalProfileResult
-    );
-
-    console.log("SERVER: Registration completed successfully");
     return {
       success: true,
       user: {
         id: user.id,
-        username: user.username,
+        loginId: user.loginId,
         email: user.email,
         userType: user.userType,
+        hospitalName: user.hospitalName,
       },
     };
   } catch (error) {
     console.error("SERVER: Register hospital error:", error);
-    console.error("SERVER: Error details:", {
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined,
-      data,
-    });
     return {
       success: false,
       error: `병원 회원가입 실패: ${
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다."
+        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
       }`,
     };
   }
@@ -1168,13 +1022,17 @@ export async function getHospitalProfile(): Promise<{
 
 export interface VeterinarianProfile {
   id: string;
-  userId: string;
-  nickname: string;
+  email: string;
+  phone: string;
+  profileImage?: string;
+  loginId?: string;
+  nickname?: string;
+  realName: string;
   birthDate?: Date;
   licenseImage?: string;
-  experience?: string;
-  specialty?: string;
-  introduction?: string;
+  userType: string;
+  provider: string;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -1190,36 +1048,36 @@ export async function getVeterinarianProfile(): Promise<{
       return { success: false, error: "인증되지 않은 사용자입니다." };
     }
 
-    if (userResult.user.userType !== "VETERINARIAN") {
+    if (userResult.user.userType !== "VETERINARIAN" && userResult.user.userType !== "VETERINARY_STUDENT") {
       return {
         success: false,
         error: "수의사 또는 수의학과 학생 계정이 아닙니다.",
       };
     }
 
-    const result = await sql`
-      SELECT * FROM veterinarian_profiles 
-      WHERE "userId" = ${userResult.user.id} 
-      AND "deletedAt" IS NULL
-    `;
+    // Use the updated database function
+    const { getVeterinarianProfile: getVetProfile } = await import('@/lib/database');
+    const profile = await getVetProfile(userResult.user.id);
 
-    if (result.length === 0) {
+    if (!profile) {
       return { success: false, error: "수의사 프로필을 찾을 수 없습니다." };
     }
-
-    const profile = result[0];
 
     return {
       success: true,
       profile: {
         id: profile.id,
-        userId: profile.userId,
+        email: profile.email,
+        phone: profile.phone,
+        profileImage: profile.profileImage,
+        loginId: profile.loginId,
         nickname: profile.nickname,
+        realName: profile.realName,
         birthDate: profile.birthDate,
         licenseImage: profile.licenseImage,
-        experience: profile.experience,
-        specialty: profile.specialty,
-        introduction: profile.introduction,
+        userType: profile.userType,
+        provider: profile.provider,
+        isActive: profile.isActive,
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt,
       },
@@ -2336,6 +2194,118 @@ export async function completeSocialVeterinaryStudentRegistration(
           ? error.message
           : "알 수 없는 오류가 발생했습니다."
       }`,
+    };
+  }
+}
+
+// 프로필 업데이트 Server Action
+export async function updateVeterinarianProfile(formData: FormData) {
+  console.log('=== Server Action: updateVeterinarianProfile 호출됨 ===');
+  
+  try {
+    // 현재 사용자 인증 확인
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+
+    if (!token) {
+      return { success: false, error: "인증 토큰이 없습니다." };
+    }
+
+    // JWT 토큰 검증
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const userId = decoded.userId;
+
+    console.log('[Server Action] 사용자 ID:', userId);
+
+    // FormData에서 데이터 추출
+    const profileData: any = {
+      realName: formData.get("realName") as string,
+      nickname: formData.get("nickname") as string,
+      phone: formData.get("phone") as string,
+      email: formData.get("email") as string,
+      birthDate: formData.get("birthDate") as string,
+    };
+
+    // 프로필 이미지 처리
+    const profileImageUrl = formData.get("profileImage") as string;
+    if (profileImageUrl && profileImageUrl !== "undefined" && profileImageUrl !== "null") {
+      console.log('[Server Action] 프로필 이미지 URL:', profileImageUrl);
+      profileData.profileImage = profileImageUrl;
+    }
+
+    // 면허증 이미지 처리
+    const licenseImageUrl = formData.get("licenseImage") as string;
+    if (licenseImageUrl && licenseImageUrl !== "undefined" && licenseImageUrl !== "null") {
+      console.log('[Server Action] 라이센스 이미지 URL:', licenseImageUrl);
+      profileData.licenseImage = licenseImageUrl;
+    }
+
+    // 비밀번호 변경 처리
+    const password = formData.get("password") as string;
+    if (password && password.trim() !== "") {
+      console.log('[Server Action] 비밀번호 변경 요청');
+      const passwordHash = await bcrypt.hash(password, 12);
+      profileData.passwordHash = passwordHash;
+    }
+
+    console.log('[Server Action] 업데이트할 데이터:', profileData);
+
+    // SQL 쿼리 동적 생성
+    const updateFields: string[] = [];
+    const updateValues: any[] = [];
+    let paramIndex = 1;
+
+    for (const [key, value] of Object.entries(profileData)) {
+      if (value !== undefined && value !== null && value !== '') {
+        // Snake case로 변환 (camelCase -> snake_case)
+        const dbKey = key === 'realName' ? 'realName' 
+                    : key === 'profileImage' ? 'profileImage'
+                    : key === 'licenseImage' ? 'licenseImage'
+                    : key === 'passwordHash' ? 'passwordHash'
+                    : key === 'birthDate' ? 'birthDate'
+                    : key;
+        
+        updateFields.push(`"${dbKey}" = $${paramIndex++}`);
+        updateValues.push(key === 'birthDate' ? new Date(value as string) : value);
+        console.log(`[Server Action] Will update ${dbKey} to:`, value);
+      }
+    }
+
+    if (updateFields.length === 0) {
+      return { success: false, error: "업데이트할 데이터가 없습니다." };
+    }
+
+    // updatedAt 필드 추가
+    updateFields.push(`"updatedAt" = $${paramIndex++}`);
+    updateValues.push(new Date());
+
+    // 사용자 ID 추가 (WHERE 조건용)
+    updateValues.push(userId);
+
+    // SQL 쿼리 실행
+    const updateQuery = `
+      UPDATE users 
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramIndex}
+    `;
+
+    console.log('[Server Action] SQL 쿼리:', updateQuery);
+    console.log('[Server Action] SQL 값들:', updateValues);
+
+    const result = await sql.query(updateQuery, updateValues);
+    
+    console.log('[Server Action] 업데이트 결과:', result);
+
+    return { 
+      success: true, 
+      message: "프로필이 성공적으로 수정되었습니다." 
+    };
+
+  } catch (error) {
+    console.error('[Server Action] 프로필 업데이트 오류:', error);
+    return { 
+      success: false, 
+      error: `프로필 수정 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}` 
     };
   }
 }

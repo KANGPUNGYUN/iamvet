@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { UploadIcon } from "public/icons";
 import { uploadImage, deleteImage } from "@/lib/s3";
 import { isS3Url } from "@/lib/s3-client";
@@ -23,6 +23,11 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(value || null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // value prop이 변경될 때 previewUrl 업데이트
+  useEffect(() => {
+    setPreviewUrl(value || null);
+  }, [value]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

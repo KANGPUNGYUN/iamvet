@@ -1,7 +1,7 @@
 "use client";
 
 import { UploadIcon } from "public/icons";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { uploadImage, deleteImage } from "@/lib/s3";
 import { isS3Url } from "@/lib/s3-client";
 
@@ -21,6 +21,11 @@ export const LicenseImageUpload: React.FC<LicenseImageUploadProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(value || null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // value prop이 변경될 때 previewUrl 업데이트
+  useEffect(() => {
+    setPreviewUrl(value || null);
+  }, [value]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('[LicenseUpload] 파일 선택 이벤트 발생');

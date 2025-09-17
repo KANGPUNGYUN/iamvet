@@ -1,4 +1,3 @@
-// Prisma 스키마 정의
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,126 +7,69 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 기본 사용자 모델
 model User {
-  id              String    @id @default(cuid())
-  username        String    @unique
-  email           String    @unique
-  phone           String    @unique
-  realName        String?
-  nickname        String?   // 닉네임 추가
-  loginId         String?   @unique // 로그인용 아이디 추가 (소셜 로그인 시에는 null)
-  birthDate       DateTime? // 생년월일 추가
-  passwordHash    String?   // 소셜 로그인 사용자는 null 가능
-  profileImage    String?
-  userType        UserType
-  provider        Provider  @default(NORMAL)
-  isActive        Boolean   @default(true)
-  
-  // 약관 동의 정보
-  termsAgreedAt     DateTime?
-  privacyAgreedAt   DateTime?
-  marketingAgreedAt DateTime?
-  
-  // Soft delete 및 복구 관련
-  deletedAt       DateTime?
-  withdrawReason  String?
-  restoredAt      DateTime?
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
+  id                      String                   @id @default(cuid())
+  seq                     Int                      @unique @default(autoincrement())
+  email                   String                   @unique
+  phone                   String                   @unique
+  passwordHash            String?
+  profileImage            String?
+  userType                UserType
+  provider                Provider                 @default(NORMAL)
+  isActive                Boolean                  @default(true)
+  termsAgreedAt           DateTime
+  privacyAgreedAt         DateTime
+  marketingAgreedAt       DateTime?
+  deletedAt               DateTime?
+  withdrawReason          String?
+  restoredAt              DateTime?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  realName                String
+  birthDate               DateTime?
+  nickname                String?                  @db.VarChar(100)
+  loginId                 String?                  @unique @db.VarChar(100)
+  universityEmail         String?                  @unique
+  hospitalName            String?
+  establishedDate         DateTime?
+  businessNumber          String?                  @unique
+  hospitalWebsite         String?
+  hospitalLogo            String?
+  hospitalAddress         String?
+  hospitalAddressDetail   String?
+  licenseImage            String?
   // 관계
-  veterinarianProfile     VeterinarianProfile?
-  hospitalProfile         HospitalProfile?
-  veterinaryStudentProfile VeterinaryStudentProfile?
+  hospitalFacilityImages  HospitalFacilityImage[]
+  hospitalAnimals         HospitalAnimal[]
+  hospitalSpecialties     HospitalSpecialty[]
+  hospitalBusinessLicenses HospitalBusinessLicense[]
+  applications            Application[]
+  commentReplies          CommentReply[]
   detailedHospitalProfile DetailedHospitalProfile?
-  socialAccounts      SocialAccount[]
-  jobs                Job[]
-  resumes             Resume[]
-  detailedResume      DetailedResume?
-  applications        Application[]
-  jobBookmarks        JobBookmark[]
-  resumeBookmarks     ResumeBookmark[]
-  lectureBookmarks    LectureBookmark[]
-  transferBookmarks   TransferBookmark[]
-  hospitalEvaluations HospitalEvaluation[] @relation("HospitalEvaluations")
-  userHospitalEvaluations HospitalEvaluation[] @relation("UserHospitalEvaluations")
-  resumeEvaluations   ResumeEvaluation[]
-  lectureComments     LectureComment[]
-  commentReplies      CommentReply[]
-  forumPosts          ForumPost[]
-  transfers           Transfer[]
-  sentMessages        Message[] @relation("SentMessages")
-  receivedMessages    Message[] @relation("ReceivedMessages")
+  detailedResume          DetailedResume?
+  forumPosts              ForumPost[]
+  hospitalEvaluations     HospitalEvaluation[]     @relation("HospitalEvaluations")
+  userHospitalEvaluations HospitalEvaluation[]     @relation("UserHospitalEvaluations")
+  hospital_profiles       hospital_profiles?
+  jobBookmarks            JobBookmark[]
+  jobs                    Job[]
+  lectureBookmarks        LectureBookmark[]
+  lectureComments         LectureComment[]
+  receivedMessages        Message[]                @relation("ReceivedMessages")
+  sentMessages            Message[]                @relation("SentMessages")
+  resumeBookmarks         ResumeBookmark[]
+  resumeEvaluations       ResumeEvaluation[]
+  resumes                 Resume[]
+  socialAccounts          SocialAccount[]
+  transferBookmarks       TransferBookmark[]
+  transfers               Transfer[]
+  veterinarian_profiles   veterinarian_profiles?
 
+  @@index([loginId], map: "idx_users_loginid")
+  @@index([nickname], map: "idx_users_nickname")
   @@map("users")
 }
 
-// 수의사 프로필
-model VeterinarianProfile {
-  id           String    @id @default(cuid())
-  userId       String    @unique
-  nickname     String
-  birthDate    DateTime?
-  licenseImage String?
-  experience   String?
-  specialty    String?
-  introduction String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("veterinarian_profiles")
-}
-
-// 병원 프로필
-model HospitalProfile {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  hospitalName     String
-  businessNumber   String   @unique
-  address          String
-  phone            String
-  website          String?
-  description      String?
-  businessLicense  String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("hospital_profiles")
-}
-
-// 수의학과 학생 프로필
-model VeterinaryStudentProfile {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  nickname         String
-  birthDate        DateTime?
-  universityEmail  String    @unique
-  university       String?
-  major            String?
-  admissionYear    Int?
-  currentYear      Int?
-  introduction     String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("veterinary_student_profiles")
-}
-
-// 소셜 계정 연동
 model SocialAccount {
   id           String   @id @default(cuid())
   userId       String
@@ -135,19 +77,16 @@ model SocialAccount {
   providerId   String
   accessToken  String?
   refreshToken String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerId])
   @@map("social_accounts")
 }
 
-// 채용공고
 model Job {
-  id            String      @id @default(cuid())
+  id            String        @id @default(cuid())
   hospitalId    String
   title         String
   description   String
@@ -159,125 +98,107 @@ model Job {
   workType      WorkType
   benefits      String?
   requirements  String?
-  status        JobStatus   @default(ACTIVE)
+  status        JobStatus     @default(ACTIVE)
   deadline      DateTime?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  hospital     User          @relation(fields: [hospitalId], references: [id])
-  applications Application[]
-  bookmarks    JobBookmark[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+  applications  Application[]
+  bookmarks     JobBookmark[]
+  hospital      User          @relation(fields: [hospitalId], references: [id])
 
   @@map("jobs")
 }
 
-// 인재정보 (이력서)
 model Resume {
-  id              String   @id @default(cuid())
-  veterinarianId  String
-  title           String
-  introduction    String?
-  experience      String?
-  education       String?
-  certifications  String?
-  skills          String?
-  preferredSalary Int?
+  id                String             @id @default(cuid())
+  veterinarianId    String
+  title             String
+  introduction      String?
+  experience        String?
+  education         String?
+  certifications    String?
+  skills            String?
+  preferredSalary   Int?
   preferredLocation String?
-  availableFrom   DateTime?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  veterinarian User              @relation(fields: [veterinarianId], references: [id])
-  bookmarks    ResumeBookmark[]
-  evaluations  ResumeEvaluation[]
+  availableFrom     DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime?
+  bookmarks         ResumeBookmark[]
+  evaluations       ResumeEvaluation[]
+  veterinarian      User               @relation(fields: [veterinarianId], references: [id])
 
   @@map("resumes")
 }
 
-// 지원서
 model Application {
-  id              String            @id @default(cuid())
-  jobId           String
-  veterinarianId  String
-  coverLetter     String?
-  status          ApplicationStatus @default(PENDING)
-  appliedAt       DateTime          @default(now())
-  reviewedAt      DateTime?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  job          Job  @relation(fields: [jobId], references: [id])
-  veterinarian User @relation(fields: [veterinarianId], references: [id])
+  id             String            @id @default(cuid())
+  jobId          String
+  veterinarianId String
+  coverLetter    String?
+  status         ApplicationStatus @default(PENDING)
+  appliedAt      DateTime          @default(now())
+  reviewedAt     DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  job            Job               @relation(fields: [jobId], references: [id])
+  veterinarian   User              @relation(fields: [veterinarianId], references: [id])
 
   @@unique([jobId, veterinarianId])
   @@map("applications")
 }
 
-// 강의영상
 model Lecture {
-  id          String   @id @default(cuid())
+  id          String            @id @default(cuid())
   title       String
   description String?
   videoUrl    String
   thumbnail   String?
-  duration    Int? // 초 단위
+  duration    Int?
   category    String?
   tags        String[]
-  viewCount   Int      @default(0)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  bookmarks LectureBookmark[]
-  comments  LectureComment[]
+  viewCount   Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  deletedAt   DateTime?
+  bookmarks   LectureBookmark[]
+  comments    LectureComment[]
 
   @@map("lectures")
 }
 
-// 강의 댓글
 model LectureComment {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   lectureId String
   userId    String
   content   String
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  lecture Lecture @relation(fields: [lectureId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
-  replies CommentReply[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
+  replies   CommentReply[]
+  lecture   Lecture        @relation(fields: [lectureId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
 
   @@map("lecture_comments")
 }
 
-// 댓글 답글
 model CommentReply {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   commentId String
   userId    String
   content   String
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  comment LectureComment @relation(fields: [commentId], references: [id])
-  user    User           @relation(fields: [userId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
+  comment   LectureComment @relation(fields: [commentId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
 
   @@map("comment_replies")
 }
 
-// 양도양수
 model Transfer {
-  id          String        @id @default(cuid())
+  id          String             @id @default(cuid())
   userId      String
   title       String
   description String
@@ -285,158 +206,408 @@ model Transfer {
   price       Int?
   category    String
   images      String[]
-  status      TransferStatus @default(ACTIVE)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  user      User                @relation(fields: [userId], references: [id])
-  bookmarks TransferBookmark[]
+  status      TransferStatus     @default(ACTIVE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  deletedAt   DateTime?
+  bookmarks   TransferBookmark[]
+  user        User               @relation(fields: [userId], references: [id])
 
   @@map("transfers")
 }
 
-// 포럼 게시글
 model ForumPost {
-  id       String   @id @default(cuid())
-  userId   String
-  title    String
-  content  String
-  category String?
-  tags     String[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  user User @relation(fields: [userId], references: [id])
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  content   String
+  category  String?
+  tags      String[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id])
 
   @@map("forum_posts")
 }
 
-// 메시지
 model Message {
-  id         String      @id @default(cuid())
+  id         String        @id @default(cuid())
   senderId   String
   receiverId String
   subject    String?
   content    String
   status     MessageStatus @default(UNREAD)
   readAt     DateTime?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  sender   User @relation("SentMessages", fields: [senderId], references: [id])
-  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  receiver   User          @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User          @relation("SentMessages", fields: [senderId], references: [id])
 
   @@map("messages")
 }
 
-// 북마크 모델들
 model JobBookmark {
-  id     String @id @default(cuid())
-  userId String
-  jobId  String
-  
-  createdAt DateTime @default(now())
-  deletedAt DateTime? // Soft delete
-
-  user User @relation(fields: [userId], references: [id])
-  job  Job  @relation(fields: [jobId], references: [id])
+  id        String    @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  job       Job       @relation(fields: [jobId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, jobId])
   @@map("job_bookmarks")
 }
 
 model ResumeBookmark {
-  id       String @id @default(cuid())
-  userId   String
-  resumeId String
-  
-  createdAt DateTime @default(now())
-  deletedAt DateTime? // Soft delete
-
-  user   User   @relation(fields: [userId], references: [id])
-  resume Resume @relation(fields: [resumeId], references: [id])
+  id        String    @id @default(cuid())
+  userId    String
+  resumeId  String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  resume    Resume    @relation(fields: [resumeId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, resumeId])
   @@map("resume_bookmarks")
 }
 
 model LectureBookmark {
-  id        String @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   lectureId String
-  
-  createdAt DateTime @default(now())
-  deletedAt DateTime? // Soft delete
-
-  user    User    @relation(fields: [userId], references: [id])
-  lecture Lecture @relation(fields: [lectureId], references: [id])
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  lecture   Lecture   @relation(fields: [lectureId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, lectureId])
   @@map("lecture_bookmarks")
 }
 
 model TransferBookmark {
-  id         String @id @default(cuid())
+  id         String    @id @default(cuid())
   userId     String
   transferId String
-  
-  createdAt DateTime @default(now())
-  deletedAt DateTime? // Soft delete
-
-  user     User     @relation(fields: [userId], references: [id])
-  transfer Transfer @relation(fields: [transferId], references: [id])
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+  transfer   Transfer  @relation(fields: [transferId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, transferId])
   @@map("transfer_bookmarks")
 }
 
-// 평가 모델들
 model HospitalEvaluation {
-  id         String @id @default(cuid())
+  id         String    @id @default(cuid())
   hospitalId String
   userId     String
-  rating     Int    // 1-5
+  rating     Int
   comment    String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  hospital User @relation("HospitalEvaluations", fields: [hospitalId], references: [id])
-  user     User @relation("UserHospitalEvaluations", fields: [userId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  hospital   User      @relation("HospitalEvaluations", fields: [hospitalId], references: [id])
+  user       User      @relation("UserHospitalEvaluations", fields: [userId], references: [id])
 
   @@unique([hospitalId, userId])
   @@map("hospital_evaluations")
 }
 
 model ResumeEvaluation {
-  id       String @id @default(cuid())
-  resumeId String
-  userId   String
-  rating   Int    // 1-5
-  comment  String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime? // Soft delete
-
-  resume Resume @relation(fields: [resumeId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  id        String    @id @default(cuid())
+  resumeId  String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  resume    Resume    @relation(fields: [resumeId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 
   @@unique([resumeId, userId])
   @@map("resume_evaluations")
 }
 
-// Enum 정의
+model DetailedResume {
+  id                  String                    @id @default(cuid())
+  userId              String                    @unique
+  photo               String?
+  name                String
+  birthDate           String?
+  introduction        String?
+  phone               String?
+  email               String?
+  phonePublic         Boolean                   @default(false)
+  emailPublic         Boolean                   @default(false)
+  position            String?
+  specialties         String[]
+  preferredRegions    String[]
+  expectedSalary      String?
+  workTypes           String[]
+  startDate           String?
+  preferredWeekdays   String[]
+  weekdaysNegotiable  Boolean                   @default(false)
+  workStartTime       String?
+  workEndTime         String?
+  workTimeNegotiable  Boolean                   @default(false)
+  selfIntroduction    String?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  deletedAt           DateTime?
+  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  educations          ResumeEducation[]
+  experiences         ResumeExperience[]
+  licenses            ResumeLicense[]
+  medicalCapabilities ResumeMedicalCapability[]
+
+  @@map("detailed_resumes")
+}
+
+model ResumeExperience {
+  id           String         @id @default(cuid())
+  resumeId     String
+  hospitalName String
+  mainTasks    String
+  startDate    DateTime?
+  endDate      DateTime?
+  sortOrder    Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  resume       DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_experiences")
+}
+
+model ResumeLicense {
+  id           String         @id @default(cuid())
+  resumeId     String
+  name         String
+  issuer       String
+  grade        String?
+  acquiredDate DateTime?
+  sortOrder    Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  resume       DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_licenses")
+}
+
+model ResumeEducation {
+  id               String         @id @default(cuid())
+  resumeId         String
+  degree           String
+  graduationStatus String
+  schoolName       String
+  major            String
+  gpa              String?
+  totalGpa         String?
+  startDate        DateTime?
+  endDate          DateTime?
+  sortOrder        Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  resume           DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_educations")
+}
+
+model ResumeMedicalCapability {
+  id          String         @id @default(cuid())
+  resumeId    String
+  field       String
+  proficiency String
+  description String?
+  others      String?
+  sortOrder   Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  resume      DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_medical_capabilities")
+}
+
+model DetailedHospitalProfile {
+  id                  String              @id @default(cuid())
+  userId              String              @unique
+  hospitalName        String
+  businessNumber      String
+  address             String
+  phone               String
+  website             String?
+  description         String?
+  businessLicense     String?
+  hospitalLogo        String?
+  establishedDate     String?
+  detailAddress       String?
+  email               String?
+  treatmentAnimals    String[]
+  treatmentFields     String[]
+  operatingHours      Json?
+  emergencyService    Boolean             @default(false)
+  parkingAvailable    Boolean             @default(false)
+  publicTransportInfo String?
+  totalBeds           Int?
+  surgeryRooms        Int?
+  xrayRoom            Boolean             @default(false)
+  ctScan              Boolean             @default(false)
+  ultrasound          Boolean             @default(false)
+  grooming            Boolean             @default(false)
+  boarding            Boolean             @default(false)
+  petTaxi             Boolean             @default(false)
+  certifications      String[]
+  awards              String[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  deletedAt           DateTime?
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  equipments          HospitalEquipment[]
+  staff               HospitalStaff[]
+
+  @@map("detailed_hospital_profiles")
+}
+
+model HospitalStaff {
+  id                String                  @id @default(cuid())
+  hospitalProfileId String
+  name              String
+  position          String
+  specialization    String?
+  experience        String?
+  education         String?
+  profileImage      String?
+  introduction      String?
+  sortOrder         Int                     @default(0)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  hospitalProfile   DetailedHospitalProfile @relation(fields: [hospitalProfileId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_staff")
+}
+
+model HospitalEquipment {
+  id                String                  @id @default(cuid())
+  hospitalProfileId String
+  name              String
+  category          String
+  manufacturer      String?
+  model             String?
+  purchaseDate      DateTime?
+  description       String?
+  image             String?
+  sortOrder         Int                     @default(0)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  hospitalProfile   DetailedHospitalProfile @relation(fields: [hospitalProfileId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_equipments")
+}
+
+model hospital_profiles {
+  id              String    @id
+  userId          String    @unique
+  hospitalName    String
+  businessNumber  String    @unique
+  address         String
+  phone           String
+  website         String?
+  description     String?
+  businessLicense String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  deletedAt       DateTime?
+  users           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model veterinarian_profiles {
+  id           String    @id
+  userId       String    @unique
+  nickname     String
+  birthDate    DateTime?
+  licenseImage String?
+  experience   String?
+  specialty    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+  deletedAt    DateTime?
+  users        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model HospitalFacilityImage {
+  id           String   @id @default(cuid())
+  userId       String
+  imageUrl     String
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_facility_images")
+}
+
+model HospitalAnimal {
+  id         String     @id @default(cuid())
+  userId     String
+  animalType AnimalType
+  createdAt  DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animalType])
+  @@map("hospital_animals")
+}
+
+model HospitalSpecialty {
+  id        String        @id @default(cuid())
+  userId    String
+  specialty SpecialtyType
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, specialty])
+  @@map("hospital_specialties")
+}
+
+model HospitalBusinessLicense {
+  id         String   @id @default(cuid())
+  userId     String
+  fileName   String
+  fileUrl    String
+  fileType   String
+  fileSize   BigInt?
+  uploadedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_business_licenses")
+}
+
 enum UserType {
   VETERINARIAN
   HOSPITAL
   VETERINARY_STUDENT
+}
+
+enum AnimalType {
+  DOG
+  CAT
+  EXOTIC
+  LARGE_ANIMAL
+}
+
+enum SpecialtyType {
+  INTERNAL_MEDICINE
+  SURGERY
+  DERMATOLOGY
+  DENTISTRY
+  OPHTHALMOLOGY
+  NEUROLOGY
+  ORTHOPEDICS
 }
 
 enum Provider {
@@ -482,221 +653,4 @@ enum TransferStatus {
 enum MessageStatus {
   UNREAD
   READ
-}
-
-// 상세 이력서 메인 테이블
-model DetailedResume {
-  id                    String   @id @default(cuid())
-  userId                String   @unique // 수의사 한 명당 하나의 상세 이력서
-  
-  // 기본 정보
-  photo                 String?  // 이력서 사진 URL
-  name                  String
-  birthDate             String?
-  introduction          String?  // 한 줄 소개
-  phone                 String?
-  email                 String?
-  phonePublic           Boolean  @default(false)
-  emailPublic           Boolean  @default(false)
-  
-  // 희망 근무 조건
-  position              String?
-  specialties           String[] // JSON 배열로 저장
-  preferredRegions      String[] // JSON 배열로 저장
-  expectedSalary        String?
-  workTypes             String[] // JSON 배열로 저장
-  startDate             String?
-  preferredWeekdays     String[] // JSON 배열로 저장
-  weekdaysNegotiable    Boolean  @default(false)
-  workStartTime         String?
-  workEndTime           String?
-  workTimeNegotiable    Boolean  @default(false)
-  
-  // 자기소개
-  selfIntroduction      String?
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  deletedAt             DateTime? // Soft delete
-
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  experiences           ResumeExperience[]
-  licenses              ResumeLicense[]
-  educations            ResumeEducation[]
-  medicalCapabilities   ResumeMedicalCapability[]
-
-  @@map("detailed_resumes")
-}
-
-// 경력 사항
-model ResumeExperience {
-  id            String   @id @default(cuid())
-  resumeId      String
-  hospitalName  String
-  mainTasks     String
-  startDate     DateTime?
-  endDate       DateTime?
-  sortOrder     Int      @default(0)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  resume        DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-
-  @@map("resume_experiences")
-}
-
-// 자격증/면허
-model ResumeLicense {
-  id            String   @id @default(cuid())
-  resumeId      String
-  name          String
-  issuer        String
-  grade         String?
-  acquiredDate  DateTime?
-  sortOrder     Int      @default(0)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  resume        DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-
-  @@map("resume_licenses")
-}
-
-// 학력
-model ResumeEducation {
-  id                String   @id @default(cuid())
-  resumeId          String
-  degree            String
-  graduationStatus  String
-  schoolName        String
-  major             String
-  gpa               String?
-  totalGpa          String?
-  startDate         DateTime?
-  endDate           DateTime?
-  sortOrder         Int      @default(0)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  resume            DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-
-  @@map("resume_educations")
-}
-
-// 진료상세역량
-model ResumeMedicalCapability {
-  id            String   @id @default(cuid())
-  resumeId      String
-  field         String
-  proficiency   String
-  description   String?
-  others        String?
-  sortOrder     Int      @default(0)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  resume        DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-
-  @@map("resume_medical_capabilities")
-}
-
-// 상세 병원 프로필 메인 테이블
-model DetailedHospitalProfile {
-  id                    String   @id @default(cuid())
-  userId                String   @unique // 병원 한 곳당 하나의 상세 프로필
-  
-  // 기본 정보 (기존 HospitalProfile에서 가져오는 것들)
-  hospitalName          String
-  businessNumber        String
-  address               String
-  phone                 String
-  website               String?
-  description           String?
-  businessLicense       String?
-  
-  // 추가 상세 정보
-  hospitalLogo          String?  // 병원 로고 URL
-  establishedDate       String?  // 설립일
-  detailAddress         String?  // 상세주소
-  email                 String?  // 대표 이메일
-  treatmentAnimals      String[] // 진료 동물 종류
-  treatmentFields       String[] // 진료 분야
-  
-  // 운영 정보
-  operatingHours        Json?    // 요일별 운영시간 정보
-  emergencyService      Boolean  @default(false) // 응급진료 가능 여부
-  parkingAvailable      Boolean  @default(false) // 주차 가능 여부
-  publicTransportInfo   String?  // 대중교통 정보
-  
-  // 시설 정보
-  totalBeds             Int?     // 총 병상 수
-  surgeryRooms          Int?     // 수술실 수
-  xrayRoom              Boolean  @default(false) // X-ray 장비 보유
-  ctScan                Boolean  @default(false) // CT 스캔 장비 보유
-  ultrasound            Boolean  @default(false) // 초음파 장비 보유
-  
-  // 추가 서비스
-  grooming              Boolean  @default(false) // 미용 서비스
-  boarding              Boolean  @default(false) // 위탁 서비스
-  petTaxi               Boolean  @default(false) // 펫택시 서비스
-  
-  // 인증 정보
-  certifications        String[] // 보유 인증서들
-  awards                String[] // 수상 내역
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  deletedAt             DateTime? // Soft delete
-
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  staff                 HospitalStaff[]
-  equipments            HospitalEquipment[]
-
-  @@map("detailed_hospital_profiles")
-}
-
-// 병원 직원 정보
-model HospitalStaff {
-  id                String   @id @default(cuid())
-  hospitalProfileId String
-  name              String
-  position          String   // 직책 (원장, 수의사, 간호사 등)
-  specialization    String?  // 전문 분야
-  experience        String?  // 경력
-  education         String?  // 학력
-  profileImage      String?  // 프로필 사진
-  introduction      String?  // 소개
-  sortOrder         Int      @default(0)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  hospitalProfile   DetailedHospitalProfile @relation(fields: [hospitalProfileId], references: [id], onDelete: Cascade)
-
-  @@map("hospital_staff")
-}
-
-// 병원 장비 정보
-model HospitalEquipment {
-  id                String   @id @default(cuid())
-  hospitalProfileId String
-  name              String   // 장비명
-  category          String   // 장비 분류
-  manufacturer      String?  // 제조사
-  model             String?  // 모델명
-  purchaseDate      DateTime? // 구입일
-  description       String?  // 설명
-  image             String?  // 장비 이미지
-  sortOrder         Int      @default(0)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  hospitalProfile   DetailedHospitalProfile @relation(fields: [hospitalProfileId], references: [id], onDelete: Cascade)
-
-  @@map("hospital_equipments")
 }
