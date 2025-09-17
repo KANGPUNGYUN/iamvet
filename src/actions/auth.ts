@@ -2116,11 +2116,11 @@ export async function completeSocialVeterinarianRegistration(
 
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
+        id, username, email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${userId}, ${email}, ${email}, ${phone}, ${realName || name}, ${
+        ${userId}, ${email}, ${email}, ${phone}, ${nickname}, ${realName || name}, ${
       birthDate ? new Date(birthDate) : null
     }, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
         ${termsAgreed ? currentDate : null}, ${
@@ -2253,11 +2253,11 @@ export async function completeSocialVeterinaryStudentRegistration(
 
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
+        id, username, email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${userId}, ${universityEmail}, ${universityEmail}, ${phone}, ${
+        ${userId}, ${universityEmail}, ${universityEmail}, ${phone}, ${nickname}, ${
       realName || name
     }, ${
       birthDate ? new Date(birthDate) : null
