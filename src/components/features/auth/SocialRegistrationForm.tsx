@@ -3,6 +3,7 @@
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
+import { PhoneInput, BirthDateInput } from "@/components/ui/FormattedInput";
 import { ProfileImageUpload, LicenseImageUpload } from "@/components/features/profile";
 import { checkEmailDuplicate } from "@/actions/auth";
 import Link from "next/link";
@@ -420,18 +421,15 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 연락처
               </label>
-              <InputBox
+              <PhoneInput
                 value={formData.phone}
                 onChange={handleInputChange("phone")}
                 placeholder="연락처를 입력해 주세요"
-                type="tel"
-                error={!!inputErrors.phone}
-                guide={
-                  inputErrors.phone
-                    ? { text: inputErrors.phone, type: "error" }
-                    : undefined
-                }
+                className={inputErrors.phone ? "border-red-500" : ""}
               />
+              {inputErrors.phone && (
+                <p className="text-red-500 text-sm mt-2">{inputErrors.phone}</p>
+              )}
             </div>
 
             {/* 수의학과 학생의 경우 대학교 이메일 입력 */}
@@ -475,18 +473,15 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 생년월일
               </label>
-              <InputBox
+              <BirthDateInput
                 value={formData.birthDate}
                 onChange={handleInputChange("birthDate")}
                 placeholder="YYYY-MM-DD"
-                type="text"
-                error={!!inputErrors.birthDate}
-                guide={
-                  inputErrors.birthDate
-                    ? { text: inputErrors.birthDate, type: "error" }
-                    : undefined
-                }
+                className={inputErrors.birthDate ? "border-red-500" : ""}
               />
+              {inputErrors.birthDate && (
+                <p className="text-red-500 text-sm mt-2">{inputErrors.birthDate}</p>
+              )}
             </div>
 
             {/* 수의사의 경우 면허증 이미지 */}

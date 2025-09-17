@@ -12,13 +12,17 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
-    const username = formData.get("username") as string;
+    const loginId = formData.get("loginId") as string;
+    const username = formData.get("username") as string; // 기존 호환성
     const password = formData.get("password") as string;
     const nickname = formData.get("nickname") as string;
     const phone = formData.get("phone") as string;
     const email = formData.get("email") as string;
     const universityEmail = formData.get("universityEmail") as string;
     const realName = formData.get("realName") as string;
+    
+    // loginId 우선, 없으면 username 사용 (기존 호환성)
+    const actualLoginId = loginId || username;
     const birthDate = formData.get("birthDate") as string;
     const termsAgreed = formData.get("termsAgreed") === "true";
     const privacyAgreed = formData.get("privacyAgreed") === "true";
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
     });
 
     // 필수 필드 검증
-    if (!username || !password || !email || !universityEmail || !nickname || !phone || !birthDate) {
+    if (!actualLoginId || !password || !email || !universityEmail || !nickname || !phone || !birthDate) {
       return NextResponse.json(
         createErrorResponse("필수 정보가 누락되었습니다"),
         { status: 400 }
@@ -76,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // 사용자 중복 검사
     const existingUser = await sql`
-      SELECT id FROM users WHERE username = ${username} OR email = ${email} OR phone = ${phone}
+      SELECT id FROM users WHERE username = ${actualLoginId} OR "loginId" = ${actualLoginId} OR email = ${email} OR phone = ${phone}
     `;
     
     if (existingUser.length > 0) {
@@ -120,25 +124,25 @@ export async function POST(request: NextRequest) {
     const userId = createId();
     const user = await sql`
       INSERT INTO users (
-        id, username, email, phone, real_name, password_hash, user_type, profile_image,
-        provider, is_active, terms_agreed_at, privacy_agreed_at, marketing_agreed_at
+        id, username, "loginId", nickname, email, phone, "realName", "passwordHash", "userType", "profileImage",
+        provider, "isActive", "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt"
       ) VALUES (
-        ${userId}, ${username}, ${email}, ${phone}, ${realName}, ${hashedPassword}, 
+        ${userId}, ${actualLoginId}, ${actualLoginId}, ${nickname}, ${email}, ${phone}, ${realName}, ${hashedPassword}, 
         'VETERINARY_STUDENT', ${profileImageUrl}, 'NORMAL', true,
         ${termsAgreed ? new Date() : null},
         ${privacyAgreed ? new Date() : null}, 
         ${marketingAgreed ? new Date() : null}
       )
-      RETURNING id, username, email, user_type
+      RETURNING id, username, email, "userType"
     `;
 
     // 수의학과 학생 프로필 생성
     const profileId = createId();
     await sql`
       INSERT INTO veterinary_student_profiles (
-        id, user_id, nickname, birth_date, university_email
+        id, "userId", nickname, "birthDate", "universityEmail"
       ) VALUES (
-        ${profileId}, ${userId}, ${nickname}, ${birthDate}, ${universityEmail}
+        ${profileId}, ${userId}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${universityEmail}
       )
     `;
 

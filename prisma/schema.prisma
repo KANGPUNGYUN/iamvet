@@ -15,6 +15,9 @@ model User {
   email           String    @unique
   phone           String    @unique
   realName        String?
+  nickname        String?   // 닉네임 추가
+  loginId         String?   @unique // 로그인용 아이디 추가 (소셜 로그인 시에는 null)
+  birthDate       DateTime? // 생년월일 추가
   passwordHash    String?   // 소셜 로그인 사용자는 null 가능
   profileImage    String?
   userType        UserType

@@ -22,6 +22,7 @@ export interface User {
   email: string;
   phone: string;
   realName?: string; // 실명 추가
+  birthDate?: Date; // 생년월일 추가
   userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
   profileImage?: string;
   provider: "NORMAL" | "GOOGLE" | "KAKAO" | "NAVER";
@@ -77,9 +78,24 @@ export async function login(credentials: LoginCredentials) {
   const { email, password, userType } = credentials;
   try {
     // Get user by email and userType (if specified)
-    const result = userType
-      ? await sql`SELECT * FROM users WHERE email = ${email} AND "userType" = ${userType} AND "isActive" = true`
-      : await sql`SELECT * FROM users WHERE email = ${email} AND "isActive" = true`;
+    let result;
+
+    if (userType === "VETERINARY_STUDENT") {
+      // For veterinary students, check both VETERINARY_STUDENT and VETERINARIAN userTypes
+      // since they might be stored as either depending on registration method
+      result = await sql`
+        SELECT * FROM users 
+        WHERE email = ${email} 
+        AND ("userType" = 'VETERINARY_STUDENT' OR "userType" = 'VETERINARIAN') 
+        AND "isActive" = true
+      `;
+    } else if (userType) {
+      result =
+        await sql`SELECT * FROM users WHERE email = ${email} AND "userType" = ${userType} AND "isActive" = true`;
+    } else {
+      result =
+        await sql`SELECT * FROM users WHERE email = ${email} AND "isActive" = true`;
+    }
 
     if (result.length === 0) {
       return { success: false, error: "사용자를 찾을 수 없습니다." };
@@ -279,13 +295,45 @@ export async function getCurrentUser(): Promise<{
 
     // Get profile-specific information based on user type
     let profileName = user.username; // fallback to username
+    let actualUserType = user.userType; // will be modified for veterinary students
 
-    if (user.userType === "VETERINARIAN") {
+    console.log(
+      "[getCurrentUser] Getting profile for userType:",
+      user.userType,
+      "userId:",
+      user.id
+    );
+
+    if (
+      user.userType === "VETERINARIAN" ||
+      user.userType === "VETERINARY_STUDENT"
+    ) {
       const vetProfile = await sql`
-        SELECT nickname FROM veterinarian_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
+        SELECT nickname, experience, specialty FROM veterinarian_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
       `;
+      console.log(
+        "[getCurrentUser] Veterinarian profile query result:",
+        vetProfile
+      );
+
       if (vetProfile.length > 0) {
         profileName = vetProfile[0].nickname;
+
+        // Check if this is actually a veterinary student based on experience field
+        if (
+          vetProfile[0].experience &&
+          vetProfile[0].experience.includes("Student at")
+        ) {
+          actualUserType = "VETERINARY_STUDENT";
+          console.log(
+            "[getCurrentUser] Detected as VETERINARY_STUDENT based on experience field"
+          );
+        }
+      } else {
+        console.log(
+          "[getCurrentUser] No veterinarian profile found for user:",
+          user.id
+        );
       }
     } else if (user.userType === "HOSPITAL") {
       const hospitalProfile = await sql`
@@ -304,7 +352,8 @@ export async function getCurrentUser(): Promise<{
         email: user.email,
         phone: user.phone,
         realName: user.realName,
-        userType: user.userType,
+        birthDate: user.birthDate,
+        userType: actualUserType, // Use detected userType
         profileImage: user.profileImage,
         provider: user.provider,
         isActive: user.isActive,
@@ -552,7 +601,7 @@ export async function checkUsernameDuplicate(username: string): Promise<{
     }
 
     const existingUser = await sql`
-      SELECT id FROM users WHERE username = ${username} AND "isActive" = true
+      SELECT id FROM users WHERE (username = ${username} OR "loginId" = ${username}) AND "isActive" = true
     `;
 
     const isDuplicate = existingUser.length > 0;
@@ -614,6 +663,7 @@ export async function checkEmailDuplicate(email: string) {
     };
   }
 }
+
 
 export interface VeterinarianRegisterData {
   userId: string;
@@ -868,15 +918,17 @@ export async function registerVeterinaryStudent(
     // Create veterinarian profile for veterinary student (using existing table)
     console.log("SERVER: Creating veterinary student profile...");
     const profileId = createId();
-    const universityDomain = universityEmail.split('@')[1] || 'unknown';
+    const universityDomain = universityEmail.split("@")[1] || "unknown";
     await sql`
       INSERT INTO veterinarian_profiles (
         id, "userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction,
         "createdAt", "updatedAt"
       ) VALUES (
         ${profileId}, ${user[0].id}, ${nickname}, ${new Date(birthDate)}, null, 
-        ${'Student at ' + universityDomain}, 'Veterinary Student', 
-        ${'University Email: ' + universityEmail}, ${currentDate}, ${currentDate}
+        ${"Student at " + universityDomain}, 'Veterinary Student', 
+        ${
+          "University Email: " + universityEmail
+        }, ${currentDate}, ${currentDate}
       )
     `;
     console.log("SERVER: Veterinary student profile created successfully");
@@ -1139,7 +1191,10 @@ export async function getVeterinarianProfile(): Promise<{
     }
 
     if (userResult.user.userType !== "VETERINARIAN") {
-      return { success: false, error: "수의사 계정이 아닙니다." };
+      return {
+        success: false,
+        error: "수의사 또는 수의학과 학생 계정이 아닙니다.",
+      };
     }
 
     const result = await sql`
@@ -1309,7 +1364,10 @@ export async function getDetailedResume(): Promise<{
     }
 
     if (userResult.user.userType !== "VETERINARIAN") {
-      return { success: false, error: "수의사 계정이 아닙니다." };
+      return {
+        success: false,
+        error: "수의사 또는 수의학과 학생 계정이 아닙니다.",
+      };
     }
 
     // 메인 이력서 정보 조회
@@ -1417,7 +1475,10 @@ export async function saveDetailedResume(data: DetailedResumeData): Promise<{
     }
 
     if (userResult.user.userType !== "VETERINARIAN") {
-      return { success: false, error: "수의사 계정이 아닙니다." };
+      return {
+        success: false,
+        error: "수의사 또는 수의학과 학생 계정이 아닙니다.",
+      };
     }
 
     const userId = userResult.user.id;
@@ -1969,12 +2030,13 @@ export async function saveDetailedHospitalProfile(
 interface SocialVeterinarianRegistrationData {
   email: string;
   name: string;
+  realName?: string;
   profileImage?: string;
   provider: string;
   providerId: string;
   nickname: string;
   phone: string;
-  birthDate: string;
+  birthDate?: string;
   licenseImage?: string;
   termsAgreed: boolean;
   privacyAgreed: boolean;
@@ -1984,13 +2046,14 @@ interface SocialVeterinarianRegistrationData {
 interface SocialVeterinaryStudentRegistrationData {
   email: string;
   name: string;
+  realName?: string;
   profileImage?: string;
   provider: string;
   providerId: string;
   nickname: string;
   phone: string;
   universityEmail: string;
-  birthDate: string;
+  birthDate?: string;
   termsAgreed: boolean;
   privacyAgreed: boolean;
   marketingAgreed: boolean;
@@ -2000,11 +2063,15 @@ export async function completeSocialVeterinarianRegistration(
   data: SocialVeterinarianRegistrationData
 ) {
   try {
-    console.log("SERVER: completeSocialVeterinarianRegistration called with data:", data);
+    console.log(
+      "SERVER: completeSocialVeterinarianRegistration called with data:",
+      data
+    );
 
     const {
       email,
       name,
+      realName,
       profileImage,
       provider,
       providerId,
@@ -2046,15 +2113,19 @@ export async function completeSocialVeterinarianRegistration(
     // Create user
     const userId = createId();
     const currentDate = new Date();
-    
+
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, "realName", "passwordHash", "userType", "profileImage", provider,
+        id, username, email, phone, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${userId}, ${email}, ${email}, ${phone}, ${name}, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
-        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        ${userId}, ${email}, ${email}, ${phone}, ${realName || name}, ${
+      birthDate ? new Date(birthDate) : null
+    }, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
+        ${termsAgreed ? currentDate : null}, ${
+      privacyAgreed ? currentDate : null
+    }, ${marketingAgreed ? currentDate : null},
         true, ${currentDate}, ${currentDate}
       )
       RETURNING *
@@ -2066,7 +2137,9 @@ export async function completeSocialVeterinarianRegistration(
     const socialAccountId = createId();
     await sql`
       INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
-      VALUES (${socialAccountId}, ${user.id}, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
+      VALUES (${socialAccountId}, ${
+      user.id
+    }, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
     `;
 
     // Create veterinarian profile
@@ -2076,14 +2149,16 @@ export async function completeSocialVeterinarianRegistration(
         id, "userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
       )
       VALUES (
-        ${profileId}, ${user.id}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${licenseImage || null},
+        ${profileId}, ${user.id}, ${nickname}, ${
+      birthDate ? new Date(birthDate) : null
+    }, ${licenseImage || null},
         ${currentDate}, ${currentDate}
       )
     `;
 
     // Generate tokens for the new user
     const tokens = await generateTokens(user);
-    
+
     // Set auth cookie
     const cookieStore = await cookies();
     const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -2106,11 +2181,16 @@ export async function completeSocialVeterinarianRegistration(
       tokens,
     };
   } catch (error) {
-    console.error("SERVER: Complete social veterinarian registration error:", error);
+    console.error(
+      "SERVER: Complete social veterinarian registration error:",
+      error
+    );
     return {
       success: false,
       error: `소셜 수의사 회원가입 완료 실패: ${
-        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다."
       }`,
     };
   }
@@ -2120,11 +2200,15 @@ export async function completeSocialVeterinaryStudentRegistration(
   data: SocialVeterinaryStudentRegistrationData
 ) {
   try {
-    console.log("SERVER: completeSocialVeterinaryStudentRegistration called with data:", data);
+    console.log(
+      "SERVER: completeSocialVeterinaryStudentRegistration called with data:",
+      data
+    );
 
     const {
-      // email: socialEmail, // Not used in veterinary student registration  
+      // email: socialEmail, // Not used in veterinary student registration
       name,
+      realName,
       profileImage,
       provider,
       providerId,
@@ -2166,15 +2250,21 @@ export async function completeSocialVeterinaryStudentRegistration(
     // Create user
     const userId = createId();
     const currentDate = new Date();
-    
+
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, "realName", "passwordHash", "userType", "profileImage", provider,
+        id, username, email, phone, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${userId}, ${universityEmail}, ${universityEmail}, ${phone}, ${name}, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
-        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        ${userId}, ${universityEmail}, ${universityEmail}, ${phone}, ${
+      realName || name
+    }, ${
+      birthDate ? new Date(birthDate) : null
+    }, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
+        ${termsAgreed ? currentDate : null}, ${
+      privacyAgreed ? currentDate : null
+    }, ${marketingAgreed ? currentDate : null},
         true, ${currentDate}, ${currentDate}
       )
       RETURNING *
@@ -2186,27 +2276,33 @@ export async function completeSocialVeterinaryStudentRegistration(
     const socialAccountId = createId();
     await sql`
       INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
-      VALUES (${socialAccountId}, ${user.id}, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
+      VALUES (${socialAccountId}, ${
+      user.id
+    }, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
     `;
 
     // Create veterinarian profile for veterinary student
     const profileId = createId();
-    const universityDomain = universityEmail.split('@')[1] || 'unknown';
+    const universityDomain = universityEmail.split("@")[1] || "unknown";
     await sql`
       INSERT INTO veterinarian_profiles (
         id, "userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction,
         "createdAt", "updatedAt"
       )
       VALUES (
-        ${profileId}, ${user.id}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, null,
-        ${'Student at ' + universityDomain}, 'Veterinary Student',
-        ${'University Email: ' + universityEmail}, ${currentDate}, ${currentDate}
+        ${profileId}, ${user.id}, ${nickname}, ${
+      birthDate ? new Date(birthDate) : null
+    }, null,
+        ${"Student at " + universityDomain}, 'Veterinary Student',
+        ${
+          "University Email: " + universityEmail
+        }, ${currentDate}, ${currentDate}
       )
     `;
 
     // Generate tokens for the new user
     const tokens = await generateTokens(user);
-    
+
     // Set auth cookie
     const cookieStore = await cookies();
     const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -2229,11 +2325,16 @@ export async function completeSocialVeterinaryStudentRegistration(
       tokens,
     };
   } catch (error) {
-    console.error("SERVER: Complete social veterinary student registration error:", error);
+    console.error(
+      "SERVER: Complete social veterinary student registration error:",
+      error
+    );
     return {
       success: false,
       error: `소셜 수의학과 학생 회원가입 완료 실패: ${
-        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다."
       }`,
     };
   }

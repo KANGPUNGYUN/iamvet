@@ -9,11 +9,11 @@ import {
   LicenseImageUpload,
 } from "@/components/features/profile";
 import { useAuth } from "@/hooks/api/useAuth";
-import { getVeterinarianProfile } from "@/actions/auth";
 
 interface VeterinarianProfileData {
   profileImage?: string;
   userId: string;
+  loginId?: string; // 로그인 아이디 추가
   realName?: string; // 실명 추가
   nickname: string;
   phone?: string;
@@ -39,27 +39,65 @@ export default function VeterinarianProfilePage() {
       try {
         console.log('[VeterinarianProfile] 프로필 로딩 시작:', user);
         
-        // getVeterinarianProfile로 veterinarian 전용 데이터 가져오기
-        const profileResult = await getVeterinarianProfile();
+        // API Route로 veterinarian 전용 데이터 가져오기 (localStorage 토큰 지원)
+        const accessToken = localStorage.getItem('accessToken');
+        console.log('[VeterinarianProfile] Access token:', accessToken ? 'exists' : 'none');
         
-        console.log('[VeterinarianProfile] 프로필 결과:', profileResult);
+        // JWT 토큰 내용 확인 (디버깅용)
+        if (accessToken) {
+          try {
+            const tokenParts = accessToken.split('.');
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1]));
+              console.log('[VeterinarianProfile] JWT payload:', payload);
+            }
+          } catch (e) {
+            console.log('[VeterinarianProfile] Failed to decode JWT:', e);
+          }
+        }
         
-        if (profileResult.success && profileResult.profile) {
-          const profile = profileResult.profile;
+        const response = await fetch('/api/dashboard/veterinarian/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        const profileResult = await response.json();
+        
+        // API 응답 형태에 맞게 변환
+        const transformedResult = {
+          success: profileResult.status === 'success',
+          profile: profileResult.data,
+          error: profileResult.message
+        };
+        
+        console.log('[VeterinarianProfile] 프로필 결과:', transformedResult);
+        
+        if (transformedResult.success) {
+          const profile = transformedResult.profile;
           
-          // user는 이미 useAuth에서 realName 포함된 최신 데이터
+          // profile이 null이어도 기본값으로 폼을 표시
+          // user.phone과 user.birthDate가 없는 경우 profile에서 가져오기
+          const finalPhone = user.phone || profile?.phone || '';
+          const finalBirthDate = user.birthDate || 
+            (profile?.birthDate ? 
+              (typeof profile.birthDate === 'string' ? profile.birthDate : profile.birthDate?.toISOString().split('T')[0]) 
+              : '');
+          
           setProfileData({
             profileImage: user.profileImage, // users 테이블의 profileImage
             userId: user.name || user.email,
             realName: user.realName, // 실명 - useAuth에서 실시간 업데이트됨
-            nickname: profile.nickname,
-            phone: user.phone,
+            nickname: profile?.nickname || user.name || '닉네임 없음',
+            phone: finalPhone,
             email: user.email,
-            birthDate: typeof profile.birthDate === 'string' ? profile.birthDate : profile.birthDate?.toISOString().split('T')[0] || '',
-            licenseImage: profile.licenseImage, // veterinarian_profiles 테이블의 licenseImage
+            birthDate: finalBirthDate,
+            licenseImage: profile?.licenseImage, // veterinarian_profiles 테이블의 licenseImage
           });
         } else {
-          setError(profileResult.error || '프로필을 불러올 수 없습니다.');
+          setError(transformedResult.error || '프로필을 불러올 수 없습니다.');
         }
       } catch (err) {
         console.error('[VeterinarianProfile] 프로필 로딩 오류:', err);
@@ -90,7 +128,7 @@ export default function VeterinarianProfilePage() {
       <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px] flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error || '로그인이 필요합니다.'}</p>
-          <Button onClick={() => window.location.href = '/login/veterinarian'}>로그인</Button>
+          <Button onClick={() => window.location.href = '/member-select'}>로그인</Button>
         </div>
       </div>
     );
@@ -101,8 +139,8 @@ export default function VeterinarianProfilePage() {
     return (
       <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">프로필 정보를 찾을 수 없습니다.</p>
-          <Button onClick={() => window.location.href = '/dashboard/veterinarian/profile/edit'}>프로필 설정</Button>
+          <p className="text-gray-600 mb-4">프로필 정보를 불러오는 중입니다...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-[#FF8796] mx-auto mb-4" />
         </div>
       </div>
     );
@@ -146,7 +184,7 @@ export default function VeterinarianProfilePage() {
                     아이디
                   </label>
                   <div className="w-full px-4 py-3 border border-[#EFEFF0] rounded-[12px] bg-[#F9F9F9] text-[#666666] text-[16px]">
-                    {profileData.userId}
+                    {profileData.loginId || profileData.userId}
                   </div>
                 </div>
 

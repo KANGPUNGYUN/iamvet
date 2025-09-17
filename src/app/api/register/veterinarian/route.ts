@@ -4,10 +4,12 @@ import type { VeterinarianRegisterRequest } from "@/lib/types";
 import { hashPassword } from "@/lib/auth";
 import { uploadFile } from "@/lib/s3"; // S3 업로드 함수
 import {
-  checkUserExists,
   createUser,
   createVeterinarianProfile,
   generateTokens,
+} from "@/lib/database";
+import {
+  checkUserExists,
   createApiResponse,
   createErrorResponse,
 } from "@/lib/auth-helpers";
@@ -16,8 +18,10 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
-    const username = formData.get("username") as string;
+    const loginId = formData.get("loginId") as string;
+    const username = formData.get("username") as string; // 기존 호환성 유지
     const password = formData.get("password") as string;
+    const realName = formData.get("realName") as string;
     const nickname = formData.get("nickname") as string;
     const phone = formData.get("phone") as string;
     const email = formData.get("email") as string;
@@ -26,8 +30,11 @@ export async function POST(request: NextRequest) {
     const licenseImage = formData.get("licenseImage") as File;
     const agreements = JSON.parse(formData.get("agreements") as string);
 
+    // loginId 우선, 없으면 username 사용 (기존 호환성)
+    const actualLoginId = loginId || username;
+
     // 필수 필드 검증
-    if (!username || !nickname || !phone || !email || !licenseImage) {
+    if (!actualLoginId || !realName || !nickname || !phone || !email || !licenseImage) {
       return NextResponse.json(
         createErrorResponse("필수 정보를 모두 입력해주세요"),
         { status: 400 }
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 중복 확인
-    const existingUser = await checkUserExists(email, phone, username);
+    const existingUser = await checkUserExists(email, phone, actualLoginId);
     if (existingUser.exists) {
       if (existingUser.isDeleted) {
         // 탈퇴한 계정이 있는 경우
@@ -87,10 +94,13 @@ export async function POST(request: NextRequest) {
 
     // 사용자 생성
     const user = await createUser({
-      username,
+      username: actualLoginId,
+      loginId: actualLoginId,
+      nickname,
       email,
+      realName,
       passwordHash,
-      userType: "veterinarian",
+      userType: "VETERINARIAN",
       phone,
       profileImage: profileImageUrl,
       termsAgreedAt: agreements.terms ? new Date() : null,
@@ -117,7 +127,7 @@ export async function POST(request: NextRequest) {
           nickname,
           email: user.email,
           profileImage: profileImageUrl,
-          userType: "veterinarian",
+          userType: "VETERINARIAN",
           provider: "normal",
           socialAccounts: [],
         },

@@ -41,6 +41,9 @@ export class AuthService {
   static async handleSocialAuth(socialUserData: {
     email: string;
     name: string;
+    realName?: string;
+    phone?: string;
+    birthDate?: string;
     profileImage?: string;
     userType: string;
     provider: "GOOGLE" | "KAKAO" | "NAVER";
@@ -51,6 +54,9 @@ export class AuthService {
       const {
         email,
         name,
+        realName,
+        phone,
+        birthDate,
         profileImage,
         userType,
         provider,
@@ -95,6 +101,9 @@ export class AuthService {
               socialData: {
                 email,
                 name,
+                realName,
+                phone,
+                birthDate,
                 profileImage,
                 provider,
                 providerId,
@@ -113,12 +122,34 @@ export class AuthService {
       // Generate tokens for existing user
       const tokens = await generateTokens(user);
 
+      // Get user's profile information from database for phone and birthDate
+      let userPhone = user.phone || phone; // Use DB phone first, fallback to social phone
+      let userBirthDate = birthDate; // Start with social birthDate
+      let userRealName = user.realName || realName || name; // Use DB realName first
+      
+      // Get additional profile info from veterinarian_profiles if needed
+      if (userType === 'veterinarian' || userType === 'veterinary-student') {
+        try {
+          const profile = await prisma.veterinarianProfile.findUnique({
+            where: { userId: user.id },
+          });
+          if (profile) {
+            userBirthDate = profile.birthDate ? profile.birthDate.toISOString().split('T')[0] : userBirthDate;
+          }
+        } catch (error) {
+          console.error('Failed to fetch veterinarian profile:', error);
+        }
+      }
+
       // Prepare response for existing user
       const responseData: SocialLoginResponse = {
         user: {
           id: user.id,
           email: user.email,
           name,
+          realName: userRealName,
+          phone: userPhone,
+          birthDate: userBirthDate,
           profileImage,
           provider,
           providerId,
@@ -206,7 +237,7 @@ export class AuthService {
   static generateRedirectUrl(
     isProfileComplete: boolean,
     userType: string,
-    socialData?: { email: string; name: string; profileImage?: string }
+    socialData?: { email: string; name: string; realName?: string; phone?: string; birthDate?: string; profileImage?: string }
   ): string {
     if (isProfileComplete) {
       // Redirect to dashboard
@@ -235,6 +266,15 @@ export class AuthService {
         const params = new URLSearchParams({
           email: socialData.email,
           name: socialData.name,
+          ...(socialData.realName && {
+            realName: socialData.realName,
+          }),
+          ...(socialData.phone && {
+            phone: socialData.phone,
+          }),
+          ...(socialData.birthDate && {
+            birthDate: socialData.birthDate,
+          }),
           ...(socialData.profileImage && {
             profileImage: socialData.profileImage,
           }),

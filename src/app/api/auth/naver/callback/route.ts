@@ -80,10 +80,40 @@ export async function GET(request: NextRequest) {
 
     const naverUser = naverUserResponse.response;
 
+    // Extract real name, phone, and birth date from Naver user data
+    const realName = naverUser.name || undefined;
+    const phone = naverUser.mobile || undefined;
+    
+    // Extract birth date from Naver user data
+    // Naver can provide birthday in various formats: YYYY-MM-DD, MM-DD, or separate fields
+    let birthDate = undefined;
+    
+    if (naverUser.birthday) {
+      const birthday = naverUser.birthday;
+      
+      // Check if birthday already includes year (YYYY-MM-DD format)
+      if (birthday.length === 10 && birthday.includes('-')) {
+        birthDate = birthday;
+      } else if (birthday.length === 5 && birthday.includes('-')) {
+        // MM-DD format, check if we have birthyear
+        if (naverUser.birthyear) {
+          birthDate = `${naverUser.birthyear}-${birthday}`;
+        }
+      }
+    }
+
+    console.log("Naver OAuth user data:", naverUser);
+    console.log("Extracted realName:", realName);
+    console.log("Extracted phone:", phone);
+    console.log("Extracted birthDate:", birthDate);
+
     // Use AuthService to handle social authentication
     const authResult = await AuthService.handleSocialAuth({
       email: naverUser.email,
       name: naverUser.name,
+      realName,
+      phone,
+      birthDate,
       profileImage: naverUser.profile_image,
       userType,
       provider: "NAVER",

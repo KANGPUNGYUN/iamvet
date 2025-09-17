@@ -81,10 +81,20 @@ export async function GET(request: NextRequest) {
     console.log("Google OAuth user data:", googleUser);
     console.log("Processed userType:", userType);
     
+    // Extract real name, phone, and birth date from Google user data
+    // Google OAuth v2 API doesn't provide phone number or birth date by default
+    // Real name is usually the same as the display name
+    const realName = googleUser.name || undefined;
+    const phone = undefined; // Google OAuth v2 doesn't provide phone number
+    const birthDate = undefined; // Google OAuth v2 doesn't provide birth date by default
+    
     // Use AuthService to handle social authentication
     const authResult = await AuthService.handleSocialAuth({
       email: googleUser.email,
       name: googleUser.name,
+      realName,
+      phone,
+      birthDate,
       profileImage: googleUser.picture,
       userType,
       provider: "GOOGLE",

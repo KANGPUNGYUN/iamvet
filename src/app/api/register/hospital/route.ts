@@ -13,9 +13,13 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
-    const username = formData.get("username") as string;
+    const loginId = formData.get("loginId") as string;
+    const username = formData.get("username") as string; // 기존 호환성
     const password = formData.get("password") as string;
     const hospitalName = formData.get("hospitalName") as string;
+    
+    // loginId 우선, 없으면 username 사용 (기존 호환성)
+    const actualLoginId = loginId || username;
     const businessNumber = formData.get("businessNumber") as string;
     const phone = formData.get("phone") as string;
     const email = formData.get("email") as string;
@@ -30,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // 필수 필드 검증
     if (
-      !username ||
+      !actualLoginId ||
       !password ||
       !hospitalName ||
       !businessNumber ||
@@ -45,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 중복 확인
-    const existingUser = await checkUserExists(email, phone, username);
+    const existingUser = await checkUserExists(email, phone, actualLoginId);
     const existingBusiness = await checkBusinessNumberExists(businessNumber);
 
     if (existingUser.exists || existingBusiness) {
@@ -85,10 +89,12 @@ export async function POST(request: NextRequest) {
 
     // 사용자 생성
     const user = await createUser({
-      username,
+      username: actualLoginId,
+      loginId: actualLoginId,
+      nickname: hospitalName,
       email,
       passwordHash,
-      userType: "hospital",
+      userType: "HOSPITAL",
       phone,
       profileImage: logoImageUrl,
       termsAgreedAt: agreements.terms ? new Date() : null,
@@ -125,7 +131,7 @@ export async function POST(request: NextRequest) {
           nickname: hospitalName,
           email: user.email,
           profileImage: logoImageUrl,
-          userType: "hospital",
+          userType: "HOSPITAL",
           provider: "normal",
           socialAccounts: [],
         },

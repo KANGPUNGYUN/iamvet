@@ -49,19 +49,22 @@ export const createUser = async (userData: any) => {
   
   const currentDate = new Date();
   const query = `
-    INSERT INTO users (id, username, email, "passwordHash", "userType", phone, "profileImage", 
+    INSERT INTO users (id, username, "loginId", nickname, email, "passwordHash", "userType", phone, "realName", "profileImage", 
                       "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
     RETURNING *
   `;
 
   const values = [
     userId,
     userData.username,
+    userData.loginId,
+    userData.nickname,
     userData.email,
     userData.passwordHash,
     userData.userType,
     userData.phone,
+    userData.realName,
     userData.profileImage,
     userData.termsAgreedAt,
     userData.privacyAgreedAt,
@@ -981,15 +984,105 @@ export const getStatusNotificationTitle = (
 // ============================================================================
 
 export const getVeterinarianProfile = async (userId: string) => {
-  const query = `
-    SELECT v.*, u.email, u.phone, u.profile_image, u.username, u.last_login_at
-    FROM veterinarians v
-    JOIN users u ON v.user_id = u.id
-    WHERE v.user_id = $1 AND u.deleted_at IS NULL
-  `;
+  console.log('[DB] getVeterinarianProfile called with userId:', userId);
+  
+  // First, get user info to determine user type
+  const userQuery = `SELECT "userType", username, "loginId", nickname, email, "realName", phone, "profileImage", "birthDate", "isActive" FROM users WHERE id = $1`;
+  const userResult = await pool.query(userQuery, [userId]);
+  
+  console.log('[DB] User query result:', userResult.rows);
+  
+  if (userResult.rows.length === 0) {
+    console.error('[DB] CRITICAL: No user found with id:', userId);
+    console.error('[DB] This suggests JWT token contains invalid userId or user was deleted');
+    return null;
+  }
+  
+  const user = userResult.rows[0];
+  console.log('[DB] Found user:', { 
+    userType: user.userType, 
+    username: user.username, 
+    email: user.email, 
+    isActive: user.isActive 
+  });
+  
+  if (!user.isActive) {
+    console.error('[DB] User is not active:', userId);
+    return null;
+  }
 
-  const result = await pool.query(query, [userId]);
-  return result.rows[0] || null;
+  const userType = user.userType;
+  console.log('[DB] User type:', userType);
+  
+  if (userType === 'VETERINARIAN' || userType === 'VETERINARY_STUDENT') {
+    // For veterinarians and veterinary students, query veterinarian_profiles table
+    const query = `
+      SELECT vp.*, u.email, u.phone, u."profileImage", u.username, u."loginId", u.nickname as user_nickname, u."realName", u."updatedAt" as last_login_at
+      FROM veterinarian_profiles vp
+      JOIN users u ON vp."userId" = u.id
+      WHERE vp."userId" = $1 AND u."isActive" = true AND vp."deletedAt" IS NULL
+    `;
+
+    console.log('[DB] Veterinarian profile query with userId:', userId);
+    console.log('[DB] Executing query:', query);
+    const result = await pool.query(query, [userId]);
+    console.log('[DB] Veterinarian profile result:', result.rows);
+    console.log('[DB] Number of rows returned:', result.rows.length);
+    
+    // 프로필이 없으면 기본 프로필 생성
+    if (result.rows.length === 0) {
+      console.log('[DB] No profile found, creating default profile for userId:', userId);
+      
+      // 사용자 정보 가져오기
+      const userInfoQuery = `SELECT username, email FROM users WHERE id = $1`;
+      const userInfo = await pool.query(userInfoQuery, [userId]);
+      
+      if (userInfo.rows.length > 0) {
+        const user = userInfo.rows[0];
+        const defaultNickname = user.username || user.email.split('@')[0];
+        
+        // 기본 프로필 생성 (수의학과 학생인 경우 적절한 experience 설정)
+        const isVeterinaryStudent = userType === 'VETERINARY_STUDENT';
+        const defaultExperience = isVeterinaryStudent ? 'Student at university' : null;
+        const defaultSpecialty = isVeterinaryStudent ? 'Veterinary Student' : null;
+        
+        console.log('[DB] Creating profile with data:', {
+          userId, 
+          defaultNickname, 
+          defaultExperience, 
+          defaultSpecialty, 
+          isVeterinaryStudent
+        });
+        
+        const createProfileQuery = `
+          INSERT INTO veterinarian_profiles ("userId", nickname, experience, specialty, "createdAt", "updatedAt")
+          VALUES ($1, $2, $3, $4, NOW(), NOW())
+          RETURNING *
+        `;
+        
+        try {
+          const createResult = await pool.query(createProfileQuery, [userId, defaultNickname, defaultExperience, defaultSpecialty]);
+          console.log('[DB] Created default profile:', createResult.rows[0]);
+          
+          // 생성된 프로필과 사용자 정보를 함께 반환하기 위해 다시 쿼리
+          const finalResult = await pool.query(query, [userId]);
+          console.log('[DB] Final query result after profile creation:', finalResult.rows);
+          return finalResult.rows[0] || null;
+        } catch (createError) {
+          console.error('[DB] Error creating profile:', createError);
+          return null;
+        }
+      } else {
+        console.log('[DB] No user info found for profile creation');
+        return null;
+      }
+    }
+    
+    return result.rows[0] || null;
+  }
+  
+  console.log('[DB] User type is not VETERINARIAN:', userType);
+  return null;
 };
 
 export const getHospitalProfile = async (userId: string) => {

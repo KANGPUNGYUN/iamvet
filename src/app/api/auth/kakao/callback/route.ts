@@ -85,10 +85,35 @@ export async function GET(request: NextRequest) {
       return createErrorPage("Kakao 로그인 실패", "이메일 정보가 필요합니다");
     }
 
+    // Extract real name, phone, and birth date from Kakao user data
+    const realName = kakaoUser.kakao_account?.name || undefined;
+    const phone = kakaoUser.kakao_account?.phone_number || undefined;
+    
+    // Extract birth date from Kakao user data
+    // Kakao provides birthday (MMDD) and birthyear (YYYY) separately
+    let birthDate = undefined;
+    const birthday = kakaoUser.kakao_account?.birthday; // MMDD format
+    const birthyear = kakaoUser.kakao_account?.birthyear; // YYYY format
+    
+    if (birthday && birthyear) {
+      // Combine year and birthday to create YYYY-MM-DD format
+      const month = birthday.substring(0, 2);
+      const day = birthday.substring(2, 4);
+      birthDate = `${birthyear}-${month}-${day}`;
+    }
+
+    console.log("Kakao OAuth user data:", kakaoUser);
+    console.log("Extracted realName:", realName);
+    console.log("Extracted phone:", phone);
+    console.log("Extracted birthDate:", birthDate);
+
     // Use AuthService to handle social authentication
     const authResult = await AuthService.handleSocialAuth({
       email: email,
       name: profile.nickname || email.split("@")[0],
+      realName,
+      phone,
+      birthDate,
       profileImage: profile.profile_image_url,
       userType,
       provider: "KAKAO",

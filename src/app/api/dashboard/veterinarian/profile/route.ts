@@ -11,12 +11,33 @@ import { sql } from "@/lib/db";
 export const GET = withAuth(async (request: NextRequest) => {
   try {
     const user = (request as any).user;
+    console.log('[API] GET profile - user from middleware:', user);
+    console.log('[API] userId:', user.userId);
+    console.log('[API] userType:', user.userType);
+    
     const profile = await getVeterinarianProfile(user.userId);
+    console.log('[API] getVeterinarianProfile result:', profile);
+
+    // 사용자의 provider 정보를 데이터베이스에서 조회
+    console.log('[API] User from middleware:', user);
+    
+    const userInfo = await sql`
+      SELECT provider FROM users WHERE id = ${user.userId}
+    `;
+    
+    console.log('[API] Database user info:', userInfo[0]);
+    
+    const responseData = {
+      ...profile,
+      provider: userInfo[0]?.provider || 'NORMAL',
+      userType: user.userType
+    };
 
     return NextResponse.json(
-      createApiResponse("success", "프로필 조회 성공", profile)
+      createApiResponse("success", "프로필 조회 성공", responseData)
     );
   } catch (error) {
+    console.error('[API] GET profile error:', error);
     return NextResponse.json(
       createErrorResponse("프로필 조회 중 오류가 발생했습니다"),
       { status: 500 }

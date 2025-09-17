@@ -20,6 +20,9 @@ export interface SocialUser {
   id: string;
   email: string;
   name: string;
+  realName?: string;
+  phone?: string;
+  birthDate?: string;
   profileImage?: string;
   provider: 'GOOGLE' | 'KAKAO' | 'NAVER';
   providerId: string;
@@ -39,6 +42,9 @@ export interface SocialLoginResponse {
   socialData?: {
     email: string;
     name: string;
+    realName?: string;
+    phone?: string;
+    birthDate?: string;
     profileImage?: string;
     provider: string;
     providerId: string;

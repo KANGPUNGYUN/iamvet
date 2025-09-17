@@ -3,13 +3,14 @@
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
+import { PhoneInput } from "@/components/ui/FormattedInput";
 import { ProfileImageUpload, AddressSearch } from "@/components/features/profile";
-import { checkEmailDuplicate } from "@/actions/auth";
+import { checkEmailDuplicate, checkUsernameDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
 
 interface HospitalRegistrationData {
-  userId: string;
+  loginId: string;
   password: string;
   passwordConfirm: string;
   hospitalName: string;
@@ -38,7 +39,7 @@ export const HospitalRegistrationForm: React.FC<
 > = ({ onSubmit, onCancel }) => {
   // 폼 상태 관리
   const [formData, setFormData] = useState<HospitalRegistrationData>({
-    userId: "",
+    loginId: "",
     password: "",
     passwordConfirm: "",
     hospitalName: "",
@@ -59,7 +60,7 @@ export const HospitalRegistrationForm: React.FC<
 
   // 중복확인 상태
   const [duplicateCheck, setDuplicateCheck] = useState({
-    userId: {
+    loginId: {
       isChecking: false,
       isValid: false,
     },
@@ -67,7 +68,7 @@ export const HospitalRegistrationForm: React.FC<
 
   // 입력 에러 상태
   const [inputErrors, setInputErrors] = useState({
-    userId: "",
+    loginId: "",
     password: "",
     passwordConfirm: "",
     hospitalName: "",
@@ -106,7 +107,7 @@ export const HospitalRegistrationForm: React.FC<
     let error = "";
 
     switch (field) {
-      case "userId":
+      case "loginId":
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value.trim()) {
           error = "이메일을 입력해주세요.";
@@ -185,18 +186,18 @@ export const HospitalRegistrationForm: React.FC<
       setFormData((prev) => ({ ...prev, [field]: url }));
     };
 
-  const handleEmailDuplicateCheckForUserId = async () => {
-    console.log("CLIENT: handleEmailDuplicateCheckForUserId called");
-    console.log("CLIENT: formData.userId =", formData.userId);
+  const handleLoginIdDuplicateCheck = async () => {
+    console.log("CLIENT: handleLoginIdDuplicateCheck called");
+    console.log("CLIENT: formData.loginId =", formData.loginId);
 
-    if (!formData.userId.trim()) {
+    if (!formData.loginId.trim()) {
       alert("이메일을 입력해주세요.");
       return;
     }
 
     // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.userId)) {
+    if (!emailRegex.test(formData.loginId)) {
       alert("올바른 이메일 형식을 입력해주세요.");
       return;
     }
@@ -204,12 +205,12 @@ export const HospitalRegistrationForm: React.FC<
     console.log("CLIENT: About to call checkEmailDuplicate");
     setDuplicateCheck((prev) => ({
       ...prev,
-      userId: { ...prev.userId, isChecking: true },
+      loginId: { ...prev.loginId, isChecking: true },
     }));
 
     try {
-      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.userId);
-      const result = await checkEmailDuplicate(formData.userId);
+      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.loginId);
+      const result = await checkEmailDuplicate(formData.loginId);
       console.log("CLIENT: checkEmailDuplicate result:", result);
 
       if (result.success) {
@@ -222,7 +223,7 @@ export const HospitalRegistrationForm: React.FC<
         );
         setDuplicateCheck((prev) => ({
           ...prev,
-          userId: {
+          loginId: {
             isChecking: false,
             isValid,
           },
@@ -232,7 +233,7 @@ export const HospitalRegistrationForm: React.FC<
         console.log("CLIENT: checkEmailDuplicate failed:", result.error);
         setDuplicateCheck((prev) => ({
           ...prev,
-          userId: { ...prev.userId, isChecking: false },
+          loginId: { ...prev.loginId, isChecking: false },
         }));
         alert(result.error || "이메일 중복 확인 중 오류가 발생했습니다.");
       }
@@ -240,7 +241,7 @@ export const HospitalRegistrationForm: React.FC<
       console.error("CLIENT: 이메일 중복 확인 오류:", error);
       setDuplicateCheck((prev) => ({
         ...prev,
-        userId: { ...prev.userId, isChecking: false },
+        loginId: { ...prev.loginId, isChecking: false },
       }));
       alert("이메일 중복 확인 중 오류가 발생했습니다.");
     }
@@ -298,8 +299,8 @@ export const HospitalRegistrationForm: React.FC<
 
   const handleRegister = () => {
     // 모든 필드 검증
-    const fields: (keyof Pick<HospitalRegistrationData, "userId" | "password" | "passwordConfirm" | "hospitalName" | "businessNumber" | "phone" | "email" | "address">)[] = [
-      "userId",
+    const fields: (keyof Pick<HospitalRegistrationData, "loginId" | "password" | "passwordConfirm" | "hospitalName" | "businessNumber" | "phone" | "email" | "address">)[] = [
+      "loginId",
       "password",
       "passwordConfirm",
       "hospitalName",
@@ -316,7 +317,7 @@ export const HospitalRegistrationForm: React.FC<
 
       if (!value?.trim()) {
         const fieldName = {
-          userId: "이메일 (아이디)",
+          loginId: "이메일 (아이디)",
           password: "비밀번호",
           passwordConfirm: "비밀번호 확인",
           hospitalName: "병원명",
@@ -331,7 +332,7 @@ export const HospitalRegistrationForm: React.FC<
     });
 
     // 중복확인 검증
-    if (!duplicateCheck.userId.isValid) {
+    if (!duplicateCheck.loginId.isValid) {
       errors.push("이메일 중복확인을 완료해주세요.");
     }
 
@@ -384,23 +385,23 @@ export const HospitalRegistrationForm: React.FC<
                 아이디
               </label>
               <InputBox
-                value={formData.userId}
-                onChange={handleInputChange("userId")}
+                value={formData.loginId}
+                onChange={handleInputChange("loginId")}
                 placeholder="이메일 주소를 입력해주세요"
                 type="email"
                 duplicateCheck={{
                   buttonText: "중복 확인",
-                  onCheck: handleEmailDuplicateCheckForUserId,
-                  isChecking: duplicateCheck.userId.isChecking,
-                  isValid: duplicateCheck.userId.isValid,
+                  onCheck: handleLoginIdDuplicateCheck,
+                  isChecking: duplicateCheck.loginId.isChecking,
+                  isValid: duplicateCheck.loginId.isValid,
                 }}
-                success={duplicateCheck.userId.isValid}
-                error={!!inputErrors.userId}
+                success={duplicateCheck.loginId.isValid}
+                error={!!inputErrors.loginId}
                 guide={
-                  inputErrors.userId
-                    ? { text: inputErrors.userId, type: "error" }
-                    : duplicateCheck.userId.isValid
-                    ? { text: "사용 가능한 이메일입니다", type: "success" }
+                  inputErrors.loginId
+                    ? { text: inputErrors.loginId, type: "error" }
+                    : duplicateCheck.loginId.isValid
+                    ? { text: "사용 가능한 아이디입니다", type: "success" }
                     : undefined
                 }
               />
@@ -506,18 +507,15 @@ export const HospitalRegistrationForm: React.FC<
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 연락처
               </label>
-              <InputBox
+              <PhoneInput
                 value={formData.phone}
                 onChange={handleInputChange("phone")}
                 placeholder="연락처를 입력해 주세요"
-                type="tel"
-                error={!!inputErrors.phone}
-                guide={
-                  inputErrors.phone
-                    ? { text: inputErrors.phone, type: "error" }
-                    : undefined
-                }
+                className={inputErrors.phone ? "border-red-500" : ""}
               />
+              {inputErrors.phone && (
+                <p className="text-red-500 text-sm mt-2">{inputErrors.phone}</p>
+              )}
             </div>
 
             {/* 이메일 */}

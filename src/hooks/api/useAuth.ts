@@ -46,46 +46,71 @@ export function useCurrentUser() {
       
       console.log('[useCurrentUser] queryFn called, hasToken:', hasToken, 'localUser:', !!localUser);
       
-      // localStorage에 사용자 정보가 있고 토큰도 있으면 localStorage 정보를 우선 사용
-      if (hasToken && localUser) {
-        console.log('[useCurrentUser] Using localStorage user data:', localUser);
-        const userData = {
-          id: localUser.id,
-          name: localUser.name,
-          email: localUser.email,
-          realName: localUser.realName,
-          type: localUser.userType === "veterinary-student" ? "veterinarian" : localUser.userType,
-          profileName: localUser.profileName || localUser.name,
-          profileImage: localUser.profileImage,
-          phone: localUser.phone,
-        };
-        console.log('[useCurrentUser] returning localStorage user data:', userData);
-        return userData;
+      if (!hasToken) {
+        console.log('[useCurrentUser] No token found, returning null');
+        return null;
       }
       
-      // localStorage에 정보가 없으면 서버에서 가져오기 시도
+      // 서버에서 최신 사용자 정보 가져오기 (DB의 연락처, 실명 등 최신 정보 반영)
       const result = await getCurrentUser();
       console.log('[useCurrentUser] getCurrentUser result:', result);
+      
+      // 서버에서 데이터를 가져올 수 없는 경우 localStorage 폴백 사용
+      if (!result.success && localUser) {
+        console.log('[useCurrentUser] Server failed, using localStorage fallback:', localUser);
+        const userData = {
+          id: localUser.id,
+          name: localUser.name || localUser.realName || localUser.email,
+          email: localUser.email,
+          realName: localUser.realName || localUser.name,
+          type: (localUser.userType === "veterinary-student" || localUser.userType === "VETERINARY_STUDENT") ? "veterinarian" as const : localUser.userType as const,
+          profileName: localUser.profileName || localUser.name || localUser.realName,
+          profileImage: localUser.profileImage,
+          phone: localUser.phone,
+          birthDate: localUser.birthDate ? (typeof localUser.birthDate === 'string' ? localUser.birthDate : localUser.birthDate.toISOString().split('T')[0]) : undefined,
+          provider: localUser.provider,
+        };
+        return userData;
+      }
       
       if (result.success && result.user) {
         const userData = {
           id: result.user.id,
-          name: result.user.username,
+          name: result.user.username || result.user.realName || result.user.email,
           email: result.user.email,
-          realName: result.user.realName, // 실명 추가
-          type: result.user.userType === "VETERINARIAN" ? "veterinarian" : "hospital",
-          profileName: result.user.profileName,
-          profileImage: result.user.profileImage, // 프로필 이미지 추가
-          phone: result.user.phone, // Add phone field
+          realName: result.user.realName || result.user.username,
+          type: (result.user.userType === "VETERINARIAN" || result.user.userType === "VETERINARY_STUDENT") ? "veterinarian" as const : "hospital" as const,
+          profileName: result.user.profileName || result.user.realName || result.user.username,
+          profileImage: result.user.profileImage,
+          phone: result.user.phone,
+          birthDate: result.user.birthDate ? (typeof result.user.birthDate === 'string' ? result.user.birthDate : result.user.birthDate.toISOString().split('T')[0]) : undefined,
+          provider: result.user.provider,
         };
         console.log('[useCurrentUser] returning server user data:', userData);
+        
+        // localStorage에 최신 사용자 정보 저장 (SNS 로그인 시에도 realName과 phone이 포함됨)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            realName: userData.realName,
+            userType: userData.type,
+            profileName: userData.profileName,
+            profileImage: userData.profileImage,
+            phone: userData.phone,
+            birthDate: userData.birthDate,
+            provider: userData.provider,
+          }));
+        }
+        
         return userData;
       }
       console.log('[useCurrentUser] returning null');
       return null;
     },
     enabled: getHasToken(), // 매번 localStorage를 확인
-    staleTime: 1000 * 60 * 5, // 5분간 fresh
+    staleTime: 1000 * 30, // 30초간 fresh (DB 최신 정보 반영 위해 짧게 설정)
     retry: false, // 인증 실패 시 재시도하지 않음
   });
 }
@@ -166,7 +191,13 @@ export function useAuth() {
     if (accessToken) {
       console.log('[useAuth] Setting cookie from localStorage token');
       const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      document.cookie = `auth-token=${accessToken}; expires=${expireDate.toUTCString()}; path=/; secure; samesite=strict`;
+      
+      // 개발 환경에서는 secure 옵션 제거
+      const isProduction = process.env.NODE_ENV === 'production';
+      const secureFlag = isProduction ? '; secure' : '';
+      
+      document.cookie = `auth-token=${accessToken}; expires=${expireDate.toUTCString()}; path=/${secureFlag}; samesite=strict`;
+      console.log('[useAuth] Cookie set successfully');
     }
   }, []);
 
@@ -175,10 +206,24 @@ export function useAuth() {
     const handleStorageChange = () => {
       const accessToken = localStorage.getItem('accessToken');
       console.log('[useAuth] handleStorageChange - accessToken:', !!accessToken, 'user:', !!user);
-      if (accessToken && !user) {
-        console.log('[useAuth] Refetching user data...');
-        // 토큰이 있지만 사용자 정보가 없으면 다시 가져오기
-        refetch();
+      
+      // 토큰이 있으면 쿠키도 업데이트
+      if (accessToken) {
+        const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        const isProduction = process.env.NODE_ENV === 'production';
+        const secureFlag = isProduction ? '; secure' : '';
+        document.cookie = `auth-token=${accessToken}; expires=${expireDate.toUTCString()}; path=/${secureFlag}; samesite=strict`;
+        console.log('[useAuth] Cookie updated from localStorage change');
+        
+        // 사용자 정보가 있지만 phone이나 birthDate가 누락된 경우 새로고침
+        if (user && (!user.phone || !user.birthDate)) {
+          console.log('[useAuth] User missing phone/birthDate, refetching...');
+          refetch();
+        } else if (!user) {
+          console.log('[useAuth] Refetching user data...');
+          // 토큰이 있지만 사용자 정보가 없으면 다시 가져오기
+          refetch();
+        }
       }
     };
 

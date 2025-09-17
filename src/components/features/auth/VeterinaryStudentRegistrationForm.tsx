@@ -3,13 +3,14 @@
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
+import { PhoneInput, BirthDateInput } from "@/components/ui/FormattedInput";
 import { ProfileImageUpload } from "@/components/features/profile";
-import { checkEmailDuplicate } from "@/actions/auth";
+import { checkEmailDuplicate, checkUsernameDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
 
 interface VeterinaryStudentRegistrationData {
-  userId: string;
+  loginId: string;
   password: string;
   passwordConfirm: string;
   realName: string;
@@ -40,7 +41,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 > = ({ onSubmit, onCancel, socialData }) => {
   // 폼 상태 관리
   const [formData, setFormData] = useState<VeterinaryStudentRegistrationData>({
-    userId: "",
+    loginId: "",
     password: socialData ? "" : "", // SNS 로그인 시 패스워드 불필요
     passwordConfirm: socialData ? "" : "",
     realName: socialData?.name || "",
@@ -58,7 +59,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 
   // 중복확인 상태
   const [duplicateCheck, setDuplicateCheck] = useState({
-    userId: {
+    loginId: {
       isChecking: false,
       isValid: false,
     },
@@ -70,7 +71,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 
   // 입력 에러 상태
   const [inputErrors, setInputErrors] = useState({
-    userId: "",
+    loginId: "",
     password: "",
     passwordConfirm: "",
     realName: "",
@@ -108,7 +109,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     let error = "";
 
     switch (field) {
-      case "userId":
+      case "loginId":
         if (!value.trim()) {
           error = "아이디를 입력해주세요.";
         } else if (value.length < 4) {
@@ -204,31 +205,31 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     setFormData((prev) => ({ ...prev, [field]: url }));
   };
 
-  const handleUserIdDuplicateCheck = async () => {
-    console.log("CLIENT: handleUserIdDuplicateCheck called");
-    console.log("CLIENT: formData.userId =", formData.userId);
+  const handleLoginIdDuplicateCheck = async () => {
+    console.log("CLIENT: handleLoginIdDuplicateCheck called");
+    console.log("CLIENT: formData.loginId =", formData.loginId);
 
-    if (!formData.userId.trim()) {
+    if (!formData.loginId.trim()) {
       alert("아이디를 입력해주세요.");
       return;
     }
 
-    if (formData.userId.length < 4) {
+    if (formData.loginId.length < 4) {
       alert("아이디는 4자 이상이어야 합니다.");
       return;
     }
 
-    console.log("CLIENT: About to call checkEmailDuplicate for userId");
+    console.log("CLIENT: About to call checkEmailDuplicate for loginId");
     setDuplicateCheck((prev) => ({
       ...prev,
-      userId: { ...prev.userId, isChecking: true },
+      loginId: { ...prev.loginId, isChecking: true },
     }));
 
     try {
-      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.userId);
-      // 임시로 checkEmailDuplicate 사용 (나중에 checkUsernameDuplicate로 변경 필요)
-      const result = await checkEmailDuplicate(formData.userId);
-      console.log("CLIENT: checkEmailDuplicate result:", result);
+      console.log("CLIENT: Calling checkUsernameDuplicate with:", formData.loginId);
+      // loginId는 checkUsernameDuplicate를 사용
+      const result = await checkUsernameDuplicate(formData.loginId);
+      console.log("CLIENT: checkUsernameDuplicate result:", result);
 
       if (result.success) {
         const isValid = !result.isDuplicate;
@@ -240,7 +241,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
         );
         setDuplicateCheck((prev) => ({
           ...prev,
-          userId: {
+          loginId: {
             isChecking: false,
             isValid,
           },
@@ -250,7 +251,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
         console.log("CLIENT: checkEmailDuplicate failed:", result.error);
         setDuplicateCheck((prev) => ({
           ...prev,
-          userId: { ...prev.userId, isChecking: false },
+          loginId: { ...prev.loginId, isChecking: false },
         }));
         alert(result.error || "아이디 중복 확인 중 오류가 발생했습니다.");
       }
@@ -258,7 +259,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
       console.error("CLIENT: 아이디 중복 확인 오류:", error);
       setDuplicateCheck((prev) => ({
         ...prev,
-        userId: { ...prev.userId, isChecking: false },
+        loginId: { ...prev.loginId, isChecking: false },
       }));
       alert("아이디 중복 확인 중 오류가 발생했습니다.");
     }
@@ -385,7 +386,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     // SNS 로그인 시에는 userId, password, passwordConfirm 필드 제외
     const requiredFields: (keyof typeof inputErrors)[] = socialData 
       ? ["realName", "nickname", "phone", "email", "birthDate"]
-      : ["userId", "password", "passwordConfirm", "realName", "nickname", "phone", "email", "birthDate"];
+      : ["loginId", "password", "passwordConfirm", "realName", "nickname", "phone", "email", "birthDate"];
     const errors: string[] = [];
 
     requiredFields.forEach((field) => {
@@ -394,7 +395,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 
       if (!value?.trim()) {
         const fieldName = {
-          userId: "아이디",
+          loginId: "아이디",
           password: "비밀번호",
           passwordConfirm: "비밀번호 확인",
           realName: "실명",
@@ -409,7 +410,7 @@ export const VeterinaryStudentRegistrationForm: React.FC<
 
     // SNS 로그인이 아닐 때만 중복확인 검증
     if (!socialData) {
-      if (!duplicateCheck.userId.isValid) {
+      if (!duplicateCheck.loginId.isValid) {
         errors.push("아이디 중복확인을 완료해주세요.");
       }
     }
@@ -469,22 +470,22 @@ export const VeterinaryStudentRegistrationForm: React.FC<
                   아이디
                 </label>
                 <InputBox
-                  value={formData.userId}
-                  onChange={handleInputChange("userId")}
+                  value={formData.loginId}
+                  onChange={handleInputChange("loginId")}
                   placeholder="아이디를 입력해주세요"
                   type="text"
                   duplicateCheck={{
                     buttonText: "중복 확인",
-                    onCheck: handleUserIdDuplicateCheck,
-                    isChecking: duplicateCheck.userId.isChecking,
-                    isValid: duplicateCheck.userId.isValid,
+                    onCheck: handleLoginIdDuplicateCheck,
+                    isChecking: duplicateCheck.loginId.isChecking,
+                    isValid: duplicateCheck.loginId.isValid,
                   }}
-                  success={duplicateCheck.userId.isValid}
-                  error={!!inputErrors.userId}
+                  success={duplicateCheck.loginId.isValid}
+                  error={!!inputErrors.loginId}
                   guide={
-                    inputErrors.userId
-                      ? { text: inputErrors.userId, type: "error" }
-                      : duplicateCheck.userId.isValid
+                    inputErrors.loginId
+                      ? { text: inputErrors.loginId, type: "error" }
+                      : duplicateCheck.loginId.isValid
                       ? { text: "사용 가능한 아이디입니다", type: "success" }
                       : undefined
                   }
@@ -563,11 +564,9 @@ export const VeterinaryStudentRegistrationForm: React.FC<
                 value={formData.realName}
                 onChange={handleInputChange("realName")}
                 placeholder="실명을 입력해주세요"
-                readOnly={!!socialData}
-                success={!!socialData}
                 error={!!inputErrors.realName}
                 guide={
-                  socialData ? { text: "SNS 계정에서 가져온 이름입니다", type: "success" } :
+                  socialData ? { text: "SNS 계정 이름을 확인하고 실명을 정확히 입력해주세요", type: "info" } :
                   inputErrors.realName
                     ? { text: inputErrors.realName, type: "error" }
                     : undefined
@@ -598,18 +597,15 @@ export const VeterinaryStudentRegistrationForm: React.FC<
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 연락처
               </label>
-              <InputBox
+              <PhoneInput
                 value={formData.phone}
                 onChange={handleInputChange("phone")}
                 placeholder="연락처를 입력해 주세요"
-                type="tel"
-                error={!!inputErrors.phone}
-                guide={
-                  inputErrors.phone
-                    ? { text: inputErrors.phone, type: "error" }
-                    : undefined
-                }
+                className={inputErrors.phone ? "border-red-500" : ""}
               />
+              {inputErrors.phone && (
+                <p className="text-red-500 text-sm mt-2">{inputErrors.phone}</p>
+              )}
             </div>
 
             {/* 대학교 이메일 */}
@@ -657,18 +653,15 @@ export const VeterinaryStudentRegistrationForm: React.FC<
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 생년월일
               </label>
-              <InputBox
+              <BirthDateInput
                 value={formData.birthDate}
                 onChange={handleInputChange("birthDate")}
                 placeholder="YYYY-MM-DD"
-                type="text"
-                error={!!inputErrors.birthDate}
-                guide={
-                  inputErrors.birthDate
-                    ? { text: inputErrors.birthDate, type: "error" }
-                    : undefined
-                }
+                className={inputErrors.birthDate ? "border-red-500" : ""}
               />
+              {inputErrors.birthDate && (
+                <p className="text-red-500 text-sm mt-2">{inputErrors.birthDate}</p>
+              )}
             </div>
           </div>
         </section>
