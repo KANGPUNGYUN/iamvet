@@ -125,13 +125,22 @@ const regionOptions = [
   { value: "incheon", label: "인천" },
   { value: "gwangju", label: "광주" },
   { value: "daejeon", label: "대전" },
+  { value: "ulsan", label: "울산" },
+  { value: "gyeonggi", label: "경기" },
+  { value: "gangwon", label: "강원" },
+  { value: "chungbuk", label: "충북" },
+  { value: "chungnam", label: "충남" },
+  { value: "jeonbuk", label: "전북" },
+  { value: "jeonnam", label: "전남" },
+  { value: "gyeongbuk", label: "경북" },
+  { value: "gyeongnam", label: "경남" },
+  { value: "jeju", label: "제주" },
 ];
 
 const workTypeOptions = [
-  { value: "fulltime", label: "정규직" },
-  { value: "parttime", label: "파트타임" },
-  { value: "contract", label: "계약직" },
-  { value: "intern", label: "인턴" },
+  { value: "정규직", label: "정규직" },
+  { value: "파트타임", label: "파트타임" },
+  { value: "계약직", label: "계약직" },
 ];
 
 const startDateOptions = [

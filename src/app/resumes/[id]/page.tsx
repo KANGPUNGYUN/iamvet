@@ -152,18 +152,69 @@ export default function ResumeDetailPage({
   // 한국어 라벨 변환 함수
   const getKoreanLabel = (keyword: string) => {
     const labelMap: { [key: string]: string } = {
+      // 전공 분야
       internal: "내과",
       surgery: "외과",
       dermatology: "피부과",
       orthopedics: "정형외과",
+      ophthalmology: "안과",
+      dentistry: "치과",
+      emergency: "응급의학과",
+      cardiology: "심장내과",
+      neurology: "신경과",
+      oncology: "종양학과",
+      anesthesiology: "마취과",
+      radiology: "영상의학과",
+      pathology: "병리과",
+      laboratory: "임상병리과",
+      
+      // 직무
       veterinarian: "수의사",
       assistant: "수의테크니션",
       manager: "병원장",
+      intern: "인턴",
+      resident: "전공의",
+      
+      // 근무 형태
+      "full-time": "정규직",
       fulltime: "정규직",
+      "part-time": "파트타임",
       parttime: "파트타임",
       contract: "계약직",
+      freelance: "프리랜서",
+      internship: "인턴십",
+      
+      // 지역
       seoul: "서울",
+      busan: "부산",
+      daegu: "대구",
+      incheon: "인천",
+      gwangju: "광주",
+      daejeon: "대전",
+      ulsan: "울산",
+      gyeonggi: "경기",
+      gangwon: "강원",
+      chungbuk: "충북",
+      chungnam: "충남",
+      jeonbuk: "전북",
+      jeonnam: "전남",
+      gyeongbuk: "경북",
+      gyeongnam: "경남",
+      jeju: "제주",
+      sejong: "세종",
+      
+      // 근무가능일 맵핑
       immediate: "즉시 가능",
+      "asap": "즉시 가능",
+      "1week": "1주 후",
+      "2weeks": "2주 후",
+      "1month": "1개월 후",
+      "2months": "2개월 후",
+      "3months": "3개월 후",
+      "6months": "6개월 후",
+      "negotiable": "협의 가능",
+      "discussion": "협의 가능",
+      
       // 근무 요일 맵핑
       monday: "월요일",
       tuesday: "화요일",
