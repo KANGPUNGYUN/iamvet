@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
   MoreVerticalIcon,
@@ -13,11 +14,12 @@ import {
   PhoneIcon,
   MailIcon,
 } from "public/icons";
-import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
 import ResumeCard from "@/components/ui/ResumeCard/ResumeCard";
 import { Tab } from "@/components/ui/Tab";
 import { useResumeDetail } from "@/hooks/useResumeDetail";
+import { useCurrentUser } from "@/hooks/api/useAuth";
+import { deleteResumeAction } from "@/actions/resumes";
 
 // 관련 인재 정보 (임시 데이터)
 const relatedResumes = [
@@ -55,6 +57,7 @@ export default function ResumeDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const router = useRouter();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
@@ -62,7 +65,9 @@ export default function ResumeDetailPage({
     subject: "",
     message: "",
   });
-  
+  const [isOwner, setIsOwner] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // 평가하기 관련 상태 (향후 API 연동 예정)
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratings, setRatings] = useState({
@@ -92,6 +97,25 @@ export default function ResumeDetailPage({
 
   const { id } = use(params);
   const { data: resumeData, isLoading, error } = useResumeDetail(id);
+  const { data: user } = useCurrentUser();
+
+  useEffect(() => {
+    if (resumeData && user) {
+      console.log("Ownership check:", {
+        resumeUserId: resumeData.userId,
+        currentUserId: user.id,
+        isEqual: resumeData.userId === user.id,
+      });
+      setIsOwner(resumeData.userId === user.id);
+    } else {
+      console.log("Missing data for ownership check:", {
+        hasResumeData: !!resumeData,
+        hasUser: !!user,
+        resumeUserId: resumeData?.userId,
+        currentUserId: user?.id,
+      });
+    }
+  }, [resumeData, user]);
 
   if (isLoading) {
     return (
@@ -109,7 +133,9 @@ export default function ResumeDetailPage({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">이력서를 찾을 수 없습니다</h1>
-          <p className="text-gray-600 mb-4">{error || "이력서가 존재하지 않습니다."}</p>
+          <p className="text-gray-600 mb-4">
+            {error || "이력서가 존재하지 않습니다."}
+          </p>
           <Link href="/resumes" className="text-blue-600 hover:underline">
             이력서 목록으로 돌아가기
           </Link>
@@ -126,58 +152,66 @@ export default function ResumeDetailPage({
   // 한국어 라벨 변환 함수
   const getKoreanLabel = (keyword: string) => {
     const labelMap: { [key: string]: string } = {
-      'internal': '내과',
-      'surgery': '외과',
-      'dermatology': '피부과',
-      'orthopedics': '정형외과',
-      'veterinarian': '수의사',
-      'assistant': '수의테크니션',
-      'manager': '병원장',
-      'fulltime': '정규직',
-      'parttime': '파트타임',
-      'contract': '계약직',
-      'seoul': '서울',
-      'immediate': '즉시 가능',
+      internal: "내과",
+      surgery: "외과",
+      dermatology: "피부과",
+      orthopedics: "정형외과",
+      veterinarian: "수의사",
+      assistant: "수의테크니션",
+      manager: "병원장",
+      fulltime: "정규직",
+      parttime: "파트타임",
+      contract: "계약직",
+      seoul: "서울",
+      immediate: "즉시 가능",
       // 근무 요일 맵핑
-      'monday': '월요일',
-      'tuesday': '화요일',
-      'wednesday': '수요일',
-      'thursday': '목요일',
-      'friday': '금요일',
-      'saturday': '토요일',
-      'sunday': '일요일',
-      'mon': '월',
-      'tue': '화',
-      'wed': '수',
-      'thu': '목',
-      'fri': '금',
-      'sat': '토',
-      'sun': '일'
+      monday: "월요일",
+      tuesday: "화요일",
+      wednesday: "수요일",
+      thursday: "목요일",
+      friday: "금요일",
+      saturday: "토요일",
+      sunday: "일요일",
+      mon: "월",
+      tue: "화",
+      wed: "수",
+      thu: "목",
+      fri: "금",
+      sat: "토",
+      sun: "일",
     };
     return labelMap[keyword?.toLowerCase()] || keyword;
   };
 
   // 요일을 월화수목금토일 순서로 정렬하는 함수
   const sortWeekdays = (weekdays: string[]) => {
-    const weekdayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    const shortWeekdayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-    
+    const weekdayOrder = [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday",
+    ];
+    const shortWeekdayOrder = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
     return weekdays.sort((a, b) => {
       const aLower = a.toLowerCase();
       const bLower = b.toLowerCase();
-      
+
       // 전체 형태 요일 순서 확인
       let aIndex = weekdayOrder.indexOf(aLower);
       let bIndex = weekdayOrder.indexOf(bLower);
-      
+
       // 축약 형태 요일 순서 확인
       if (aIndex === -1) aIndex = shortWeekdayOrder.indexOf(aLower);
       if (bIndex === -1) bIndex = shortWeekdayOrder.indexOf(bLower);
-      
+
       // 순서를 찾지 못한 경우 원래 순서 유지
       if (aIndex === -1) aIndex = 999;
       if (bIndex === -1) bIndex = 999;
-      
+
       return aIndex - bIndex;
     });
   };
@@ -208,11 +242,11 @@ export default function ResumeDetailPage({
   };
 
   const handleRatingChange = (category: string, rating: number) => {
-    setRatings(prev => ({ ...prev, [category]: rating }));
+    setRatings((prev) => ({ ...prev, [category]: rating }));
   };
 
   const handleCommentChange = (category: string, comment: string) => {
-    setComments(prev => ({ ...prev, [category]: comment }));
+    setComments((prev) => ({ ...prev, [category]: comment }));
   };
 
   const resetRatingForm = () => {
@@ -250,7 +284,15 @@ export default function ResumeDetailPage({
   };
 
   // 임시 InteractiveStarRating 컴포넌트 (향후 실제 컴포넌트로 교체)
-  const InteractiveStarRating = ({ rating, onRatingChange, size }: { rating: number; onRatingChange: (rating: number) => void; size?: number }) => {
+  const InteractiveStarRating = ({
+    rating,
+    onRatingChange,
+    size,
+  }: {
+    rating: number;
+    onRatingChange: (rating: number) => void;
+    size?: number;
+  }) => {
     const starSize = size || 6;
     return (
       <div className="flex gap-1">
@@ -258,7 +300,9 @@ export default function ResumeDetailPage({
           <button
             key={star}
             onClick={() => onRatingChange(star)}
-            className={`w-${starSize} h-${starSize} ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+            className={`w-${starSize} h-${starSize} ${
+              star <= rating ? "text-yellow-400" : "text-gray-300"
+            }`}
           >
             ★
           </button>
@@ -273,6 +317,38 @@ export default function ResumeDetailPage({
       message: "",
     });
     setContactModalOpen(false);
+  };
+
+  const handleDeleteResume = async () => {
+    if (
+      !confirm(
+        "정말로 이력서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteResumeAction(id);
+
+      if (result.success) {
+        alert("이력서가 성공적으로 삭제되었습니다.");
+        router.push("/resumes");
+      } else {
+        alert(result.message || "이력서 삭제 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("이력서 삭제 중 오류가 발생했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleEditResume = () => {
+    router.push("/dashboard/veterinarian/resume");
   };
 
   return (
@@ -296,18 +372,24 @@ export default function ResumeDetailPage({
                 <MoreVerticalIcon size="28" currentColor="currentColor" />
               </button>
 
-              {showMoreMenu && (
+              {isOwner && showMoreMenu && (
                 <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
-                  <Link
-                    href={`/resumes/${id}/edit`}
-                    className="flex justify-center items-center px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
+                  <button
+                    onClick={handleEditResume}
+                    className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
                   >
                     <EditIcon size="24" currentColor="currentColor" />
                     <span className="ml-2">수정하기</span>
-                  </Link>
-                  <button className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50">
+                  </button>
+                  <button
+                    onClick={handleDeleteResume}
+                    disabled={isDeleting}
+                    className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50 disabled:opacity-50"
+                  >
                     <TrashIcon currentColor="currentColor" />
-                    <span className="ml-2">삭제하기</span>
+                    <span className="ml-2">
+                      {isDeleting ? "삭제 중..." : "삭제하기"}
+                    </span>
                   </button>
                 </div>
               )}
@@ -355,7 +437,7 @@ export default function ResumeDetailPage({
                       {resumeData.name}
                     </h1>
                     <p className="font-text text-[16px] text-sub mb-4 lg:mr-[60px] mr-[30px]">
-                      {resumeData.introduction || '소개가 작성되지 않았습니다.'}
+                      {resumeData.introduction || "소개가 작성되지 않았습니다."}
                     </p>
 
                     {/* 연락처 및 이메일 */}
@@ -402,7 +484,7 @@ export default function ResumeDetailPage({
                       직무
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
-                      {getKoreanLabel(resumeData.position || 'veterinarian')}
+                      {getKoreanLabel(resumeData.position || "veterinarian")}
                     </span>
                   </div>
                   <div className="flex flex-col gap-[4px] items-center">
@@ -410,7 +492,9 @@ export default function ResumeDetailPage({
                       희망 연봉
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
-                      {resumeData.expectedSalary ? `${resumeData.expectedSalary}만원` : '협의'}
+                      {resumeData.expectedSalary
+                        ? `${resumeData.expectedSalary}만원`
+                        : "협의"}
                     </span>
                   </div>
                   <div className="flex flex-col gap-[4px] items-center">
@@ -418,7 +502,7 @@ export default function ResumeDetailPage({
                       근무가능일
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
-                      {getKoreanLabel(resumeData.startDate || 'immediate')}
+                      {getKoreanLabel(resumeData.startDate || "immediate")}
                     </span>
                   </div>
                 </div>
@@ -485,7 +569,9 @@ export default function ResumeDetailPage({
                               직무
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {getKoreanLabel(resumeData.position || 'veterinarian')}
+                              {getKoreanLabel(
+                                resumeData.position || "veterinarian"
+                              )}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -493,7 +579,11 @@ export default function ResumeDetailPage({
                               전공분야
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.specialties ? resumeData.specialties.map(s => getKoreanLabel(s)).join(', ') : '미입력'}
+                              {resumeData.specialties
+                                ? resumeData.specialties
+                                    .map((s) => getKoreanLabel(s))
+                                    .join(", ")
+                                : "미입력"}
                             </span>
                           </div>
                         </div>
@@ -510,7 +600,11 @@ export default function ResumeDetailPage({
                               근무형태
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workTypes ? resumeData.workTypes.map(w => getKoreanLabel(w)).join(', ') : '미입력'}
+                              {resumeData.workTypes
+                                ? resumeData.workTypes
+                                    .map((w) => getKoreanLabel(w))
+                                    .join(", ")
+                                : "미입력"}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -518,7 +612,9 @@ export default function ResumeDetailPage({
                               희망연봉
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.expectedSalary ? `${resumeData.expectedSalary}만원` : '협의'}
+                              {resumeData.expectedSalary
+                                ? `${resumeData.expectedSalary}만원`
+                                : "협의"}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -526,7 +622,11 @@ export default function ResumeDetailPage({
                               근무 요일
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.preferredWeekdays ? sortWeekdays(resumeData.preferredWeekdays).map(day => getKoreanLabel(day)).join(', ') : '미입력'}
+                              {resumeData.preferredWeekdays
+                                ? sortWeekdays(resumeData.preferredWeekdays)
+                                    .map((day) => getKoreanLabel(day))
+                                    .join(", ")
+                                : "미입력"}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -534,7 +634,10 @@ export default function ResumeDetailPage({
                               근무 시간
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workStartTime && resumeData.workEndTime ? `${resumeData.workStartTime} ~ ${resumeData.workEndTime}` : '미입력'}
+                              {resumeData.workStartTime &&
+                              resumeData.workEndTime
+                                ? `${resumeData.workStartTime} ~ ${resumeData.workEndTime}`
+                                : "미입력"}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -542,7 +645,11 @@ export default function ResumeDetailPage({
                               근무 지역
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.preferredRegions ? resumeData.preferredRegions.map(r => getKoreanLabel(r)).join(', ') : '미입력'}
+                              {resumeData.preferredRegions
+                                ? resumeData.preferredRegions
+                                    .map((r) => getKoreanLabel(r))
+                                    .join(", ")
+                                : "미입력"}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -550,7 +657,9 @@ export default function ResumeDetailPage({
                               근무 가능일
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {getKoreanLabel(resumeData.startDate || 'immediate')}
+                              {getKoreanLabel(
+                                resumeData.startDate || "immediate"
+                              )}
                             </span>
                           </div>
                         </div>
@@ -629,16 +738,18 @@ export default function ResumeDetailPage({
                         </p>
                       </div>
 
-                      {/* 연락하기 버튼 */}
-                      <div className="w-full flex justify-center mt-6">
-                        <Button
-                          variant="keycolor"
-                          size="medium"
-                          onClick={handleContactClick}
-                        >
-                          연락하기
-                        </Button>
-                      </div>
+                      {/* 연락하기 버튼 - 본인 이력서가 아닐 때만 표시 */}
+                      {!isOwner && (
+                        <div className="w-full flex justify-center mt-6">
+                          <Button
+                            variant="keycolor"
+                            size="medium"
+                            onClick={handleContactClick}
+                          >
+                            연락하기
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Tab.Content>

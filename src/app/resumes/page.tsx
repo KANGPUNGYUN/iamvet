@@ -9,7 +9,7 @@ import ResumeCard from "@/components/ui/ResumeCard/ResumeCard";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
-import { allResumeData } from "@/data/resumesData";
+import { useResumes } from "@/hooks/useResumes";
 
 export default function ResumesPage() {
   const router = useRouter();
@@ -35,17 +35,26 @@ export default function ResumesPage() {
     sortBy: "recent",
   });
 
-  // 적용된 필터 태그들
-  const [appliedFilterTags, setAppliedFilterTags] = useState<
-    Array<{
-      id: string;
-      label: string;
-      type: string;
-    }>
-  >([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // API 데이터 가져오기 (전체 데이터를 가져온 후 클라이언트에서 필터링)
+  const { data: apiData, isLoading, error } = useResumes({
+    page: 1, // 전체 데이터를 가져오기 위해 첫 페이지부터
+    limit: 1000, // 충분히 큰 수로 설정
+    sort: appliedFilters.sortBy === "recent" ? "latest" : appliedFilters.sortBy,
+  });
+
+  // URL에서 필터 상태 초기화
+  useEffect(() => {
+    const urlFilters = parseFiltersFromURL();
+    const { page, ...filterData } = urlFilters;
+
+    setAppliedFilters(filterData);
+    setTempFilters(filterData);
+    setCurrentPage(page);
+  }, [searchParams]);
 
   // URL 쿼리 스트링에서 필터 상태 파싱
   const parseFiltersFromURL = () => {
@@ -92,9 +101,30 @@ export default function ResumesPage() {
     router.push(newURL, { scroll: false });
   };
 
-  // 필터링 로직 (적용된 필터 사용)
+
+  // 필터링 로직 (API 데이터 직접 사용, 빈 값으로 기본값 설정)
   const getFilteredData = () => {
-    let filtered = [...allResumeData];
+    if (!apiData?.data) return [];
+    
+    // API 데이터를 ResumeCard 형식에 맞게 변환하되 빈 값으로 기본값 설정
+    const convertedData = apiData.data.map((resume: any) => ({
+      id: resume.id,
+      name: resume.name || "",
+      experience: "", // 빈 값으로 설정
+      preferredLocation: resume.preferredRegions?.join(", ") || "",
+      keywords: [
+        ...(resume.specialties || []),
+        ...(resume.workTypes || []),
+        ...(resume.position ? [resume.position] : []),
+      ].filter(Boolean),
+      lastAccessDate: new Date(resume.updatedAt).toLocaleDateString('ko-KR').replace(/\//g, '.'),
+      isBookmarked: false,
+      createdAt: new Date(resume.createdAt),
+      // 원본 데이터도 보관 (필터링용)
+      originalData: resume
+    }));
+    
+    let filtered = [...convertedData];
 
     // 키워드 검색
     if (appliedFilters.searchKeyword.trim()) {
@@ -102,37 +132,34 @@ export default function ResumesPage() {
       filtered = filtered.filter(
         (resume) =>
           resume.name.toLowerCase().includes(keyword) ||
-          resume.experience.toLowerCase().includes(keyword) ||
           resume.preferredLocation.toLowerCase().includes(keyword) ||
-          resume.keywords.some((k) => k.toLowerCase().includes(keyword))
+          resume.keywords.some((k: string) => k.toLowerCase().includes(keyword)) ||
+          resume.originalData.introduction?.toLowerCase().includes(keyword)
       );
     }
 
     // 근무 형태 필터
     if (appliedFilters.workType.length > 0) {
       filtered = filtered.filter((resume) =>
-        appliedFilters.workType.some((type) => resume.keywords.includes(type))
+        appliedFilters.workType.some((type) => 
+          resume.originalData.workTypes?.includes(type)
+        )
       );
     }
 
-    // 경력 필터
-    if (appliedFilters.experience.length > 0) {
-      filtered = filtered.filter((resume) =>
-        appliedFilters.experience.some((exp) => resume.experience.includes(exp))
-      );
-    }
-
-    // 자격증 필터
+    // 자격증 필터 (직무로 매핑)
     if (appliedFilters.certificate && appliedFilters.certificate !== "all") {
       filtered = filtered.filter((resume) =>
-        resume.keywords.includes(appliedFilters.certificate)
+        resume.originalData.position === appliedFilters.certificate
       );
     }
 
     // 지역 필터
     if (appliedFilters.location && appliedFilters.location !== "all") {
       filtered = filtered.filter((resume) =>
-        resume.preferredLocation.includes(appliedFilters.location)
+        resume.originalData.preferredRegions?.some((region: string) => 
+          region.includes(appliedFilters.location)
+        )
       );
     }
 
@@ -140,13 +167,6 @@ export default function ResumesPage() {
     switch (appliedFilters.sortBy) {
       case "recent":
         filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        break;
-      case "experience":
-        filtered.sort((a, b) => {
-          const aExp = parseInt(a.experience.match(/\d+/)?.[0] || "0");
-          const bExp = parseInt(b.experience.match(/\d+/)?.[0] || "0");
-          return bExp - aExp;
-        });
         break;
       case "name":
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -166,16 +186,6 @@ export default function ResumesPage() {
   const totalPages = Math.ceil(totalResumes / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const resumeData = filteredData.slice(startIndex, startIndex + itemsPerPage);
-
-  // URL에서 필터 상태 초기화
-  useEffect(() => {
-    const urlFilters = parseFiltersFromURL();
-    const { page, ...filterData } = urlFilters;
-
-    setAppliedFilters(filterData);
-    setTempFilters(filterData);
-    setCurrentPage(page);
-  }, [searchParams]);
 
   // 임시 필터 변경 핸들러
   const handleTempFilterChange = (
@@ -207,55 +217,10 @@ export default function ResumesPage() {
     };
     setTempFilters(resetFilters);
     setAppliedFilters(resetFilters);
-    setAppliedFilterTags([]);
     setCurrentPage(1);
     updateURL(resetFilters, 1);
   };
 
-  // 필터 태그 생성
-  const generateFilterTags = (filterData: typeof appliedFilters) => {
-    const tags: Array<{ id: string; label: string; type: string }> = [];
-
-    // 근무 형태 태그
-    filterData.workType.forEach((type) => {
-      tags.push({ id: `workType-${type}`, label: type, type: "workType" });
-    });
-
-    // 경력 태그
-    filterData.experience.forEach((exp) => {
-      tags.push({ id: `experience-${exp}`, label: exp, type: "experience" });
-    });
-
-    // 자격증 태그
-    if (filterData.certificate && filterData.certificate !== "all") {
-      tags.push({
-        id: `certificate-${filterData.certificate}`,
-        label: filterData.certificate,
-        type: "certificate",
-      });
-    }
-
-    // 지역 태그
-    if (filterData.location && filterData.location !== "all") {
-      tags.push({
-        id: `location-${filterData.location}`,
-        label: filterData.location,
-        type: "location",
-      });
-    }
-
-    setAppliedFilterTags(tags);
-  };
-
-  // 임시 필터 변경 시 자동으로 태그 생성 (선택하자마자 표시)
-  useEffect(() => {
-    generateFilterTags(tempFilters);
-  }, [
-    tempFilters.workType,
-    tempFilters.experience,
-    tempFilters.certificate,
-    tempFilters.location,
-  ]);
 
   // 검색어 변경 (즉시 적용)
   const handleSearchChange = (searchKeyword: string) => {
@@ -280,16 +245,44 @@ export default function ResumesPage() {
     updateURL(appliedFilters, page);
   };
 
-  // 북마크 클릭 처리
-  const handleBookmarkClick = (resumeId: string) => {
-    console.log(`북마크 클릭: ${resumeId}`);
-    // 실제 북마크 기능 구현
-  };
 
-  // 이력서 클릭 처리
-  const handleResumeClick = (resumeId: string) => {
-    router.push(`/resumes/${resumeId}`);
-  };
+  // 로딩 상태 처리
+  if (isLoading) {
+    return (
+      <main className="pt-[50px] bg-white">
+        <div className="max-w-[1440px] mx-auto px-[16px] py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-key1 mx-auto mb-4"></div>
+              <p className="text-lg text-gray-600">이력서 목록을 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // 에러 상태 처리
+  if (error) {
+    return (
+      <main className="pt-[50px] bg-white">
+        <div className="max-w-[1440px] mx-auto px-[16px] py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <h2 className="text-xl font-bold mb-4">오류가 발생했습니다</h2>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-key1 text-white rounded-md hover:bg-key1/90"
+              >
+                다시 시도
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <>

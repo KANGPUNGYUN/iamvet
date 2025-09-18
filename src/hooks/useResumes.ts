@@ -5,6 +5,7 @@ import { getResumesAction } from "@/actions/resumes";
 
 interface Resume {
   id: string;
+  userId: string;
   name: string;
   photo?: string;
   introduction?: string;
@@ -12,6 +13,9 @@ interface Resume {
   specialties?: string[];
   position?: string;
   preferredRegions?: string[];
+  expectedSalary?: string;
+  workTypes?: string[];
+  startDate?: string;
   createdAt: string;
   updatedAt: string;
 }

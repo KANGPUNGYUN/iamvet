@@ -5,6 +5,7 @@ import { getResumeByIdAction } from "@/actions/resumes";
 
 interface ResumeDetail {
   id: string;
+  userId: string;
   name: string;
   photo?: string;
   introduction?: string;
@@ -41,7 +42,7 @@ export function useResumeDetail(id: string) {
         setIsLoading(true);
         const result = await getResumeByIdAction(id);
         console.log("[useResumeDetail] 받은 데이터:", result);
-        setData(result);
+        setData(result as ResumeDetail);
       } catch (err) {
         console.error("[useResumeDetail] 에러 발생:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch resume detail");

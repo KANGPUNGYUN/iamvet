@@ -139,7 +139,7 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
         {translatedKeywords.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {translatedKeywords.map((keyword, index) => (
-              <Tag key={index} variant={3} size="sm">
+              <Tag key={index} variant={3}>
                 {keyword}
               </Tag>
             ))}

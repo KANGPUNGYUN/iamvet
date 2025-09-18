@@ -42,6 +42,7 @@ export async function getResumeByIdAction(id: string) {
     const result = await sql`
       SELECT 
         dr.id,
+        dr."userId",
         dr.name,
         dr.photo,
         dr.introduction,
@@ -80,5 +81,30 @@ export async function getResumeByIdAction(id: string) {
   } catch (error) {
     console.error("[getResumeByIdAction] 에러 발생:", error);
     return null;
+  }
+}
+
+export async function deleteResumeAction(id: string) {
+  try {
+    console.log("[deleteResumeAction] 이력서 삭제 ID:", id);
+
+    // detailed_resumes 테이블에서 해당 ID의 이력서 삭제
+    const result = await sql`
+      DELETE FROM detailed_resumes
+      WHERE id = ${id}
+    `;
+    
+    console.log("[deleteResumeAction] 삭제 결과:", result);
+    
+    return {
+      success: true,
+      message: "이력서가 성공적으로 삭제되었습니다."
+    };
+  } catch (error) {
+    console.error("[deleteResumeAction] 에러 발생:", error);
+    return {
+      success: false,
+      message: "이력서 삭제 중 오류가 발생했습니다."
+    };
   }
 }

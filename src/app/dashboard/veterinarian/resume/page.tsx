@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/Button";
 import { ResumeImageUpload } from "@/components/features/resume/ResumeImageUpload";
 import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
 import { PlusIcon, MinusIcon } from "public/icons";
-import { useVeterinarianProfile } from "@/hooks/useProfile";
 import { useVeterinarianResume, useSaveVeterinarianResume, type ResumeUpdateData, type VeterinarianResume } from "@/hooks/useResume";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -192,7 +191,7 @@ const proficiencyOptions = [
 ];
 
 export default function VeterinarianResumePage() {
-  const { data: profile, isLoading: profileLoading, error: profileError } = useVeterinarianProfile();
+  // 회원정보를 기본값으로 사용하지 않음
   const { data: existingResume, isLoading: resumeLoading, error: resumeError } = useVeterinarianResume();
   const saveResumeMutation = useSaveVeterinarianResume();
   const { isAuthenticated, checkAuth } = useAuthStore();
@@ -332,26 +331,9 @@ export default function VeterinarianResumePage() {
         ],
         selfIntroduction: existingResume.selfIntroduction || "",
       }));
-    } else if (profile) {
-      // 기존 이력서가 없으면 프로필 정보로 초기화
-      const formatBirthDate = (birthDate?: string | Date) => {
-        if (!birthDate) return '';
-        if (typeof birthDate === 'string') return birthDate.split('T')[0];
-        if (birthDate instanceof Date) return birthDate.toISOString().split('T')[0];
-        return String(birthDate);
-      };
-
-      setResumeData(prev => ({
-        ...prev,
-        name: profile.realName || profile.nickname || "",
-        birthDate: formatBirthDate(profile.birthDate),
-        introduction: profile.experience || "",
-        selfIntroduction: profile.experience || "",
-        email: profile.email || "",
-        phone: profile.phone || "",
-      }));
     }
-  }, [existingResume, profile]);
+    // 회원정보를 기본값으로 사용하지 않음 - 빈 값으로 시작
+  }, [existingResume]);
 
   // 총 경력 계산 함수
   const calculateTotalExperience = (experiences: Experience[]) => {
@@ -552,27 +534,13 @@ export default function VeterinarianResumePage() {
   };
 
   // 로딩 상태
-  if (profileLoading || resumeLoading) {
+  if (resumeLoading) {
     return (
       <div className="bg-white">
         <div className="max-w-5xl mx-auto p-4 min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">정보를 불러오는 중...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 에러 상태 (이력서 에러는 처음 작성하는 경우 정상이므로 제외)
-  if (profileError) {
-    return (
-      <div className="bg-white">
-        <div className="max-w-5xl mx-auto p-4 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">정보를 불러오는데 실패했습니다.</p>
-            <Button onClick={() => window.location.reload()}>다시 시도</Button>
+            <p className="text-gray-600">이력서 정보를 불러오는 중...</p>
           </div>
         </div>
       </div>
@@ -617,7 +585,7 @@ export default function VeterinarianResumePage() {
                     onChange={(value) =>
                       setResumeData((prev) => ({ ...prev, name: value }))
                     }
-                    placeholder="이름 입력"
+                    placeholder="이름"
                   />
                 </div>
                 <div>
@@ -629,7 +597,7 @@ export default function VeterinarianResumePage() {
                     onChange={(value) =>
                       setResumeData((prev) => ({ ...prev, birthDate: value }))
                     }
-                    placeholder="YYYY-MM-DD"
+                    placeholder="생년월일"
                   />
                 </div>
                 <div>
@@ -644,7 +612,7 @@ export default function VeterinarianResumePage() {
                         introduction: value,
                       }))
                     }
-                    placeholder="한 줄 소개 입력"
+                    placeholder="한 줄 소개"
                   />
                 </div>
               </div>
@@ -659,7 +627,7 @@ export default function VeterinarianResumePage() {
                     onChange={(value) =>
                       setResumeData((prev) => ({ ...prev, phone: value }))
                     }
-                    placeholder="010-0000-0000"
+                    placeholder="연락처"
                     type="tel"
                   />
                   <div className="mt-1 text-xs">
@@ -685,7 +653,7 @@ export default function VeterinarianResumePage() {
                     onChange={(value) =>
                       setResumeData((prev) => ({ ...prev, email: value }))
                     }
-                    placeholder="example@email.com"
+                    placeholder="이메일"
                     type="email"
                   />
                   <div className="mt-1 text-xs">
@@ -718,7 +686,7 @@ export default function VeterinarianResumePage() {
                   onChange={(value) =>
                     setResumeData((prev) => ({ ...prev, position: value }))
                   }
-                  placeholder="선택"
+                  placeholder="직무"
                   options={positionOptions}
                   className="min-w-[250px]"
                 />
@@ -777,7 +745,7 @@ export default function VeterinarianResumePage() {
                       expectedSalary: value,
                     }))
                   }
-                  placeholder="희망 연봉 입력"
+                  placeholder="희망 연봉"
                   suffix="만원"
                   type="number"
                 />
@@ -939,7 +907,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="병원명 입력"
+                    placeholder="병원명"
                   />
                 </div>
                 <div className="w-full">
@@ -958,7 +926,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="주요 업무 입력"
+                    placeholder="주요 업무"
                   />
                 </div>
                 <div className="w-full">
@@ -977,7 +945,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="YYYY-MM-DD"
+                    placeholder="입사일"
                   />
                 </div>
                 <div className="w-full">
@@ -996,7 +964,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="YYYY-MM-DD"
+                    placeholder="날짜"
                   />
                 </div>
                 <div>
@@ -1044,7 +1012,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="자격증/면허명 입력"
+                    placeholder="자격증/면허명"
                   />
                 </div>
                 <div className="w-full">
@@ -1061,7 +1029,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="등급 선택"
+                    placeholder="등급"
                     options={gradeOptions}
                   />
                 </div>
@@ -1081,7 +1049,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="발급기관 입력"
+                    placeholder="발급기관"
                   />
                 </div>
                 <div className="w-full">
@@ -1100,7 +1068,7 @@ export default function VeterinarianResumePage() {
                         ),
                       }));
                     }}
-                    placeholder="YYYY-MM-DD"
+                    placeholder="날짜"
                   />
                 </div>
                 <div>
@@ -1151,7 +1119,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="학위 선택"
+                      placeholder="학위"
                       options={degreeOptions}
                     />
                   </div>
@@ -1171,7 +1139,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="졸업여부 선택"
+                      placeholder="졸업여부"
                       options={graduationStatusOptions}
                     />
                   </div>
@@ -1193,7 +1161,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="학교명 입력"
+                      placeholder="학교명"
                     />
                   </div>
                   <div className="w-full">
@@ -1212,7 +1180,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="전공명 입력"
+                      placeholder="전공명"
                     />
                   </div>
                   <div className="w-full">
@@ -1231,7 +1199,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="3.5"
+                      placeholder="학점"
                       type="number"
                     />
                   </div>
@@ -1251,7 +1219,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="4.0"
+                      placeholder="만점"
                       type="number"
                     />
                   </div>
@@ -1273,7 +1241,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="YYYY-MM-DD"
+                      placeholder="날짜"
                     />
                   </div>
                   <div className="w-full">
@@ -1292,7 +1260,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="YYYY-MM-DD"
+                      placeholder="날짜"
                     />
                   </div>
                 </div>
@@ -1345,7 +1313,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="분야 선택"
+                      placeholder="분야"
                       options={medicalFieldOptions}
                     />
                   </div>
@@ -1366,7 +1334,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="숙련도 선택"
+                      placeholder="숙련도"
                       options={proficiencyOptions}
                     />
                   </div>
@@ -1389,7 +1357,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="역량 설명 입력"
+                      placeholder="역량 설명"
                       rows={3}
                       fullWidth
                       className="w-full"
@@ -1412,7 +1380,7 @@ export default function VeterinarianResumePage() {
                           ),
                         }));
                       }}
-                      placeholder="기타 사항 입력"
+                      placeholder="기타 사항"
                       rows={3}
                       fullWidth
                       className="w-full"
@@ -1446,7 +1414,7 @@ export default function VeterinarianResumePage() {
             onChange={(value) =>
               setResumeData((prev) => ({ ...prev, selfIntroduction: value }))
             }
-            placeholder="자기소개를 작성해주세요"
+            placeholder="자기소개"
             rows={6}
             maxLength={1000}
             resize="vertical"
