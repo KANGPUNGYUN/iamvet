@@ -130,7 +130,23 @@ export function useLogin() {
       return result;
     },
     onSuccess: (result) => {
-      if (result.success) {
+      if (result.success && result.user) {
+        // localStorage에 토큰과 사용자 정보 저장
+        const accessToken = btoa(JSON.stringify({ userId: result.user.id })); // 임시 토큰
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('user', JSON.stringify({
+          id: result.user.id,
+          name: result.user.username || result.user.realName || result.user.hospitalName,
+          email: result.user.email,
+          realName: result.user.realName,
+          userType: result.user.userType === "HOSPITAL" ? "hospital" : result.user.userType === "VETERINARIAN" || result.user.userType === "VETERINARY_STUDENT" ? "veterinarian" : result.user.userType,
+          profileImage: result.user.profileImage,
+          profileName: result.user.hospitalName || result.user.username,
+          hospitalName: result.user.hospitalName,
+          hospitalLogo: result.user.hospitalLogo,
+          provider: 'NORMAL',
+        }));
+        
         // Zustand 상태 업데이트
         setAuthenticated(true);
         

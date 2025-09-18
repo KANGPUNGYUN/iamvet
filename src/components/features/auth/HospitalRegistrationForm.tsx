@@ -4,7 +4,11 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
 import { PhoneInput, BirthDateInput } from "@/components/ui/FormattedInput";
-import { ProfileImageUpload, AddressSearch } from "@/components/features/profile";
+import {
+  ProfileImageUpload,
+  MultiImageUpload,
+  AddressSearch,
+} from "@/components/features/profile";
 import { FileUpload } from "@/components/ui/FileUpload";
 import { checkEmailDuplicate, checkUsernameDuplicate } from "@/actions/auth";
 import Link from "next/link";
@@ -75,6 +79,10 @@ export const HospitalRegistrationForm: React.FC<
       isChecking: false,
       isValid: false,
     },
+    email: {
+      isChecking: false,
+      isValid: false,
+    },
   });
 
   // 입력 에러 상태
@@ -121,11 +129,8 @@ export const HospitalRegistrationForm: React.FC<
 
     switch (field) {
       case "loginId":
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value.trim()) {
-          error = "이메일을 입력해주세요.";
-        } else if (!emailRegex.test(value)) {
-          error = "올바른 이메일 형식을 입력해주세요.";
+          error = "아이디를 입력해주세요.";
         }
         break;
 
@@ -211,10 +216,9 @@ export const HospitalRegistrationForm: React.FC<
     setInputErrors((prev) => ({ ...prev, [field]: error }));
   };
 
-  const handleImageChange =
-    (field: "hospitalLogo") => (url: string | null) => {
-      setFormData((prev) => ({ ...prev, [field]: url }));
-    };
+  const handleImageChange = (field: "hospitalLogo") => (url: string | null) => {
+    setFormData((prev) => ({ ...prev, [field]: url }));
+  };
 
   const handleFacilityImagesChange = (urls: string[]) => {
     setFormData((prev) => ({ ...prev, facilityImages: urls }));
@@ -224,30 +228,25 @@ export const HospitalRegistrationForm: React.FC<
     setFormData((prev) => ({ ...prev, businessLicenseFile: file }));
   };
 
-  const handleCheckboxChange = (field: 'treatmentAnimals' | 'treatmentSpecialties') => (checked: boolean, value?: string) => {
-    if (!value) return; // value가 없으면 처리하지 않음
-    
-    setFormData((prev) => ({
-      ...prev,
-      [field]: checked 
-        ? [...prev[field], value]
-        : prev[field].filter(item => item !== value)
-    }));
-  };
+  const handleCheckboxChange =
+    (field: "treatmentAnimals" | "treatmentSpecialties") =>
+    (checked: boolean, value?: string) => {
+      if (!value) return; // value가 없으면 처리하지 않음
+
+      setFormData((prev) => ({
+        ...prev,
+        [field]: checked
+          ? [...prev[field], value]
+          : prev[field].filter((item) => item !== value),
+      }));
+    };
 
   const handleLoginIdDuplicateCheck = async () => {
     console.log("CLIENT: handleLoginIdDuplicateCheck called");
     console.log("CLIENT: formData.loginId =", formData.loginId);
 
     if (!formData.loginId.trim()) {
-      alert("이메일을 입력해주세요.");
-      return;
-    }
-
-    // 이메일 형식 검증
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.loginId)) {
-      alert("올바른 이메일 형식을 입력해주세요.");
+      alert("아이디를 입력해주세요.");
       return;
     }
 
@@ -258,7 +257,10 @@ export const HospitalRegistrationForm: React.FC<
     }));
 
     try {
-      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.loginId);
+      console.log(
+        "CLIENT: Calling checkEmailDuplicate with:",
+        formData.loginId
+      );
       const result = await checkEmailDuplicate(formData.loginId);
       console.log("CLIENT: checkEmailDuplicate result:", result);
 
@@ -291,6 +293,47 @@ export const HospitalRegistrationForm: React.FC<
       setDuplicateCheck((prev) => ({
         ...prev,
         loginId: { ...prev.loginId, isChecking: false },
+      }));
+      alert("이메일 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleEmailDuplicateCheck = async () => {
+    if (!formData.email.trim()) {
+      alert("이메일을 입력해주세요.");
+      return;
+    }
+
+    setDuplicateCheck((prev) => ({
+      ...prev,
+      email: { ...prev.email, isChecking: true },
+    }));
+
+    try {
+      const result = await checkEmailDuplicate(formData.email);
+
+      if (result.success) {
+        const isValid = !result.isDuplicate;
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          email: {
+            isChecking: false,
+            isValid,
+          },
+        }));
+        alert(result.message);
+      } else {
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          email: { ...prev.email, isChecking: false },
+        }));
+        alert(result.error || "이메일 중복 확인 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("CLIENT: 이메일 중복 확인 오류:", error);
+      setDuplicateCheck((prev) => ({
+        ...prev,
+        email: { ...prev.email, isChecking: false },
       }));
       alert("이메일 중복 확인 중 오류가 발생했습니다.");
     }
@@ -348,7 +391,19 @@ export const HospitalRegistrationForm: React.FC<
 
   const handleRegister = () => {
     // 모든 필드 검증
-    const fields: (keyof Pick<HospitalRegistrationData, "loginId" | "password" | "passwordConfirm" | "realName" | "hospitalName" | "establishedDate" | "businessNumber" | "phone" | "email" | "address">)[] = [
+    const fields: (keyof Pick<
+      HospitalRegistrationData,
+      | "loginId"
+      | "password"
+      | "passwordConfirm"
+      | "realName"
+      | "hospitalName"
+      | "establishedDate"
+      | "businessNumber"
+      | "phone"
+      | "email"
+      | "address"
+    >)[] = [
       "loginId",
       "password",
       "passwordConfirm",
@@ -386,6 +441,10 @@ export const HospitalRegistrationForm: React.FC<
 
     // 중복확인 검증
     if (!duplicateCheck.loginId.isValid) {
+      errors.push("아이디 중복확인을 완료해주세요.");
+    }
+
+    if (!duplicateCheck.email.isValid) {
       errors.push("이메일 중복확인을 완료해주세요.");
     }
 
@@ -393,11 +452,11 @@ export const HospitalRegistrationForm: React.FC<
     if (formData.treatmentAnimals.length === 0) {
       errors.push("진료 가능한 동물을 선택해주세요.");
     }
-    
+
     if (formData.treatmentSpecialties.length === 0) {
       errors.push("진료 분야를 선택해주세요.");
     }
-    
+
     // 사업자등록증 파일 검증
     if (!formData.businessLicenseFile) {
       errors.push("사업자등록증 파일을 업로드해주세요.");
@@ -454,8 +513,8 @@ export const HospitalRegistrationForm: React.FC<
               <InputBox
                 value={formData.loginId}
                 onChange={handleInputChange("loginId")}
-                placeholder="이메일 주소를 입력해주세요"
-                type="email"
+                placeholder="아이디를 입력해주세요"
+                type="text"
                 duplicateCheck={{
                   buttonText: "중복 확인",
                   onCheck: handleLoginIdDuplicateCheck,
@@ -468,7 +527,7 @@ export const HospitalRegistrationForm: React.FC<
                   inputErrors.loginId
                     ? { text: inputErrors.loginId, type: "error" }
                     : duplicateCheck.loginId.isValid
-                    ? { text: "사용 가능한 아이디입니다", type: "success" }
+                    ? { text: "사용 가능한 아이디입니다.", type: "success" }
                     : undefined
                 }
               />
@@ -581,7 +640,9 @@ export const HospitalRegistrationForm: React.FC<
                 className={inputErrors.establishedDate ? "border-red-500" : ""}
               />
               {inputErrors.establishedDate && (
-                <p className="text-red-500 text-sm mt-2">{inputErrors.establishedDate}</p>
+                <p className="text-red-500 text-sm mt-2">
+                  {inputErrors.establishedDate}
+                </p>
               )}
             </div>
 
@@ -629,10 +690,19 @@ export const HospitalRegistrationForm: React.FC<
                 onChange={handleInputChange("email")}
                 placeholder="이메일을 입력해 주세요"
                 type="email"
+                duplicateCheck={{
+                  buttonText: "중복 확인",
+                  onCheck: handleEmailDuplicateCheck,
+                  isChecking: duplicateCheck.email.isChecking,
+                  isValid: duplicateCheck.email.isValid,
+                }}
+                success={duplicateCheck.email.isValid}
                 error={!!inputErrors.email}
                 guide={
                   inputErrors.email
                     ? { text: inputErrors.email, type: "error" }
+                    : duplicateCheck.email.isValid
+                    ? { text: "사용 가능한 이메일입니다.", type: "success" }
                     : undefined
                 }
               />
@@ -665,15 +735,15 @@ export const HospitalRegistrationForm: React.FC<
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: 'DOG', label: '반려견' },
-                  { value: 'CAT', label: '고양이' },
-                  { value: 'EXOTIC', label: '특수동물' },
-                  { value: 'LARGE_ANIMAL', label: '대동물' }
+                  { value: "DOG", label: "반려견" },
+                  { value: "CAT", label: "고양이" },
+                  { value: "EXOTIC", label: "특수동물" },
+                  { value: "LARGE_ANIMAL", label: "대동물" },
                 ].map((animal) => (
                   <Checkbox
                     key={animal.value}
                     checked={formData.treatmentAnimals.includes(animal.value)}
-                    onChange={handleCheckboxChange('treatmentAnimals')}
+                    onChange={handleCheckboxChange("treatmentAnimals")}
                     value={animal.value}
                     className="text-[16px] text-[#35313C]"
                   >
@@ -690,18 +760,20 @@ export const HospitalRegistrationForm: React.FC<
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: 'INTERNAL_MEDICINE', label: '내과' },
-                  { value: 'SURGERY', label: '외과' },
-                  { value: 'DERMATOLOGY', label: '피부과' },
-                  { value: 'DENTISTRY', label: '치과' },
-                  { value: 'OPHTHALMOLOGY', label: '안과' },
-                  { value: 'NEUROLOGY', label: '신경과' },
-                  { value: 'ORTHOPEDICS', label: '정형외과' }
+                  { value: "INTERNAL_MEDICINE", label: "내과" },
+                  { value: "SURGERY", label: "외과" },
+                  { value: "DERMATOLOGY", label: "피부과" },
+                  { value: "DENTISTRY", label: "치과" },
+                  { value: "OPHTHALMOLOGY", label: "안과" },
+                  { value: "NEUROLOGY", label: "신경과" },
+                  { value: "ORTHOPEDICS", label: "정형외과" },
                 ].map((specialty) => (
                   <Checkbox
                     key={specialty.value}
-                    checked={formData.treatmentSpecialties.includes(specialty.value)}
-                    onChange={handleCheckboxChange('treatmentSpecialties')}
+                    checked={formData.treatmentSpecialties.includes(
+                      specialty.value
+                    )}
+                    onChange={handleCheckboxChange("treatmentSpecialties")}
                     value={specialty.value}
                     className="text-[16px] text-[#35313C]"
                   >
@@ -717,34 +789,12 @@ export const HospitalRegistrationForm: React.FC<
             <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
               병원 시설 이미지 (최대 10장, 선택)
             </label>
-            <div className="space-y-3">
-              {formData.facilityImages.map((imageUrl, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <img src={imageUrl} alt={`시설 이미지 ${index + 1}`} className="w-20 h-20 object-cover rounded" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newImages = formData.facilityImages.filter((_, i) => i !== index);
-                      handleFacilityImagesChange(newImages);
-                    }}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    삭제
-                  </button>
-                </div>
-              ))}
-              {formData.facilityImages.length < 10 && (
-                <ProfileImageUpload
-                  value={undefined}
-                  onChange={(url) => {
-                    if (url) {
-                      handleFacilityImagesChange([...formData.facilityImages, url]);
-                    }
-                  }}
-                  folder="hospitals"
-                />
-              )}
-            </div>
+            <MultiImageUpload
+              value={formData.facilityImages}
+              onChange={handleFacilityImagesChange}
+              maxImages={10}
+              folder="hospitals"
+            />
           </div>
 
           {/* 사업자등록증 파일 */}

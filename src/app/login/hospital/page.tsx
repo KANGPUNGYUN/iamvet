@@ -17,7 +17,7 @@ export default function HospitalLoginPage() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("이메일과 비밀번호를 입력해주세요.");
+      setError("아이디와 비밀번호를 입력해주세요.");
       return;
     }
 
@@ -82,7 +82,7 @@ export default function HospitalLoginPage() {
                 value={email}
                 onChange={setEmail}
                 placeholder="아이디를 입력해주세요"
-                type="email"
+                type="text"
                 clearable={false}
               />
             </div>

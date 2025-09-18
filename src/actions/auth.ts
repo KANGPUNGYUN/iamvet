@@ -78,7 +78,7 @@ export interface HospitalProfileData {
 export async function login(credentials: LoginCredentials) {
   const { email, password, userType } = credentials;
   try {
-    // Get user by email and userType (if specified)
+    // Get user by loginId (not email) and userType (if specified)
     let result;
 
     if (userType === "VETERINARY_STUDENT") {
@@ -86,20 +86,20 @@ export async function login(credentials: LoginCredentials) {
       // since they might be stored as either depending on registration method
       result = await sql`
         SELECT * FROM users 
-        WHERE email = ${email} 
+        WHERE "loginId" = ${email} 
         AND ("userType" = 'VETERINARY_STUDENT' OR "userType" = 'VETERINARIAN') 
         AND "isActive" = true
       `;
     } else if (userType) {
       result =
-        await sql`SELECT * FROM users WHERE email = ${email} AND "userType" = ${userType} AND "isActive" = true`;
+        await sql`SELECT * FROM users WHERE "loginId" = ${email} AND "userType" = ${userType} AND "isActive" = true`;
     } else {
       result =
-        await sql`SELECT * FROM users WHERE email = ${email} AND "isActive" = true`;
+        await sql`SELECT * FROM users WHERE "loginId" = ${email} AND "isActive" = true`;
     }
 
     if (result.length === 0) {
-      return { success: false, error: "사용자를 찾을 수 없습니다." };
+      return { success: false, error: "아이디 또는 비밀번호를 확인해주세요." };
     }
 
     const user = result[0];
@@ -137,6 +137,15 @@ export async function login(credentials: LoginCredentials) {
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });
 
+    // 병원 정보가 있는 경우 추가로 가져오기
+    let hospitalName = null;
+    let hospitalLogo = null;
+    
+    if (user.userType === "HOSPITAL") {
+      hospitalName = user.hospitalName;
+      hospitalLogo = user.hospitalLogo;
+    }
+
     return {
       success: true,
       user: {
@@ -146,6 +155,8 @@ export async function login(credentials: LoginCredentials) {
         realName: user.realName,
         userType: user.userType,
         profileImage: user.profileImage,
+        hospitalName: hospitalName,
+        hospitalLogo: hospitalLogo,
       },
     };
   } catch (error) {
@@ -657,7 +668,7 @@ export async function checkEmailDuplicate(email: string) {
       isDuplicate,
       message: isDuplicate
         ? "이미 사용 중인 이메일입니다."
-        : "사용 가능한 이메일입니다.",
+        : "사용 가능한 아이디입니다.",
     };
   } catch (error) {
     console.error("Check email duplicate error:", error);

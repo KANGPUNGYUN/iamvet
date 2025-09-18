@@ -62,24 +62,38 @@ export async function uploadImage(
       };
     }
 
-    // 파일 크기 확인 (5MB 제한)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // 파일 크기 확인 (1.5MB 제한)
+    const maxSize = 1.5 * 1024 * 1024; // 1.5MB
     if (file.size > maxSize) {
       return {
         success: false,
-        error: '파일 크기가 너무 큽니다. (5MB 이하만 지원)',
+        error: '파일 크기가 너무 큽니다. (1.5MB 이하만 지원)',
       };
     }
 
-    // 고유한 파일명 생성
+    // 고유한 파일명 생성 (안전한 파일명 사용)
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
-    const fileName = `${folder}/${createId()}.${fileExtension}`;
+    const safeFileName = `${folder}/${createId()}.${fileExtension}`;
+    
+    console.log('[S3] 파일명 생성:', {
+      originalName: file.name,
+      extension: fileExtension,
+      safeName: safeFileName
+    });
 
     // 파일을 Buffer로 변환
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    return await uploadToS3(fileName, buffer, file.type);
+    return await uploadToS3(safeFileName, buffer, file.type);
   } catch (error) {
+    console.error('[S3] uploadImage catch 블록:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      fileName: file.name,
+      fileSize: file.size,
+      folder
+    });
     return handleS3Error(error, '이미지 업로드 중 오류가 발생했습니다.');
   }
 }

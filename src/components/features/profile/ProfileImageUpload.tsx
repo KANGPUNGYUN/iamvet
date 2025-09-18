@@ -34,9 +34,9 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
 
     if (!file) return;
 
-    // 파일 크기 제한 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("파일 크기는 5MB 이하로 선택해주세요.");
+    // 파일 크기 제한 (1.5MB)
+    if (file.size > 1.5 * 1024 * 1024) {
+      alert("파일 크기는 1.5MB 이하로 선택해주세요.");
       return;
     }
 
