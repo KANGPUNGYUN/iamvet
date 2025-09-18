@@ -6,6 +6,7 @@ import { ArrowLeftIcon } from "public/icons";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { Pagination } from "@/components/ui/Pagination/Pagination";
 import JobInfoCard from "@/components/ui/JobInfoCard";
+import { convertDDayToNumber } from "@/utils/dDayConverter";
 
 interface JobData {
   id: number;
@@ -106,7 +107,7 @@ export default function VeterinarianBookmarksPage() {
               <JobInfoCard
                 key={job.id}
                 hospital={job.hospital}
-                dDay={job.dDay}
+                dDay={convertDDayToNumber(job.dDay)}
                 position={job.position}
                 location={job.location}
                 jobType={job.jobType}

@@ -138,9 +138,9 @@ export default function HospitalMyJobsPage() {
               currentJobs.map((job) => {
                 const dDay = job.recruitEndDate 
                   ? Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) > 0
-                    ? `D-${Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}`
-                    : "마감"
-                  : "상시";
+                    ? Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    : 0
+                  : null;
 
                 return (
                   <JobInfoCard

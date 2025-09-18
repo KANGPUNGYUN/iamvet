@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -17,7 +18,7 @@ import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
 import JobInfoCard from "@/components/ui/JobInfoCard";
 import HospitalCard from "@/components/ui/HospitalCard";
-import { getJobById, relatedJobsData } from "@/data/jobsData";
+import { useJobDetail } from "@/hooks/api/useJobDetail";
 
 export default function JobDetailPage({
   params,
@@ -34,11 +35,21 @@ export default function JobDetailPage({
     senderEmail: "",
     senderPhone: "",
   });
+  const router = useRouter();
   const { id } = use(params);
+  const { data: jobData, isLoading, error } = useJobDetail(id);
 
-  const jobData = getJobById(id);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-bold mb-4">불러오는 중...</h1>
+        </div>
+      </div>
+    );
+  }
 
-  if (!jobData) {
+  if (error || !jobData) {
     return (
       <>
         <div className="min-h-screen flex items-center justify-center">
@@ -161,13 +172,13 @@ export default function JobDetailPage({
                 <div className="flex items-center gap-2">
                   <WalletIcon currentColor="#4F5866" />
                   <span className="font-text text-[16px] text-primary">
-                    {jobData.experienceLevel}
+                    {jobData.experienceLevel || '경력무관'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <LocationIcon currentColor="#4F5866" />
                   <span className="font-text text-[16px] text-primary">
-                    {jobData.location}
+                    {jobData.location || jobData.hospital?.location || '위치 정보 없음'}
                   </span>
                 </div>
               </div>
@@ -175,15 +186,19 @@ export default function JobDetailPage({
               {/* 키워드 태그와 마감일 */}
               <div className="flex justify-between items-end">
                 <div className="flex flex-wrap gap-2">
-                  {jobData.keywords.map((keyword, index) => (
-                    <Tag key={index} variant={6}>
-                      {keyword}
-                    </Tag>
-                  ))}
+                  {jobData.keywords && jobData.keywords.length > 0 ? (
+                    jobData.keywords.map((keyword, index) => (
+                      <Tag key={index} variant={6}>
+                        {keyword}
+                      </Tag>
+                    ))
+                  ) : (
+                    <Tag variant={6}>일반채용</Tag>
+                  )}
                 </div>
                 <div className="text-right ml-4">
                   <span className="font-text text-[16px] text-[#FF8796]">
-                    {jobData.deadline}
+                    {jobData.deadline || '상시채용'}
                   </span>
                 </div>
               </div>
@@ -200,7 +215,7 @@ export default function JobDetailPage({
                     근무 형태
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.workConditions.workType}
+                    {jobData.workConditions?.workType || '정규직'}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">
@@ -208,7 +223,7 @@ export default function JobDetailPage({
                     근무 요일
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.workConditions.workDays}
+                    {jobData.workConditions?.workDays || '주 5일'}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">
@@ -216,7 +231,7 @@ export default function JobDetailPage({
                     근무 시간
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.workConditions.workHours}
+                    {jobData.workConditions?.workHours || '09:00 - 18:00'}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">
@@ -224,7 +239,7 @@ export default function JobDetailPage({
                     급여
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.workConditions.salary}
+                    {jobData.workConditions?.salary || '협의'}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">
@@ -232,7 +247,7 @@ export default function JobDetailPage({
                     복리후생
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.workConditions.benefits}
+                    {jobData.workConditions?.benefits || '4대보험'}
                   </span>
                 </div>
               </div>
@@ -249,7 +264,7 @@ export default function JobDetailPage({
                     학력
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.qualifications.education}
+                    {jobData.qualifications?.education || '학력무관'}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">
@@ -257,7 +272,7 @@ export default function JobDetailPage({
                     자격증/면허
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.qualifications.certificates}
+                    {jobData.qualifications?.certificates || '수의사 면허'}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">
@@ -265,7 +280,7 @@ export default function JobDetailPage({
                     경력
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.qualifications.experience}
+                    {jobData.qualifications?.experience || '경력무관'}
                   </span>
                 </div>
               </div>
@@ -278,15 +293,21 @@ export default function JobDetailPage({
                   우대사항
                 </h2>
                 <ul className="space-y-2">
-                  {jobData.preferredQualifications.map(
-                    (qualification, index) => (
-                      <li
-                        key={index}
-                        className="font-text text-[16px] text-sub"
-                      >
-                        • {qualification}
-                      </li>
+                  {jobData.preferredQualifications && jobData.preferredQualifications.length > 0 ? (
+                    jobData.preferredQualifications.map(
+                      (qualification, index) => (
+                        <li
+                          key={index}
+                          className="font-text text-[16px] text-sub"
+                        >
+                          • {qualification}
+                        </li>
+                      )
                     )
+                  ) : (
+                    <li className="font-text text-[16px] text-sub">
+                      • 특별한 우대사항 없음
+                    </li>
                   )}
                 </ul>
               </div>
@@ -299,7 +320,7 @@ export default function JobDetailPage({
               </h2>
 
               {/* 병원 카드 */}
-              <HospitalCard hospital={jobData.hospital} />
+              {jobData.hospital && <HospitalCard hospital={jobData.hospital} />}
 
               {/* 지원하기 버튼 */}
               <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-[40px] mt-[30px]">
@@ -325,49 +346,67 @@ export default function JobDetailPage({
 
             {/* 데스크톱 그리드 */}
             <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-              {relatedJobsData.map((job) => (
-                <JobInfoCard
-                  key={job.id}
-                  hospital={job.title}
-                  dDay={job.deadline}
-                  position="수의사"
-                  location={job.location}
-                  jobType={job.salary}
-                  tags={job.keywords}
-                  isBookmarked={job.bookmarked}
-                  isNew={job.isNew}
-                  onClick={() => {
-                    window.location.href = `/jobs/${job.id}`;
-                  }}
-                  className="w-full"
-                />
-              ))}
+              {jobData.relatedJobs && jobData.relatedJobs.length > 0 ? (
+                jobData.relatedJobs.map((job: any) => (
+                  <JobInfoCard
+                    key={job.id}
+                    hospital={job.hospitalName || job.title}
+                    dDay={job.recruitEndDate ? Math.max(0, Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null}
+                    position={job.position || "수의사"}
+                    location={job.location || job.hospitalLocation}
+                    jobType={Array.isArray(job.workType) ? job.workType[0] : job.workType}
+                    tags={[
+                      ...(Array.isArray(job.workType) ? job.workType : [job.workType].filter(Boolean)),
+                      ...(Array.isArray(job.experience) ? job.experience : [job.experience].filter(Boolean)),
+                    ].filter(Boolean)}
+                    isBookmarked={false}
+                    isNew={new Date(job.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)}
+                    onClick={() => {
+                      router.push(`/jobs/${job.id}`);
+                    }}
+                    className="w-full"
+                  />
+                ))
+              ) : (
+                <div className="col-span-3 text-center text-gray-500 py-10">
+                  관련 채용공고가 없습니다.
+                </div>
+              )}
             </div>
 
             {/* 모바일 가로 스크롤 */}
             <div className="lg:hidden overflow-x-auto">
-              <div
-                className="flex gap-[40px] pb-4"
-                style={{ width: `${relatedJobsData.length * 310}px` }}
-              >
-                {relatedJobsData.map((job) => (
-                  <div key={job.id} className="flex-shrink-0 w-[294px]">
-                    <JobInfoCard
-                      hospital={job.title}
-                      dDay={job.deadline}
-                      position="수의사"
-                      location={job.location}
-                      jobType={job.salary}
-                      tags={job.keywords}
-                      isBookmarked={job.bookmarked}
-                      isNew={job.isNew}
-                      onClick={() => {
-                        window.location.href = `/jobs/${job.id}`;
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
+              {jobData.relatedJobs && jobData.relatedJobs.length > 0 ? (
+                <div
+                  className="flex gap-[40px] pb-4"
+                  style={{ width: `${jobData.relatedJobs.length * 310}px` }}
+                >
+                  {jobData.relatedJobs.map((job: any) => (
+                    <div key={job.id} className="flex-shrink-0 w-[294px]">
+                      <JobInfoCard
+                        hospital={job.hospitalName || job.title}
+                        dDay={job.recruitEndDate ? Math.max(0, Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null}
+                        position={job.position || "수의사"}
+                        location={job.location || job.hospitalLocation}
+                        jobType={Array.isArray(job.workType) ? job.workType[0] : job.workType}
+                        tags={[
+                          ...(Array.isArray(job.workType) ? job.workType : [job.workType].filter(Boolean)),
+                          ...(Array.isArray(job.experience) ? job.experience : [job.experience].filter(Boolean)),
+                        ].filter(Boolean)}
+                        isBookmarked={false}
+                        isNew={new Date(job.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)}
+                        onClick={() => {
+                          router.push(`/jobs/${job.id}`);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-10">
+                  관련 채용공고가 없습니다.
+                </div>
+              )}
             </div>
           </section>
         </div>
@@ -380,7 +419,7 @@ export default function JobDetailPage({
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">문의하기</h3>
               <p className="text-gray-600 mb-6">
-                {jobData.hospital.name}에 {jobData.title} 포지션에 대해
+                {jobData.hospital?.name || '병원'}에 {jobData.title} 포지션에 대해
                 문의하세요.
               </p>
 

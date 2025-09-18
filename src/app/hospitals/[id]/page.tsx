@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/Button";
 import { Tab } from "@/components/ui/Tab";
 import JobInfoCard from "@/components/ui/JobInfoCard";
 import { getHospitalById, HospitalDetailData } from "@/data/hospitalsData";
+import { convertDDayToNumber } from "@/utils/dDayConverter";
 
 // 별점 표시 컴포넌트 (소수점 지원)
 const StarRating = ({
@@ -451,7 +452,7 @@ export default function HospitalDetailPage({
                             <JobInfoCard
                               key={job.id}
                               hospital={job.title}
-                              dDay={job.deadline}
+                              dDay={convertDDayToNumber(job.deadline)}
                               position="간호조무사(정규직)"
                               location={job.location}
                               jobType={job.experience}
@@ -474,7 +475,7 @@ export default function HospitalDetailPage({
                               <div key={job.id} className="flex-shrink-0">
                                 <JobInfoCard
                                   hospital={job.title}
-                                  dDay={job.deadline}
+                                  dDay={convertDDayToNumber(job.deadline)}
                                   position="간호조무사(정규직)"
                                   location={job.location}
                                   jobType={job.experience}

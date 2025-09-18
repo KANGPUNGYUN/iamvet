@@ -1910,3 +1910,1452 @@ Job created successfully: HlstieUzUGIpyrDS
  GET /jobs 200 in 48ms
  ✓ Compiled in 354ms (603 modules)
  GET /jobs 200 in 18ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /jobs 200 in 371ms
+ ✓ Compiled in 661ms (792 modules)
+ ✓ Compiled in 328ms (603 modules)
+ GET /jobs 200 in 67ms
+ ✓ Compiled in 713ms (1375 modules)
+ ✓ Compiled in 694ms (1395 modules)
+ GET /jobs 200 in 50ms
+ ✓ Compiled in 662ms (1395 modules)
+ ○ Compiling /api/jobs ...
+ ✓ Compiled /api/jobs in 643ms (1472 modules)
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /jobs 200 in 1836ms
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 1938ms
+ GET /jobs 200 in 116ms
+ ✓ Compiled in 616ms (1492 modules)
+ GET /jobs 200 in 49ms
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /jobs 200 in 492ms
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 947ms
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 227ms
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 230ms
+ ✓ Compiled in 488ms (1492 modules)
+ GET /jobs 200 in 219ms
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 1036ms
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 229ms
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 224ms
+ ✓ Compiled in 666ms (1492 modules)
+ GET /jobs 200 in 29ms
+ ✓ Compiled in 387ms (1492 modules)
+ GET /jobs 200 in 34ms
+ ✓ Compiled in 797ms (1395 modules)
+ GET /jobs 200 in 81ms
+ ✓ Compiled in 413ms (1395 modules)
+ GET /jobs 200 in 74ms
+ ✓ Compiled in 368ms (1395 modules)
+ GET /jobs 200 in 34ms
+ ✓ Compiled in 512ms (1395 modules)
+ GET /jobs 200 in 46ms
+ ✓ Compiled in 561ms (1395 modules)
+ GET /jobs 200 in 43ms
+ ✓ Compiled in 263ms (603 modules)
+ GET /jobs 200 in 19ms
+ ✓ Compiled in 312ms (603 modules)
+ GET /jobs 200 in 31ms
+ ○ Compiling /api/jobs ...
+ ✓ Compiled /api/jobs in 587ms (889 modules)
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /jobs 200 in 1683ms
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 1805ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /jobs 200 in 149ms
+ ✓ Compiled /_not-found in 240ms (890 modules)
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>) {
+  digest: '1497273614'
+}
+TypeError: __webpack_modules__[moduleId] is not a function
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>)
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>)
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>) {
+  digest: '1497273614'
+}
+TypeError: __webpack_modules__[moduleId] is not a function
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>)
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 640ms (1804 modules)
+ GET /_next/static/chunks/webpack.js?v=1758184308170 500 in 2543ms
+ GET /_next/static/css/app/layout.css?v=1758184308170 500 in 2547ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /_next/static/chunks/app-pages-internals.js 404 in 193ms
+ GET /_next/static/chunks/main-app.js?v=1758184308170 404 in 196ms
+ GET /_next/static/chunks/app/error.js 404 in 194ms
+ GET /_next/static/chunks/app/layout.js 404 in 193ms
+ GET /_next/static/chunks/app/jobs/page.js 404 in 193ms
+ ○ Compiling / ...
+ ✓ Compiled / in 834ms (1876 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/jobs/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/jobs/page.js',
+  page: '/jobs'
+}
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ ⨯ [Error: Cannot find module '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js] {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /jobs 500 in 878ms
+ GET / 200 in 1110ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/css/app/layout.css?v=1758184340024 500 in 18ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/chunks/main-app.js?v=1758184340024 500 in 54ms
+ GET /_next/static/chunks/app-pages-internals.js 500 in 52ms
+ GET /_next/static/chunks/app/error.js 500 in 53ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/chunks/app/layout.js 500 in 66ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET / 200 in 99ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/css/app/layout.css?v=1758184342069 500 in 19ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/chunks/main-app.js?v=1758184342069 500 in 23ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/chunks/app/error.js 500 in 41ms
+ GET /_next/static/chunks/app/layout.js 500 in 40ms
+ GET /_next/static/chunks/app-pages-internals.js 500 in 41ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET / 200 in 97ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/css/app/layout.css?v=1758184343820 500 in 15ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/chunks/main-app.js?v=1758184343820 500 in 62ms
+ GET /_next/static/chunks/app-pages-internals.js 500 in 60ms
+ GET /_next/static/chunks/app/error.js 500 in 60ms
+ GET /_next/static/chunks/app/layout.js 500 in 60ms
+ GET / 404 in 17ms
+ GET / 404 in 10ms
+ GET / 404 in 24ms
+ GET / 404 in 16ms
+ GET / 404 in 19ms
+ GET / 404 in 8ms
+ GET / 404 in 20ms
+ GET / 404 in 11ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET / 200 in 106ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET / 200 in 100ms
+ ✓ Compiled /api/auth/naver/callback in 440ms (1873 modules)
+Naver OAuth user data: {
+  id: 'ski3tGDWA4YnB_VsTvCXX9-53uz-4wwdghGs5PL4f_Q',
+  profile_image: 'https://ssl.pstatic.net/static/pwe/address/img_profile.png',
+  email: 'zkdvnd@naver.com',
+  name: '강풍윤'
+}
+Extracted realName: 강풍윤
+Extracted phone: undefined
+Extracted birthDate: undefined
+Checking user by social provider: NAVER ski3tGDWA4YnB_VsTvCXX9-53uz-4wwdghGs5PL4f_Q
+User found by social provider: true
+ GET /api/auth/naver/callback?code=Yx2zjAgWyZkzSluVxf&state=eyJ1c2VyVHlwZSI6InZldGVyaW5hcnktc3R1ZGVudCIsInRpbWVzdGFtcCI6MTc1ODE4NDM3OTAwOCwicmFuZG9tIjoiNmJ1OXcifQ== 200 in 3005ms
+ ○ Compiling /register/social-complete/veterinary-student ...
+ ✓ Compiled /register/social-complete/veterinary-student in 1102ms (2312 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /register/social-complete/veterinary-student?email=test%40snu.ac.kr&name=%EA%B0%95%ED%92%8D%EC%9C%A4&profileImage=https%3A%2F%2Fssl.pstatic.net%2Fstatic%2Fpwe%2Faddress%2Fimg_profile.png 200 in 1268ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /register/social-complete/veterinary-student?email=test%40snu.ac.kr&name=%EA%B0%95%ED%92%8D%EC%9C%A4&profileImage=https%3A%2F%2Fssl.pstatic.net%2Fstatic%2Fpwe%2Faddress%2Fimg_profile.png 200 in 414ms
+ GET / 200 in 34ms
+ GET / 200 in 12ms
+[getResumesAction] 요청 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] Count 쿼리: 
+    SELECT COUNT(*) as total FROM detailed_resumes dr
+    WHERE 1=1
+   
+[getResumesWithPagination] 전체 개수: 1
+[getResumesWithPagination] 최종 쿼리: 
+    SELECT 
+      dr.id,
+      dr.name,
+      dr.photo,
+      dr.introduction,
+      dr."selfIntroduction",
+      dr.position,
+      dr.specialties,
+      dr."preferredRegions",
+      dr."createdAt",
+      dr."updatedAt"
+    FROM detailed_resumes dr
+    WHERE 1=1
+   ORDER BY dr."updatedAt" DESC LIMIT $1 OFFSET $2
+[getResumesWithPagination] 쿼리 파라미터: [ 5, 0 ]
+[getResumesWithPagination] 조회된 레코드 수: 1
+[getResumesAction] DB 조회 결과: {
+  data: [
+    {
+      id: 'resume_3z1Yw4aKy39uJCQQ_1758164428321',
+      name: '지드래곤',
+      photo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/resumes/e9mdechsarfirl2mqeetgdwn.png',
+      introduction: '한 줄 소개입니다',
+      selfIntroduction: null,
+      position: 'veterinarian',
+      specialties: [Array],
+      preferredRegions: [Array],
+      createdAt: 2025-09-17T18:00:28.507Z,
+      updatedAt: 2025-09-17T18:00:28.507Z
+    }
+  ],
+  total: 1,
+  currentPage: 1,
+  totalPages: 1
+}
+ POST / 200 in 851ms
+[getResumesAction] 요청 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] Count 쿼리: 
+    SELECT COUNT(*) as total FROM detailed_resumes dr
+    WHERE 1=1
+   
+[getResumesWithPagination] 전체 개수: 1
+[getResumesWithPagination] 최종 쿼리: 
+    SELECT 
+      dr.id,
+      dr.name,
+      dr.photo,
+      dr.introduction,
+      dr."selfIntroduction",
+      dr.position,
+      dr.specialties,
+      dr."preferredRegions",
+      dr."createdAt",
+      dr."updatedAt"
+    FROM detailed_resumes dr
+    WHERE 1=1
+   ORDER BY dr."updatedAt" DESC LIMIT $1 OFFSET $2
+[getResumesWithPagination] 쿼리 파라미터: [ 5, 0 ]
+[getResumesWithPagination] 조회된 레코드 수: 1
+[getResumesAction] DB 조회 결과: {
+  data: [
+    {
+      id: 'resume_3z1Yw4aKy39uJCQQ_1758164428321',
+      name: '지드래곤',
+      photo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/resumes/e9mdechsarfirl2mqeetgdwn.png',
+      introduction: '한 줄 소개입니다',
+      selfIntroduction: null,
+      position: 'veterinarian',
+      specialties: [Array],
+      preferredRegions: [Array],
+      createdAt: 2025-09-17T18:00:28.507Z,
+      updatedAt: 2025-09-17T18:00:28.507Z
+    }
+  ],
+  total: 1,
+  currentPage: 1,
+  totalPages: 1
+}
+ POST / 200 in 222ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET / 200 in 126ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST / 200 in 328ms
+[getResumesAction] 요청 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] Count 쿼리: 
+    SELECT COUNT(*) as total FROM detailed_resumes dr
+    WHERE 1=1
+   
+[getResumesWithPagination] 전체 개수: 1
+[getResumesWithPagination] 최종 쿼리: 
+    SELECT 
+      dr.id,
+      dr.name,
+      dr.photo,
+      dr.introduction,
+      dr."selfIntroduction",
+      dr.position,
+      dr.specialties,
+      dr."preferredRegions",
+      dr."createdAt",
+      dr."updatedAt"
+    FROM detailed_resumes dr
+    WHERE 1=1
+   ORDER BY dr."updatedAt" DESC LIMIT $1 OFFSET $2
+[getResumesWithPagination] 쿼리 파라미터: [ 5, 0 ]
+[getResumesWithPagination] 조회된 레코드 수: 1
+[getResumesAction] DB 조회 결과: {
+  data: [
+    {
+      id: 'resume_3z1Yw4aKy39uJCQQ_1758164428321',
+      name: '지드래곤',
+      photo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/resumes/e9mdechsarfirl2mqeetgdwn.png',
+      introduction: '한 줄 소개입니다',
+      selfIntroduction: null,
+      position: 'veterinarian',
+      specialties: [Array],
+      preferredRegions: [Array],
+      createdAt: 2025-09-17T18:00:28.507Z,
+      updatedAt: 2025-09-17T18:00:28.507Z
+    }
+  ],
+  total: 1,
+  currentPage: 1,
+  totalPages: 1
+}
+ POST / 200 in 222ms
+[getResumesAction] 요청 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] Count 쿼리: 
+    SELECT COUNT(*) as total FROM detailed_resumes dr
+    WHERE 1=1
+   
+[getResumesWithPagination] 전체 개수: 1
+[getResumesWithPagination] 최종 쿼리: 
+    SELECT 
+      dr.id,
+      dr.name,
+      dr.photo,
+      dr.introduction,
+      dr."selfIntroduction",
+      dr.position,
+      dr.specialties,
+      dr."preferredRegions",
+      dr."createdAt",
+      dr."updatedAt"
+    FROM detailed_resumes dr
+    WHERE 1=1
+   ORDER BY dr."updatedAt" DESC LIMIT $1 OFFSET $2
+[getResumesWithPagination] 쿼리 파라미터: [ 5, 0 ]
+[getResumesWithPagination] 조회된 레코드 수: 1
+[getResumesAction] DB 조회 결과: {
+  data: [
+    {
+      id: 'resume_3z1Yw4aKy39uJCQQ_1758164428321',
+      name: '지드래곤',
+      photo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/resumes/e9mdechsarfirl2mqeetgdwn.png',
+      introduction: '한 줄 소개입니다',
+      selfIntroduction: null,
+      position: 'veterinarian',
+      specialties: [Array],
+      preferredRegions: [Array],
+      createdAt: 2025-09-17T18:00:28.507Z,
+      updatedAt: 2025-09-17T18:00:28.507Z
+    }
+  ],
+  total: 1,
+  currentPage: 1,
+  totalPages: 1
+}
+ POST / 200 in 222ms
+ ○ Compiling /lectures ...
+ ✓ Compiled /lectures in 821ms (2315 modules)
+ GET /lectures 200 in 884ms
+ GET /jobs 200 in 47ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /_next/static/chunks/app/jobs/page.js 404 in 77ms
+ GET /jobs 404 in 30ms
+ GET /jobs 404 in 14ms
+ GET /jobs 404 in 18ms
+ GET /jobs 404 in 13ms
+ GET /jobs 404 in 19ms
+ GET /jobs 404 in 20ms
+ GET /jobs 404 in 17ms
+ GET /jobs 404 in 16ms
+ GET /jobs 404 in 17ms
+ GET /jobs 404 in 22ms
+ GET /jobs 404 in 7ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /jobs 200 in 69ms
+ ✓ Compiled in 1218ms (890 modules)
+ ✓ Compiled in 513ms (890 modules)
+ ✓ Compiled in 326ms (890 modules)
+ ✓ Compiled in 657ms (872 modules)
+ ✓ Compiled in 283ms (872 modules)
+ ✓ Compiled in 305ms (872 modules)
+ ✓ Compiled in 326ms (872 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/22.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/22.pack.gz'
+ ○ Compiling /api/jobs ...
+ ✓ Compiled /api/jobs in 634ms (969 modules)
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 5,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[DB] getJobsWithPagination called with params: {
+  keyword: undefined,
+  page: 1,
+  limit: 5,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[DB] job_postings table exists: true
+[DB] Executing query: 
+    SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
+    FROM job_postings j
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
+   ORDER BY j."createdAt" DESC LIMIT $1 OFFSET $2
+[DB] Query params: [ 5, 0 ]
+[DB] Query executed successfully, rows returned: 1
+[DB] Executing count query: 
+    SELECT COUNT(*) as total
+    FROM job_postings j
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
+  
+[DB] Count params: []
+[DB] Count query executed successfully, total: 1
+Database result: {
+  jobsCount: 1,
+  totalCount: 1,
+  firstJob: [
+    'id',                   'hospitalId',
+    'title',                'workType',
+    'isUnlimitedRecruit',   'recruitEndDate',
+    'major',                'experience',
+    'position',             'salaryType',
+    'salary',               'workDays',
+    'isWorkDaysNegotiable', 'workStartTime',
+    'workEndTime',          'isWorkTimeNegotiable',
+    'benefits',             'education',
+    'certifications',       'experienceDetails',
+    'preferences',          'managerName',
+    'managerPhone',         'managerEmail',
+    'department',           'isActive',
+    'isDraft',              'createdAt',
+    'updatedAt',            'deletedAt',
+    'hospital_name',        'hospital_logo',
+    'hospital_location'
+  ]
+}
+ GET /api/jobs?limit=5 200 in 1669ms
+ ✓ Compiled in 714ms (1839 modules)
+ ✓ Compiled in 1268ms (1859 modules)
+ ✓ Compiled in 903ms (1742 modules)
+ ✓ Compiled in 1337ms (1762 modules)
+ ✓ Compiled in 596ms (1762 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/15.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/15.pack.gz'
+ ✓ Compiled in 678ms (1762 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 771ms (1762 modules)
+ ✓ Compiled in 530ms (1762 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 754ms (1762 modules)
+ ✓ Compiled in 409ms (1762 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1922ms (1942 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/3.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/3.pack.gz'
+ ○ Compiling /api/jobs/[id] ...
+ ✓ Compiled /api/jobs/[id] in 810ms (2019 modules)
+Job detail error: error: relation "hospitals" does not exist
+    at async getJobById (src/lib/database.ts:342:17)
+    at async GET (src/app/api/jobs/[id]/route.ts:28:16)
+  340 |   `;
+  341 |
+> 342 |   const result = await pool.query(query, [jobId]);
+      |                 ^
+  343 |   return result.rows[0] || null;
+  344 | };
+  345 | {
+  length: 109,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '221',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 500 in 2069ms
+Job detail error: error: relation "hospitals" does not exist
+    at async getJobById (src/lib/database.ts:342:17)
+    at async GET (src/app/api/jobs/[id]/route.ts:28:16)
+  340 |   `;
+  341 |
+> 342 |   const result = await pool.query(query, [jobId]);
+      |                 ^
+  343 |   return result.rows[0] || null;
+  344 | };
+  345 | {
+  length: 109,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '221',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 500 in 669ms
+ ✓ Compiled /_not-found in 378ms (1001 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /api/db-check 404 in 538ms
+ ○ Compiling /api/jobs ...
+ ✓ Compiled /api/jobs in 520ms (1097 modules)
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[DB] getJobsWithPagination called with params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[DB] job_postings table exists: true
+[DB] Executing query: 
+    SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
+    FROM job_postings j
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
+   ORDER BY j."createdAt" DESC LIMIT $1 OFFSET $2
+[DB] Query params: [ 8, 0 ]
+[DB] Query executed successfully, rows returned: 1
+[DB] Executing count query: 
+    SELECT COUNT(*) as total
+    FROM job_postings j
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
+  
+[DB] Count params: []
+[DB] Count query executed successfully, total: 1
+Database result: {
+  jobsCount: 1,
+  totalCount: 1,
+  firstJob: [
+    'id',                   'hospitalId',
+    'title',                'workType',
+    'isUnlimitedRecruit',   'recruitEndDate',
+    'major',                'experience',
+    'position',             'salaryType',
+    'salary',               'workDays',
+    'isWorkDaysNegotiable', 'workStartTime',
+    'workEndTime',          'isWorkTimeNegotiable',
+    'benefits',             'education',
+    'certifications',       'experienceDetails',
+    'preferences',          'managerName',
+    'managerPhone',         'managerEmail',
+    'department',           'isActive',
+    'isDraft',              'createdAt',
+    'updatedAt',            'deletedAt',
+    'hospital_name',        'hospital_logo',
+    'hospital_location'
+  ]
+}
+ GET /api/jobs 200 in 2060ms
+ ✓ Compiled in 770ms (1000 modules)
+ ✓ Compiled /api/jobs/[id] in 228ms (1097 modules)
+Job detail error: error: column "is_active" does not exist
+    at async getJobById (src/lib/database.ts:340:15)
+    at async GET (src/app/api/jobs/[id]/route.ts:28:16)
+  338 |   `;
+  339 |
+> 340 |   let result = await pool.query(jobQuery, [jobId]);
+      |               ^
+  341 |   
+  342 |   if (!result.rows[0]) {
+  343 |     return null; {
+  length: 177,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: 'Perhaps you meant to reference the column "job_postings.isActive".',
+  position: '56',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3723',
+  routine: 'errorMissingColumn'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 500 in 1079ms
+ ✓ Compiled in 752ms (1000 modules)
+ ✓ Compiled /api/jobs/[id] in 210ms (1097 modules)
+Job detail error: error: column jp.hospital_id does not exist
+    at async getJobById (src/lib/database.ts:348:17)
+    at async GET (src/app/api/jobs/[id]/route.ts:28:16)
+  346 |   `;
+  347 |
+> 348 |   const result = await pool.query(query, [jobId]);
+      |                 ^
+  349 |   return result.rows[0] || null;
+  350 | };
+  351 | {
+  length: 173,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: 'Perhaps you meant to reference the column "jp.hospitalId".',
+  position: '317',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3723',
+  routine: 'errorMissingColumn'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 500 in 979ms
+ ✓ Compiled in 663ms (1097 modules)
+ ⨯ Failed to generate static paths for /api/jobs/[id]:
+TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at __webpack_require__.a (.next/server/webpack-runtime.js:105:13)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at __webpack_exec__ (.next/server/app/api/jobs/[id]/route.js:228:39)
+    at <unknown> (.next/server/app/api/jobs/[id]/route.js:229:553)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:237:21)
+    at <unknown> (.next/server/app/api/jobs/[id]/route.js:229:47) {
+  type: 'TypeError'
+}
+Error incrementing job view count: error: relation "view_logs" does not exist
+    at async incrementViewCount (src/lib/database.ts:2951:25)
+    at async GET (src/app/api/jobs/[id]/route.ts:49:4)
+  2949 |     `;
+  2950 |     
+> 2951 |     const existingView = await pool.query(checkQuery, [
+       |                         ^
+  2952 |       contentType,
+  2953 |       contentId, 
+  2954 |       userId || null,  {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '23',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Job detail error: error: relation "hospitals" does not exist
+    at async getRelatedJobs (src/lib/database.ts:682:17)
+    at async GET (src/app/api/jobs/[id]/route.ts:52:24)
+  680 |   }
+  681 |
+> 682 |   const result = await pool.query(query, params);
+      |                 ^
+  683 |   return result.rows;
+  684 | };
+  685 | {
+  length: 109,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '130',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 500 in 1547ms
+ ✓ Compiled in 716ms (1000 modules)
+ ✓ Compiled /api/jobs/[id] in 328ms (1097 modules)
+Error incrementing job view count: error: relation "view_logs" does not exist
+    at async incrementViewCount (src/lib/database.ts:2955:25)
+    at async GET (src/app/api/jobs/[id]/route.ts:49:4)
+  2953 |     `;
+  2954 |     
+> 2955 |     const existingView = await pool.query(checkQuery, [
+       |                         ^
+  2956 |       contentType,
+  2957 |       contentId, 
+  2958 |       userId || null,  {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '23',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Job detail error: error: column jp.viewCount does not exist
+    at async getRelatedJobs (src/lib/database.ts:686:17)
+    at async GET (src/app/api/jobs/[id]/route.ts:52:24)
+  684 |   }
+  685 |
+> 686 |   const result = await pool.query(query, params);
+      |                 ^
+  687 |   return result.rows;
+  688 | };
+  689 | {
+  length: 111,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '317',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3716',
+  routine: 'errorMissingColumn'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 500 in 2852ms
+ ✓ Compiled in 696ms (1000 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/6.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/6.pack.gz'
+ ✓ Compiled /api/jobs/[id] in 247ms (1097 modules)
+Error incrementing job view count: error: relation "view_logs" does not exist
+    at async incrementViewCount (src/lib/database.ts:2980:25)
+    at async GET (src/app/api/jobs/[id]/route.ts:49:4)
+  2978 |     `;
+  2979 |     
+> 2980 |     const existingView = await pool.query(checkQuery, [
+       |                         ^
+  2981 |       contentType,
+  2982 |       contentId, 
+  2983 |       userId || null,  {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '23',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Job detail error: error: column jp.viewCount does not exist
+    at async getRelatedJobs (src/lib/database.ts:711:17)
+    at async GET (src/app/api/jobs/[id]/route.ts:52:24)
+  709 |   }
+  710 |
+> 711 |   const result = await pool.query(query, params);
+      |                 ^
+  712 |   return result.rows;
+  713 | };
+  714 | {
+  length: 111,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '317',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3716',
+  routine: 'errorMissingColumn'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 500 in 2437ms
+ ✓ Compiled in 722ms (1000 modules)
+ ✓ Compiled /api/jobs/[id] in 201ms (1097 modules)
+Error incrementing job view count: error: relation "view_logs" does not exist
+    at async incrementViewCount (src/lib/database.ts:2980:25)
+    at async GET (src/app/api/jobs/[id]/route.ts:49:4)
+  2978 |     `;
+  2979 |     
+> 2980 |     const existingView = await pool.query(checkQuery, [
+       |                         ^
+  2981 |       contentType,
+  2982 |       contentId, 
+  2983 |       userId || null,  {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '23',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 200 in 1830ms
+ ✓ Compiled in 1230ms (1922 modules)
+ ✓ Compiled in 1307ms (1922 modules)
+ ✓ Compiled in 710ms (1942 modules)
+ ✓ Compiled in 975ms (1942 modules)
+ ✓ Compiled in 864ms (1942 modules)
+ ✓ Compiled in 863ms (1942 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1015ms (1922 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz'
+ ✓ Compiled in 710ms (1922 modules)
+ ✓ Compiled in 420ms (1922 modules)
+ ✓ Compiled in 356ms (1922 modules)
+ ✓ Compiled in 682ms (1942 modules)
+ ✓ Compiled in 452ms (942 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 375ms (942 modules)
+ ✓ Compiled in 662ms (942 modules)
+ ✓ Compiled in 411ms (942 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz'
+ ✓ Compiled in 531ms (942 modules)
+ ✓ Compiled in 271ms (942 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 300ms (942 modules)
+ ✓ Compiled in 261ms (942 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1029ms (1942 modules)
+ ✓ Compiled in 1243ms (1942 modules)
+ ✓ Compiled in 1032ms (1944 modules)
+ ✓ Compiled in 416ms (943 modules)
+ ✓ Compiled in 394ms (943 modules)
+ ✓ Compiled in 338ms (943 modules)
+ ✓ Compiled in 412ms (943 modules)
+ ✓ Compiled in 237ms (943 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 358ms (943 modules)
+ ✓ Compiled in 258ms (943 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 813ms (1924 modules)
+ ✓ Compiled in 445ms (1924 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'

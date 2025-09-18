@@ -368,8 +368,8 @@ export default function EditTransferPage({
               {/* 이미지 업로드 */}
               <div>
                 <MultiImageUpload
-                  value={formData.images}
-                  onChange={handleImageUpload}
+                  value={formData.images as any}
+                  onChange={handleImageUpload as any}
                   maxImages={10}
                 />
               </div>

@@ -10,7 +10,7 @@ import { useState, useEffect } from "react";
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import JobFamousList from "@/components/features/main/JobFamousList";
-import { allJobData } from "@/data/jobsData";
+import { useJobs, JobFilters } from "@/hooks/api/useJobs";
 
 export default function JobsPage() {
   const router = useRouter();
@@ -104,73 +104,42 @@ export default function JobsPage() {
     setCurrentPage(urlFilters.page);
   }, [searchParams]);
 
-  // 필터링 및 검색 로직 (검색과 정렬은 즉시 적용, 나머지는 appliedFilters 사용)
-  const getFilteredData = () => {
-    let filtered = [...allJobData];
-
-    // 키워드 검색 (즉시 적용)
-    if (filters.searchKeyword.trim()) {
-      const keyword = filters.searchKeyword.toLowerCase().trim();
-      filtered = filtered.filter(
-        (job) =>
-          job.hospital.toLowerCase().includes(keyword) ||
-          job.position.toLowerCase().includes(keyword) ||
-          job.location.toLowerCase().includes(keyword) ||
-          job.tags.some((tag) => tag.toLowerCase().includes(keyword))
-      );
-    }
-
-    // 근무형태 필터 (필터 적용 버튼 필요)
-    if (appliedFilters.workType.length > 0) {
-      filtered = filtered.filter((job) =>
-        appliedFilters.workType.includes(job.workType)
-      );
-    }
-
-    // 경력 필터 (필터 적용 버튼 필요)
-    if (appliedFilters.experience.length > 0) {
-      filtered = filtered.filter((job) =>
-        appliedFilters.experience.includes(job.experience)
-      );
-    }
-
-    // 지역 필터 (필터 적용 버튼 필요)
-    if (appliedFilters.region && appliedFilters.region !== "all") {
-      filtered = filtered.filter((job) => job.region === appliedFilters.region);
-    }
-
-    // 정렬 (즉시 적용)
-    switch (filters.sortBy) {
-      case "recent":
-        filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        break;
-      case "deadline":
-        filtered.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
-        break;
-      case "popular":
-        // 북마크된 것들을 위로, 그 다음 신규 순서로
-        filtered.sort((a, b) => {
-          if (a.isBookmarked && !b.isBookmarked) return -1;
-          if (!a.isBookmarked && b.isBookmarked) return 1;
-          if (a.isNew && !b.isNew) return -1;
-          if (!a.isNew && b.isNew) return 1;
-          return b.createdAt.getTime() - a.createdAt.getTime();
-        });
-        break;
-      default:
-        break;
-    }
-
-    return filtered;
+  // Build API filters from current state
+  const buildApiFilters = (): JobFilters => {
+    return {
+      keyword: filters.searchKeyword || undefined,
+      workType: appliedFilters.workType.length > 0 ? appliedFilters.workType : undefined,
+      experience: appliedFilters.experience.length > 0 ? appliedFilters.experience : undefined,
+      region: appliedFilters.region && appliedFilters.region !== "all" ? appliedFilters.region : undefined,
+      page: currentPage,
+      limit: 8,
+      sort: filters.sortBy as 'recent' | 'deadline' | 'popular',
+    };
   };
 
-  const filteredData = getFilteredData();
-  const totalJobs = filteredData.length;
-  const totalPages = Math.ceil(totalJobs / 8);
+  // Use the API hook
+  const apiFilters = buildApiFilters();
+  const { data: jobsData, isLoading, error } = useJobs(apiFilters);
 
-  // 페이지네이션
-  const startIndex = (currentPage - 1) * 8;
-  const jobData = filteredData.slice(startIndex, startIndex + 8);
+  // Log error details
+  if (error) {
+    console.error('[JobsPage] Error fetching jobs:', error);
+    console.error('[JobsPage] API filters:', apiFilters);
+  }
+
+  // Log successful data
+  if (jobsData) {
+    console.log('[JobsPage] Jobs data received:', {
+      jobsCount: jobsData.jobs.length,
+      totalCount: jobsData.totalCount,
+      currentPage: jobsData.currentPage,
+      totalPages: jobsData.totalPages
+    });
+  }
+
+  const totalJobs = jobsData?.totalCount || 0;
+  const totalPages = jobsData?.totalPages || 0;
+  const jobData = jobsData?.jobs || [];
 
   const handleFilterChange = (type: keyof typeof filters, value: any) => {
     setFilters((prev) => ({ ...prev, [type]: value }));
@@ -246,9 +215,10 @@ export default function JobsPage() {
                   value={filters.workType}
                   onChange={(value) => handleFilterChange("workType", value)}
                 >
-                  <FilterBox value="fulltime">정규직</FilterBox>
-                  <FilterBox value="parttime">파트타임</FilterBox>
-                  <FilterBox value="contract">계약직</FilterBox>
+                  <FilterBox value="정규직">정규직</FilterBox>
+                  <FilterBox value="파트타임">파트타임</FilterBox>
+                  <FilterBox value="계약직">계약직</FilterBox>
+                  <FilterBox value="인턴">인턴</FilterBox>
                 </FilterBox.Group>
               </div>
 
@@ -261,10 +231,10 @@ export default function JobsPage() {
                   value={filters.experience}
                   onChange={(value) => handleFilterChange("experience", value)}
                 >
-                  <FilterBox value="new">신입</FilterBox>
-                  <FilterBox value="junior">1~3년</FilterBox>
-                  <FilterBox value="mid">3~5년</FilterBox>
-                  <FilterBox value="senior">5년 이상</FilterBox>
+                  <FilterBox value="신입">신입</FilterBox>
+                  <FilterBox value="1~3년">1~3년</FilterBox>
+                  <FilterBox value="3~5년">3~5년</FilterBox>
+                  <FilterBox value="5년이상">5년 이상</FilterBox>
                 </FilterBox.Group>
               </div>
 
@@ -348,32 +318,79 @@ export default function JobsPage() {
 
               {/* 채용 공고 목록 */}
               <div className="space-y-4">
-                {jobData.map((job) => (
-                  <JobInfoCard
-                    key={job.id}
-                    hospital={job.hospital}
-                    dDay={job.dDay}
-                    position={job.position}
-                    location={job.location}
-                    jobType={job.jobType}
-                    tags={job.tags}
-                    isBookmarked={job.isBookmarked}
-                    variant="wide"
-                    showDeadline={true}
-                    isNew={job.isNew}
-                    onClick={() => router.push(`/jobs/${job.id}`)}
-                  />
-                ))}
+                {isLoading ? (
+                  // Loading skeleton
+                  Array.from({ length: 8 }).map((_, index) => (
+                    <div key={index} className="bg-gray-100 rounded-lg p-6 animate-pulse">
+                      <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
+                      <div className="h-6 bg-gray-300 rounded w-1/2 mb-4"></div>
+                      <div className="flex gap-2 mb-3">
+                        <div className="h-6 bg-gray-300 rounded w-16"></div>
+                        <div className="h-6 bg-gray-300 rounded w-12"></div>
+                        <div className="h-6 bg-gray-300 rounded w-20"></div>
+                      </div>
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </div>
+                  ))
+                ) : error ? (
+                  // Error state
+                  <div className="text-center py-12">
+                    <p className="text-red-500 mb-4">채용공고를 불러오는 중 오류가 발생했습니다.</p>
+                    <Button 
+                      variant="default" 
+                      onClick={() => window.location.reload()}
+                    >
+                      다시 시도
+                    </Button>
+                  </div>
+                ) : jobData.length === 0 ? (
+                  // Empty state
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 mb-4">검색 조건에 맞는 채용공고가 없습니다.</p>
+                    {/* Show filter reset button only if filters are applied */}
+                    {(appliedFilters.workType.length > 0 || 
+                      appliedFilters.experience.length > 0 || 
+                      appliedFilters.region || 
+                      filters.searchKeyword) && (
+                      <Button 
+                        variant="text" 
+                        onClick={handleFilterReset}
+                      >
+                        필터 초기화
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  // Job cards
+                  jobData.map((job) => (
+                    <JobInfoCard
+                      key={job.id}
+                      hospital={job.hospital}
+                      dDay={job.dDay}
+                      position={job.title || job.position}
+                      location={job.location?.split(' ').slice(0, 3).join(' ')}
+                      jobType={job.jobType}
+                      tags={job.tags}
+                      isBookmarked={job.isBookmarked}
+                      variant="wide"
+                      showDeadline={true}
+                      isNew={job.isNew}
+                      onClick={() => router.push(`/jobs/${job.id}`)}
+                    />
+                  ))
+                )}
               </div>
 
               {/* 페이지네이션 */}
-              <div className="py-8">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
+              {!isLoading && !error && totalPages > 0 && (
+                <div className="py-8">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
             </div>
 
             {/* 오른쪽: 광고 및 인기 채용공고 */}
@@ -489,22 +506,53 @@ export default function JobsPage() {
 
               {/* 첫 번째 채용공고 카드들 (절반) */}
               <div className="space-y-3">
-                {jobData.slice(0, Math.ceil(jobData.length / 2)).map((job) => (
-                  <JobInfoCard
-                    key={job.id}
-                    hospital={job.hospital}
-                    dDay={job.dDay}
-                    position={job.position}
-                    location={job.location}
-                    jobType={job.jobType}
-                    tags={job.tags.slice(0, 3)}
-                    isBookmarked={job.isBookmarked}
-                    variant="wide"
-                    showDeadline={false}
-                    isNew={job.isNew}
-                    onClick={() => router.push(`/jobs/${job.id}`)}
-                  />
-                ))}
+                {isLoading ? (
+                  // Loading skeleton for mobile
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="bg-gray-100 rounded-lg p-4 animate-pulse">
+                      <div className="h-4 bg-gray-300 rounded w-1/3 mb-2"></div>
+                      <div className="h-5 bg-gray-300 rounded w-2/3 mb-3"></div>
+                      <div className="flex gap-2">
+                        <div className="h-5 bg-gray-300 rounded w-12"></div>
+                        <div className="h-5 bg-gray-300 rounded w-16"></div>
+                      </div>
+                    </div>
+                  ))
+                ) : jobData.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-sm mb-3">검색 조건에 맞는 채용공고가 없습니다.</p>
+                    {/* Show filter reset button only if filters are applied */}
+                    {(appliedFilters.workType.length > 0 || 
+                      appliedFilters.experience.length > 0 || 
+                      appliedFilters.region || 
+                      filters.searchKeyword) && (
+                      <Button 
+                        variant="text" 
+                        size="small"
+                        onClick={handleFilterReset}
+                      >
+                        필터 초기화
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  jobData.slice(0, Math.ceil(jobData.length / 2)).map((job) => (
+                    <JobInfoCard
+                      key={job.id}
+                      hospital={job.hospital}
+                      dDay={job.dDay}
+                      position={job.title || job.position}
+                      location={job.location?.split(' ').slice(0, 3).join(' ')}
+                      jobType={job.jobType}
+                      tags={job.tags.slice(0, 3)}
+                      isBookmarked={job.isBookmarked}
+                      variant="wide"
+                      showDeadline={false}
+                      isNew={job.isNew}
+                      onClick={() => router.push(`/jobs/${job.id}`)}
+                    />
+                  ))
+                )}
               </div>
 
               {/* 가상 광고 영역 */}
@@ -545,33 +593,37 @@ export default function JobsPage() {
 
               {/* 나머지 채용공고 카드들 */}
               <div className="space-y-3">
-                {jobData.slice(Math.ceil(jobData.length / 2)).map((job) => (
-                  <JobInfoCard
-                    key={job.id}
-                    hospital={job.hospital}
-                    dDay={job.dDay}
-                    position={job.position}
-                    location={job.location}
-                    jobType={job.jobType}
-                    tags={job.tags.slice(0, 3)}
-                    isBookmarked={job.isBookmarked}
-                    variant="wide"
-                    showDeadline={false}
-                    isNew={job.isNew}
-                    onClick={() => router.push(`/jobs/${job.id}`)}
-                  />
-                ))}
+                {!isLoading && jobData.length > 0 && (
+                  jobData.slice(Math.ceil(jobData.length / 2)).map((job) => (
+                    <JobInfoCard
+                      key={job.id}
+                      hospital={job.hospital}
+                      dDay={job.dDay}
+                      position={job.title || job.position}
+                      location={job.location?.split(' ').slice(0, 3).join(' ')}
+                      jobType={job.jobType}
+                      tags={job.tags.slice(0, 3)}
+                      isBookmarked={job.isBookmarked}
+                      variant="wide"
+                      showDeadline={false}
+                      isNew={job.isNew}
+                      onClick={() => router.push(`/jobs/${job.id}`)}
+                    />
+                  ))
+                )}
               </div>
 
               {/* 페이지네이션 */}
-              <div className="py-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  maxVisiblePages={3}
-                />
-              </div>
+              {!isLoading && !error && totalPages > 0 && (
+                <div className="py-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    maxVisiblePages={3}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -619,9 +671,10 @@ export default function JobsPage() {
                           handleFilterChange("workType", value)
                         }
                       >
-                        <FilterBox value="fulltime">정규직</FilterBox>
-                        <FilterBox value="parttime">파트타임</FilterBox>
-                        <FilterBox value="contract">계약직</FilterBox>
+                        <FilterBox value="정규직">정규직</FilterBox>
+                        <FilterBox value="파트타임">파트타임</FilterBox>
+                        <FilterBox value="계약직">계약직</FilterBox>
+                        <FilterBox value="인턴">인턴</FilterBox>
                       </FilterBox.Group>
                     </div>
 
@@ -636,10 +689,10 @@ export default function JobsPage() {
                           handleFilterChange("experience", value)
                         }
                       >
-                        <FilterBox value="new">신입</FilterBox>
-                        <FilterBox value="junior">1~3년</FilterBox>
-                        <FilterBox value="mid">3~5년</FilterBox>
-                        <FilterBox value="senior">5년 이상</FilterBox>
+                        <FilterBox value="신입">신입</FilterBox>
+                        <FilterBox value="1~3년">1~3년</FilterBox>
+                        <FilterBox value="3~5년">3~5년</FilterBox>
+                        <FilterBox value="5년이상">5년 이상</FilterBox>
                       </FilterBox.Group>
                     </div>
 

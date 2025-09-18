@@ -151,11 +151,36 @@ export const createHospitalProfile = async (profileData: any) => {
 };
 
 export const getJobsWithPagination = async (params: any) => {
+  console.log('[DB] getJobsWithPagination called with params:', params);
+  
+  // First, check if job_postings table exists
+  try {
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'job_postings'
+      );
+    `);
+    console.log('[DB] job_postings table exists:', tableCheck.rows[0].exists);
+    
+    if (!tableCheck.rows[0].exists) {
+      console.warn('[DB] job_postings table does not exist, returning empty result');
+      return {
+        jobs: [],
+        totalCount: 0,
+      };
+    }
+  } catch (error) {
+    console.error('[DB] Table check error:', error);
+    throw error;
+  }
+  
   let query = `
-    SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address as hospital_location
+    SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
     FROM job_postings j
-    JOIN hospitals h ON j.hospital_id = h.id
-    WHERE j.is_active = true AND j.is_public = true
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
   `;
 
   const queryParams: any[] = [];
@@ -164,63 +189,87 @@ export const getJobsWithPagination = async (params: any) => {
   // 키워드 검색
   if (params.keyword) {
     paramCount++;
-    query += ` AND (j.title ILIKE ${paramCount} OR j.description ILIKE ${paramCount} OR h.hospital_name ILIKE ${paramCount})`;
+    query += ` AND (j.title ILIKE $${paramCount} OR j.position ILIKE $${paramCount} OR u."hospitalName" ILIKE $${paramCount})`;
     queryParams.push(`%${params.keyword}%`);
   }
 
-  // 근무 형태 필터
+  // 근무 형태 필터 (배열에서 검색)
   if (params.workType) {
+    const workTypes = Array.isArray(params.workType) ? params.workType : [params.workType];
     paramCount++;
-    query += ` AND j.work_type = ${paramCount}`;
-    queryParams.push(params.workType);
+    query += ` AND j."workType" && $${paramCount}`;
+    queryParams.push(workTypes);
   }
 
-  // 경력 필터
+  // 경력 필터 (배열에서 검색)
   if (params.experience) {
+    const experiences = Array.isArray(params.experience) ? params.experience : [params.experience];
     paramCount++;
-    query += ` AND j.required_experience = ${paramCount}`;
-    queryParams.push(params.experience);
+    query += ` AND j.experience && $${paramCount}`;
+    queryParams.push(experiences);
   }
 
   // 지역 필터
   if (params.region) {
     paramCount++;
-    query += ` AND h.address ILIKE ${paramCount}`;
+    query += ` AND u."hospitalAddress" ILIKE $${paramCount}`;
     queryParams.push(`%${params.region}%`);
+  }
+
+  // 전공 필터 (배열에서 검색)
+  if (params.major) {
+    const majors = Array.isArray(params.major) ? params.major : [params.major];
+    paramCount++;
+    query += ` AND j.major && $${paramCount}`;
+    queryParams.push(majors);
   }
 
   // 정렬
   switch (params.sort) {
+    case "recent":
     case "latest":
-      query += " ORDER BY j.created_at DESC";
+      query += ` ORDER BY j."createdAt" DESC`;
       break;
     case "oldest":
-      query += " ORDER BY j.created_at ASC";
-      break;
-    case "view":
-      query += " ORDER BY j.view_count DESC";
+      query += ` ORDER BY j."createdAt" ASC`;
       break;
     case "deadline":
-      query += " ORDER BY j.deadline ASC NULLS LAST";
+      query += ` ORDER BY j."recruitEndDate" ASC NULLS LAST, j."createdAt" DESC`;
+      break;
+    case "popular":
+      // 인기순은 일단 최신순으로 처리 (추후 조회수나 지원수 추가 시 변경)
+      query += ` ORDER BY j."createdAt" DESC`;
       break;
     default:
-      query += " ORDER BY j.created_at DESC";
+      query += ` ORDER BY j."createdAt" DESC`;
   }
 
   // 페이지네이션
   const offset = (params.page - 1) * params.limit;
   paramCount += 2;
-  query += ` LIMIT ${paramCount - 1} OFFSET ${paramCount}`;
+  query += ` LIMIT $${paramCount - 1} OFFSET $${paramCount}`;
   queryParams.push(params.limit, offset);
 
-  const result = await pool.query(query, queryParams);
+  console.log('[DB] Executing query:', query);
+  console.log('[DB] Query params:', queryParams);
+  
+  let result;
+  try {
+    result = await pool.query(query, queryParams);
+    console.log('[DB] Query executed successfully, rows returned:', result.rows.length);
+  } catch (error) {
+    console.error('[DB] Query execution error:', error);
+    console.error('[DB] Failed query:', query);
+    console.error('[DB] Failed params:', queryParams);
+    throw error;
+  }
 
   // 전체 개수 조회
   let countQuery = `
     SELECT COUNT(*) as total
     FROM job_postings j
-    JOIN hospitals h ON j.hospital_id = h.id
-    WHERE j.is_active = true AND j.is_public = true
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
   `;
 
   const countParams: any[] = [];
@@ -228,35 +277,101 @@ export const getJobsWithPagination = async (params: any) => {
 
   if (params.keyword) {
     countParamCount++;
-    countQuery += ` AND (j.title ILIKE ${countParamCount} OR j.description ILIKE ${countParamCount} OR h.hospital_name ILIKE ${countParamCount})`;
+    countQuery += ` AND (j.title ILIKE $${countParamCount} OR j.position ILIKE $${countParamCount} OR u."hospitalName" ILIKE $${countParamCount})`;
     countParams.push(`%${params.keyword}%`);
   }
 
   if (params.workType) {
+    const workTypes = Array.isArray(params.workType) ? params.workType : [params.workType];
     countParamCount++;
-    countQuery += ` AND j.work_type = ${countParamCount}`;
-    countParams.push(params.workType);
+    countQuery += ` AND j."workType" && $${countParamCount}`;
+    countParams.push(workTypes);
   }
 
-  const countResult = await pool.query(countQuery, countParams);
+  if (params.experience) {
+    const experiences = Array.isArray(params.experience) ? params.experience : [params.experience];
+    countParamCount++;
+    countQuery += ` AND j.experience && $${countParamCount}`;
+    countParams.push(experiences);
+  }
 
+  if (params.region) {
+    countParamCount++;
+    countQuery += ` AND u."hospitalAddress" ILIKE $${countParamCount}`;
+    countParams.push(`%${params.region}%`);
+  }
+
+  if (params.major) {
+    const majors = Array.isArray(params.major) ? params.major : [params.major];
+    countParamCount++;
+    countQuery += ` AND j.major && $${countParamCount}`;
+    countParams.push(majors);
+  }
+
+  console.log('[DB] Executing count query:', countQuery);
+  console.log('[DB] Count params:', countParams);
+  
+  let countResult;
+  try {
+    countResult = await pool.query(countQuery, countParams);
+    console.log('[DB] Count query executed successfully, total:', countResult.rows[0]?.total);
+  } catch (error) {
+    console.error('[DB] Count query execution error:', error);
+    console.error('[DB] Failed count query:', countQuery);
+    console.error('[DB] Failed count params:', countParams);
+    throw error;
+  }
+
+  const totalCount = parseInt(countResult.rows[0]?.total || '0');
+  
   return {
     jobs: result.rows,
-    totalCount: parseInt(countResult.rows[0].total),
+    totalCount,
   };
 };
 
 export const getJobById = async (jobId: string) => {
+  // 일단 job_postings 테이블만 조회
   const query = `
-    SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address, h.detail_address,
-           h.website, h.phone as hospital_phone, h.medical_fields as hospital_medical_fields
-    FROM job_postings j
-    JOIN hospitals h ON j.hospital_id = h.id
-    WHERE j.id = $1 AND j.is_active = true
+    SELECT * FROM job_postings 
+    WHERE id = $1 AND "isActive" = true
   `;
 
   const result = await pool.query(query, [jobId]);
-  return result.rows[0] || null;
+  
+  if (!result.rows[0]) {
+    return null;
+  }
+
+  const job = result.rows[0];
+
+  // 병원 정보 추가 조회
+  if (job.hospitalId) {
+    try {
+      const hospitalQuery = `
+        SELECT 
+          email as hospital_email,
+          phone as hospital_phone,
+          "hospitalName" as hospital_name,
+          "hospitalAddress" as hospital_address,
+          "hospitalWebsite" as hospital_website,
+          "hospitalLogo" as hospital_logo
+        FROM users 
+        WHERE id = $1 AND "userType" = 'HOSPITAL'
+      `;
+      
+      const hospitalResult = await pool.query(hospitalQuery, [job.hospitalId]);
+      
+      if (hospitalResult.rows[0]) {
+        // 병원 정보를 job 객체에 추가
+        Object.assign(job, hospitalResult.rows[0]);
+      }
+    } catch (error) {
+      console.warn('Hospital data fetch failed:', error);
+    }
+  }
+
+  return job;
 };
 
 // ============================================================================
@@ -571,21 +686,25 @@ export const getRelatedJobs = async (
   limit: number = 5
 ) => {
   let query = `
-    SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address as hospital_location
-    FROM job_postings j
-    JOIN hospitals h ON j.hospital_id = h.id
-    WHERE j.id != $1 AND j.is_active = true AND j.is_public = true
+    SELECT 
+      jp.*,
+      u."hospitalName" as hospital_name,
+      u."hospitalLogo" as hospital_logo,
+      u."hospitalAddress" as hospital_location
+    FROM job_postings jp
+    LEFT JOIN users u ON jp."hospitalId" = u.id AND u."userType" = 'HOSPITAL'
+    WHERE jp.id != $1 AND jp."isActive" = true
   `;
 
   const params = [jobId];
 
   if (medicalField) {
-    query += ` AND j.medical_field = $2`;
+    query += ` AND jp."medicalField" && ARRAY[$2]`;
     params.push(medicalField);
-    query += ` ORDER BY j.created_at DESC LIMIT $3`;
+    query += ` ORDER BY jp."createdAt" DESC LIMIT $3`;
     params.push(limit.toString());
   } else {
-    query += ` ORDER BY j.view_count DESC, j.created_at DESC LIMIT $2`;
+    query += ` ORDER BY jp."createdAt" DESC LIMIT $2`;
     params.push(limit.toString());
   }
 

@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import JobInfoCard from "./JobInfoCard";
+import { convertDDayToNumber } from "@/utils/dDayConverter";
 
 interface JobData {
   id: number;
@@ -62,7 +63,7 @@ const UrgentJobsCard: React.FC<UrgentJobsCardProps> = ({
           <JobInfoCard
             key={job.id}
             hospital={job.hospital}
-            dDay={job.dDay}
+            dDay={convertDDayToNumber(job.dDay)}
             position={job.position}
             location={job.location}
             jobType={job.jobType}

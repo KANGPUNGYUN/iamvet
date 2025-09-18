@@ -10,7 +10,7 @@ import { Tag } from "./Tag";
 
 interface JobInfoCardProps {
   hospital: string;
-  dDay: string;
+  dDay: number | null;
   position: string;
   location: string;
   jobType: string;
@@ -20,13 +20,13 @@ interface JobInfoCardProps {
   variant?: "default" | "wide"; // 기본 스타일과 넓은 스타일 선택
   showDeadline?: boolean; // 마감일 표시 여부
   isNew?: boolean; // 신규 공고 여부
-  id?: number; // 채용공고 ID 추가
+  id?: number | string; // 채용공고 ID 추가
   className?: string;
 }
 
 const JobInfoCard: React.FC<JobInfoCardProps> = ({
   hospital = "건국대학교 동물병원",
-  dDay = "D-23",
+  dDay = null,
   position = "간호조무사(정규직)",
   location = "서울 광진구",
   jobType = "신입",
@@ -56,7 +56,11 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h3 className={titleClass}>{hospital}</h3>
         <div className="flex items-center space-x-2">
-          {showDeadline && <Tag variant={1}>{dDay}</Tag>}
+          {showDeadline && dDay !== null && (
+            <Tag variant={1}>
+              {dDay >= 0 ? `D-${dDay}` : '마감'}
+            </Tag>
+          )}
           <div className="w-6 h-6 flex items-center justify-center cursor-pointer">
             {isBookmarked ? (
               <BookmarkFilledIcon currentColor="var(--Keycolor1)" />

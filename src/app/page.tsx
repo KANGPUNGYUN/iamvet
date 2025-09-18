@@ -92,6 +92,7 @@ import { allTransferData } from "@/data/transfersData";
 import Link from "next/link";
 import ResumeCard from "@/components/ui/ResumeCard";
 import { useResumes } from "@/hooks/useResumes";
+import { convertDDayToNumber } from "@/utils/dDayConverter";
 
 export default function HomePage() {
   // 이력서 목록 조회
@@ -622,7 +623,7 @@ export default function HomePage() {
                       const diffDays = Math.ceil(
                         diffTime / (1000 * 60 * 60 * 24)
                       );
-                      const dDay = `${diffDays}일 전`;
+                      const dDay = diffDays;
 
                       return (
                         <JobInfoCard
@@ -651,7 +652,7 @@ export default function HomePage() {
                   <JobInfoCard
                     key={job.id}
                     hospital={job.hospital}
-                    dDay={job.dDay}
+                    dDay={convertDDayToNumber(job.dDay)}
                     position={job.position}
                     location={job.location}
                     jobType={job.jobType}

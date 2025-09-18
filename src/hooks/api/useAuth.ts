@@ -75,7 +75,7 @@ export function useCurrentUser() {
         return userData;
       }
       
-      if (result.success && result.user) {
+      if (result.success && 'user' in result && result.user) {
         const userData = {
           id: result.user.id,
           name: result.user.username || result.user.realName || result.user.email,
@@ -133,7 +133,7 @@ export function useLogin() {
       return result;
     },
     onSuccess: (result) => {
-      if (result.success && result.user) {
+      if (result.success && 'user' in result && result.user) {
         // localStorage에 토큰과 사용자 정보 저장
         const accessToken = btoa(JSON.stringify({ userId: result.user.id })); // 임시 토큰
         localStorage.setItem('accessToken', accessToken);
