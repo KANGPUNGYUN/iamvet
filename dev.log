@@ -1908,3 +1908,5 @@ Job created successfully: HlstieUzUGIpyrDS
 }
  POST /dashboard/hospital/my-jobs 200 in 402ms
  GET /jobs 200 in 48ms
+ ✓ Compiled in 354ms (603 modules)
+ GET /jobs 200 in 18ms

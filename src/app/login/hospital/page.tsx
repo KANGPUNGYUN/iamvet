@@ -36,7 +36,7 @@ export default function HospitalLoginPage() {
       } else {
         // 로그인 실패 시 alert 표시
         alert("아이디 또는 비밀번호를 다시 확인해주세요.");
-        setError(result.error || "로그인에 실패했습니다.");
+        setError((result as { success: false; error: string }).error || "로그인에 실패했습니다.");
       }
     } catch (error) {
       console.error("Login error:", error);
