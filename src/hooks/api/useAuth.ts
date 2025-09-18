@@ -66,6 +66,7 @@ export function useCurrentUser() {
           type: (localUser.userType === "veterinary-student" || localUser.userType === "VETERINARY_STUDENT") ? "veterinarian" : localUser.userType,
           profileName: localUser.profileName || localUser.name || localUser.realName,
           profileImage: localUser.profileImage,
+          hospitalName: localUser.hospitalName,
           hospitalLogo: localUser.hospitalLogo,
           phone: localUser.phone,
           birthDate: localUser.birthDate ? (typeof localUser.birthDate === 'string' ? localUser.birthDate : localUser.birthDate.toISOString().split('T')[0]) : undefined,
@@ -83,6 +84,7 @@ export function useCurrentUser() {
           type: (result.user.userType === "VETERINARIAN" || result.user.userType === "VETERINARY_STUDENT") ? "veterinarian" as const : "hospital" as const,
           profileName: result.user.profileName || result.user.realName || result.user.username,
           profileImage: result.user.profileImage,
+          hospitalName: result.user.hospitalName,
           hospitalLogo: result.user.hospitalLogo,
           phone: result.user.phone,
           birthDate: result.user.birthDate ? (typeof result.user.birthDate === 'string' ? result.user.birthDate : result.user.birthDate.toISOString().split('T')[0]) : undefined,
@@ -100,6 +102,7 @@ export function useCurrentUser() {
             userType: userData.type,
             profileName: userData.profileName,
             profileImage: userData.profileImage,
+            hospitalName: userData.hospitalName,
             hospitalLogo: userData.hospitalLogo,
             phone: userData.phone,
             birthDate: userData.birthDate,
@@ -236,8 +239,13 @@ export function useAuth() {
         
         // 사용자 정보가 있지만 phone이나 birthDate가 누락된 경우 새로고침
         if (user && (!user.phone || !user.birthDate)) {
-          console.log('[useAuth] User missing phone/birthDate, refetching...');
-          refetch();
+          // 병원 사용자의 경우 phone/birthDate가 없을 수 있으므로 경고만 출력
+          if (user?.type === 'hospital') {
+            console.log('[useAuth] Hospital user - phone/birthDate may be optional');
+          } else {
+            console.log('[useAuth] User missing phone/birthDate, refetching...');
+            refetch();
+          }
         } else if (!user) {
           console.log('[useAuth] Refetching user data...');
           // 토큰이 있지만 사용자 정보가 없으면 다시 가져오기

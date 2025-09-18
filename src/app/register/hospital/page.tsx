@@ -46,13 +46,19 @@ export default function HospitalRegisterPage() {
       const registerData: HospitalRegisterData = {
         userId: formData.loginId,
         password: formData.password,
+        realName: formData.realName, // 대표자명 추가
         hospitalName: formData.hospitalName,
+        establishedDate: formData.establishedDate, // 병원 설립일 추가
         businessNumber: formData.businessNumber,
         phone: formData.phone,
         email: formData.email,
         website: formData.website,
-        address: formData.detailAddress ? `${formData.address} ${formData.detailAddress}` : formData.address,
+        address: formData.address, // 주소 분리
+        detailAddress: formData.detailAddress, // 상세주소 분리
         profileImage: profileImageUrl || undefined,
+        facilityImages: formData.facilityImages, // 병원 시설 이미지 추가
+        treatmentAnimals: formData.treatmentAnimals, // 진료 가능 동물 추가
+        treatmentSpecialties: formData.treatmentSpecialties, // 진료 분야 추가
         businessLicense: businessLicenseUrl,
         termsAgreed: formData.agreements.terms,
         privacyAgreed: formData.agreements.privacy,

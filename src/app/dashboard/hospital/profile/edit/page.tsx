@@ -8,7 +8,10 @@ import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { ProfileImageUpload } from "@/components/features/profile/ProfileImageUpload";
 import { Textarea } from "@/components/ui/Input/Textarea";
-import { useDetailedHospitalProfile, useSaveDetailedHospitalProfile } from "@/hooks/api/useDetailedHospitalProfile";
+import {
+  useDetailedHospitalProfile,
+  useSaveDetailedHospitalProfile,
+} from "@/hooks/api/useDetailedHospitalProfile";
 import { useHospitalProfile } from "@/hooks/api/useHospitalProfile";
 import { useCurrentUser } from "@/hooks/api/useAuth";
 import type { DetailedHospitalProfileData } from "@/actions/auth";
@@ -30,9 +33,20 @@ interface HospitalProfileData {
 }
 
 export default function HospitalProfileEditPage() {
-  const { data: detailedProfile, isLoading: detailedLoading, error: detailedError } = useDetailedHospitalProfile();
-  const { data: basicProfile, isLoading: basicLoading, error: basicError } = useHospitalProfile();
-  const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
+  const {
+    data: detailedProfile,
+    isLoading: detailedLoading,
+  } = useDetailedHospitalProfile();
+  const {
+    data: basicProfile,
+    isLoading: basicLoading,
+    error: basicError,
+  } = useHospitalProfile();
+  const {
+    data: currentUser,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
   const saveProfileMutation = useSaveDetailedHospitalProfile();
 
   const [formData, setFormData] = useState<HospitalProfileData>({
@@ -53,6 +67,21 @@ export default function HospitalProfileEditPage() {
   // 프로필 데이터가 로드되면 폼에 반영
   useEffect(() => {
     if (detailedProfile) {
+      // DB enum 값을 한글 표시값으로 변환
+      const mappedAnimals = detailedProfile.treatmentAnimals.map(animal => 
+        ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] || animal
+      );
+      const mappedFields = detailedProfile.treatmentFields.map(field => 
+        SPECIALTY_TYPE_LABELS[field as keyof typeof SPECIALTY_TYPE_LABELS] || field
+      );
+
+      console.log("[HospitalProfileEditPage] Loading detailed profile:", {
+        originalAnimals: detailedProfile.treatmentAnimals,
+        mappedAnimals,
+        originalFields: detailedProfile.treatmentFields,
+        mappedFields
+      });
+
       setFormData({
         hospitalLogo: detailedProfile.hospitalLogo || hospitalImage.src,
         hospitalName: detailedProfile.hospitalName,
@@ -63,25 +92,39 @@ export default function HospitalProfileEditPage() {
         phone: detailedProfile.phone,
         businessNumber: detailedProfile.businessNumber,
         email: detailedProfile.email || "",
-        treatmentAnimals: detailedProfile.treatmentAnimals,
-        treatmentFields: detailedProfile.treatmentFields,
+        treatmentAnimals: mappedAnimals,
+        treatmentFields: mappedFields,
         description: detailedProfile.description || "",
       });
-    } else if (basicProfile && currentUser) {
-      // 상세 프로필이 없으면 기본 프로필로 초기화
+    } else if (basicProfile || currentUser) {
+      // 상세 프로필이 없으면 기본 프로필 또는 유저 정보로 초기화
+      const mappedAnimals = basicProfile?.treatmentAnimals?.map(animal => 
+        ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] || animal
+      ) || [];
+      const mappedFields = basicProfile?.treatmentSpecialties?.map(field => 
+        SPECIALTY_TYPE_LABELS[field as keyof typeof SPECIALTY_TYPE_LABELS] || field
+      ) || [];
+
+      console.log("[HospitalProfileEditPage] Loading basic profile:", {
+        originalAnimals: basicProfile?.treatmentAnimals,
+        mappedAnimals,
+        originalFields: basicProfile?.treatmentSpecialties,
+        mappedFields
+      });
+
       setFormData({
         hospitalLogo: hospitalImage.src,
-        hospitalName: basicProfile.hospitalName,
-        establishedDate: "2024-01-01",
-        address: basicProfile.address,
+        hospitalName: basicProfile?.hospitalName || (currentUser as any)?.hospitalName || "",
+        establishedDate: "",
+        address: basicProfile?.address || "",
         detailAddress: "",
-        website: basicProfile.website || "",
-        phone: basicProfile.phone,
-        businessNumber: basicProfile.businessNumber,
-        email: currentUser.email,
-        treatmentAnimals: [],
-        treatmentFields: [],
-        description: basicProfile.description || "",
+        website: basicProfile?.website || "",
+        phone: basicProfile?.phone || currentUser?.phone || "",
+        businessNumber: basicProfile?.businessNumber || "",
+        email: currentUser?.email || "",
+        treatmentAnimals: mappedAnimals,
+        treatmentFields: mappedFields,
+        description: basicProfile?.description || "",
       });
     }
   }, [detailedProfile, basicProfile, currentUser]);
@@ -92,9 +135,27 @@ export default function HospitalProfileEditPage() {
 
   const handleSave = async () => {
     try {
+      // 한글 표시값을 DB enum 값으로 변환
+      const treatmentAnimalsEnum = formData.treatmentAnimals.map(animal => 
+        ANIMAL_LABEL_TO_ENUM[animal as keyof typeof ANIMAL_LABEL_TO_ENUM] || animal
+      );
+      const treatmentFieldsEnum = formData.treatmentFields.map(field => 
+        SPECIALTY_LABEL_TO_ENUM[field as keyof typeof SPECIALTY_LABEL_TO_ENUM] || field
+      );
+
+      console.log("[HospitalProfileEditPage] Saving data:", {
+        displayAnimals: formData.treatmentAnimals,
+        enumAnimals: treatmentAnimalsEnum,
+        displayFields: formData.treatmentFields,
+        enumFields: treatmentFieldsEnum
+      });
+
       // 폼 데이터를 DetailedHospitalProfileData 형식으로 변환
       const saveData: DetailedHospitalProfileData = {
-        hospitalLogo: formData.hospitalLogo === hospitalImage.src ? undefined : formData.hospitalLogo,
+        hospitalLogo:
+          formData.hospitalLogo === hospitalImage.src
+            ? undefined
+            : formData.hospitalLogo,
         hospitalName: formData.hospitalName,
         businessNumber: formData.businessNumber,
         address: formData.address,
@@ -105,39 +166,43 @@ export default function HospitalProfileEditPage() {
         establishedDate: formData.establishedDate || undefined,
         detailAddress: formData.detailAddress || undefined,
         email: formData.email || undefined,
-        treatmentAnimals: formData.treatmentAnimals,
-        treatmentFields: formData.treatmentFields,
-        
+        treatmentAnimals: treatmentAnimalsEnum,
+        treatmentFields: treatmentFieldsEnum,
+
         // 운영 정보 (기본값)
         operatingHours: undefined,
         emergencyService: false,
         parkingAvailable: false,
         publicTransportInfo: undefined,
-        
+
         // 시설 정보 (기본값)
         totalBeds: undefined,
         surgeryRooms: undefined,
         xrayRoom: false,
         ctScan: false,
         ultrasound: false,
-        
+
         // 추가 서비스 (기본값)
         grooming: false,
         boarding: false,
         petTaxi: false,
-        
+
         // 인증 정보 (기본값)
         certifications: [],
         awards: [],
-        
+
         // 관계 데이터 (기본값)
         staff: undefined,
         equipments: undefined,
       };
 
       await saveProfileMutation.mutateAsync(saveData);
-      
-      alert(detailedProfile ? "프로필이 수정되었습니다." : "프로필이 생성되었습니다.");
+
+      alert(
+        detailedProfile
+          ? "프로필이 수정되었습니다."
+          : "프로필이 생성되었습니다."
+      );
       window.location.href = "/dashboard/hospital/profile";
     } catch (error) {
       console.error("프로필 저장 실패:", error);
@@ -145,29 +210,51 @@ export default function HospitalProfileEditPage() {
     }
   };
 
-  // 진료 동물 옵션
+  // 동물 타입 매핑 (DB enum -> 한글 표시)
+  const ANIMAL_TYPE_LABELS = {
+    'DOG': '반려견',
+    'CAT': '고양이', 
+    'EXOTIC': '특수동물',
+    'LARGE_ANIMAL': '대동물'
+  };
+
+  // 진료 분야 매핑 (DB enum -> 한글 표시)
+  const SPECIALTY_TYPE_LABELS = {
+    'INTERNAL_MEDICINE': '내과',
+    'SURGERY': '외과',
+    'DERMATOLOGY': '피부과',
+    'DENTISTRY': '치과',
+    'OPHTHALMOLOGY': '안과',
+    'NEUROLOGY': '신경과',
+    'ORTHOPEDICS': '정형외과'
+  };
+
+  // 한글 표시 -> DB enum 매핑 (역방향)
+  const ANIMAL_LABEL_TO_ENUM = Object.fromEntries(
+    Object.entries(ANIMAL_TYPE_LABELS).map(([key, value]) => [value, key])
+  );
+
+  const SPECIALTY_LABEL_TO_ENUM = Object.fromEntries(
+    Object.entries(SPECIALTY_TYPE_LABELS).map(([key, value]) => [value, key])
+  );
+
+  // 진료 동물 옵션 (표시용)
   const animalOptions = [
-    { value: "호러치", label: "호러치" },
+    { value: "반려견", label: "반려견" },
     { value: "고양이", label: "고양이" },
-    { value: "파충류", label: "파충류" },
+    { value: "특수동물", label: "특수동물" },
     { value: "대동물", label: "대동물" },
-    { value: "산양생물", label: "산양생물" },
-    { value: "삵도류", label: "삵도류" },
-    { value: "약전대안", label: "약전대안" },
-    { value: "기타", label: "기타" },
   ];
 
-  // 진료 분야 옵션
+  // 진료 분야 옵션 (표시용)
   const fieldOptions = [
     { value: "내과", label: "내과" },
     { value: "외과", label: "외과" },
-    { value: "치과", label: "치과" },
     { value: "피부과", label: "피부과" },
+    { value: "치과", label: "치과" },
     { value: "안과", label: "안과" },
-    { value: "산양의학", label: "산양의학" },
+    { value: "신경과", label: "신경과" },
     { value: "정형외과", label: "정형외과" },
-    { value: "행동의학", label: "행동의학" },
-    { value: "기타", label: "기타" },
   ];
 
   // 로딩 상태
@@ -186,6 +273,22 @@ export default function HospitalProfileEditPage() {
     );
   }
 
+  // 인증되지 않은 사용자 체크
+  if (!detailedLoading && !basicLoading && !userLoading && !currentUser) {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
+        <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">로그인이 필요합니다.</p>
+              <Button onClick={() => window.location.href = "/auth/login"}>로그인하기</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // 에러 상태
   if (basicError || userError) {
     return (
@@ -193,8 +296,15 @@ export default function HospitalProfileEditPage() {
         <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <p className="text-red-600 mb-4">프로필 정보를 불러오는데 실패했습니다.</p>
-              <Button onClick={() => window.location.reload()}>다시 시도</Button>
+              <p className="text-red-600 mb-4">
+                프로필 정보를 불러오는데 실패했습니다.
+              </p>
+              <p className="text-gray-600 mb-4 text-sm">
+                {basicError?.message || userError?.message || "알 수 없는 오류가 발생했습니다."}
+              </p>
+              <Button onClick={() => window.location.reload()}>
+                다시 시도
+              </Button>
             </div>
           </div>
         </div>
@@ -221,7 +331,9 @@ export default function HospitalProfileEditPage() {
                 </label>
                 <InputBox
                   value={formData.hospitalName}
-                  onChange={(value) => setFormData({ ...formData, hospitalName: value })}
+                  onChange={(value) =>
+                    setFormData({ ...formData, hospitalName: value })
+                  }
                   placeholder="병원명을 입력해 주세요"
                 />
               </div>
@@ -233,7 +345,12 @@ export default function HospitalProfileEditPage() {
                 </label>
                 <DatePicker
                   value={new Date(formData.establishedDate)}
-                  onChange={(date) => setFormData({ ...formData, establishedDate: date.toISOString().split('T')[0] })}
+                  onChange={(date) =>
+                    setFormData({
+                      ...formData,
+                      establishedDate: date.toISOString().split("T")[0],
+                    })
+                  }
                   placeholder="설립일을 선택해주세요"
                 />
               </div>
@@ -243,8 +360,12 @@ export default function HospitalProfileEditPage() {
             <AddressSearch
               address={formData.address}
               detailAddress={formData.detailAddress}
-              onAddressChange={(address) => setFormData({ ...formData, address })}
-              onDetailAddressChange={(detailAddress) => setFormData({ ...formData, detailAddress })}
+              onAddressChange={(address) =>
+                setFormData({ ...formData, address })
+              }
+              onDetailAddressChange={(detailAddress) =>
+                setFormData({ ...formData, detailAddress })
+              }
             />
 
             <div className="flex flex-col lg:flex-row gap-[16px]">
@@ -255,7 +376,9 @@ export default function HospitalProfileEditPage() {
                 </label>
                 <InputBox
                   value={formData.website}
-                  onChange={(value) => setFormData({ ...formData, website: value })}
+                  onChange={(value) =>
+                    setFormData({ ...formData, website: value })
+                  }
                   placeholder="병원 웹사이트 URL을 입력해주세요"
                 />
               </div>
@@ -267,7 +390,9 @@ export default function HospitalProfileEditPage() {
                 </label>
                 <InputBox
                   value={formData.phone}
-                  onChange={(value) => setFormData({ ...formData, phone: value })}
+                  onChange={(value) =>
+                    setFormData({ ...formData, phone: value })
+                  }
                   placeholder="대표 연락처를 입력해주세요"
                 />
               </div>
@@ -280,7 +405,9 @@ export default function HospitalProfileEditPage() {
                 </label>
                 <InputBox
                   value={formData.businessNumber}
-                  onChange={(value) => setFormData({ ...formData, businessNumber: value })}
+                  onChange={(value) =>
+                    setFormData({ ...formData, businessNumber: value })
+                  }
                   placeholder="사업자등록번호를 입력해주세요"
                 />
               </div>
@@ -292,7 +419,9 @@ export default function HospitalProfileEditPage() {
                 </label>
                 <InputBox
                   value={formData.email}
-                  onChange={(value) => setFormData({ ...formData, email: value })}
+                  onChange={(value) =>
+                    setFormData({ ...formData, email: value })
+                  }
                   placeholder="대표 이메일을 입력해주세요"
                 />
               </div>
@@ -305,7 +434,9 @@ export default function HospitalProfileEditPage() {
               </label>
               <FilterBox.Group
                 value={formData.treatmentAnimals}
-                onChange={(values) => setFormData({ ...formData, treatmentAnimals: values })}
+                onChange={(values) =>
+                  setFormData({ ...formData, treatmentAnimals: values })
+                }
               >
                 {animalOptions.map((option) => (
                   <FilterBox.Item key={option.value} value={option.value}>
@@ -322,7 +453,9 @@ export default function HospitalProfileEditPage() {
               </label>
               <FilterBox.Group
                 value={formData.treatmentFields}
-                onChange={(values) => setFormData({ ...formData, treatmentFields: values })}
+                onChange={(values) =>
+                  setFormData({ ...formData, treatmentFields: values })
+                }
               >
                 {fieldOptions.map((option) => (
                   <FilterBox.Item key={option.value} value={option.value}>
@@ -341,7 +474,10 @@ export default function HospitalProfileEditPage() {
                 <ProfileImageUpload
                   value={formData.hospitalLogo}
                   onChange={(url) => {
-                    setFormData({ ...formData, hospitalLogo: url || undefined });
+                    setFormData({
+                      ...formData,
+                      hospitalLogo: url || undefined,
+                    });
                   }}
                   folder="hospitals"
                 />
@@ -355,7 +491,9 @@ export default function HospitalProfileEditPage() {
               </label>
               <Textarea
                 value={formData.description}
-                onChange={(value) => setFormData({ ...formData, description: value })}
+                onChange={(value) =>
+                  setFormData({ ...formData, description: value })
+                }
                 placeholder="병원을 간단하게 소개해 주세요"
                 rows={5}
               />
@@ -378,7 +516,11 @@ export default function HospitalProfileEditPage() {
                 disabled={saveProfileMutation.isPending}
                 className="px-[40px]"
               >
-                {saveProfileMutation.isPending ? "저장 중..." : detailedProfile ? "수정하기" : "저장하기"}
+                {saveProfileMutation.isPending
+                  ? "저장 중..."
+                  : detailedProfile
+                  ? "수정하기"
+                  : "저장하기"}
               </Button>
             </div>
           </div>

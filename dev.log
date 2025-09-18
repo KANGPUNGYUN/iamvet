@@ -1,0 +1,1014 @@
+
+> iamvet@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.3
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.11:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 1291ms
+ ○ Compiling /api/db-check ...
+ ✓ Compiled /api/db-check in 560ms (364 modules)
+=== Database Health Check ===
+Users table columns: [
+  { column_name: 'id', data_type: 'text', is_nullable: 'NO' },
+  { column_name: 'email', data_type: 'text', is_nullable: 'NO' },
+  { column_name: 'phone', data_type: 'text', is_nullable: 'NO' },
+  {
+    column_name: 'passwordHash',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'profileImage',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'userType',
+    data_type: 'USER-DEFINED',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'provider',
+    data_type: 'USER-DEFINED',
+    is_nullable: 'NO'
+  },
+  { column_name: 'isActive', data_type: 'boolean', is_nullable: 'NO' },
+  {
+    column_name: 'termsAgreedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'privacyAgreedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'marketingAgreedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'deletedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'withdrawReason',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'restoredAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'createdAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'updatedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  { column_name: 'realName', data_type: 'text', is_nullable: 'NO' },
+  {
+    column_name: 'birthDate',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'nickname',
+    data_type: 'character varying',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'loginId',
+    data_type: 'character varying',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'universityEmail',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalName',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'establishedDate',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'businessNumber',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalWebsite',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalLogo',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalAddress',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalAddressDetail',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'licenseImage',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  { column_name: 'seq', data_type: 'integer', is_nullable: 'NO' }
+]
+Hospital-related tables: [
+  { table_name: 'hospital_animals' },
+  { table_name: 'hospital_facility_images' },
+  { table_name: 'hospital_specialties' },
+  { table_name: 'hospital_business_licenses' },
+  { table_name: 'hospital_profiles' },
+  { table_name: 'hospital_evaluations' },
+  { table_name: 'detailed_hospital_profiles' },
+  { table_name: 'hospital_staff' },
+  { table_name: 'hospital_equipments' }
+]
+hospital_animals table exists
+hospital_specialties table exists
+ GET /api/db-check 200 in 1620ms
+=== Database Health Check ===
+Users table columns: [
+  { column_name: 'id', data_type: 'text', is_nullable: 'NO' },
+  { column_name: 'email', data_type: 'text', is_nullable: 'NO' },
+  { column_name: 'phone', data_type: 'text', is_nullable: 'NO' },
+  {
+    column_name: 'passwordHash',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'profileImage',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'userType',
+    data_type: 'USER-DEFINED',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'provider',
+    data_type: 'USER-DEFINED',
+    is_nullable: 'NO'
+  },
+  { column_name: 'isActive', data_type: 'boolean', is_nullable: 'NO' },
+  {
+    column_name: 'termsAgreedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'privacyAgreedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'marketingAgreedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'deletedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'withdrawReason',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'restoredAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'createdAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  {
+    column_name: 'updatedAt',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'NO'
+  },
+  { column_name: 'realName', data_type: 'text', is_nullable: 'NO' },
+  {
+    column_name: 'birthDate',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'nickname',
+    data_type: 'character varying',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'loginId',
+    data_type: 'character varying',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'universityEmail',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalName',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'establishedDate',
+    data_type: 'timestamp without time zone',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'businessNumber',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalWebsite',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalLogo',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalAddress',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'hospitalAddressDetail',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  {
+    column_name: 'licenseImage',
+    data_type: 'text',
+    is_nullable: 'YES'
+  },
+  { column_name: 'seq', data_type: 'integer', is_nullable: 'NO' }
+]
+Hospital-related tables: [
+  { table_name: 'hospital_animals' },
+  { table_name: 'hospital_facility_images' },
+  { table_name: 'hospital_specialties' },
+  { table_name: 'hospital_business_licenses' },
+  { table_name: 'hospital_profiles' },
+  { table_name: 'hospital_evaluations' },
+  { table_name: 'detailed_hospital_profiles' },
+  { table_name: 'hospital_staff' },
+  { table_name: 'hospital_equipments' }
+]
+hospital_animals table exists
+hospital_specialties table exists
+ GET /api/db-check 200 in 800ms
+ ✓ Compiled in 10ms
+ ✓ Compiled in 98ms (275 modules)
+ ○ Compiling /dashboard/hospital/profile/edit ...
+ ✓ Compiled /dashboard/hospital/profile/edit in 2.5s (1692 modules)
+ ✓ Compiled in 382ms (544 modules)
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:26:23.125Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[saveDetailedHospitalProfile] Starting save for userId: oEX8Y1-PmAlfjEA0
+[saveDetailedHospitalProfile] Data to save: {
+  "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png",
+  "hospitalName": "아이엠벳병원",
+  "businessNumber": "111-11-11111",
+  "address": "서울 광진구 능동로 120-1 (화양동)",
+  "phone": "010-1111-1112",
+  "website": "https://www.naver.com",
+  "description": "안녕하세요 아이엠벳 병원입니다.",
+  "establishedDate": "2022-12-11",
+  "detailAddress": "건국대병원 101호",
+  "email": "test@naver.com",
+  "treatmentAnimals": [
+    "DOG",
+    "CAT"
+  ],
+  "treatmentFields": [
+    "INTERNAL_MEDICINE",
+    "DENTISTRY",
+    "DERMATOLOGY",
+    "SURGERY"
+  ],
+  "emergencyService": false,
+  "parkingAvailable": false,
+  "xrayRoom": false,
+  "ctScan": false,
+  "ultrasound": false,
+  "grooming": false,
+  "boarding": false,
+  "petTaxi": false,
+  "certifications": [],
+  "awards": []
+}
+[saveDetailedHospitalProfile] Updating existing profile: Uh2rcNHtIYdw688d
+[saveDetailedHospitalProfile] Deleted existing animals and specialties
+[saveDetailedHospitalProfile] Saved treatment animals: 2
+[saveDetailedHospitalProfile] Saved treatment specialties: 4
+[saveDetailedHospitalProfile] Profile saved successfully
+ POST /dashboard/hospital/profile/edit 200 in 4751ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getDetailedHospitalProfile] Retrieved data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+ POST /dashboard/hospital/profile/edit 200 in 465ms
+ ✓ Compiled /dashboard/hospital/profile in 359ms (1679 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /dashboard/hospital/profile 200 in 496ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /dashboard/hospital/profile 200 in 180ms
+ ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getDetailedHospitalProfile] Retrieved data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+ POST /dashboard/hospital/profile 200 in 445ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getHospitalProfile] Retrieved basic profile data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+[getHospitalProfile] Using users table data: {
+  userid: 'oEX8Y1-PmAlfjEA0',
+  hospitalName: '아이엠벳병원',
+  businessNumber: '111-11-11111',
+  address: '서울 광진구 능동로 120-1 (화양동)',
+  detailaddress: '건국대병원 101호',
+  phone: '010-1111-1112',
+  email: 'test@naver.com',
+  website: 'https://www.naver.com',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  establishedDate: 2022-12-11T00:00:00.000Z,
+  createdAt: 2025-09-18T07:02:55.566Z,
+  updatedAt: 2025-09-17T22:32:03.649Z
+}
+ POST /dashboard/hospital/profile 200 in 357ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /dashboard/hospital/profile/edit 200 in 63ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /dashboard/hospital/profile/edit 200 in 118ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getDetailedHospitalProfile] Retrieved data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+ POST /dashboard/hospital/profile/edit 200 in 625ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getHospitalProfile] Retrieved basic profile data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+[getHospitalProfile] Using users table data: {
+  userid: 'oEX8Y1-PmAlfjEA0',
+  hospitalName: '아이엠벳병원',
+  businessNumber: '111-11-11111',
+  address: '서울 광진구 능동로 120-1 (화양동)',
+  detailaddress: '건국대병원 101호',
+  phone: '010-1111-1112',
+  email: 'test@naver.com',
+  website: 'https://www.naver.com',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  establishedDate: 2022-12-11T00:00:00.000Z,
+  createdAt: 2025-09-18T07:02:55.566Z,
+  updatedAt: 2025-09-17T22:32:03.649Z
+}
+ POST /dashboard/hospital/profile/edit 200 in 347ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:03.649Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[saveDetailedHospitalProfile] Starting save for userId: oEX8Y1-PmAlfjEA0
+[saveDetailedHospitalProfile] Data to save: {
+  "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png",
+  "hospitalName": "아이엠벳병원",
+  "businessNumber": "111-11-11111",
+  "address": "서울 광진구 능동로 120-1 (화양동)",
+  "phone": "010-1111-1112",
+  "website": "https://www.naver.com",
+  "description": "안녕하세요 아이엠벳 병원입니다. 22",
+  "establishedDate": "2022-12-11",
+  "detailAddress": "건국대병원 101호",
+  "email": "test@naver.com",
+  "treatmentAnimals": [
+    "DOG",
+    "CAT"
+  ],
+  "treatmentFields": [
+    "INTERNAL_MEDICINE",
+    "DENTISTRY",
+    "DERMATOLOGY",
+    "SURGERY"
+  ],
+  "emergencyService": false,
+  "parkingAvailable": false,
+  "xrayRoom": false,
+  "ctScan": false,
+  "ultrasound": false,
+  "grooming": false,
+  "boarding": false,
+  "petTaxi": false,
+  "certifications": [],
+  "awards": []
+}
+[saveDetailedHospitalProfile] Updating existing profile: Uh2rcNHtIYdw688d
+[saveDetailedHospitalProfile] Deleted existing animals and specialties
+[saveDetailedHospitalProfile] Saved treatment animals: 2
+[saveDetailedHospitalProfile] Saved treatment specialties: 4
+[saveDetailedHospitalProfile] Profile saved successfully
+ POST /dashboard/hospital/profile/edit 200 in 1814ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getDetailedHospitalProfile] Retrieved data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+ POST /dashboard/hospital/profile/edit 200 in 455ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /dashboard/hospital/profile 200 in 57ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /dashboard/hospital/profile 200 in 119ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getDetailedHospitalProfile] Retrieved data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+ POST /dashboard/hospital/profile 200 in 448ms
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+[getHospitalProfile] Retrieved basic profile data: {
+  treatmentAnimals: [ 'DOG', 'CAT' ],
+  treatmentSpecialties: [ 'INTERNAL_MEDICINE', 'DENTISTRY', 'DERMATOLOGY', 'SURGERY' ]
+}
+[getHospitalProfile] Using users table data: {
+  userid: 'oEX8Y1-PmAlfjEA0',
+  hospitalName: '아이엠벳병원',
+  businessNumber: '111-11-11111',
+  address: '서울 광진구 능동로 120-1 (화양동)',
+  detailaddress: '건국대병원 101호',
+  phone: '010-1111-1112',
+  email: 'test@naver.com',
+  website: 'https://www.naver.com',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  establishedDate: 2022-12-11T00:00:00.000Z,
+  createdAt: 2025-09-18T07:02:55.566Z,
+  updatedAt: 2025-09-17T22:32:18.105Z
+}
+ POST /dashboard/hospital/profile 200 in 343ms
+ ✓ Compiled /dashboard/hospital in 454ms (1717 modules)
+ GET /dashboard/hospital 200 in 512ms
+ ✓ Compiled in 742ms (1737 modules)
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /dashboard/hospital 200 in 857ms
+ GET /dashboard/hospital 200 in 20ms
+ ✓ Compiled in 415ms (1737 modules)
+ GET /dashboard/hospital 200 in 102ms
+ ✓ Compiled in 381ms (1737 modules)
+ GET /dashboard/hospital 200 in 80ms
+ ✓ Compiled in 405ms (1737 modules)
+ GET /dashboard/hospital 200 in 82ms
+ ✓ Compiled in 298ms (1737 modules)
+[getCurrentUser] Getting profile for userType: HOSPITAL userId: oEX8Y1-PmAlfjEA0
+[getCurrentUser] Hospital profile data: {
+  userId: 'oEX8Y1-PmAlfjEA0',
+  profileName: '아이엠벳병원',
+  hospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userHospitalName: '아이엠벳병원',
+  userHospitalLogo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png',
+  userPhone: '010-1111-1112',
+  userEmail: 'test@naver.com'
+}
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "oEX8Y1-PmAlfjEA0",
+    "email": "test@naver.com",
+    "phone": "010-1111-1112",
+    "realName": "강대표",
+    "birthDate": null,
+    "userType": "HOSPITAL",
+    "profileImage": null,
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T07:02:55.566Z",
+    "privacyAgreedAt": "2025-09-18T07:02:55.566Z",
+    "marketingAgreedAt": "2025-09-18T07:02:55.566Z",
+    "createdAt": "2025-09-18T07:02:55.566Z",
+    "updatedAt": "2025-09-17T22:32:18.105Z",
+    "profileName": "아이엠벳병원",
+    "hospitalName": "아이엠벳병원",
+    "hospitalLogo": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/hospitals/cxtkwsc2frf7m5gpvobfhovu.png"
+  }
+}
+ POST /dashboard/hospital 200 in 550ms
+ GET /dashboard/hospital 200 in 18ms
+ ✓ Compiled in 361ms (1737 modules)
+ GET /dashboard/hospital 200 in 40ms
+ ✓ Compiled in 429ms (1737 modules)
+ GET /dashboard/hospital 200 in 39ms
+ ✓ Compiled /dashboard/hospital/my-jobs in 422ms (1730 modules)
+ GET /dashboard/hospital/my-jobs 200 in 486ms
+ ○ Compiling /dashboard/hospital/my-jobs/create ...
+ ✓ Compiled /dashboard/hospital/my-jobs/create in 504ms (1769 modules)
+ GET /dashboard/hospital/my-jobs/create 200 in 595ms
