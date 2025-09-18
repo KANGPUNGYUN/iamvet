@@ -90,8 +90,15 @@ import { allJobData } from "@/data/jobsData";
 import { allResumeData } from "@/data/resumesData";
 import { allTransferData } from "@/data/transfersData";
 import Link from "next/link";
+import ResumeCard from "@/components/ui/ResumeCard";
+import { useResumes } from "@/hooks/useResumes";
 
 export default function HomePage() {
+  // 이력서 목록 조회
+  const { data: resumesData, isLoading: resumesLoading } = useResumes({
+    limit: 5,
+    sort: "latest",
+  });
   // 수술 강의 필터링
   const surgeryLectures = allLecturesData
     .filter((lecture) => lecture.medicalField === "surgery")
@@ -105,8 +112,7 @@ export default function HomePage() {
   // 구인정보 데이터 (최신 5개)
   const jobPostings = allJobData.slice(0, 5);
 
-  // 구직정보 데이터 (최신 5개)
-  const resumePostings = allResumeData.slice(0, 5);
+  // 구직정보 데이터는 useResumes 훅에서 가져옴
 
   // 양도매물 데이터 카테고리별 필터링
   const hospitalTransfers = allTransferData
@@ -554,6 +560,93 @@ export default function HomePage() {
                 className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar pb-4"
                 style={{ alignSelf: "stretch" }}
               >
+                {resumesLoading
+                  ? // 로딩 스켈레톤
+                    [...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] mx-auto flex-shrink-0 animate-pulse"
+                      >
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="h-6 bg-gray-200 rounded w-full mb-4"></div>
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                        </div>
+                      </div>
+                    ))
+                  : resumesData?.data?.map((resume) => {
+                      // 한국어 라벨 변환
+                      const getKoreanLabel = (keyword: string) => {
+                        const labelMap: { [key: string]: string } = {
+                          internal: "내과",
+                          surgery: "외과",
+                          dermatology: "피부과",
+                          orthopedics: "정형외과",
+                          veterinarian: "수의사",
+                          assistant: "수의테크니션",
+                          manager: "병원장",
+                          beginner: "초급",
+                          intermediate: "중급",
+                          advanced: "고급",
+                          expert: "전문가",
+                        };
+                        return labelMap[keyword?.toLowerCase()] || keyword;
+                      };
+
+                      // 태그 준비
+                      const tags = resume.specialties
+                        ? resume.specialties
+                            .map((spec) => getKoreanLabel(spec))
+                            .slice(0, 5)
+                        : [];
+
+                      // 위치 정보
+                      const location =
+                        resume.preferredRegions &&
+                        resume.preferredRegions.length > 0
+                          ? resume.preferredRegions[0]
+                          : "지역 미정";
+
+                      // 경력 정보
+                      const position = resume.position
+                        ? getKoreanLabel(resume.position)
+                        : "수의사";
+
+                      // 날짜 계산 (수정일로부터 며칠 지났는지)
+                      const updatedDate = new Date(
+                        resume.updatedAt || resume.createdAt
+                      );
+                      const today = new Date();
+                      const diffTime = today.getTime() - updatedDate.getTime();
+                      const diffDays = Math.ceil(
+                        diffTime / (1000 * 60 * 60 * 24)
+                      );
+                      const dDay = `${diffDays}일 전`;
+
+                      return (
+                        <JobInfoCard
+                          key={resume.id}
+                          hospital={resume.name}
+                          dDay={dDay}
+                          position={position}
+                          location={location}
+                          jobType="구직자"
+                          tags={tags}
+                          isBookmarked={false}
+                          onClick={() =>
+                            (window.location.href = `/resumes/${resume.id}`)
+                          }
+                        />
+                      );
+                    })}
+              </div>
+            </Tab.Content>
+            <Tab.Content value="surgery">
+              <div
+                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar pb-4"
+                style={{ alignSelf: "stretch" }}
+              >
                 {jobPostings.map((job) => (
                   <JobInfoCard
                     key={job.id}
@@ -565,28 +658,6 @@ export default function HomePage() {
                     tags={job.tags}
                     isBookmarked={job.isBookmarked}
                     onClick={() => (window.location.href = `/jobs/${job.id}`)}
-                  />
-                ))}
-              </div>
-            </Tab.Content>
-            <Tab.Content value="surgery">
-              <div
-                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar pb-4"
-                style={{ alignSelf: "stretch" }}
-              >
-                {resumePostings.map((resume) => (
-                  <JobInfoCard
-                    key={resume.id}
-                    hospital={resume.name}
-                    dDay={resume.lastAccessDate}
-                    position={resume.experience}
-                    location={resume.preferredLocation}
-                    jobType="구직자"
-                    tags={resume.keywords}
-                    isBookmarked={resume.isBookmarked}
-                    onClick={() =>
-                      (window.location.href = `/resumes/${resume.id}`)
-                    }
                   />
                 ))}
               </div>

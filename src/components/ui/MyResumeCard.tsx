@@ -31,30 +31,69 @@ const MyResumeCard: React.FC<MyResumeCardProps> = ({
   const name = resume?.name || profile?.nickname || propName || "닉네임을 설정해주세요";
   const description = resume?.introduction || resume?.selfIntroduction || (profile as any)?.experience || propDescription || "자기소개를 작성해주세요";
   
+  // 영어 키워드를 한국어로 변환하는 매핑
+  const getKoreanLabel = (keyword: string) => {
+    const labelMap: { [key: string]: string } = {
+      // 전공 분야 (specialties)
+      'internal': '내과',
+      'surgery': '외과',
+      'dermatology': '피부과',
+      'orthopedics': '정형외과',
+      'ophthalmology': '안과',
+      'dentistry': '치과',
+      'emergency': '응급의학과',
+      'cardiology': '심장내과',
+      'neurology': '신경과',
+      'oncology': '종양학과',
+      'anesthesiology': '마취과',
+      'radiology': '영상의학과',
+      'pathology': '병리과',
+      'laboratory': '임상병리과',
+      
+      // 직무 (position)
+      'veterinarian': '수의사',
+      'assistant': '수의테크니션',
+      'manager': '병원장',
+      'intern': '인턴',
+      'resident': '전공의',
+      
+      // 숙련도 (proficiency)
+      'beginner': '초급',
+      'intermediate': '중급',
+      'advanced': '고급',
+      'expert': '전문가',
+    };
+    
+    return labelMap[keyword.toLowerCase()] || keyword;
+  };
+
   // 이력서에서 키워드 추출 (specialties, medicalCapabilities 등에서)
   const getResumeKeywords = () => {
     if (!resume) return propKeywords || ["전문 분야를 설정해주세요"];
     
     const keywords = [];
     
-    // 전공 분야 (specialties)
+    // 전공 분야 (specialties) - 한국어로 변환
     if (resume.specialties && resume.specialties.length > 0) {
-      keywords.push(...resume.specialties.slice(0, 3)); // 최대 3개만
+      const translatedSpecialties = resume.specialties
+        .map(specialty => getKoreanLabel(specialty))
+        .slice(0, 3); // 최대 3개만
+      keywords.push(...translatedSpecialties);
     }
     
-    // 진료상세역량에서 추가 키워드 (부족할 때만)
+    // 진료상세역량에서 추가 키워드 (부족할 때만) - 한국어로 변환
     if (keywords.length < 3 && resume.medicalCapabilities && resume.medicalCapabilities.length > 0) {
       const remainingSlots = 3 - keywords.length;
       const capabilities = resume.medicalCapabilities
         .filter(cap => cap.field && cap.field.trim())
-        .map(cap => cap.field)
+        .map(cap => getKoreanLabel(cap.field))
         .slice(0, remainingSlots);
       keywords.push(...capabilities);
     }
     
-    // 직무 정보 (부족할 때만)
+    // 직무 정보 (부족할 때만) - 한국어로 변환
     if (keywords.length < 3 && resume.position) {
-      keywords.push(resume.position);
+      keywords.push(getKoreanLabel(resume.position));
     }
     
     return keywords.filter(Boolean).length > 0 ? keywords : ["전문 분야를 설정해주세요"];

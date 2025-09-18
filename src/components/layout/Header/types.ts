@@ -7,6 +7,8 @@ export interface User {
   avatar?: string;
   type?: "veterinarian" | "hospital";
   profileName?: string; // 수의사: 닉네임, 병원: 병원명
+  profileImage?: string; // 수의사/학생: 프로필 이미지
+  hospitalLogo?: string; // 병원: 병원 로고
 }
 
 export interface NavigationItem {

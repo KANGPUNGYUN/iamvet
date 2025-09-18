@@ -3,6 +3,34 @@ const nextConfig = {
   // skipMiddlewareUrlNormalize를 experimental 밖으로 이동
   skipMiddlewareUrlNormalize: true,
 
+  // 외부 이미지 도메인 허용
+  images: {
+    domains: [
+      'ssl.pstatic.net', // 네이버 프로필 이미지
+      'k.kakaocdn.net', // 카카오 프로필 이미지
+      'lh3.googleusercontent.com', // 구글 프로필 이미지
+      'iamvet-bucket.s3.ap-northeast-2.amazonaws.com', // S3 버킷
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.pstatic.net',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.kakaocdn.net',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
+      },
+    ],
+  },
+
   experimental: {
     // Next.js 15에서 appDir는 기본값이므로 제거
     // devToolsButton은 더 이상 사용되지 않음

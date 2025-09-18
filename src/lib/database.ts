@@ -634,14 +634,23 @@ export const incrementResumeViewCount = async (
 };
 
 export const getResumesWithPagination = async (params: any) => {
+  console.log("[getResumesWithPagination] 파라미터:", params);
+  
+  // detailed_resumes 테이블에서 직접 조회
   let query = `
-    SELECT v.*, u.email, u.phone, u.profile_image, u.last_login_at,
-           COUNT(DISTINCT ve.id) as evaluation_count,
-           AVG(ve.overall_rating) as average_rating
-    FROM veterinarians v
-    JOIN users u ON v.user_id = u.id
-    LEFT JOIN veterinarian_evaluations ve ON v.id = ve.veterinarian_id
-    WHERE v.is_profile_public = true AND u.deleted_at IS NULL
+    SELECT 
+      dr.id,
+      dr.name,
+      dr.photo,
+      dr.introduction,
+      dr."selfIntroduction",
+      dr.position,
+      dr.specialties,
+      dr."preferredRegions",
+      dr."createdAt",
+      dr."updatedAt"
+    FROM detailed_resumes dr
+    WHERE 1=1
   `;
 
   const queryParams: any[] = [];
@@ -650,47 +659,39 @@ export const getResumesWithPagination = async (params: any) => {
   // 키워드 검색
   if (params.keyword) {
     paramCount++;
-    query += ` AND (v.nickname ILIKE $${paramCount} OR v.introduction ILIKE $${paramCount} OR v.self_introduction ILIKE $${paramCount})`;
+    query += ` AND (dr.name ILIKE $${paramCount} OR dr.introduction ILIKE $${paramCount} OR dr."selfIntroduction" ILIKE $${paramCount})`;
     queryParams.push(`%${params.keyword}%`);
-  }
-
-  // 근무 형태 필터
-  if (params.workType) {
-    paramCount++;
-    query += ` AND v.preferred_work_type = $${paramCount}`;
-    queryParams.push(params.workType);
-  }
-
-  // 경력 필터
-  if (params.experience) {
-    paramCount++;
-    query += ` AND v.total_experience = $${paramCount}`;
-    queryParams.push(params.experience);
   }
 
   // 지역 필터
   if (params.region) {
     paramCount++;
-    query += ` AND $${paramCount} = ANY(v.preferred_regions)`;
+    query += ` AND $${paramCount} = ANY(dr."preferredRegions")`;
     queryParams.push(params.region);
   }
-
-  query += " GROUP BY v.id, u.id";
 
   // 정렬
   switch (params.sort) {
     case "latest":
-      query += " ORDER BY v.updated_at DESC";
+      query += ' ORDER BY dr."updatedAt" DESC';
       break;
     case "oldest":
-      query += " ORDER BY v.created_at ASC";
-      break;
-    case "view":
-      query += " ORDER BY evaluation_count DESC, v.updated_at DESC";
+      query += ' ORDER BY dr."createdAt" ASC';
       break;
     default:
-      query += " ORDER BY v.updated_at DESC";
+      query += ' ORDER BY dr."updatedAt" DESC';
   }
+
+  // 전체 개수 조회를 위한 쿼리 (LIMIT/OFFSET 없이)
+  const countQuery = query.replace(
+    /SELECT[\s\S]*?FROM/,
+    "SELECT COUNT(*) as total FROM"
+  ).replace(/ORDER BY[\s\S]*$/, "");
+  
+  console.log("[getResumesWithPagination] Count 쿼리:", countQuery);
+  const countResult = await pool.query(countQuery, queryParams);
+  const totalCount = parseInt(countResult.rows[0]?.total || "0");
+  console.log("[getResumesWithPagination] 전체 개수:", totalCount);
 
   // 페이지네이션
   const offset = (params.page - 1) * params.limit;
@@ -698,8 +699,18 @@ export const getResumesWithPagination = async (params: any) => {
   query += ` LIMIT $${paramCount - 1} OFFSET $${paramCount}`;
   queryParams.push(params.limit, offset);
 
+  console.log("[getResumesWithPagination] 최종 쿼리:", query);
+  console.log("[getResumesWithPagination] 쿼리 파라미터:", queryParams);
+  
   const result = await pool.query(query, queryParams);
-  return result.rows;
+  console.log("[getResumesWithPagination] 조회된 레코드 수:", result.rows.length);
+  
+  return {
+    data: result.rows,
+    total: totalCount,
+    currentPage: params.page,
+    totalPages: Math.ceil(totalCount / params.limit)
+  };
 };
 
 export const getResumeById = async (veterinarianId: string) => {

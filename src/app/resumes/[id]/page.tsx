@@ -8,95 +8,16 @@ import {
   MoreVerticalIcon,
   EditIcon,
   TrashIcon,
-  LocationIcon,
   BookmarkFilledIcon,
   BookmarkIcon,
   PhoneIcon,
   MailIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  StarEmptyIcon,
-  StarFilledIcon,
-  StarHalfIcon,
 } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
 import ResumeCard from "@/components/ui/ResumeCard/ResumeCard";
 import { Tab } from "@/components/ui/Tab";
-import { getResumeById, DetailedResumeData } from "@/data/resumesData";
-import profileImg from "@/assets/images/profile.png";
-
-// 별점 표시 컴포넌트 (소수점 지원)
-const StarRating = ({
-  rating,
-  size = 16,
-}: {
-  rating: number;
-  size?: number;
-}) => {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    if (rating >= i) {
-      // 완전히 채워진 별
-      stars.push(<StarFilledIcon key={i} size={size} />);
-    } else if (rating >= i - 0.5) {
-      // 반쯤 채워진 별
-      stars.push(<StarHalfIcon key={i} size={size} />);
-    } else {
-      // 빈 별
-      stars.push(<StarEmptyIcon key={i} size={size} />);
-    }
-  }
-  return <div className="flex gap-1">{stars}</div>;
-};
-
-// 인터랙티브 별점 컴포넌트
-const InteractiveStarRating = ({
-  rating,
-  onRatingChange,
-  size = 20,
-}: {
-  rating: number;
-  onRatingChange: (rating: number) => void;
-  size?: number;
-}) => {
-  const [hoveredRating, setHoveredRating] = useState(0);
-
-  const handleStarClick = (starRating: number) => {
-    onRatingChange(starRating);
-  };
-
-  const handleStarHover = (starRating: number) => {
-    setHoveredRating(starRating);
-  };
-
-  const handleStarLeave = () => {
-    setHoveredRating(0);
-  };
-
-  const displayRating = hoveredRating > 0 ? hoveredRating : rating;
-
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((starNumber) => (
-        <button
-          key={starNumber}
-          type="button"
-          className="cursor-pointer hover:scale-110 transition-transform"
-          onClick={() => handleStarClick(starNumber)}
-          onMouseEnter={() => handleStarHover(starNumber)}
-          onMouseLeave={handleStarLeave}
-        >
-          {starNumber <= displayRating ? (
-            <StarFilledIcon size={size} />
-          ) : (
-            <StarEmptyIcon size={size} />
-          )}
-        </button>
-      ))}
-    </div>
-  );
-};
+import { useResumeDetail } from "@/hooks/useResumeDetail";
 
 // 관련 인재 정보 (임시 데이터)
 const relatedResumes = [
@@ -136,14 +57,20 @@ export default function ResumeDetailPage({
 }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [expandedEvaluations, setExpandedEvaluations] = useState<number[]>([]);
-  const [showRatingModal, setShowRatingModal] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
     subject: "",
     message: "",
   });
+  
+  // 평가하기 관련 상태 (향후 API 연동 예정)
+  const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratings, setRatings] = useState({
+    communication: 0,
+    professionalism: 0,
+    skills: 0,
+    punctuality: 0,
+    reliability: 0,
     stressManagement: 0,
     growth: 0,
     care: 0,
@@ -151,21 +78,38 @@ export default function ResumeDetailPage({
     contribution: 0,
   });
   const [comments, setComments] = useState({
+    communication: "",
+    professionalism: "",
+    skills: "",
+    punctuality: "",
+    reliability: "",
     stressManagement: "",
     growth: "",
     care: "",
     documentation: "",
     contribution: "",
   });
+
   const { id } = use(params);
+  const { data: resumeData, isLoading, error } = useResumeDetail(id);
 
-  const resumeData = getResumeById(id);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-key1 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">이력서를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
-  if (!resumeData) {
+  if (error || !resumeData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">이력서를 찾을 수 없습니다</h1>
+          <p className="text-gray-600 mb-4">{error || "이력서가 존재하지 않습니다."}</p>
           <Link href="/resumes" className="text-blue-600 hover:underline">
             이력서 목록으로 돌아가기
           </Link>
@@ -179,58 +123,62 @@ export default function ResumeDetailPage({
     setIsBookmarked(!isBookmarked);
   };
 
-  const toggleEvaluation = (evaluationId: number) => {
-    setExpandedEvaluations((prev) =>
-      prev.includes(evaluationId)
-        ? prev.filter((id) => id !== evaluationId)
-        : [...prev, evaluationId]
-    );
+  // 한국어 라벨 변환 함수
+  const getKoreanLabel = (keyword: string) => {
+    const labelMap: { [key: string]: string } = {
+      'internal': '내과',
+      'surgery': '외과',
+      'dermatology': '피부과',
+      'orthopedics': '정형외과',
+      'veterinarian': '수의사',
+      'assistant': '수의테크니션',
+      'manager': '병원장',
+      'fulltime': '정규직',
+      'parttime': '파트타임',
+      'contract': '계약직',
+      'seoul': '서울',
+      'immediate': '즉시 가능',
+      // 근무 요일 맵핑
+      'monday': '월요일',
+      'tuesday': '화요일',
+      'wednesday': '수요일',
+      'thursday': '목요일',
+      'friday': '금요일',
+      'saturday': '토요일',
+      'sunday': '일요일',
+      'mon': '월',
+      'tue': '화',
+      'wed': '수',
+      'thu': '목',
+      'fri': '금',
+      'sat': '토',
+      'sun': '일'
+    };
+    return labelMap[keyword?.toLowerCase()] || keyword;
   };
 
-  // 전체 평균 계산
-  const calculateOverallAverage = () => {
-    return resumeData.evaluations.overallAverage.toFixed(1);
-  };
-
-  // 평가 모달 관련 함수들
-  const handleRatingChange = (
-    category: keyof typeof ratings,
-    rating: number
-  ) => {
-    setRatings((prev) => ({ ...prev, [category]: rating }));
-  };
-
-  const handleCommentChange = (
-    category: keyof typeof comments,
-    comment: string
-  ) => {
-    setComments((prev) => ({ ...prev, [category]: comment }));
-  };
-
-  const handleModalClose = () => {
-    setShowRatingModal(false);
-  };
-
-  const handleRatingSubmit = () => {
-    // 평가 제출 로직 (나중에 구현)
-    console.log("평가 제출:", { ratings, comments });
-    setShowRatingModal(false);
-  };
-
-  const resetRatingForm = () => {
-    setRatings({
-      stressManagement: 0,
-      growth: 0,
-      care: 0,
-      documentation: 0,
-      contribution: 0,
-    });
-    setComments({
-      stressManagement: "",
-      growth: "",
-      care: "",
-      documentation: "",
-      contribution: "",
+  // 요일을 월화수목금토일 순서로 정렬하는 함수
+  const sortWeekdays = (weekdays: string[]) => {
+    const weekdayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const shortWeekdayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    
+    return weekdays.sort((a, b) => {
+      const aLower = a.toLowerCase();
+      const bLower = b.toLowerCase();
+      
+      // 전체 형태 요일 순서 확인
+      let aIndex = weekdayOrder.indexOf(aLower);
+      let bIndex = weekdayOrder.indexOf(bLower);
+      
+      // 축약 형태 요일 순서 확인
+      if (aIndex === -1) aIndex = shortWeekdayOrder.indexOf(aLower);
+      if (bIndex === -1) bIndex = shortWeekdayOrder.indexOf(bLower);
+      
+      // 순서를 찾지 못한 경우 원래 순서 유지
+      if (aIndex === -1) aIndex = 999;
+      if (bIndex === -1) bIndex = 999;
+      
+      return aIndex - bIndex;
     });
   };
 
@@ -252,6 +200,71 @@ export default function ResumeDetailPage({
       message: "",
     });
     setContactModalOpen(false);
+  };
+
+  // 평가하기 관련 핸들러 (향후 API 연동 예정)
+  const handleModalClose = () => {
+    setShowRatingModal(false);
+  };
+
+  const handleRatingChange = (category: string, rating: number) => {
+    setRatings(prev => ({ ...prev, [category]: rating }));
+  };
+
+  const handleCommentChange = (category: string, comment: string) => {
+    setComments(prev => ({ ...prev, [category]: comment }));
+  };
+
+  const resetRatingForm = () => {
+    setRatings({
+      communication: 0,
+      professionalism: 0,
+      skills: 0,
+      punctuality: 0,
+      reliability: 0,
+      stressManagement: 0,
+      growth: 0,
+      care: 0,
+      documentation: 0,
+      contribution: 0,
+    });
+    setComments({
+      communication: "",
+      professionalism: "",
+      skills: "",
+      punctuality: "",
+      reliability: "",
+      stressManagement: "",
+      growth: "",
+      care: "",
+      documentation: "",
+      contribution: "",
+    });
+  };
+
+  const handleRatingSubmit = () => {
+    // 평가 제출 로직 추가 (향후 API 연동)
+    console.log("평가 제출:", { ratings, comments });
+    setShowRatingModal(false);
+    resetRatingForm();
+  };
+
+  // 임시 InteractiveStarRating 컴포넌트 (향후 실제 컴포넌트로 교체)
+  const InteractiveStarRating = ({ rating, onRatingChange, size }: { rating: number; onRatingChange: (rating: number) => void; size?: number }) => {
+    const starSize = size || 6;
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            onClick={() => onRatingChange(star)}
+            className={`w-${starSize} h-${starSize} ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+    );
   };
 
   const resetContactForm = () => {
@@ -306,14 +319,20 @@ export default function ResumeDetailPage({
             <div className="p-[30px] bg-white border border-[1px] lg:items-center border-[#EFEFF0] rounded-[16px] flex flex-col lg:flex-row lg:items-start gap-[10px] lg:gap-8">
               {/* 프로필 이미지와 모바일 북마크 */}
               <div className="flex justify-between lg:justify-start lg:items-start">
-                <div className="w-[92px] h-[92px] lg:w-[160px] lg:h-[160px] rounded-full overflow-hidden flex items-center justify-center lg:m-[30px] mt-[20px] lg:mt-[0px] lg:h-[240px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center mt-[20px] lg:mt-[0px]">
-                  <Image
-                    src={resumeData.profileImage || profileImg}
-                    alt={`${resumeData.name} 프로필`}
-                    width={240}
-                    height={240}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-[92px] h-[92px] lg:w-[160px] lg:h-[160px] rounded-full overflow-hidden border-2 border-[#FFB5B5] bg-[#FFF5F5] flex items-center justify-center mt-[20px] lg:mt-[0px] lg:m-[30px] flex-shrink-0">
+                  {resumeData.photo ? (
+                    <Image
+                      src={resumeData.photo}
+                      alt={`${resumeData.name} 프로필`}
+                      width={160}
+                      height={160}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-key1 text-4xl font-bold">
+                      {resumeData.name.charAt(0)}
+                    </div>
+                  )}
                 </div>
                 {/* 모바일 북마크 버튼 */}
                 <div
@@ -336,24 +355,30 @@ export default function ResumeDetailPage({
                       {resumeData.name}
                     </h1>
                     <p className="font-text text-[16px] text-sub mb-4 lg:mr-[60px] mr-[30px]">
-                      {resumeData.summary}
+                      {resumeData.introduction || '소개가 작성되지 않았습니다.'}
                     </p>
 
                     {/* 연락처 및 이메일 */}
                     <div className="flex flex-col lg:flex-row lg:gap-[20px] gap-2 mb-6">
-                      <div className="flex items-center gap-2">
-                        <PhoneIcon currentColor="#4F5866" />
-                        <span className="font-text text-[14px] lg:text-[16px] text-sub">
-                          {resumeData.contact}
-                        </span>
-                      </div>
-                      <span className="hidden lg:inline">|</span>
-                      <div className="flex items-center gap-2">
-                        <MailIcon currentColor="#4F5866" />
-                        <span className="font-text text-[14px] lg:text-[16px] text-sub">
-                          {resumeData.email}
-                        </span>
-                      </div>
+                      {resumeData.phonePublic && resumeData.phone && (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <PhoneIcon currentColor="#4F5866" />
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub">
+                              {resumeData.phone}
+                            </span>
+                          </div>
+                          <span className="hidden lg:inline">|</span>
+                        </>
+                      )}
+                      {resumeData.emailPublic && resumeData.email && (
+                        <div className="flex items-center gap-2">
+                          <MailIcon currentColor="#4F5866" />
+                          <span className="font-text text-[14px] lg:text-[16px] text-sub">
+                            {resumeData.email}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -374,18 +399,18 @@ export default function ResumeDetailPage({
                 <div className="bg-box-light flex flex-col lg:flex-row justify-evenly px-[20px] lg:px-[50px] py-[20px] border border-[1px] border-[#EFEFF0] rounded-[16px] gap-[16px] lg:gap-0">
                   <div className="flex flex-col gap-[4px] items-center">
                     <span className="font-text text-[14px] lg:text-[16px] text-sub">
-                      현재 직장
+                      직무
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
-                      {resumeData.currentWorkplace}
+                      {getKoreanLabel(resumeData.position || 'veterinarian')}
                     </span>
                   </div>
                   <div className="flex flex-col gap-[4px] items-center">
                     <span className="font-text text-[14px] lg:text-[16px] text-sub">
-                      총 경력
+                      희망 연봉
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
-                      {resumeData.totalExperience}
+                      {resumeData.expectedSalary ? `${resumeData.expectedSalary}만원` : '협의'}
                     </span>
                   </div>
                   <div className="flex flex-col gap-[4px] items-center">
@@ -393,7 +418,7 @@ export default function ResumeDetailPage({
                       근무가능일
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
-                      {resumeData.availableStartDate}
+                      {getKoreanLabel(resumeData.startDate || 'immediate')}
                     </span>
                   </div>
                 </div>
@@ -422,39 +447,45 @@ export default function ResumeDetailPage({
                               이름
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.personalInfo.name}
+                              {resumeData.name}
                             </span>
                           </div>
-                          <div className="flex gap-4">
-                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
-                              생년월일
-                            </span>
-                            <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.personalInfo.birthDate}
-                            </span>
-                          </div>
-                          <div className="flex gap-4">
-                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
-                              연락처
-                            </span>
-                            <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.personalInfo.contact}
-                            </span>
-                          </div>
-                          <div className="flex gap-4">
-                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
-                              이메일
-                            </span>
-                            <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.personalInfo.email}
-                            </span>
-                          </div>
+                          {resumeData.birthDate && (
+                            <div className="flex gap-4">
+                              <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
+                                생년월일
+                              </span>
+                              <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                                {resumeData.birthDate}
+                              </span>
+                            </div>
+                          )}
+                          {resumeData.phonePublic && resumeData.phone && (
+                            <div className="flex gap-4">
+                              <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
+                                연락처
+                              </span>
+                              <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                                {resumeData.phone}
+                              </span>
+                            </div>
+                          )}
+                          {resumeData.emailPublic && resumeData.email && (
+                            <div className="flex gap-4">
+                              <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
+                                이메일
+                              </span>
+                              <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                                {resumeData.email}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex gap-4">
                             <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
                               직무
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.personalInfo.jobField}
+                              {getKoreanLabel(resumeData.position || 'veterinarian')}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -462,7 +493,7 @@ export default function ResumeDetailPage({
                               전공분야
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.personalInfo.major}
+                              {resumeData.specialties ? resumeData.specialties.map(s => getKoreanLabel(s)).join(', ') : '미입력'}
                             </span>
                           </div>
                         </div>
@@ -479,15 +510,15 @@ export default function ResumeDetailPage({
                               근무형태
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workPreferences.workType}
+                              {resumeData.workTypes ? resumeData.workTypes.map(w => getKoreanLabel(w)).join(', ') : '미입력'}
                             </span>
                           </div>
                           <div className="flex gap-4">
                             <span className="font-text text-[14px] lg:text-[16px] text-sub w-[70px] lg:w-[80px] flex-shrink-0">
-                              연봉
+                              희망연봉
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workPreferences.salary}
+                              {resumeData.expectedSalary ? `${resumeData.expectedSalary}만원` : '협의'}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -495,7 +526,7 @@ export default function ResumeDetailPage({
                               근무 요일
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workPreferences.workDays}
+                              {resumeData.preferredWeekdays ? sortWeekdays(resumeData.preferredWeekdays).map(day => getKoreanLabel(day)).join(', ') : '미입력'}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -503,7 +534,7 @@ export default function ResumeDetailPage({
                               근무 시간
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workPreferences.workHours}
+                              {resumeData.workStartTime && resumeData.workEndTime ? `${resumeData.workStartTime} ~ ${resumeData.workEndTime}` : '미입력'}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -511,7 +542,7 @@ export default function ResumeDetailPage({
                               근무 지역
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workPreferences.workLocation}
+                              {resumeData.preferredRegions ? resumeData.preferredRegions.map(r => getKoreanLabel(r)).join(', ') : '미입력'}
                             </span>
                           </div>
                           <div className="flex gap-4">
@@ -519,162 +550,71 @@ export default function ResumeDetailPage({
                               근무 가능일
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                              {resumeData.workPreferences.availableDate}
+                              {getKoreanLabel(resumeData.startDate || 'immediate')}
                             </span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* 경력 사항 */}
+                    {/* 경력 사항 - 현재는 더미 데이터로 표시 */}
                     <div>
                       <div className="flex justify-between items-center mb-[20px]">
                         <h3 className="font-text text-[20px] text-semibold title-light text-primary">
                           경력 사항
                         </h3>
                         <p className="font-text text-[20px] text-semibold text-primary">
-                          총 {resumeData.totalExperience}
+                          경력 정보 미입력
                         </p>
                       </div>
                       <div className="flex flex-col gap-[16px]">
-                        {resumeData.careers.map((career) => (
-                          <div
-                            key={career.id}
-                            className="bg-white flex flex-col lg:flex-row gap-[16px] lg:gap-[40px] lg:items-center lg:justify-start"
-                          >
-                            <div className="flex justify-between lg:justify-start items-start lg:mb-[12px] lg:min-w-[150px]">
-                              <div className="flex flex-col gap-[4px]">
-                                <span className="font-text text-[18px] lg:text-[24px] text-key1 font-bold">
-                                  {career.duration}
-                                </span>
-                                <span className="font-text text-[14px] lg:text-[16px] text-subtext2">
-                                  {career.startDate} ~ {career.endDate}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex flex-col bg-box-light rounded-[16px] px-[20px] lg:px-[30px] py-[16px] lg:py-[20px] gap-[4px] w-full">
-                              <span className="font-text text-[16px] lg:text-[20px] font-semibold text-primary truncate">
-                                {career.hospitalName}
-                              </span>
-                              <p className="font-text text-[14px] lg:text-[16px] text-sub leading-relaxed line-clamp-3">
-                                {career.experience}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="bg-box-light rounded-[16px] px-[20px] lg:px-[30px] py-[16px] lg:py-[20px] text-center">
+                          <p className="font-text text-[16px] text-sub">
+                            경력 사항이 없습니다.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* 학력 정보 */}
+                    {/* 학력 정보 - 현재는 더미 데이터로 표시 */}
                     <div>
                       <h3 className="font-text text-[20px] text-semibold title-light text-primary mb-[20px]">
                         학력 정보
                       </h3>
                       <div className="flex flex-col gap-[16px]">
-                        {resumeData.educations.map((education) => (
-                          <div key={education.id} className="bg-white">
-                            <div className="flex justify-between items-start mb-[12px] pb-[10px] border-b border-[#EFEFF0]">
-                              <div className="flex items-center gap-[12px]">
-                                <span className="font-text text-[16px] text-subtext2 font-semibold">
-                                  {education.degree}
-                                </span>
-                                <span className="text-sub">|</span>
-                                <span className="font-text text-[16px] text-subtext2 font-semibold">
-                                  {education.graduationStatus}
-                                </span>
-                              </div>
-                              <span className="font-text text-[16px] text-subtext2 font-semibold">
-                                {education.startDate} ~ {education.endDate}
-                              </span>
-                            </div>
-                            <div className="flex flex-col gap-[4px]">
-                              <span className="font-text text-[20px] font-semibold text-sub">
-                                {education.schoolName}
-                              </span>
-                            </div>
-                            <div className="flex flex-col gap-[4px]">
-                              <p className="font-text text-[16px] text-sub">
-                                전공: {education.major}
-                              </p>
-                              <p className="font-text text-[16px] text-sub">
-                                학점: {education.gpa} / {education.gpaScale}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="bg-box-light rounded-[16px] px-[20px] lg:px-[30px] py-[16px] lg:py-[20px] text-center">
+                          <p className="font-text text-[16px] text-sub">
+                            학력 정보가 없습니다.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* 자격증/면허 */}
+                    {/* 자격증/면허 - 현재는 더미 데이터로 표시 */}
                     <div>
                       <h3 className="font-text text-[18px] lg:text-[20px] text-semibold title-light text-primary mb-[20px]">
                         자격증/면허
                       </h3>
                       <div className="flex flex-col lg:flex-row gap-[20px]">
-                        {resumeData.certificates.map((certificate) => (
-                          <div
-                            key={certificate.id}
-                            className="flex w-full lg:w-[343px] h-[137px] p-[20px] flex-col justify-between items-start gap-[10px] rounded-[16px] bg-box-light"
-                          >
-                            <div className="flex justify-between items-start w-full pb-[10px] border-b border-[#EFEFF0]">
-                              <span className="font-text text-[14px] lg:text-[16px] text-subtext2">
-                                {certificate.issuer}
-                              </span>
-                              <span className="font-text text-[14px] lg:text-[16px] text-subtext2">
-                                취득일 {certificate.acquisitionDate}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="font-text text-[18px] lg:text-[20px] font-semibold text-sub">
-                                {certificate.name}
-                              </span>
-                              <p className="font-text text-[16px] lg:text-[18px] font-semibold text-sub">
-                                {certificate.grade}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="bg-box-light rounded-[16px] px-[20px] lg:px-[30px] py-[16px] lg:py-[20px] text-center">
+                          <p className="font-text text-[16px] text-sub">
+                            자격증/면허 정보가 없습니다.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* 진료 상세 역량 */}
+                    {/* 진료 상세 역량 - 현재는 더미 데이터로 표시 */}
                     <div>
                       <h3 className="font-text text-[18px] lg:text-[20px] text-semibold title-light text-primary mb-[20px]">
                         진료 상세 역량
                       </h3>
                       <div className="flex flex-col lg:flex-row gap-[20px]">
-                        {resumeData.capabilities.map((capability) => (
-                          <div
-                            key={capability.id}
-                            className="flex w-full lg:w-[343px] p-[20px] flex-col justify-between items-start gap-[10px] rounded-[16px] bg-box-light"
-                          >
-                            <div className="flex justify-between items-start w-full pb-[10px] border-b border-[#EFEFF0]">
-                              <div className="flex justify-between items-center w-full">
-                                <span className="font-text text-[14px] lg:text-[16px] text-subtext2">
-                                  {capability.major}
-                                </span>
-                                <Tag
-                                  variant={
-                                    capability.level == "전문가" ||
-                                    capability.level == "상급"
-                                      ? 1
-                                      : 6
-                                  }
-                                >
-                                  {capability.level}
-                                </Tag>
-                              </div>
-                            </div>
-                            <div className="mb-[8px]">
-                              <span className="font-text text-[18px] lg:text-[20px] font-semibold text-sub h-[61px] flex items-center">
-                                {capability.name}
-                              </span>
-                            </div>
-                            <p className="font-text text-[14px] lg:text-[16px] text-guide">
-                              관련 경험 {capability.experience}
-                            </p>
-                          </div>
-                        ))}
+                        <div className="bg-box-light rounded-[16px] px-[20px] lg:px-[30px] py-[16px] lg:py-[20px] text-center">
+                          <p className="font-text text-[16px] text-sub">
+                            진료 상세 역량 정보가 없습니다.
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -704,318 +644,13 @@ export default function ResumeDetailPage({
                 </Tab.Content>
 
                 <Tab.Content value="talent-evaluation">
-                  {resumeData.evaluations.hospitals.length === 0 ? (
-                    <div className="w-full flex items-center justify-center py-20">
-                      <div className="text-center">
-                        <p className="font-text text-[16px] text-sub mb-4">
-                          아직 평가된 병원 기록이 없습니다.
-                        </p>
-                        <Button variant="line" size="medium">
-                          평가 요청하기
-                        </Button>
-                      </div>
+                  <div className="w-full flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <p className="font-text text-[16px] text-sub">
+                        아직 평가된 병원 기록이 없습니다.
+                      </p>
                     </div>
-                  ) : (
-                    <div className="w-full flex flex-col gap-[40px]">
-                      {/* 전체 평균 섹션 */}
-                      <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4">
-                        <h3 className="font-text text-[18px] lg:text-[20px] text-semibold text-primary">
-                          인재 평가
-                        </h3>
-                        <div className="flex flex-col lg:flex-row items-center lg:gap-[12px] gap-3">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="font-text text-[18px] lg:text-[20px] text-semibold text-primary">
-                              {calculateOverallAverage()}
-                            </span>
-                            <StarRating
-                              rating={parseFloat(calculateOverallAverage())}
-                              size={20}
-                            />
-                          </div>
-                          <Button
-                            variant="keycolor"
-                            size="medium"
-                            className="bg-key1 text-white px-[16px] py-[8px] rounded-[8px]"
-                            onClick={() => setShowRatingModal(true)}
-                          >
-                            평가하기
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* 병원별 평가 목록 */}
-                      <div className="w-full flex flex-col">
-                        {resumeData.evaluations.hospitals.map((evaluation) => (
-                          <div
-                            key={evaluation.id}
-                            className="w-full bg-white overflow-hidden border-b border-[#EFEFF0]"
-                          >
-                            {/* 병원 헤더 */}
-                            <div
-                              className="flex justify-between items-center p-[16px] lg:p-[20px] cursor-pointer hover:bg-gray-50"
-                              onClick={() => toggleEvaluation(evaluation.id)}
-                            >
-                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-1 min-w-0">
-                                <div className="w-[32px] h-[32px] lg:w-[40px] lg:h-[40px] rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                  <span className="font-text text-[14px] lg:text-[16px] font-semibold text-sub">
-                                    {evaluation.hospitalName.charAt(0)}
-                                  </span>
-                                </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <span className="font-text text-[14px] lg:text-[18px] font-semibold text-primary truncate">
-                                    {evaluation.hospitalName}
-                                  </span>
-                                  <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
-                                    {evaluation.evaluationDate}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
-                                <div className="flex items-center gap-[6px] lg:gap-[8px]">
-                                  <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
-                                    {evaluation.overallRating.toFixed(1)}
-                                  </span>
-                                  <StarRating
-                                    rating={evaluation.overallRating}
-                                    size={14}
-                                  />
-                                </div>
-                                {expandedEvaluations.includes(evaluation.id) ? (
-                                  <ChevronUpIcon currentColor="#9098A4" />
-                                ) : (
-                                  <ChevronDownIcon currentColor="#9098A4" />
-                                )}
-                              </div>
-                            </div>
-
-                            {/* 상세 평가 내용 */}
-                            {expandedEvaluations.includes(evaluation.id) && (
-                              <div className="pl-[55px] pb-[20px] border-t border-[#EFEFF0]">
-                                <div className="flex flex-col gap-[24px] pt-[20px]">
-                                  {/* 스트레스 관리 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        스트레스 관리
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.stressManagement.toFixed(
-                                            1
-                                          )}
-                                        </span>
-                                        <StarRating
-                                          rating={
-                                            evaluation.ratings.stressManagement
-                                          }
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "스트레스 관리"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "스트레스 관리"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 성장 의지 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        성장 가능성
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.growth.toFixed(1)}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.growth}
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "성장 잠재력"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "성장 잠재력"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 보호자 케어 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        케어 능력
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.care.toFixed(1)}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.care}
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "소통 능력"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "소통 능력"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 기록 및 문서화 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        문서 작성
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.documentation.toFixed(
-                                            1
-                                          )}
-                                        </span>
-                                        <StarRating
-                                          rating={
-                                            evaluation.ratings.documentation
-                                          }
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "업무 역량"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "업무 역량"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 조직 기여도 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        기여도
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.contribution.toFixed(
-                                            1
-                                          )}
-                                        </span>
-                                        <StarRating
-                                          rating={
-                                            evaluation.ratings.contribution
-                                          }
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "협업 능력"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "협업 능력"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </Tab.Content>
               </Tab>
             </div>

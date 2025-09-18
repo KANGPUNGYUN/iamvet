@@ -33,6 +33,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   profileName?: string; // 수의사: 닉네임, 병원: 병원명
+  hospitalLogo?: string; // 병원: 병원 로고
 }
 
 export interface LoginCredentials {
@@ -296,6 +297,7 @@ export async function getCurrentUser(): Promise<{
     // Get profile-specific information based on user type
     let profileName = user.username; // fallback to username
     let actualUserType = user.userType; // will be modified for veterinary students
+    let hospitalLogo = null; // for hospital users
 
     console.log(
       "[getCurrentUser] Getting profile for userType:",
@@ -337,10 +339,11 @@ export async function getCurrentUser(): Promise<{
       }
     } else if (user.userType === "HOSPITAL") {
       const hospitalProfile = await sql`
-        SELECT "hospitalName" FROM hospital_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
+        SELECT "hospitalName", "hospitalLogo" FROM hospital_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
       `;
       if (hospitalProfile.length > 0) {
         profileName = hospitalProfile[0].hospitalName;
+        hospitalLogo = hospitalProfile[0].hospitalLogo;
       }
     }
 
@@ -363,6 +366,7 @@ export async function getCurrentUser(): Promise<{
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         profileName: profileName, // Add profile-specific name
+        hospitalLogo: hospitalLogo, // Add hospital logo for hospital users
       },
     };
   } catch (error) {

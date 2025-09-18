@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { HeaderProfileProps } from "./types";
 
 export const HeaderProfile: React.FC<HeaderProfileProps> = ({
@@ -47,6 +48,28 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
       onLogout();
     }
   };
+
+  // 이미지 URL 유효성 검사
+  const isValidImageUrl = (url: string | undefined) => {
+    if (!url) return false;
+    if (url === 'photo-url-placeholder') return false;
+    try {
+      return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/');
+    } catch {
+      return false;
+    }
+  };
+
+  // 사용자 타입에 따른 이미지 URL 결정
+  const getProfileImageUrl = () => {
+    if (user.type === 'hospital') {
+      return user.hospitalLogo;
+    }
+    return user.profileImage || user.avatar;
+  };
+
+  const profileImageUrl = getProfileImageUrl();
+  const hasProfileImage = isValidImageUrl(profileImageUrl);
 
   return (
     <div
@@ -113,31 +136,82 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             }
           }}
         >
-          {/* 아바타 */}
-          <div
-            style={{
-              display: "flex",
-              width: "30px",
-              height: "30px",
-              padding: "10px",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "10px",
-              flexShrink: 0,
-              borderRadius: "27px",
-              background: "var(--Keycolor1, #FF8796)",
-              color: "var(--Keycolor5, #FFF7F7)",
-              textAlign: "center",
-              fontFamily: "var(--font-title)",
-              fontSize: "15px",
-              fontStyle: "normal",
-              fontWeight: "400",
-              lineHeight: "28px",
-            }}
-          >
-            {(user.profileName || user.name).charAt(0)}
-          </div>
+          {/* 아바타 또는 프로필 이미지 */}
+          {hasProfileImage ? (
+            <div
+              style={{
+                width: "30px",
+                height: "30px",
+                borderRadius: "50%",
+                overflow: "hidden",
+                flexShrink: 0,
+              }}
+            >
+              <Image
+                src={profileImageUrl!}
+                alt={user.type === 'hospital' ? "병원 로고" : "프로필 이미지"}
+                width={30}
+                height={30}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  const parent = target.parentElement;
+                  if (parent) {
+                    // 이미지 로드 실패 시 기본 아바타로 대체
+                    parent.innerHTML = `
+                      <div style="
+                        display: flex;
+                        width: 30px;
+                        height: 30px;
+                        padding: 10px;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 10px;
+                        flex-shrink: 0;
+                        border-radius: 27px;
+                        background: var(--Keycolor1, #FF8796);
+                        color: var(--Keycolor5, #FFF7F7);
+                        text-align: center;
+                        font-family: var(--font-title);
+                        font-size: 15px;
+                        font-style: normal;
+                        font-weight: 400;
+                        line-height: 28px;
+                      ">
+                        ${(user.profileName || user.name).charAt(0)}
+                      </div>
+                    `;
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                width: "30px",
+                height: "30px",
+                padding: "10px",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "10px",
+                flexShrink: 0,
+                borderRadius: "27px",
+                background: "var(--Keycolor1, #FF8796)",
+                color: "var(--Keycolor5, #FFF7F7)",
+                textAlign: "center",
+                fontFamily: "var(--font-title)",
+                fontSize: "15px",
+                fontStyle: "normal",
+                fontWeight: "400",
+                lineHeight: "28px",
+              }}
+            >
+              {(user.profileName || user.name).charAt(0)}
+            </div>
+          )}
 
           {/* 이름 */}
           <span
