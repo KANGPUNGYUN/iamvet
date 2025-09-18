@@ -6,70 +6,85 @@ import { ArrowLeftIcon, EditIcon } from "public/icons";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { Pagination } from "@/components/ui/Pagination/Pagination";
 import JobInfoCard from "@/components/ui/JobInfoCard";
+import { useMyJobs } from "@/hooks/api/useJobs";
+import { Job } from "@/types/job";
 
-interface JobData {
-  id: number;
-  hospital: string;
-  dDay: string;
-  position: string;
-  location: string;
-  jobType: string;
-  tags: string[];
-  isBookmarked: boolean;
-  isNew?: boolean;
-}
 
 export default function HospitalMyJobsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("recent");
+  const [statusFilter, setStatusFilter] = useState("all");
   const itemsPerPage = 8;
 
-  // 더미 데이터 (찜한 공고 목록)
-  const allBookmarkedJobs: JobData[] = Array.from({ length: 248 }, (_, i) => ({
-    id: i + 1,
-    hospital: "서울동물메디컬센터",
-    dDay: i % 5 === 0 ? "신규" : `D-${(i % 30) + 1}`,
-    position: "경력 3년 이상",
-    location: "서울 강남구",
-    jobType:
-      i % 3 === 0 ? "신입" : i % 3 === 1 ? "경력 3년 이상" : "경력 5년 이상",
-    tags: ["내과", "외과", "정규직", "케어직", "파트타임"],
-    isBookmarked: true,
-    isNew: i % 5 === 0,
-  }));
+  const { data: jobs = [], isLoading, error } = useMyJobs();
 
-  // 정렬 로직
-  const sortedJobs = useMemo(() => {
-    const sorted = [...allBookmarkedJobs];
+  const filteredAndSortedJobs = useMemo(() => {
+    let filtered = [...jobs];
+    
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((job) => {
+        const isExpired = job.recruitEndDate && new Date(job.recruitEndDate) < new Date();
+        
+        switch (statusFilter) {
+          case "active":
+            return job.isActive && !isExpired;
+          case "expired":
+            return isExpired;
+          case "inactive":
+            return !job.isActive;
+          default:
+            return true;
+        }
+      });
+    }
+
     switch (sortBy) {
       case "recent":
-        return sorted.sort((a, b) => b.id - a.id);
-      case "popular":
-        return sorted.sort((a, b) => a.hospital.localeCompare(b.hospital));
+        return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       case "deadline":
-        return sorted.sort((a, b) => {
-          // 신규는 맨 앞에, 나머지는 마감일순
-          if (a.dDay === "신규" && b.dDay !== "신규") return -1;
-          if (b.dDay === "신규" && a.dDay !== "신규") return 1;
-          if (a.dDay === "신규" && b.dDay === "신규") return 0;
-
-          const aDays = parseInt(a.dDay.replace("D-", ""));
-          const bDays = parseInt(b.dDay.replace("D-", ""));
-          return aDays - bDays;
+        return filtered.sort((a, b) => {
+          if (!a.recruitEndDate && !b.recruitEndDate) return 0;
+          if (!a.recruitEndDate) return 1;
+          if (!b.recruitEndDate) return -1;
+          return new Date(a.recruitEndDate).getTime() - new Date(b.recruitEndDate).getTime();
         });
       default:
-        return sorted;
+        return filtered;
     }
-  }, [allBookmarkedJobs, sortBy]);
+  }, [jobs, sortBy, statusFilter]);
 
   // 페이지네이션
-  const totalPages = Math.ceil(sortedJobs.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredAndSortedJobs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentJobs = sortedJobs.slice(startIndex, startIndex + itemsPerPage);
+  const currentJobs = filteredAndSortedJobs.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleJobClick = (jobId: number) => {
+  const handleJobClick = (jobId: string) => {
     window.location.href = `/jobs/${jobId}`;
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white">
+        <div className="max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-gray-500">로딩 중...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white">
+        <div className="max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-red-500">오류가 발생했습니다: {error.message}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white">
@@ -89,24 +104,62 @@ export default function HospitalMyJobsPage() {
             </Link>
           </div>
 
+          {/* 필터링 및 정렬 */}
+          <div className="flex gap-4 mb-6">
+            <SelectBox
+              options={[
+                { value: "all", label: "전체" },
+                { value: "active", label: "모집중" },
+                { value: "expired", label: "마감" },
+                { value: "inactive", label: "비활성" },
+              ]}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="상태 선택"
+            />
+            <SelectBox
+              options={[
+                { value: "recent", label: "최신순" },
+                { value: "deadline", label: "마감일순" },
+              ]}
+              value={sortBy}
+              onChange={setSortBy}
+              placeholder="정렬 기준"
+            />
+          </div>
+
           {/* 공고 목록 - 그리드 형태 */}
           <div className="flex flex-col gap-[16px]">
-            {currentJobs.map((job) => (
-              <JobInfoCard
-                key={job.id}
-                hospital={job.hospital}
-                dDay={job.dDay}
-                position={job.position}
-                location={job.location}
-                jobType={job.jobType}
-                tags={job.tags}
-                isBookmarked={job.isBookmarked}
-                isNew={job.isNew}
-                variant="wide"
-                showDeadline={job.dDay !== "신규"}
-                onClick={() => handleJobClick(job.id)}
-              />
-            ))}
+            {currentJobs.length === 0 ? (
+              <div className="text-center py-20 text-gray-500">
+                등록된 채용 공고가 없습니다.
+              </div>
+            ) : (
+              currentJobs.map((job) => {
+                const dDay = job.recruitEndDate 
+                  ? Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) > 0
+                    ? `D-${Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}`
+                    : "마감"
+                  : "상시";
+
+                return (
+                  <JobInfoCard
+                    key={job.id}
+                    hospital={job.hospitalName || "병원명 미설정"}
+                    dDay={dDay}
+                    position={job.title}
+                    location={job.position || "위치 미설정"}
+                    jobType={job.experience.join(", ") || "경력무관"}
+                    tags={[...job.major, ...job.workType]}
+                    isBookmarked={false}
+                    isNew={new Date(job.createdAt).getTime() > Date.now() - (7 * 24 * 60 * 60 * 1000)}
+                    variant="wide"
+                    showDeadline={job.recruitEndDate !== null}
+                    onClick={() => handleJobClick(job.id)}
+                  />
+                );
+              })
+            )}
           </div>
 
           {/* 페이지네이션 */}

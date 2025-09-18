@@ -11,6 +11,8 @@ import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import { PlusIcon, MinusIcon } from "public/icons";
+import { useCreateJob, useSaveDraftJob } from "@/hooks/api/useJobs";
+import { useAuth } from "@/hooks/api/useAuth";
 
 interface JobFormData {
   title: string;
@@ -39,6 +41,28 @@ interface JobFormData {
 }
 
 export default function CreateJobPage() {
+  const { user, isAuthenticated } = useAuth();
+  const createJobMutation = useCreateJob();
+  const saveDraftJobMutation = useSaveDraftJob();
+
+  // 병원 계정만 접근 가능
+  if (!isAuthenticated || user?.type !== "hospital") {
+    return (
+      <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
+        <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
+          <div className="max-w-[758px] mx-auto w-full">
+            <h1 className="font-title text-[28px] font-light text-primary text-center mb-[60px]">
+              접근 권한이 없습니다
+            </h1>
+            <p className="text-center text-gray-600">
+              병원 계정만 채용공고를 등록할 수 있습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const [formData, setFormData] = useState<JobFormData>({
     title: "",
     workType: [],
@@ -133,12 +157,59 @@ export default function CreateJobPage() {
     }));
   };
 
-  const handleSaveDraft = () => {
-    console.log("임시저장:", formData);
+  const handleSaveDraft = async () => {
+    try {
+      const result = await saveDraftJobMutation.mutateAsync(transformFormData(formData));
+      console.log("임시저장 성공:", result);
+      alert("임시저장이 완료되었습니다.");
+    } catch (error) {
+      console.error("임시저장 실패:", error);
+      alert("임시저장에 실패했습니다.");
+    }
   };
 
-  const handleSave = () => {
-    console.log("저장하기:", formData);
+  const handleSave = async () => {
+    try {
+      const result = await createJobMutation.mutateAsync(transformFormData(formData));
+      console.log("등록 성공:", result);
+      alert("채용공고가 등록되었습니다.");
+    } catch (error) {
+      console.error("등록 실패:", error);
+      alert("채용공고 등록에 실패했습니다.");
+    }
+  };
+
+  const transformFormData = (data: JobFormData) => {
+    return {
+      title: data.title,
+      workType: data.workType,
+      isUnlimitedRecruit: data.isUnlimitedRecruit,
+      recruitEndDate: data.recruitEndDate,
+      major: data.major,
+      experience: data.experience,
+      position: data.position,
+      salaryType: data.salaryType,
+      salary: data.salary,
+      workDays: data.workDays,
+      isWorkDaysNegotiable: data.isWorkDaysNegotiable,
+      workStartTime: data.workStartTime ? formatTime(data.workStartTime) : null,
+      workEndTime: data.workEndTime ? formatTime(data.workEndTime) : null,
+      isWorkTimeNegotiable: data.isWorkTimeNegotiable,
+      benefits: data.benefits,
+      education: data.education.filter(item => item.trim() !== ""),
+      certifications: data.certifications.filter(item => item.trim() !== ""),
+      experienceDetails: data.experienceDetails.filter(item => item.trim() !== ""),
+      preferences: data.preferences.filter(item => item.trim() !== ""),
+      managerName: data.managerName,
+      managerPhone: data.managerPhone,
+      managerEmail: data.managerEmail,
+      department: data.department,
+    };
+  };
+
+  const formatTime = (timeObj: any): string => {
+    if (!timeObj) return "";
+    return `${timeObj.hour?.toString().padStart(2, '0')}:${timeObj.minute?.toString().padStart(2, '0')}`;
   };
 
   return (
