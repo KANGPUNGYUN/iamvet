@@ -38,7 +38,7 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // Handle @neondatabase/serverless module
+    // Handle database modules for serverless deployment
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -46,14 +46,15 @@ const nextConfig = {
         net: false,
         tls: false,
         dns: false,
+        pg: false,
+        'pg-native': false,
       };
     }
 
-    // Ensure proper module resolution
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@neondatabase/serverless': require.resolve('@neondatabase/serverless'),
-    };
+    // Externalize pg for server builds to avoid bundling issues
+    if (isServer) {
+      config.externals = [...(config.externals || []), 'pg', 'pg-native'];
+    }
 
     return config;
   },

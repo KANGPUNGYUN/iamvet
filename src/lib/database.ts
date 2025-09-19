@@ -2885,7 +2885,7 @@ export const getHospitalApplicants = async (hospitalId: string) => {
 };
 
 export const getHospitalJobPostings = async (hospitalId: string) => {
-  const query = `SELECT * FROM jobs WHERE hospital_id = $1 AND deleted_at IS NULL`;
+  const query = `SELECT * FROM jobs WHERE "hospitalId" = $1 AND "deletedAt" IS NULL`;
   const result = await pool.query(query, [hospitalId]);
   return result.rows;
 };
@@ -3158,9 +3158,9 @@ export const createHospitalEvaluation = async (evaluationData: any) => {
 
 export const getHospitalById = async (hospitalId: string) => {
   const query = `
-    SELECT u.*, hp.* FROM users u
-    JOIN hospital_profiles hp ON u.id = hp.user_id
-    WHERE u.id = $1 AND u.deleted_at IS NULL
+    SELECT u.*, dhp.* FROM users u
+    LEFT JOIN detailed_hospital_profiles dhp ON u.id = dhp."userId"
+    WHERE u.id = $1 AND u."deletedAt" IS NULL AND u."userType" = 'HOSPITAL'
   `;
   const result = await pool.query(query, [hospitalId]);
   return result.rows[0] || null;

@@ -9,14 +9,11 @@ import {
   EditIcon,
   TrashIcon,
   LocationIcon,
-  BookmarkFilledIcon,
-  BookmarkIcon,
   PhoneIcon,
-  MailIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   StarEmptyIcon,
   StarFilledIcon,
   StarHalfIcon,
@@ -26,7 +23,7 @@ import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
 import { Tab } from "@/components/ui/Tab";
 import JobInfoCard from "@/components/ui/JobInfoCard";
-import { getHospitalById, HospitalDetailData } from "@/data/hospitalsData";
+import { useHospitalDetail } from "@/hooks/api/useHospitals";
 import { convertDDayToNumber } from "@/utils/dDayConverter";
 
 // 별점 표시 컴포넌트 (소수점 지원)
@@ -107,7 +104,6 @@ export default function HospitalDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [expandedEvaluations, setExpandedEvaluations] = useState<number[]>([]);
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -126,14 +122,34 @@ export default function HospitalDetailPage({
     workEnvironment: "",
   });
   const { id } = use(params);
+  const { data: hospitalResponse, isLoading, error } = useHospitalDetail(id);
 
-  const hospitalData = getHospitalById(id);
+  // 디버깅용 로그
+  console.log("[Page] Hospital ID:", id);
+  console.log("[Page] Loading:", isLoading);
+  console.log("[Page] Error:", error);
+  console.log("[Page] Response:", hospitalResponse);
 
-  if (!hospitalData) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">병원을 찾을 수 없습니다</h1>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF8796] mx-auto mb-4"></div>
+          <p className="text-gray-600">병원 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">오류가 발생했습니다</h1>
+          <p className="text-gray-600 mb-4">
+            {error?.message || "알 수 없는 오류가 발생했습니다."}
+          </p>
+          <p className="text-sm text-gray-500 mb-4">Hospital ID: {id}</p>
           <Link href="/jobs" className="text-blue-600 hover:underline">
             채용공고 목록으로 돌아가기
           </Link>
@@ -142,9 +158,86 @@ export default function HospitalDetailPage({
     );
   }
 
-  const handleBookmarkClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsBookmarked(!isBookmarked);
+  if (hospitalResponse?.status !== "success" || !hospitalResponse?.data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">병원을 찾을 수 없습니다</h1>
+          <p className="text-gray-600 mb-4">
+            요청하신 병원 정보를 찾을 수 없습니다.
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            Hospital ID: {id}
+            <br />
+            Response: {JSON.stringify(hospitalResponse)}
+          </p>
+          <Link href="/jobs" className="text-blue-600 hover:underline">
+            채용공고 목록으로 돌아가기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const hospitalData = hospitalResponse.data;
+
+  // 모크 평가 데이터
+  const mockEvaluations = {
+    overallAverage: 4.2,
+    hospitals: [
+      {
+        id: 1,
+        evaluatorName: "김○○",
+        evaluationDate: "2024-03-15",
+        overallRating: 4.5,
+        ratings: {
+          facilities: 4.0,
+          staff: 5.0,
+          service: 4.5,
+        },
+        detailedEvaluations: [
+          {
+            category: "시설 및 장비",
+            comment:
+              "시설이 깨끗하고 현대적입니다. 장비도 최신식으로 잘 갖춰져 있어요.",
+          },
+          {
+            category: "직원 전문성",
+            comment:
+              "수의사선생님이 정말 친절하시고 전문적이세요. 설명도 자세히 해주십니다.",
+          },
+          {
+            category: "서비스 품질",
+            comment: "응급상황에서 빠르게 대응해주셔서 감사했습니다.",
+          },
+        ],
+      },
+      {
+        id: 2,
+        evaluatorName: "박○○",
+        evaluationDate: "2024-03-10",
+        overallRating: 4.0,
+        ratings: {
+          facilities: 4.2,
+          staff: 3.8,
+          service: 4.0,
+        },
+        detailedEvaluations: [
+          {
+            category: "시설 및 장비",
+            comment: "전체적으로 좋지만 대기 공간이 조금 좁아요.",
+          },
+          {
+            category: "직원 전문성",
+            comment: "실력은 좋으나 대기시간이 조금 긴 편입니다.",
+          },
+          {
+            category: "서비스 품질",
+            comment: "전반적으로 만족스럽습니다.",
+          },
+        ],
+      },
+    ],
   };
 
   const toggleEvaluation = (evaluationId: number) => {
@@ -157,7 +250,7 @@ export default function HospitalDetailPage({
 
   // 전체 평균 계산
   const calculateOverallAverage = () => {
-    return hospitalData.evaluations.overallAverage.toFixed(1);
+    return mockEvaluations.overallAverage.toFixed(1);
   };
 
   // 평가 모달 관련 함수들
@@ -214,41 +307,26 @@ export default function HospitalDetailPage({
             >
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
-
-            <div className="relative">
-              <button
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <MoreVerticalIcon size="28" currentColor="currentColor" />
-              </button>
-
-              {showMoreMenu && (
-                <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
-                  <Link
-                    href={`/hospitals/${id}/edit`}
-                    className="flex justify-center items-center px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <EditIcon size="24" currentColor="currentColor" />
-                    <span className="ml-2">수정하기</span>
-                  </Link>
-                  <button className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50">
-                    <TrashIcon currentColor="currentColor" />
-                    <span className="ml-2">삭제하기</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
           <section>
             {/* 병원 상단 섹션 - HospitalCard 스타일 */}
             <div className="relative rounded-[16px] border border-[#EFEFF0] flex flex-col lg:flex-row lg:justify-between items-start gap-[20px] lg:gap-[30px] p-[20px] lg:p-[28px] bg-white">
-              {/* 병원 이미지 */}
-              <div className="w-[80px] h-[80px] rounded-full bg-[#EFEFF0] flex items-center justify-center flex-shrink-0">
-                <span className="font-text text-[24px] font-semibold text-sub">
-                  {hospitalData.name.charAt(0)}
-                </span>
+              {/* 병원 로고/이미지 */}
+              <div className="w-[80px] h-[80px] rounded-full bg-[#EFEFF0] flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {hospitalData.logo ? (
+                  <Image
+                    src={hospitalData.logo}
+                    alt={`${hospitalData.name} 로고`}
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="font-text text-[24px] font-semibold text-sub">
+                    {hospitalData.name.charAt(0)}
+                  </span>
+                )}
               </div>
 
               {/* 병원 정보 */}
@@ -261,33 +339,58 @@ export default function HospitalDetailPage({
                 </p>
 
                 <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <LocationIcon currentColor="#4F5866" />
-                    <span className="font-text text-[14px] text-sub">
-                      {hospitalData.address}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <WebIcon currentColor="#4F5866" />
-                    <span className="font-text text-[14px] text-sub">
-                      {hospitalData.website}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <PhoneIcon currentColor="#4F5866" />
-                    <span className="font-text text-[14px] text-sub">
-                      {hospitalData.contact}
-                    </span>
-                  </div>
+                  {hospitalData.address && (
+                    <div className="flex items-center gap-2">
+                      <LocationIcon currentColor="#4F5866" />
+                      <span className="font-text text-[14px] text-sub">
+                        {hospitalData.address}
+                        {hospitalData.detailAddress &&
+                          ` ${hospitalData.detailAddress}`}
+                      </span>
+                    </div>
+                  )}
+                  {hospitalData.website && (
+                    <div className="flex items-center gap-2">
+                      <WebIcon currentColor="#4F5866" />
+                      <a
+                        href={
+                          hospitalData.website.startsWith("http")
+                            ? hospitalData.website
+                            : `https://${hospitalData.website}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-text text-[14px] text-sub hover:text-key1 transition-colors"
+                      >
+                        {hospitalData.website}
+                      </a>
+                    </div>
+                  )}
+                  {hospitalData.contact && (
+                    <div className="flex items-center gap-2">
+                      <PhoneIcon currentColor="#4F5866" />
+                      <a
+                        href={`tel:${hospitalData.contact}`}
+                        className="font-text text-[14px] text-sub hover:text-key1 transition-colors"
+                      >
+                        {hospitalData.contact}
+                      </a>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {hospitalData.specialties.map((keyword, index) => (
-                    <Tag key={index} variant={6}>
-                      {keyword}
-                    </Tag>
-                  ))}
-                </div>
+                {hospitalData.specialties &&
+                  hospitalData.specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {hospitalData.specialties.map(
+                        (keyword, index) => (
+                          <Tag key={index} variant={6}>
+                            {keyword}
+                          </Tag>
+                        )
+                      )}
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -307,206 +410,314 @@ export default function HospitalDetailPage({
                         병원 정보
                       </h3>
 
-                      <div className="flex flex-col">
-                        <div className="flex gap-4">
-                          <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
-                            설립일
-                          </span>
-                          <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                            {hospitalData.establishedYear}
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
-                            주소
-                          </span>
-                          <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                            {hospitalData.address}
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
-                            연락처
-                          </span>
-                          <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                            {hospitalData.contact}
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
-                            이메일
-                          </span>
-                          <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                            {hospitalData.email}
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
-                            진료 동물
-                          </span>
-                          <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                            {hospitalData.businessType}
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
-                            진료 분야
-                          </span>
-                          <span className="font-text text-[14px] lg:text-[16px] text-primary">
-                            {hospitalData.specialties.join(", ")}
-                          </span>
-                        </div>
+                      <div className="flex flex-col space-y-3">
+                        {hospitalData.establishedYear && (
+                          <div className="flex gap-4">
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                              설립일
+                            </span>
+                            <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                              {hospitalData.establishedYear}
+                            </span>
+                          </div>
+                        )}
+                        {hospitalData.address && (
+                          <div className="flex gap-4">
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                              기본 주소
+                            </span>
+                            <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                              {hospitalData.address}
+                            </span>
+                          </div>
+                        )}
+                        {hospitalData.detailAddress && (
+                          <div className="flex gap-4">
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                              상세 주소
+                            </span>
+                            <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                              {hospitalData.detailAddress}
+                            </span>
+                          </div>
+                        )}
+                        {hospitalData.website && (
+                          <div className="flex gap-4">
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                              홈페이지
+                            </span>
+                            <a
+                              href={
+                                hospitalData.website.startsWith("http")
+                                  ? hospitalData.website
+                                  : `https://${hospitalData.website}`
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-text text-[14px] lg:text-[16px] text-key1 hover:underline"
+                            >
+                              {hospitalData.website}
+                            </a>
+                          </div>
+                        )}
+                        {hospitalData.contact && (
+                          <div className="flex gap-4">
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                              대표 연락처
+                            </span>
+                            <a
+                              href={`tel:${hospitalData.contact}`}
+                              className="font-text text-[14px] lg:text-[16px] text-key1 hover:underline"
+                            >
+                              {hospitalData.contact}
+                            </a>
+                          </div>
+                        )}
+                        {hospitalData.email && (
+                          <div className="flex gap-4">
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                              이메일
+                            </span>
+                            <a
+                              href={`mailto:${hospitalData.email}`}
+                              className="font-text text-[14px] lg:text-[16px] text-key1 hover:underline"
+                            >
+                              {hospitalData.email}
+                            </a>
+                          </div>
+                        )}
+                        {hospitalData.businessType && (
+                          <div className="flex gap-4">
+                            <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                              진료 동물
+                            </span>
+                            <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                              {hospitalData.businessType}
+                            </span>
+                          </div>
+                        )}
+                        {hospitalData.specialties &&
+                          hospitalData.specialties.length > 0 && (
+                            <div className="flex gap-4">
+                              <span className="font-text text-[14px] lg:text-[16px] text-sub w-[80px] flex-shrink-0">
+                                진료 분야
+                              </span>
+                              <span className="font-text text-[14px] lg:text-[16px] text-primary">
+                                {hospitalData.specialties.join(", ")}
+                              </span>
+                            </div>
+                          )}
                       </div>
                     </div>
 
                     {/* 병원 이미지 */}
-                    <div>
-                      <h3 className="font-text text-[18px] lg:text-[20px] text-semibold title-light text-primary mb-[16px]">
-                        병원 이미지
-                      </h3>
+                    {hospitalData.facilityImages &&
+                      hospitalData.facilityImages.length > 0 && (
+                        <div>
+                          <h3 className="font-text text-[18px] lg:text-[20px] text-semibold title-light text-primary mb-[16px]">
+                            병원 이미지
+                          </h3>
 
-                      {/* 데스크톱 그리드 */}
-                      <div className="hidden lg:grid lg:grid-cols-3 gap-4">
-                        {hospitalData.facilityImages.map((image, index) => (
-                          <div
-                            key={index}
-                            className="aspect-[4/3] rounded-[16px] overflow-hidden"
-                          >
-                            <Image
-                              src={image}
-                              alt={`${hospitalData.name} 시설 ${index + 1}`}
-                              width={350}
-                              height={260}
-                              className="w-full h-full object-cover"
-                            />
+                          {/* 데스크톱 그리드 */}
+                          <div className="hidden lg:grid lg:grid-cols-3 gap-4">
+                            {hospitalData.facilityImages.map((image, index) => (
+                              <div
+                                key={index}
+                                className="aspect-[4/3] rounded-[16px] overflow-hidden"
+                              >
+                                <Image
+                                  src={image}
+                                  alt={`${hospitalData.name} 시설 ${index + 1}`}
+                                  width={350}
+                                  height={260}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
 
-                      {/* 모바일 가로 스크롤 */}
-                      <div className="lg:hidden overflow-x-auto">
-                        <div className="flex gap-4 pb-4">
-                          {hospitalData.facilityImages.map((image, index) => (
-                            <div
-                              key={index}
-                              className="flex-shrink-0 w-[280px] aspect-[4/3] rounded-[16px] overflow-hidden"
-                            >
-                              <Image
-                                src={image}
-                                alt={`${hospitalData.name} 시설 ${index + 1}`}
-                                width={280}
-                                height={210}
-                                className="w-full h-full object-cover"
-                              />
+                          {/* 모바일 가로 스크롤 */}
+                          <div className="lg:hidden overflow-x-auto">
+                            <div className="flex gap-4 pb-4">
+                              {hospitalData.facilityImages.map(
+                                (image, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex-shrink-0 w-[280px] aspect-[4/3] rounded-[16px] overflow-hidden"
+                                  >
+                                    <Image
+                                      src={image}
+                                      alt={`${hospitalData.name} 시설 ${
+                                        index + 1
+                                      }`}
+                                      width={280}
+                                      height={210}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                )
+                              )}
                             </div>
-                          ))}
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      )}
 
                     {/* 진행중인 채용공고 */}
                     <div>
                       <div className="flex justify-between items-center mb-[16px]">
                         <h3 className="font-text text-[18px] lg:text-[20px] text-semibold title-light text-primary">
-                          진행중인 채용공고
+                          진행중인 채용공고 ({hospitalData.jobCount || 0}개)
                         </h3>
-                        {hospitalData.jobPostings.length > 3 && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                setCurrentJobIndex(
-                                  Math.max(0, currentJobIndex - 1)
-                                )
-                              }
-                              disabled={currentJobIndex === 0}
-                              className="p-2 rounded-lg border border-[#EFEFF0] disabled:opacity-50 hover:bg-gray-100 w-[32px] h-[32px] rounded-[30px]"
-                            >
-                              <ChevronLeftIcon currentColor="#FF8796" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setCurrentJobIndex(
-                                  Math.min(
-                                    hospitalData.jobPostings.length - 3,
-                                    currentJobIndex + 1
+                        {hospitalData.jobPostings &&
+                          hospitalData.jobPostings.length > 3 && (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() =>
+                                  setCurrentJobIndex(
+                                    Math.max(0, currentJobIndex - 1)
                                   )
-                                )
-                              }
-                              disabled={
-                                currentJobIndex >=
-                                hospitalData.jobPostings.length - 3
-                              }
-                              className="p-2 rounded-lg border border-[#EFEFF0] disabled:opacity-50 hover:bg-gray-100 w-[32px] h-[32px] rounded-[30px]"
-                            >
-                              <ChevronRightIcon currentColor="#FF8796" />
-                            </button>
-                          </div>
-                        )}
+                                }
+                                disabled={currentJobIndex === 0}
+                                className="p-2 rounded-lg border border-[#EFEFF0] disabled:opacity-50 hover:bg-gray-100 w-[32px] h-[32px] rounded-[30px]"
+                              >
+                                <ChevronLeftIcon currentColor="#FF8796" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setCurrentJobIndex(
+                                    Math.min(
+                                      hospitalData.jobPostings.length - 3,
+                                      currentJobIndex + 1
+                                    )
+                                  )
+                                }
+                                disabled={
+                                  currentJobIndex >=
+                                  hospitalData.jobPostings.length - 3
+                                }
+                                className="p-2 rounded-lg border border-[#EFEFF0] disabled:opacity-50 hover:bg-gray-100 w-[32px] h-[32px] rounded-[30px]"
+                              >
+                                <ChevronRightIcon currentColor="#FF8796" />
+                              </button>
+                            </div>
+                          )}
                       </div>
 
-                      {/* 데스크톱 그리드 */}
-                      <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-                        {hospitalData.jobPostings
-                          .slice(currentJobIndex, currentJobIndex + 3)
-                          .map((job) => (
-                            <JobInfoCard
-                              key={job.id}
-                              hospital={job.title}
-                              dDay={convertDDayToNumber(job.deadline)}
-                              position="간호조무사(정규직)"
-                              location={job.location}
-                              jobType={job.experience}
-                              tags={[job.type, job.experience]}
-                              isBookmarked={job.isBookmarked}
-                              onClick={() => {
-                                window.location.href = `/jobs/${job.id}`;
-                              }}
-                              className="w-full"
-                            />
-                          ))}
-                      </div>
-
-                      {/* 모바일 가로 스크롤 */}
-                      <div className="lg:hidden overflow-x-auto">
-                        <div className="flex gap-4 pb-4">
-                          {hospitalData.jobPostings
-                            .slice(currentJobIndex, currentJobIndex + 3)
-                            .map((job) => (
-                              <div key={job.id} className="flex-shrink-0">
+                      {hospitalData.jobPostings &&
+                      hospitalData.jobPostings.length > 0 ? (
+                        <>
+                          {/* 데스크톱 그리드 */}
+                          <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+                            {hospitalData.jobPostings
+                              .slice(currentJobIndex, currentJobIndex + 3)
+                              .map((job) => (
                                 <JobInfoCard
-                                  hospital={job.title}
-                                  dDay={convertDDayToNumber(job.deadline)}
-                                  position="간호조무사(정규직)"
-                                  location={job.location}
-                                  jobType={job.experience}
-                                  tags={[job.type, job.experience]}
-                                  isBookmarked={job.isBookmarked}
+                                  key={job.id}
+                                  hospital={hospitalData.name}
+                                  dDay={
+                                    job.recruitEndDate
+                                      ? convertDDayToNumber(job.recruitEndDate)
+                                      : null
+                                  }
+                                  position={job.position || "수의사"}
+                                  location={hospitalData.address
+                                    ?.split(" ")
+                                    .slice(0, 2)
+                                    .join(" ")}
+                                  jobType={
+                                    job.workType?.[0] || job.experience?.[0]
+                                  }
+                                  tags={[
+                                    ...(job.workType || []),
+                                    ...(job.experience || []),
+                                    ...(job.major || []),
+                                  ]
+                                    .filter(Boolean)
+                                    .slice(0, 3)}
+                                  isBookmarked={job.isBookmarked || false}
                                   onClick={() => {
                                     window.location.href = `/jobs/${job.id}`;
                                   }}
+                                  className="w-full"
                                 />
-                              </div>
-                            ))}
+                              ))}
+                          </div>
+
+                          {/* 모바일 가로 스크롤 */}
+                          <div className="lg:hidden overflow-x-auto">
+                            <div className="flex gap-4 pb-4">
+                              {hospitalData.jobPostings
+                                .slice(currentJobIndex, currentJobIndex + 3)
+                                .map((job) => (
+                                  <div key={job.id} className="flex-shrink-0">
+                                    <JobInfoCard
+                                      hospital={hospitalData.name}
+                                      dDay={
+                                        job.recruitEndDate
+                                          ? convertDDayToNumber(
+                                              job.recruitEndDate
+                                            )
+                                          : null
+                                      }
+                                      position={
+                                        job.position || job.title || "수의사"
+                                      }
+                                      location={hospitalData.address
+                                        ?.split(" ")
+                                        .slice(0, 2)
+                                        .join(" ")}
+                                      jobType={
+                                        job.workType?.[0] || job.experience?.[0]
+                                      }
+                                      tags={[
+                                        ...(job.workType || []),
+                                        ...(job.experience || []),
+                                        ...(job.major || []),
+                                      ]
+                                        .filter(Boolean)
+                                        .slice(0, 3)}
+                                      isBookmarked={job.isBookmarked || false}
+                                      onClick={() => {
+                                        window.location.href = `/jobs/${job.id}`;
+                                      }}
+                                    />
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-full flex items-center justify-center py-12 border border-[#EFEFF0] rounded-[16px] bg-gray-50">
+                          <div className="text-center">
+                            <p className="font-text text-[16px] text-sub mb-2">
+                              현재 진행중인 채용공고가 없습니다.
+                            </p>
+                            <p className="font-text text-[14px] text-subtext2">
+                              새로운 채용공고를 기다려주세요.
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* 병원 소개 */}
-                    <div>
-                      <h3 className="font-text text-[20px] text-semibold lg:text-[20px] title-light text-primary mb-[16px]">
-                        병원 소개
-                      </h3>
-                      <div className="border border-[1px] border-[#CACAD2] bg-box-light rounded-[6px] px-[20px] py-[16px]">
-                        <p className="font-text text-[14px] lg:text-[16px] text-sub leading-relaxed whitespace-pre-line">
-                          {hospitalData.introduction}
-                        </p>
+                    {hospitalData.introduction && (
+                      <div>
+                        <h3 className="font-text text-[20px] text-semibold lg:text-[20px] title-light text-primary mb-[16px]">
+                          병원 소개
+                        </h3>
+                        <div className="border border-[1px] border-[#CACAD2] bg-box-light rounded-[6px] px-[20px] py-[16px]">
+                          <p className="font-text text-[14px] lg:text-[16px] text-sub leading-relaxed whitespace-pre-line">
+                            {hospitalData.introduction}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </Tab.Content>
 
                 <Tab.Content value="hospital-evaluation">
-                  {hospitalData.evaluations.hospitals.length === 0 ? (
+                  {mockEvaluations.hospitals.length === 0 ? (
                     <div className="w-full flex items-center justify-center py-20">
                       <div className="text-center">
                         <p className="font-text text-[16px] text-sub mb-4">
@@ -547,192 +758,184 @@ export default function HospitalDetailPage({
 
                       {/* 평가자별 평가 목록 */}
                       <div className="w-full flex flex-col">
-                        {hospitalData.evaluations.hospitals.map(
-                          (evaluation) => (
+                        {mockEvaluations.hospitals.map((evaluation) => (
+                          <div
+                            key={evaluation.id}
+                            className="w-full bg-white overflow-hidden border-b border-[#EFEFF0]"
+                          >
+                            {/* 평가자 헤더 */}
                             <div
-                              key={evaluation.id}
-                              className="w-full bg-white overflow-hidden border-b border-[#EFEFF0]"
+                              className="flex justify-between items-center p-[16px] lg:p-[20px] cursor-pointer hover:bg-gray-50"
+                              onClick={() => toggleEvaluation(evaluation.id)}
                             >
-                              {/* 평가자 헤더 */}
-                              <div
-                                className="flex justify-between items-center p-[16px] lg:p-[20px] cursor-pointer hover:bg-gray-50"
-                                onClick={() => toggleEvaluation(evaluation.id)}
-                              >
-                                <div className="flex items-center gap-[12px] lg:gap-[16px] flex-1 min-w-0">
-                                  <div className="w-[32px] h-[32px] lg:w-[40px] lg:h-[40px] rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                    <span className="font-text text-[14px] lg:text-[16px] font-semibold text-sub">
-                                      {evaluation.evaluatorName.charAt(0)}
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-col min-w-0 flex-1">
-                                    <span className="font-text text-[14px] lg:text-[18px] font-semibold text-primary truncate">
-                                      {evaluation.evaluatorName}
-                                    </span>
-                                    <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
-                                      {evaluation.evaluationDate}
-                                    </span>
-                                  </div>
+                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-1 min-w-0">
+                                <div className="w-[32px] h-[32px] lg:w-[40px] lg:h-[40px] rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                  <span className="font-text text-[14px] lg:text-[16px] font-semibold text-sub">
+                                    {evaluation.evaluatorName.charAt(0)}
+                                  </span>
                                 </div>
-                                <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
-                                  <div className="flex items-center gap-[6px] lg:gap-[8px]">
-                                    <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
-                                      {evaluation.overallRating.toFixed(1)}
-                                    </span>
-                                    <StarRating
-                                      rating={evaluation.overallRating}
-                                      size={14}
-                                    />
-                                  </div>
-                                  {expandedEvaluations.includes(
-                                    evaluation.id
-                                  ) ? (
-                                    <ChevronUpIcon currentColor="#9098A4" />
-                                  ) : (
-                                    <ChevronDownIcon currentColor="#9098A4" />
-                                  )}
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <span className="font-text text-[14px] lg:text-[18px] font-semibold text-primary truncate">
+                                    {evaluation.evaluatorName}
+                                  </span>
+                                  <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
+                                    {evaluation.evaluationDate}
+                                  </span>
                                 </div>
                               </div>
+                              <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
+                                <div className="flex items-center gap-[6px] lg:gap-[8px]">
+                                  <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
+                                    {evaluation.overallRating.toFixed(1)}
+                                  </span>
+                                  <StarRating
+                                    rating={evaluation.overallRating}
+                                    size={14}
+                                  />
+                                </div>
+                                {expandedEvaluations.includes(evaluation.id) ? (
+                                  <ChevronUpIcon currentColor="#9098A4" />
+                                ) : (
+                                  <ChevronDownIcon currentColor="#9098A4" />
+                                )}
+                              </div>
+                            </div>
 
-                              {/* 상세 평가 내용 */}
-                              {expandedEvaluations.includes(evaluation.id) && (
-                                <div className="pl-[55px] pb-[20px] border-t border-[#EFEFF0]">
-                                  <div className="flex flex-col gap-[24px] pt-[20px]">
-                                    {/* 시설 및 장비 */}
-                                    <div>
-                                      <div className="flex justify-between items-center mb-[12px]">
-                                        <span className="font-text text-[16px] font-semibold text-primary">
-                                          시설 및 장비
+                            {/* 상세 평가 내용 */}
+                            {expandedEvaluations.includes(evaluation.id) && (
+                              <div className="pl-[55px] pb-[20px] border-t border-[#EFEFF0]">
+                                <div className="flex flex-col gap-[24px] pt-[20px]">
+                                  {/* 시설 및 장비 */}
+                                  <div>
+                                    <div className="flex justify-between items-center mb-[12px]">
+                                      <span className="font-text text-[16px] font-semibold text-primary">
+                                        시설 및 장비
+                                      </span>
+                                      <div className="flex items-center gap-[8px]">
+                                        <span className="font-text text-[16px] font-bold text-primary">
+                                          {evaluation.ratings.facilities.toFixed(
+                                            1
+                                          )}
                                         </span>
-                                        <div className="flex items-center gap-[8px]">
-                                          <span className="font-text text-[16px] font-bold text-primary">
-                                            {evaluation.ratings.facilities.toFixed(
-                                              1
-                                            )}
-                                          </span>
-                                          <StarRating
-                                            rating={
-                                              evaluation.ratings.facilities
-                                            }
-                                            size={14}
-                                          />
-                                        </div>
+                                        <StarRating
+                                          rating={evaluation.ratings.facilities}
+                                          size={14}
+                                        />
                                       </div>
-                                      <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                        {evaluation.detailedEvaluations
-                                          .filter(
-                                            (detail) =>
-                                              detail.category === "시설 및 장비"
-                                          )
-                                          .map((detail, index) => (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment || "-"}
-                                            </p>
-                                          ))}
-                                        {!evaluation.detailedEvaluations.some(
+                                    </div>
+                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
+                                      {evaluation.detailedEvaluations
+                                        .filter(
                                           (detail) =>
                                             detail.category === "시설 및 장비"
-                                        ) && (
-                                          <p className="font-text text-[16px] text-sub">
-                                            -
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
                                           </p>
-                                        )}
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "시설 및 장비"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* 직원 전문성 */}
+                                  <div>
+                                    <div className="flex justify-between items-center mb-[12px]">
+                                      <span className="font-text text-[16px] font-semibold text-primary">
+                                        직원 전문성
+                                      </span>
+                                      <div className="flex items-center gap-[8px]">
+                                        <span className="font-text text-[16px] font-bold text-primary">
+                                          {evaluation.ratings.staff.toFixed(1)}
+                                        </span>
+                                        <StarRating
+                                          rating={evaluation.ratings.staff}
+                                          size={14}
+                                        />
                                       </div>
                                     </div>
-
-                                    {/* 직원 전문성 */}
-                                    <div>
-                                      <div className="flex justify-between items-center mb-[12px]">
-                                        <span className="font-text text-[16px] font-semibold text-primary">
-                                          직원 전문성
-                                        </span>
-                                        <div className="flex items-center gap-[8px]">
-                                          <span className="font-text text-[16px] font-bold text-primary">
-                                            {evaluation.ratings.staff.toFixed(
-                                              1
-                                            )}
-                                          </span>
-                                          <StarRating
-                                            rating={evaluation.ratings.staff}
-                                            size={14}
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                        {evaluation.detailedEvaluations
-                                          .filter(
-                                            (detail) =>
-                                              detail.category === "직원 전문성"
-                                          )
-                                          .map((detail, index) => (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment || "-"}
-                                            </p>
-                                          ))}
-                                        {!evaluation.detailedEvaluations.some(
+                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
+                                      {evaluation.detailedEvaluations
+                                        .filter(
                                           (detail) =>
                                             detail.category === "직원 전문성"
-                                        ) && (
-                                          <p className="font-text text-[16px] text-sub">
-                                            -
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
                                           </p>
-                                        )}
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "직원 전문성"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* 서비스 품질 */}
+                                  <div>
+                                    <div className="flex justify-between items-center mb-[12px]">
+                                      <span className="font-text text-[16px] font-semibold text-primary">
+                                        서비스 품질
+                                      </span>
+                                      <div className="flex items-center gap-[8px]">
+                                        <span className="font-text text-[16px] font-bold text-primary">
+                                          {evaluation.ratings.service.toFixed(
+                                            1
+                                          )}
+                                        </span>
+                                        <StarRating
+                                          rating={evaluation.ratings.service}
+                                          size={14}
+                                        />
                                       </div>
                                     </div>
-
-                                    {/* 서비스 품질 */}
-                                    <div>
-                                      <div className="flex justify-between items-center mb-[12px]">
-                                        <span className="font-text text-[16px] font-semibold text-primary">
-                                          서비스 품질
-                                        </span>
-                                        <div className="flex items-center gap-[8px]">
-                                          <span className="font-text text-[16px] font-bold text-primary">
-                                            {evaluation.ratings.service.toFixed(
-                                              1
-                                            )}
-                                          </span>
-                                          <StarRating
-                                            rating={evaluation.ratings.service}
-                                            size={14}
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                        {evaluation.detailedEvaluations
-                                          .filter(
-                                            (detail) =>
-                                              detail.category === "서비스 품질"
-                                          )
-                                          .map((detail, index) => (
-                                            <p
-                                              key={index}
-                                              className="font-text text-[16px] text-sub"
-                                            >
-                                              {detail.comment || "-"}
-                                            </p>
-                                          ))}
-                                        {!evaluation.detailedEvaluations.some(
+                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
+                                      {evaluation.detailedEvaluations
+                                        .filter(
                                           (detail) =>
                                             detail.category === "서비스 품질"
-                                        ) && (
-                                          <p className="font-text text-[16px] text-sub">
-                                            -
+                                        )
+                                        .map((detail, index) => (
+                                          <p
+                                            key={index}
+                                            className="font-text text-[16px] text-sub"
+                                          >
+                                            {detail.comment || "-"}
                                           </p>
-                                        )}
-                                      </div>
+                                        ))}
+                                      {!evaluation.detailedEvaluations.some(
+                                        (detail) =>
+                                          detail.category === "서비스 품질"
+                                      ) && (
+                                        <p className="font-text text-[16px] text-sub">
+                                          -
+                                        </p>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
-                              )}
-                            </div>
-                          )
-                        )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}

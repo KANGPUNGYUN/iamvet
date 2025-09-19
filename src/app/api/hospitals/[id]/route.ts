@@ -6,6 +6,7 @@ import {
   updateHospitalProfile,
   getHospitalJobPostings,
 } from "@/lib/database";
+import { mapSpecialtiesToKorean, mapBusinessTypesToKorean } from "@/utils/koreanMappings";
 
 interface RouteContext {
   params: Promise<{
@@ -17,10 +18,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const params = await context.params;
     const hospitalId = params.id;
+    
+    console.log("[API] Getting hospital with ID:", hospitalId);
 
     // 병원 정보 조회
     const hospital = await getHospitalById(hospitalId);
+    console.log("[API] Hospital data:", hospital);
+    
     if (!hospital) {
+      console.log("[API] Hospital not found");
       return NextResponse.json(createErrorResponse("병원을 찾을 수 없습니다"), {
         status: 404,
       });
@@ -28,20 +34,37 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // 병원의 채용공고 조회
     const jobPostings = await getHospitalJobPostings(hospitalId);
+    console.log("[API] Job postings:", jobPostings.length);
 
+    // Transform database fields to match frontend expectations
     const hospitalDetail = {
-      ...hospital,
+      id: hospital.id,
+      name: hospital.hospitalName || hospital.realName,
+      summary: hospital.description || "병원 소개를 준비중입니다.",
+      contact: hospital.phone,
+      email: hospital.email,
+      website: hospital.website || hospital.hospitalWebsite,
+      establishedYear: hospital.establishedDate || hospital.establishedDate,
+      address: hospital.address || hospital.hospitalAddress,
+      detailAddress: hospital.detailAddress || hospital.hospitalAddressDetail,
+      logo: hospital.hospitalLogo,
+      introduction: hospital.description || "병원 소개를 준비중입니다.",
+      businessType: hospital.treatmentAnimals ? mapBusinessTypesToKorean(hospital.treatmentAnimals).join(", ") : "반려동물",
+      specialties: hospital.treatmentFields ? mapSpecialtiesToKorean(hospital.treatmentFields) : [],
+      facilityImages: hospital.facilityImages || [],
       jobPostings: jobPostings.slice(0, 10), // 최대 10개로 제한
       jobCount: jobPostings.length,
     };
 
+    console.log("[API] Successfully returning hospital detail for:", hospitalDetail.name);
     return NextResponse.json(
       createApiResponse("success", "병원 정보 조회 성공", hospitalDetail)
     );
   } catch (error) {
     console.error("Hospital detail error:", error);
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
     return NextResponse.json(
-      createErrorResponse("병원 정보 조회 중 오류가 발생했습니다"),
+      createErrorResponse(`병원 정보 조회 중 오류가 발생했습니다: ${errorMessage}`),
       { status: 500 }
     );
   }
