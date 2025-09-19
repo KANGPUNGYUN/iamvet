@@ -1,26 +1,30 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRightIcon, ArrowLeftIcon } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { Pagination } from "@/components/ui/Pagination/Pagination";
+import { useVeterinarianApplications } from "@/hooks/api/useVeterinarianApplications";
 import profileImg from "@/assets/images/profile.png";
 
 interface ApplicationData {
   id: number;
+  jobId: string;
   applicationDate: string;
-  applicant: string;
-  position: string;
-  contact: string;
-  status: "서류 합격" | "면접 대기" | "불합격" | "최종합격";
-  profileImage?: string;
+  hospitalName: string;
+  jobPosition: string;
+  hospitalContact: string;
+  status: "서류 대기" | "서류 합격" | "면접 대기" | "불합격" | "최종합격";
+  hospitalLogo?: string;
 }
 
 const getStatusVariant = (status: ApplicationData["status"]) => {
   switch (status) {
+    case "서류 대기":
+      return 3;
     case "서류 합격":
       return 2;
     case "면접 대기":
@@ -42,17 +46,17 @@ const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <Image
-            src={application.profileImage || profileImg}
-            alt="프로필"
+            src={application.hospitalLogo || profileImg}
+            alt="병원 로고"
             width={36}
             height={36}
             className="w-9 h-9 rounded-full object-cover"
           />
           <span className="text-[16px] font-bold text-primary">
-            {application.applicant}
+            {application.hospitalName}
           </span>
         </div>
-        <Link href={`/jobs/${application.id}`}>
+        <Link href={`/jobs/${application.jobId}`}>
           <ArrowRightIcon currentColor="currentColor" size="20" />
         </Link>
       </div>
@@ -63,7 +67,7 @@ const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
             지원 포지션
           </span>
           <span className="text-[14px] text-primary font-medium">
-            {application.position}
+            {application.jobPosition}
           </span>
         </div>
         <div className="flex gap-[20px]">
@@ -71,7 +75,7 @@ const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
             연락처
           </span>
           <span className="text-[14px] text-gray-700">
-            {application.contact}
+            {application.hospitalContact}
           </span>
         </div>
       </div>
@@ -89,64 +93,32 @@ const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
 };
 
 const sortOptions = [
-  { value: "recent", label: "최신순" },
-  { value: "popular", label: "인기순" },
-  { value: "deadline", label: "마감순" },
+  { value: "latest", label: "최신순" },
+  { value: "oldest", label: "오래된순" },
+  { value: "status", label: "상태순" },
 ];
 
 export default function VeterinarianApplicationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState("recent");
+  const [sortBy, setSortBy] = useState("latest");
   const itemsPerPage = 10;
 
-  // 더미 데이터 (실제로는 API에서 가져올 데이터)
-  const allApplications: ApplicationData[] = Array.from(
-    { length: 45 },
-    (_, i) => ({
-      id: i + 1,
-      applicationDate: `2024.05.0${(i % 9) + 1} 19:01`,
-      applicant: `강남 동물병원${i + 1}`,
-      position:
-        i % 3 === 0
-          ? "내과 전문의"
-          : i % 3 === 1
-          ? "일반 수의사"
-          : "야간 수의사",
-      contact: "010-1234-5678 / duwxr335@naver.com",
-      status:
-        i % 4 === 0
-          ? "서류 합격"
-          : i % 4 === 1
-          ? "면접 대기"
-          : i % 4 === 2
-          ? "불합격"
-          : "최종합격",
-      profileImage: i % 5 === 0 ? undefined : profileImg.src,
-    })
-  );
+  // API를 통해 지원내역 데이터 가져오기
+  const { data: applicationsData, isLoading, error } = useVeterinarianApplications(sortBy);
+  
+  const allApplications: ApplicationData[] = applicationsData?.applications?.map((app: any) => ({
+    id: app.id,
+    jobId: app.jobId,
+    applicationDate: app.applicationDate,
+    hospitalName: app.hospitalName,
+    jobPosition: app.jobPosition,
+    hospitalContact: app.hospitalContact,
+    status: app.status,
+    hospitalLogo: app.hospitalLogo,
+  })) || [];
 
-  // 정렬 로직
-  const sortedApplications = useMemo(() => {
-    const sorted = [...allApplications];
-    switch (sortBy) {
-      case "recent":
-        return sorted.sort(
-          (a, b) =>
-            new Date(b.applicationDate).getTime() -
-            new Date(a.applicationDate).getTime()
-        );
-      case "popular":
-        return sorted.sort((a, b) => a.applicant.localeCompare(b.applicant));
-      case "deadline":
-        return sorted.sort(
-          (a, b) =>
-            new Date(a.applicationDate).getTime() -
-            new Date(b.applicationDate).getTime()
-        );
-      default:
-        return sorted;
-    }
-  }, [allApplications, sortBy]);
+  // 클라이언트 사이드 정렬은 서버에서 이미 정렬된 데이터를 사용하므로 제거
+  const sortedApplications = allApplications;
 
   // 페이지네이션
   const totalPages = Math.ceil(sortedApplications.length / itemsPerPage);
@@ -180,19 +152,43 @@ export default function VeterinarianApplicationsPage() {
               options={sortOptions}
             />
           </div>
+          {/* 로딩 상태 */}
+          {isLoading && (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-gray-500">지원내역을 불러오는 중...</div>
+            </div>
+          )}
+
+          {/* 에러 상태 */}
+          {error && (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-red-500">지원내역을 불러오는데 실패했습니다.</div>
+            </div>
+          )}
+
+          {/* 데이터가 없는 경우 */}
+          {!isLoading && !error && currentApplications.length === 0 && (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-gray-500">지원내역이 없습니다.</div>
+            </div>
+          )}
+
           {/* 모바일 버전 (xl 이하) */}
-          <div className="block xl:hidden">
-            {currentApplications.map((application) => (
-              <MobileApplicationCard
-                key={application.id}
-                application={application}
-              />
-            ))}
-          </div>
+          {!isLoading && !error && currentApplications.length > 0 && (
+            <div className="block xl:hidden">
+              {currentApplications.map((application) => (
+                <MobileApplicationCard
+                  key={application.id}
+                  application={application}
+                />
+              ))}
+            </div>
+          )}
 
           {/* 데스크톱 버전 (xl 이상) */}
-          <div className="hidden xl:block overflow-x-auto">
-            <table className="w-full border-separate border-spacing-0">
+          {!isLoading && !error && currentApplications.length > 0 && (
+            <div className="hidden xl:block overflow-x-auto">
+              <table className="w-full border-separate border-spacing-0">
               <thead>
                 <tr className="bg-box-light">
                   <th className="text-left py-[22px] pl-[30px] text-sm font-medium text-gray-500 border border-[#EFEFF0] border-r-0 rounded-l-[8px]">
@@ -219,10 +215,10 @@ export default function VeterinarianApplicationsPage() {
                       {application.applicationDate}
                     </td>
                     <td className="py-[22px] text-sm text-gray-900">
-                      {application.applicant}
+                      {application.hospitalName}
                     </td>
                     <td className="py-[22px] text-sm text-gray-600">
-                      {application.contact}
+                      {application.hospitalContact}
                     </td>
                     <td className="py-[22px]">
                       <Tag variant={getStatusVariant(application.status)}>
@@ -231,7 +227,7 @@ export default function VeterinarianApplicationsPage() {
                     </td>
                     <td className="py-[22px] pr-[30px]">
                       <Link
-                        href={`/jobs/${application.id}`}
+                        href={`/jobs/${application.jobId}`}
                         className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
                       >
                         상세보기
@@ -240,17 +236,20 @@ export default function VeterinarianApplicationsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          )}
 
           {/* 페이지네이션 */}
-          <div className="mt-8 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
+          {!isLoading && !error && currentApplications.length > 0 && (
+            <div className="mt-8 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1334,19 +1334,34 @@ export const getVeterinarianApplications = async (
   userId: string,
   sort: string = "latest"
 ) => {
-  let orderBy = "a.applied_at DESC";
+  let orderBy = "a.\"appliedAt\" DESC";
 
   if (sort === "oldest") {
-    orderBy = "a.applied_at ASC";
+    orderBy = "a.\"appliedAt\" ASC";
+  } else if (sort === "status") {
+    orderBy = "a.status, a.\"appliedAt\" DESC";
   }
 
   const query = `
-    SELECT a.*, j.title as job_title, j.position, h.hospital_name, h.phone as contact_phone, h.email as contact_email
+    SELECT 
+      a.id,
+      a."jobId",
+      a."veterinarianId",
+      a.status,
+      a."appliedAt",
+      a."createdAt",
+      a."updatedAt",
+      j.title as job_title, 
+      j.position, 
+      j.salary,
+      h."hospitalName" as hospital_name, 
+      h.phone as contact_phone, 
+      h.email as contact_email,
+      h."profileImage" as hospital_logo
     FROM applications a
-    JOIN veterinarians v ON a.veterinarian_id = v.id
-    JOIN jobs j ON a.job_id = j.id
-    JOIN hospitals h ON j.hospital_id = h.id
-    WHERE v.user_id = $1
+    JOIN jobs j ON a."jobId" = j.id
+    JOIN users h ON j."hospitalId" = h.id
+    WHERE a."veterinarianId" = $1
     ORDER BY ${orderBy}
   `;
 
