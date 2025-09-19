@@ -29,9 +29,18 @@ interface HospitalProfileData {
 }
 
 export default function HospitalProfilePage() {
-  const { data: detailedProfile, isLoading: detailedLoading } = useDetailedHospitalProfile();
-  const { data: basicProfile, isLoading: basicLoading, error: basicError } = useHospitalProfile();
-  const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
+  const { data: detailedProfile, isLoading: detailedLoading } =
+    useDetailedHospitalProfile();
+  const {
+    data: basicProfile,
+    isLoading: basicLoading,
+    error: basicError,
+  } = useHospitalProfile();
+  const {
+    data: currentUser,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
 
   // 로딩 상태
   if (detailedLoading || basicLoading || userLoading) {
@@ -57,7 +66,9 @@ export default function HospitalProfilePage() {
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <p className="text-red-600 mb-4">로그인이 필요합니다.</p>
-              <Button onClick={() => window.location.href = "/auth/login"}>로그인하기</Button>
+              <Button onClick={() => (window.location.href = "/auth/login")}>
+                로그인하기
+              </Button>
             </div>
           </div>
         </div>
@@ -72,11 +83,17 @@ export default function HospitalProfilePage() {
         <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <p className="text-red-600 mb-4">프로필 정보를 불러오는데 실패했습니다.</p>
-              <p className="text-gray-600 mb-4 text-sm">
-                {basicError?.message || userError?.message || "알 수 없는 오류가 발생했습니다."}
+              <p className="text-red-600 mb-4">
+                프로필 정보를 불러오는데 실패했습니다.
               </p>
-              <Button onClick={() => window.location.reload()}>다시 시도</Button>
+              <p className="text-gray-600 mb-4 text-sm">
+                {basicError?.message ||
+                  userError?.message ||
+                  "알 수 없는 오류가 발생했습니다."}
+              </p>
+              <Button onClick={() => window.location.reload()}>
+                다시 시도
+              </Button>
             </div>
           </div>
         </div>
@@ -87,28 +104,60 @@ export default function HospitalProfilePage() {
   // 프로필 데이터 결합 (상세 프로필이 있으면 우선, 없으면 기본 프로필 사용)
   const hospitalData: HospitalProfileData = {
     hospitalLogo: detailedProfile?.hospitalLogo || hospitalImage.src,
-    hospitalName: detailedProfile?.hospitalName || basicProfile?.hospitalName || (currentUser as any)?.hospitalName || "병원명을 설정해주세요",
-    establishedDate: detailedProfile?.establishedDate || "설립일을 설정해주세요",
-    address: detailedProfile?.address || basicProfile?.address || "주소를 설정해주세요",
+    hospitalName:
+      detailedProfile?.hospitalName ||
+      basicProfile?.hospitalName ||
+      (currentUser as any)?.hospitalName ||
+      "병원명을 설정해주세요",
+    establishedDate:
+      detailedProfile?.establishedDate || "설립일을 설정해주세요",
+    address:
+      detailedProfile?.address ||
+      basicProfile?.address ||
+      "주소를 설정해주세요",
     detailAddress: detailedProfile?.detailAddress || "상세주소를 설정해주세요",
-    website: detailedProfile?.website || basicProfile?.website || "웹사이트를 설정해주세요",
-    phone: detailedProfile?.phone || basicProfile?.phone || currentUser?.phone || "연락처를 설정해주세요",
-    businessNumber: detailedProfile?.businessNumber || basicProfile?.businessNumber || "사업자등록번호를 설정해주세요",
-    email: detailedProfile?.email || currentUser?.email || "이메일을 설정해주세요",
-    treatmentAnimals: detailedProfile?.treatmentAnimals || basicProfile?.treatmentAnimals || [],
-    treatmentFields: detailedProfile?.treatmentFields || basicProfile?.treatmentSpecialties || [],
-    description: detailedProfile?.description || basicProfile?.description || "병원 소개를 작성해주세요",
+    website:
+      detailedProfile?.website ||
+      basicProfile?.website ||
+      "웹사이트를 설정해주세요",
+    phone:
+      detailedProfile?.phone ||
+      basicProfile?.phone ||
+      currentUser?.phone ||
+      "연락처를 설정해주세요",
+    businessNumber:
+      detailedProfile?.businessNumber ||
+      basicProfile?.businessNumber ||
+      "사업자등록번호를 설정해주세요",
+    email:
+      detailedProfile?.email || currentUser?.email || "이메일을 설정해주세요",
+    treatmentAnimals:
+      detailedProfile?.treatmentAnimals || basicProfile?.treatmentAnimals || [],
+    treatmentFields:
+      detailedProfile?.treatmentFields ||
+      basicProfile?.treatmentSpecialties ||
+      [],
+    description:
+      detailedProfile?.description ||
+      basicProfile?.description ||
+      "병원 소개를 작성해주세요",
   };
 
   // 데이터가 있는지 확인
-  const hasRealData = hospitalData.hospitalName !== "병원명을 설정해주세요" && 
-                     hospitalData.hospitalName !== "" &&
-                     hospitalData.phone !== "연락처를 설정해주세요" && 
-                     hospitalData.phone !== "";
-
+  const hasRealData =
+    hospitalData.hospitalName !== "병원명을 설정해주세요" &&
+    hospitalData.hospitalName !== "" &&
+    hospitalData.phone !== "연락처를 설정해주세요" &&
+    hospitalData.phone !== "";
 
   // 데이터가 전혀 없는 경우 (처음 가입한 경우)
-  if (!detailedLoading && !basicLoading && !userLoading && !hasRealData && currentUser) {
+  if (
+    !detailedLoading &&
+    !basicLoading &&
+    !userLoading &&
+    !hasRealData &&
+    currentUser
+  ) {
     return (
       <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
         <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
@@ -130,15 +179,21 @@ export default function HospitalProfilePage() {
                   />
                 </svg>
               </div>
-              <p className="text-gray-600 text-[16px] mb-2">병원 프로필을 작성해주세요</p>
+              <p className="text-gray-600 text-[16px] mb-2">
+                병원 프로필을 작성해주세요
+              </p>
               <p className="text-gray-500 text-[14px] mb-4">
-                로그인한 계정 ({currentUser?.email})에 대한 병원 정보가 없습니다.<br />
+                로그인한 계정 ({currentUser?.email})에 대한 병원 정보가
+                없습니다.
+                <br />
                 프로필을 작성하여 병원 정보를 등록해주세요.
               </p>
               <Button
                 variant="default"
                 size="medium"
-                onClick={() => window.location.href = "/dashboard/hospital/profile/edit"}
+                onClick={() =>
+                  (window.location.href = "/dashboard/hospital/profile/edit")
+                }
                 className="px-[40px]"
               >
                 프로필 작성하기
@@ -155,22 +210,17 @@ export default function HospitalProfilePage() {
   };
 
   // 동물 타입 매핑 (DB enum -> 한글 표시)
-  const ANIMAL_TYPE_LABELS = {
-    'DOG': '반려견',
-    'CAT': '고양이', 
-    'EXOTIC': '특수동물',
-    'LARGE_ANIMAL': '대동물'
-  };
+  const ANIMAL_TYPE_LABELS = {};
 
   // 진료 분야 매핑 (DB enum -> 한글 표시)
   const SPECIALTY_TYPE_LABELS = {
-    'INTERNAL_MEDICINE': '내과',
-    'SURGERY': '외과',
-    'DERMATOLOGY': '피부과',
-    'DENTISTRY': '치과',
-    'OPHTHALMOLOGY': '안과',
-    'NEUROLOGY': '신경과',
-    'ORTHOPEDICS': '정형외과'
+    INTERNAL_MEDICINE: "내과",
+    SURGERY: "외과",
+    DERMATOLOGY: "피부과",
+    DENTISTRY: "치과",
+    OPHTHALMOLOGY: "안과",
+    NEUROLOGY: "신경과",
+    ORTHOPEDICS: "정형외과",
   };
 
   // 진료 동물 옵션 (표시용)
@@ -193,12 +243,15 @@ export default function HospitalProfilePage() {
   ];
 
   // DB enum 값을 한글 표시값으로 변환
-  const mappedTreatmentAnimals = hospitalData.treatmentAnimals.map(animal => 
-    ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] || animal
+  const mappedTreatmentAnimals = hospitalData.treatmentAnimals.map(
+    (animal) =>
+      ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] || animal
   );
-  
-  const mappedTreatmentFields = hospitalData.treatmentFields.map(field => 
-    SPECIALTY_TYPE_LABELS[field as keyof typeof SPECIALTY_TYPE_LABELS] || field
+
+  const mappedTreatmentFields = hospitalData.treatmentFields.map(
+    (field) =>
+      SPECIALTY_TYPE_LABELS[field as keyof typeof SPECIALTY_TYPE_LABELS] ||
+      field
   );
 
   console.log("[HospitalProfilePage] Data mapping:", {
@@ -207,7 +260,7 @@ export default function HospitalProfilePage() {
     originalFields: hospitalData.treatmentFields,
     mappedFields: mappedTreatmentFields,
     detailedProfile: !!detailedProfile,
-    basicProfile: !!basicProfile
+    basicProfile: !!basicProfile,
   });
 
   return (
@@ -318,10 +371,7 @@ export default function HospitalProfilePage() {
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 진료 동물
               </label>
-              <FilterBox.Group
-                value={mappedTreatmentAnimals}
-                disabled={true}
-              >
+              <FilterBox.Group value={mappedTreatmentAnimals} disabled={true}>
                 {animalOptions.map((option) => (
                   <FilterBox.Item key={option.value} value={option.value}>
                     {option.label}
@@ -335,10 +385,7 @@ export default function HospitalProfilePage() {
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 진료 분야
               </label>
-              <FilterBox.Group
-                value={mappedTreatmentFields}
-                disabled={true}
-              >
+              <FilterBox.Group value={mappedTreatmentFields} disabled={true}>
                 {fieldOptions.map((option) => (
                   <FilterBox.Item key={option.value} value={option.value}>
                     {option.label}

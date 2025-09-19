@@ -9,7 +9,6 @@ datasource db {
 
 model User {
   id                      String                   @id @default(cuid())
-  seq                     Int                      @unique @default(autoincrement())
   email                   String                   @unique
   phone                   String                   @unique
   passwordHash            String?
@@ -38,11 +37,7 @@ model User {
   hospitalAddress         String?
   hospitalAddressDetail   String?
   licenseImage            String?
-  // 관계
-  hospitalFacilityImages  HospitalFacilityImage[]
-  hospitalAnimals         HospitalAnimal[]
-  hospitalSpecialties     HospitalSpecialty[]
-  hospitalBusinessLicenses HospitalBusinessLicense[]
+  seq                     Int                      @unique @default(autoincrement())
   applications            Application[]
   commentReplies          CommentReply[]
   detailedHospitalProfile DetailedHospitalProfile?
@@ -86,27 +81,47 @@ model SocialAccount {
 }
 
 model Job {
-  id            String        @id @default(cuid())
-  hospitalId    String
-  title         String
-  description   String
-  location      String
-  salaryType    SalaryType
-  salaryMin     Int?
-  salaryMax     Int?
-  experienceMin Int?
-  workType      WorkType
-  benefits      String?
-  requirements  String?
-  status        JobStatus     @default(ACTIVE)
-  deadline      DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  deletedAt     DateTime?
-  applications  Application[]
-  bookmarks     JobBookmark[]
-  hospital      User          @relation(fields: [hospitalId], references: [id])
+  id                   String    @id @default(cuid())
+  hospitalId           String
+  title                String
+  workType             String[]  @default([])
+  isUnlimitedRecruit   Boolean   @default(false)
+  recruitEndDate       DateTime?
+  major                String[]  @default([])
+  experience           String[]  @default([])
+  position             String
+  salaryType           String
+  salary               String
+  workDays             String[]  @default([])
+  isWorkDaysNegotiable Boolean   @default(false)
+  workStartTime        String?
+  workEndTime          String?
+  isWorkTimeNegotiable Boolean   @default(false)
+  benefits             String?
+  education            String[]  @default([])
+  certifications       String[]  @default([])
+  experienceDetails    String[]  @default([])
+  preferences          String[]  @default([])
+  managerName          String
+  managerPhone         String
+  managerEmail         String
+  department           String
+  isActive             Boolean   @default(true)
+  isDraft              Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @default(now()) @updatedAt
+  deletedAt            DateTime?
+  hospital             User      @relation(fields: [hospitalId], references: [id], map: "jobs_hospitalid_fkey")
 
+  @@index([createdAt], map: "idx_jobs_created_at")
+  @@index([deletedAt], map: "idx_jobs_deleted_at")
+  @@index([hospitalId], map: "idx_jobs_hospital_id")
+  @@index([isActive], map: "idx_jobs_is_active")
+  @@index([isDraft], map: "idx_jobs_is_draft")
+  @@index([createdAt])
+  @@index([hospitalId])
+  @@index([isActive])
+  @@index([isDraft])
   @@map("jobs")
 }
 
@@ -142,10 +157,12 @@ model Application {
   reviewedAt     DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
-  job            Job               @relation(fields: [jobId], references: [id])
   veterinarian   User              @relation(fields: [veterinarianId], references: [id])
 
   @@unique([jobId, veterinarianId])
+  @@index([jobId], map: "idx_applications_job_id")
+  @@index([status], map: "idx_applications_status")
+  @@index([veterinarianId], map: "idx_applications_veterinarian_id")
   @@map("applications")
 }
 
@@ -253,7 +270,6 @@ model JobBookmark {
   jobId     String
   createdAt DateTime  @default(now())
   deletedAt DateTime?
-  job       Job       @relation(fields: [jobId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, jobId])
@@ -536,55 +552,11 @@ model veterinarian_profiles {
   users        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model HospitalFacilityImage {
-  id           String   @id @default(cuid())
-  userId       String
-  imageUrl     String
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("hospital_facility_images")
-}
-
-model HospitalAnimal {
-  id         String     @id @default(cuid())
-  userId     String
-  animalType AnimalType
-  createdAt  DateTime   @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, animalType])
-  @@map("hospital_animals")
-}
-
-model HospitalSpecialty {
-  id        String        @id @default(cuid())
-  userId    String
-  specialty SpecialtyType
-  createdAt DateTime      @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, specialty])
-  @@map("hospital_specialties")
-}
-
-model HospitalBusinessLicense {
-  id         String   @id @default(cuid())
-  userId     String
-  fileName   String
-  fileUrl    String
-  fileType   String
-  fileSize   BigInt?
-  uploadedAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("hospital_business_licenses")
+model migration_log {
+  id             Int       @id @default(autoincrement())
+  migration_name String    @unique @db.VarChar(255)
+  executed_at    DateTime? @default(now()) @db.Timestamp(6)
+  description    String?
 }
 
 enum UserType {
