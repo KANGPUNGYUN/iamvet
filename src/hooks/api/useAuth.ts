@@ -134,9 +134,20 @@ export function useLogin() {
     },
     onSuccess: (result) => {
       if (result.success && 'user' in result && result.user) {
-        // localStorage에 토큰과 사용자 정보 저장
-        const accessToken = btoa(JSON.stringify({ userId: result.user.id })); // 임시 토큰
-        localStorage.setItem('accessToken', accessToken);
+        // 서버에서 제공하는 실제 JWT 토큰 사용
+        if ('tokens' in result && result.tokens && typeof result.tokens === 'object') {
+          const tokens = result.tokens as { accessToken?: string; refreshToken?: string };
+          if (tokens.accessToken) {
+            localStorage.setItem('accessToken', tokens.accessToken);
+          }
+          if (tokens.refreshToken) {
+            localStorage.setItem('refreshToken', tokens.refreshToken);
+          }
+        } else {
+          // 토큰이 없는 경우 fallback (임시)
+          const accessToken = btoa(JSON.stringify({ userId: result.user.id }));
+          localStorage.setItem('accessToken', accessToken);
+        }
         localStorage.setItem('user', JSON.stringify({
           id: result.user.id,
           name: result.user.username || result.user.realName || result.user.hospitalName,

@@ -3359,3 +3359,2012 @@ Error incrementing job view count: error: relation "view_logs" does not exist
  ✓ Compiled in 813ms (1924 modules)
  ✓ Compiled in 445ms (1924 modules)
 <w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1097ms (1944 modules)
+ ✓ Compiled in 529ms (1948 modules)
+ ✓ Compiled in 861ms (1948 modules)
+ ✓ Compiled in 657ms (1948 modules)
+ ✓ Compiled in 300ms (945 modules)
+ ✓ Compiled in 1017ms (1948 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 878ms (1928 modules)
+ ✓ Compiled in 220ms (945 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/3.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/3.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 312ms (945 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ○ Compiling /dashboard/hospital/profile/edit ...
+ ✓ Compiled /dashboard/hospital/profile/edit in 856ms (1422 modules)
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/next.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/dashboard/hospital/profile/edit/page.js:1091:47)
+    at Object.<anonymous> (.next/server/app/dashboard/hospital/profile/edit/page.js:1094:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/next.js',
+  page: '/dashboard/hospital/profile/edit'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 570ms (2390 modules)
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/webpack-runtime.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/pages/_document.js:1:346)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:390) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ POST /dashboard/hospital/profile/edit 500 in 1592ms
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/dashboard/hospital/profile/edit/page.js:1091:47)
+    at Object.<anonymous> (.next/server/app/dashboard/hospital/profile/edit/page.js:1094:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js',
+  page: '/dashboard/hospital/profile/edit'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/webpack-runtime.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/pages/_document.js:1:346)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:390) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ POST /dashboard/hospital/profile/edit 500 in 106ms
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/dashboard/hospital/profile/edit/page.js:1091:47)
+    at Object.<anonymous> (.next/server/app/dashboard/hospital/profile/edit/page.js:1094:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js',
+  page: '/dashboard/hospital/profile/edit'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/webpack-runtime.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/pages/_document.js:1:346)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:390) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ POST /dashboard/hospital/profile/edit 500 in 54ms
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/dashboard/hospital/profile/edit/page.js:1091:47)
+    at Object.<anonymous> (.next/server/app/dashboard/hospital/profile/edit/page.js:1094:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js',
+  page: '/dashboard/hospital/profile/edit'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/webpack-runtime.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/pages/_document.js:1:346)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:390) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ POST /dashboard/hospital/profile/edit 500 in 116ms
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/dashboard/hospital/profile/edit/page.js:1091:47)
+    at Object.<anonymous> (.next/server/app/dashboard/hospital/profile/edit/page.js:1094:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js',
+  page: '/dashboard/hospital/profile/edit'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/webpack-runtime.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/pages/_document.js:1:346)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:390) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /dashboard/hospital/profile/edit 500 in 41ms
+ ✓ Compiled /_not-found in 353ms (1465 modules)
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 474ms
+ GET /_next/static/chunks/fallback/main.js 500 in 470ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 470ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 470ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 469ms
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/dashboard/hospital/profile/edit/page.js:1091:47)
+    at Object.<anonymous> (.next/server/app/dashboard/hospital/profile/edit/page.js:1094:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js',
+  page: '/dashboard/hospital/profile/edit'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/webpack-runtime.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/pages/_document.js:1:346)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:390) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /dashboard/hospital/profile/edit 500 in 73ms
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 97ms
+ GET /_next/static/chunks/fallback/main.js 500 in 97ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 96ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 96ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 98ms
+ ✓ Compiled /dashboard/hospital in 245ms (1475 modules)
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/dashboard/hospital/page.js:915:47)
+    at Object.<anonymous> (.next/server/app/dashboard/hospital/page.js:918:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js',
+  page: '/dashboard/hospital'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/webpack-runtime.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/dashboard/hospital/page.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/require.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/load-components.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/utils.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/options.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/swc/index.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/router-server.js
+- /Users/kangpungyun/Desktop/Projects/iamvet/node_modules/next/dist/server/lib/start-server.js
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/pages/_document.js:1:346)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:390) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /dashboard/hospital 500 in 303ms
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+    at __webpack_require__.f.require (.next/server/webpack-runtime.js:267:28)
+    at <unknown> (.next/server/webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (.next/server/webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (.next/server/webpack-runtime.js:231:22)
+    at <unknown> (.next/server/app/_not-found/page.js:587:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:590:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/vendor-chunks/semver.js'
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 97ms
+ GET /_next/static/chunks/fallback/main.js 500 in 96ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 96ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 96ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 96ms
+ ✓ Compiled in 1791ms (1948 modules)
+ ✓ Compiled in 1094ms (1948 modules)
+ ✓ Compiled in 421ms (1003 modules)
+ ✓ Compiled in 779ms (1928 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/0.pack.gz'
+ ✓ Compiled in 1716ms (1948 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/1.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/server-development/1.pack.gz'
+ ✓ Compiled in 1091ms (1948 modules)
+ ✓ Compiled in 1329ms (1928 modules)
+ ✓ Compiled in 851ms (1928 modules)
+ ✓ Compiled in 542ms (1928 modules)
+ ✓ Compiled in 1004ms (1928 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 2s (1948 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1393ms (1948 modules)
+ ✓ Compiled in 1140ms (1948 modules)
+ ✓ Compiled in 1440ms (1928 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz'
+ ✓ Compiled in 863ms (1948 modules)
+ ✓ Compiled in 1365ms (1948 modules)
+ ✓ Compiled in 937ms (1948 modules)
+ ✓ Compiled in 1931ms (1948 modules)
+ ✓ Compiled in 941ms (1948 modules)
+ ✓ Compiled in 1681ms (1948 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/2.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/2.pack.gz'
+ ✓ Compiled in 1791ms (1948 modules)
+ ✓ Compiled in 1233ms (1948 modules)
+ ✓ Compiled in 920ms (1948 modules)
+ ✓ Compiled in 1795ms (1948 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1684ms (1948 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 884ms (1948 modules)
+ ✓ Compiled in 1302ms (1948 modules)
+ ✓ Compiled in 1470ms (1928 modules)
+ ✓ Compiled in 1542ms (1928 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz'
+ ✓ Compiled in 1272ms (1928 modules)
+ ✓ Compiled in 337ms (945 modules)
+ ✓ Compiled in 1245ms (945 modules)
+ ✓ Compiled in 272ms (945 modules)
+ ✓ Compiled in 1118ms (945 modules)
+ ✓ Compiled in 286ms (945 modules)
+ ✓ Compiled in 659ms (945 modules)
+ ✓ Compiled in 405ms (945 modules)
+ ✓ Compiled in 401ms (945 modules)
+ ✓ Compiled in 940ms (945 modules)
+ ✓ Compiled in 905ms (1948 modules)
+ ✓ Compiled in 555ms (1948 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1111ms (945 modules)
+ ✓ Compiled in 294ms (945 modules)
+ ✓ Compiled in 282ms (945 modules)
+ ✓ Compiled in 288ms (945 modules)
+ ✓ Compiled in 729ms (945 modules)
+ ✓ Compiled in 297ms (945 modules)
+ ✓ Compiled in 637ms (945 modules)
+ ✓ Compiled in 230ms (945 modules)
+ ✓ Compiled in 224ms (945 modules)
+ ✓ Compiled in 392ms (945 modules)
+ ✓ Compiled in 1404ms (945 modules)
+ ✓ Compiled in 945ms (945 modules)
+ ✓ Compiled in 1188ms (945 modules)
+ ✓ Compiled in 947ms (945 modules)
+ ✓ Compiled in 352ms (945 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 507ms (945 modules)
+ ✓ Compiled in 317ms (945 modules)
+ ✓ Compiled in 349ms (945 modules)
+ ✓ Compiled in 294ms (945 modules)
+ ✓ Compiled in 1223ms (1003 modules)
+ ✓ Compiled in 1168ms (1003 modules)
+ ✓ Compiled in 323ms (1003 modules)
+ ✓ Compiled in 1080ms (945 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 395ms (945 modules)
+ ✓ Compiled in 218ms (945 modules)
+ ✓ Compiled in 195ms (945 modules)
+ ✓ Compiled in 839ms (1003 modules)
+ ✓ Compiled in 726ms (945 modules)
+ ✓ Compiled in 2s (1948 modules)
+ ✓ Compiled in 700ms (1948 modules)
+ ✓ Compiled in 1580ms (1950 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/1.pack.gz'
+ ✓ Compiled in 742ms (1950 modules)
+ ✓ Compiled in 571ms (1950 modules)
+ ✓ Compiled in 759ms (1950 modules)
+ ✓ Compiled in 874ms (1950 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 401ms (946 modules)
+ ✓ Compiled in 304ms (946 modules)
+ ✓ Compiled in 412ms (946 modules)
+ ✓ Compiled in 382ms (946 modules)
+ ✓ Compiled in 744ms (946 modules)
+ ✓ Compiled in 534ms (946 modules)
+ ✓ Compiled in 391ms (946 modules)
+ ✓ Compiled in 305ms (946 modules)
+ ○ Compiling /api/auth/naver/callback ...
+ ✓ Compiled /api/auth/naver/callback in 530ms (1098 modules)
+Naver OAuth user data: {
+  id: 'ski3tGDWA4YnB_VsTvCXX9-53uz-4wwdghGs5PL4f_Q',
+  profile_image: 'https://ssl.pstatic.net/static/pwe/address/img_profile.png',
+  email: 'zkdvnd@naver.com',
+  name: '강풍윤'
+}
+Extracted realName: 강풍윤
+Extracted phone: undefined
+Extracted birthDate: undefined
+Checking user by social provider: NAVER ski3tGDWA4YnB_VsTvCXX9-53uz-4wwdghGs5PL4f_Q
+User found by social provider: true
+ GET /api/auth/naver/callback?code=iCp0GuBZi8wszPhs7b&state=eyJ1c2VyVHlwZSI6InZldGVyaW5hcnktc3R1ZGVudCIsInRpbWVzdGFtcCI6MTc1ODIzMjYwMzkwOSwicmFuZG9tIjoieHNkZ3dlIn0= 200 in 2405ms
+ ○ Compiling /register/social-complete/veterinary-student ...
+ ✓ Compiled /register/social-complete/veterinary-student in 969ms (1523 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /register/social-complete/veterinary-student?email=test%40snu.ac.kr&name=%EA%B0%95%ED%92%8D%EC%9C%A4&profileImage=https%3A%2F%2Fssl.pstatic.net%2Fstatic%2Fpwe%2Faddress%2Fimg_profile.png 200 in 1119ms
+ ✓ Compiled /_not-found in 223ms (1524 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /_next/static/chunks/app/register/social-complete/veterinary-student/page.js 404 in 346ms
+ POST /register/social-complete/veterinary-student?email=test%40snu.ac.kr&name=%EA%B0%95%ED%92%8D%EC%9C%A4&profileImage=https%3A%2F%2Fssl.pstatic.net%2Fstatic%2Fpwe%2Faddress%2Fimg_profile.png 200 in 351ms
+ POST /register/social-complete/veterinary-student?email=test%40snu.ac.kr&name=%EA%B0%95%ED%92%8D%EC%9C%A4&profileImage=https%3A%2F%2Fssl.pstatic.net%2Fstatic%2Fpwe%2Faddress%2Fimg_profile.png 200 in 99ms
+ GET /jobs 200 in 57ms
+ ✓ Compiled /api/jobs in 492ms (1505 modules)
+Jobs API params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+[DB] getJobsWithPagination called with params: {
+  keyword: undefined,
+  page: 1,
+  limit: 8,
+  sort: 'recent',
+  workType: undefined,
+  experience: undefined,
+  region: undefined,
+  major: undefined
+}
+ GET /jobs 200 in 105ms
+[DB] job_postings table exists: true
+[DB] Executing query: 
+    SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
+    FROM job_postings j
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
+   ORDER BY j."createdAt" DESC LIMIT $1 OFFSET $2
+[DB] Query params: [ 8, 0 ]
+[DB] Query executed successfully, rows returned: 1
+[DB] Executing count query: 
+    SELECT COUNT(*) as total
+    FROM job_postings j
+    JOIN users u ON j."hospitalId" = u.id
+    WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
+  
+[DB] Count params: []
+[DB] Count query executed successfully, total: 1
+Database result: {
+  jobsCount: 1,
+  totalCount: 1,
+  firstJob: [
+    'id',                   'hospitalId',
+    'title',                'workType',
+    'isUnlimitedRecruit',   'recruitEndDate',
+    'major',                'experience',
+    'position',             'salaryType',
+    'salary',               'workDays',
+    'isWorkDaysNegotiable', 'workStartTime',
+    'workEndTime',          'isWorkTimeNegotiable',
+    'benefits',             'education',
+    'certifications',       'experienceDetails',
+    'preferences',          'managerName',
+    'managerPhone',         'managerEmail',
+    'department',           'isActive',
+    'isDraft',              'createdAt',
+    'updatedAt',            'deletedAt',
+    'hospital_name',        'hospital_logo',
+    'hospital_location'
+  ]
+}
+ GET /api/jobs?page=1&limit=8&sort=recent 200 in 1351ms
+ GET /jobs/HlstieUzUGIpyrDS 200 in 54ms
+ ✓ Compiled /api/jobs/[id] in 363ms (1507 modules)
+ POST /jobs/HlstieUzUGIpyrDS 200 in 919ms
+ POST /jobs/HlstieUzUGIpyrDS 200 in 95ms
+ POST /jobs/HlstieUzUGIpyrDS 200 in 98ms
+ GET /jobs/HlstieUzUGIpyrDS 200 in 11ms
+Error incrementing job view count: error: relation "view_logs" does not exist
+    at async incrementViewCount (src/lib/database.ts:3025:25)
+    at async GET (src/app/api/jobs/[id]/route.ts:48:4)
+  3023 |     `;
+  3024 |     
+> 3025 |     const existingView = await pool.query(checkQuery, [
+       |                         ^
+  3026 |       contentType,
+  3027 |       contentId, 
+  3028 |       userId || null,  {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '23',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 200 in 2218ms
+ ○ Compiling /dashboard/veterinarian/resume ...
+ ✓ Compiled /dashboard/veterinarian/resume in 1054ms (2472 modules)
+ GET /dashboard/veterinarian/resume 200 in 1159ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/5a00b8067f6d4de8.webpack.hot-update.json 404 in 156ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+Owner check: {
+  jobDataIsOwner: undefined,
+  hospitalUserId: undefined,
+  userId: undefined,
+  userType: undefined,
+  isOwner: false,
+  canApply: false
+}
+ GET /jobs/HlstieUzUGIpyrDS 200 in 79ms
+ POST /jobs/HlstieUzUGIpyrDS 200 in 323ms
+ POST /jobs/HlstieUzUGIpyrDS 200 in 108ms
+ POST /jobs/HlstieUzUGIpyrDS 200 in 100ms
+ POST /jobs/HlstieUzUGIpyrDS 200 in 101ms
+ POST /jobs/HlstieUzUGIpyrDS 200 in 100ms
+Error incrementing job view count: error: relation "view_logs" does not exist
+    at async incrementViewCount (src/lib/database.ts:3025:25)
+    at async GET (src/app/api/jobs/[id]/route.ts:48:4)
+  3023 |     `;
+  3024 |     
+> 3025 |     const existingView = await pool.query(checkQuery, [
+       |                         ^
+  3026 |       contentType,
+  3027 |       contentId, 
+  3028 |       userId || null,  {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '23',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+ GET /api/jobs/HlstieUzUGIpyrDS 200 in 1558ms
+ ○ Compiling /dashboard/veterinarian ...
+ ✓ Compiled /dashboard/veterinarian in 604ms (2492 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /dashboard/veterinarian 200 in 737ms
+ POST /dashboard/veterinarian 200 in 303ms
+ POST /dashboard/veterinarian 200 in 102ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Token expiry check: {
+  exp: 1758837406,
+  now: 1758232646.893,
+  isValid: true,
+  timeLeft: 604759.1070001125
+}
+[Resume Server Action] Token payload: {
+  userId: 'DSfc3gHE6GQ552Fu',
+  userType: 'VETERINARIAN',
+  email: 'test@snu.ac.kr',
+  iat: 1758232606,
+  exp: 1758837406
+}
+[Resume Server Action] Looking up user by email: test@snu.ac.kr
+[Resume Server Action] Email lookup result: [
+  {
+    id: '3z1Yw4aKy39uJCQQ',
+    email: 'test@snu.ac.kr',
+    isActive: true,
+    seq: 1,
+    userType: 'VETERINARIAN',
+    createdAt: 2025-09-17T11:02:36.676Z
+  }
+]
+[Resume Server Action] Found user: {
+  id: '3z1Yw4aKy39uJCQQ',
+  email: 'test@snu.ac.kr',
+  seq: 1,
+  userType: 'VETERINARIAN'
+}
+[Resume Server Action] Final userId for querying: 3z1Yw4aKy39uJCQQ
+[Resume Server Action] Resume query result length: 1
+[Resume Server Action] Resume found successfully
+ POST /dashboard/veterinarian 200 in 778ms
+ POST /dashboard/veterinarian 200 in 93ms
+ GET /dashboard/veterinarian/resume 200 in 47ms
+[Resume Server Action] saveVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Token expiry check: {
+  exp: 1758837406,
+  now: 1758232666.25,
+  isValid: true,
+  timeLeft: 604739.75
+}
+[Resume Server Action] Token payload: {
+  userId: 'DSfc3gHE6GQ552Fu',
+  userType: 'VETERINARIAN',
+  email: 'test@snu.ac.kr',
+  iat: 1758232606,
+  exp: 1758837406
+}
+[Resume Server Action] Looking up user by email: test@snu.ac.kr
+[Resume Server Action] Email lookup result: [
+  {
+    id: '3z1Yw4aKy39uJCQQ',
+    email: 'test@snu.ac.kr',
+    isActive: true,
+    seq: 1,
+    userType: 'VETERINARIAN',
+    createdAt: 2025-09-17T11:02:36.676Z
+  }
+]
+[Resume Server Action] Found user: {
+  id: '3z1Yw4aKy39uJCQQ',
+  email: 'test@snu.ac.kr',
+  seq: 1,
+  userType: 'VETERINARIAN'
+}
+[Resume Server Action] Final userId for saving: 3z1Yw4aKy39uJCQQ
+[Resume Server Action] User check result: [
+  {
+    id: '3z1Yw4aKy39uJCQQ',
+    email: 'test@snu.ac.kr',
+    isActive: true,
+    userType: 'VETERINARIAN'
+  }
+]
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Token expiry check: {
+  exp: 1758837406,
+  now: 1758232666.787,
+  isValid: true,
+  timeLeft: 604739.2130000591
+}
+[Resume Server Action] Token payload: {
+  userId: 'DSfc3gHE6GQ552Fu',
+  userType: 'VETERINARIAN',
+  email: 'test@snu.ac.kr',
+  iat: 1758232606,
+  exp: 1758837406
+}
+[Resume Server Action] Looking up user by email: test@snu.ac.kr
+[Resume Server Action] Email lookup result: [
+  {
+    id: '3z1Yw4aKy39uJCQQ',
+    email: 'test@snu.ac.kr',
+    isActive: true,
+    seq: 1,
+    userType: 'VETERINARIAN',
+    createdAt: 2025-09-17T11:02:36.676Z
+  }
+]
+[Resume Server Action] Found user: {
+  id: '3z1Yw4aKy39uJCQQ',
+  email: 'test@snu.ac.kr',
+  seq: 1,
+  userType: 'VETERINARIAN'
+}
+[Resume Server Action] Final userId for querying: 3z1Yw4aKy39uJCQQ
+[Resume Server Action] Resume query result length: 1
+[Resume Server Action] Resume found successfully
+[Resume Server Action] Updating existing resume
+[Resume Server Action] Resume save completed
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Token expiry check: {
+  exp: 1758837406,
+  now: 1758232667.445,
+  isValid: true,
+  timeLeft: 604738.5550000668
+}
+[Resume Server Action] Token payload: {
+  userId: 'DSfc3gHE6GQ552Fu',
+  userType: 'VETERINARIAN',
+  email: 'test@snu.ac.kr',
+  iat: 1758232606,
+  exp: 1758837406
+}
+[Resume Server Action] Looking up user by email: test@snu.ac.kr
+[Resume Server Action] Email lookup result: [
+  {
+    id: '3z1Yw4aKy39uJCQQ',
+    email: 'test@snu.ac.kr',
+    isActive: true,
+    seq: 1,
+    userType: 'VETERINARIAN',
+    createdAt: 2025-09-17T11:02:36.676Z
+  }
+]
+[Resume Server Action] Found user: {
+  id: '3z1Yw4aKy39uJCQQ',
+  email: 'test@snu.ac.kr',
+  seq: 1,
+  userType: 'VETERINARIAN'
+}
+[Resume Server Action] Final userId for querying: 3z1Yw4aKy39uJCQQ
+[Resume Server Action] Resume query result length: 1
+[Resume Server Action] Resume found successfully
+ POST /dashboard/veterinarian/resume 200 in 1525ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Token expiry check: {
+  exp: 1758837406,
+  now: 1758232667.783,
+  isValid: true,
+  timeLeft: 604738.2170000076
+}
+[Resume Server Action] Token payload: {
+  userId: 'DSfc3gHE6GQ552Fu',
+  userType: 'VETERINARIAN',
+  email: 'test@snu.ac.kr',
+  iat: 1758232606,
+  exp: 1758837406
+}
+[Resume Server Action] Looking up user by email: test@snu.ac.kr
+[Resume Server Action] Email lookup result: [
+  {
+    id: '3z1Yw4aKy39uJCQQ',
+    email: 'test@snu.ac.kr',
+    isActive: true,
+    seq: 1,
+    userType: 'VETERINARIAN',
+    createdAt: 2025-09-17T11:02:36.676Z
+  }
+]
+[Resume Server Action] Found user: {
+  id: '3z1Yw4aKy39uJCQQ',
+  email: 'test@snu.ac.kr',
+  seq: 1,
+  userType: 'VETERINARIAN'
+}
+[Resume Server Action] Final userId for querying: 3z1Yw4aKy39uJCQQ
+[Resume Server Action] Resume query result length: 1
+[Resume Server Action] Resume found successfully
+ POST /dashboard/veterinarian/resume 200 in 307ms
+ POST /dashboard/veterinarian/resume 200 in 109ms
+ POST /dashboard/veterinarian/resume 200 in 108ms
+ GET /dashboard/veterinarian/resume 200 in 25ms
+ GET /dashboard/veterinarian 200 in 23ms
+ GET /dashboard/veterinarian/resume 200 in 20ms
+ ✓ Compiled in 2.3s (2368 modules)
+ POST /dashboard/veterinarian/resume 200 in 1755ms
+ POST /dashboard/veterinarian/resume 200 in 97ms
+ ✓ Compiled in 1274ms (2368 modules)
+ POST /dashboard/veterinarian/resume 200 in 1336ms
+ POST /dashboard/veterinarian/resume 200 in 102ms
+ ✓ Compiled in 1530ms (2388 modules)
+ GET /dashboard/veterinarian/resume 200 in 54ms
+ POST /dashboard/veterinarian/resume 200 in 370ms
+ GET /dashboard/veterinarian/resume 200 in 27ms
+ POST /dashboard/veterinarian/resume 200 in 25ms
+ GET / 200 in 30ms
+[getResumesAction] 요청 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] Count 쿼리: 
+    SELECT COUNT(*) as total FROM detailed_resumes dr
+    WHERE 1=1
+   
+[getResumesWithPagination] 전체 개수: 1
+[getResumesWithPagination] 최종 쿼리: 
+    SELECT 
+      dr.id,
+      dr.name,
+      dr.photo,
+      dr.introduction,
+      dr."selfIntroduction",
+      dr.position,
+      dr.specialties,
+      dr."preferredRegions",
+      dr."createdAt",
+      dr."updatedAt"
+    FROM detailed_resumes dr
+    WHERE 1=1
+   ORDER BY dr."updatedAt" DESC LIMIT $1 OFFSET $2
+[getResumesWithPagination] 쿼리 파라미터: [ 5, 0 ]
+[getResumesWithPagination] 조회된 레코드 수: 1
+[getResumesAction] DB 조회 결과: {
+  data: [
+    {
+      id: 'resume_3z1Yw4aKy39uJCQQ_1758164428321',
+      name: '지드래곤',
+      photo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/resumes/e9mdechsarfirl2mqeetgdwn.png',
+      introduction: '한 줄 소개입니다',
+      selfIntroduction: null,
+      position: 'veterinarian',
+      specialties: [Array],
+      preferredRegions: [Array],
+      createdAt: 2025-09-17T18:00:28.507Z,
+      updatedAt: 2025-09-18T12:57:47.494Z
+    }
+  ],
+  total: 1,
+  currentPage: 1,
+  totalPages: 1
+}
+ POST / 200 in 718ms
+[getResumesAction] 요청 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] 파라미터: { page: 1, limit: 5, sort: 'latest' }
+[getResumesWithPagination] Count 쿼리: 
+    SELECT COUNT(*) as total FROM detailed_resumes dr
+    WHERE 1=1
+   
+[getResumesWithPagination] 전체 개수: 1
+[getResumesWithPagination] 최종 쿼리: 
+    SELECT 
+      dr.id,
+      dr.name,
+      dr.photo,
+      dr.introduction,
+      dr."selfIntroduction",
+      dr.position,
+      dr.specialties,
+      dr."preferredRegions",
+      dr."createdAt",
+      dr."updatedAt"
+    FROM detailed_resumes dr
+    WHERE 1=1
+   ORDER BY dr."updatedAt" DESC LIMIT $1 OFFSET $2
+[getResumesWithPagination] 쿼리 파라미터: [ 5, 0 ]
+[getResumesWithPagination] 조회된 레코드 수: 1
+[getResumesAction] DB 조회 결과: {
+  data: [
+    {
+      id: 'resume_3z1Yw4aKy39uJCQQ_1758164428321',
+      name: '지드래곤',
+      photo: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/resumes/e9mdechsarfirl2mqeetgdwn.png',
+      introduction: '한 줄 소개입니다',
+      selfIntroduction: null,
+      position: 'veterinarian',
+      specialties: [Array],
+      preferredRegions: [Array],
+      createdAt: 2025-09-17T18:00:28.507Z,
+      updatedAt: 2025-09-18T12:57:47.494Z
+    }
+  ],
+  total: 1,
+  currentPage: 1,
+  totalPages: 1
+}
+ POST / 200 in 191ms
+ ○ Compiling /member-select ...
+ ✓ Compiled /member-select in 600ms (2379 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /member-select 200 in 724ms
+ ✓ Compiled /login/veterinarian in 324ms (2388 modules)
+ GET /login/veterinarian 200 in 375ms
+ ○ Compiling /register/veterinarian ...
+ ✓ Compiled /register/veterinarian in 854ms (2397 modules)
+ GET /register/veterinarian 200 in 898ms
+[SERVER] checkUsernameDuplicate called with: test2
+[SERVER] checkUsernameDuplicate error: Error [NeonDbError]: column "username" does not exist
+    at async checkUsernameDuplicate (src/actions/auth.ts:633:25)
+  631 |     }
+  632 |
+> 633 |     const existingUser = await sql`
+      |                         ^
+  634 |       SELECT id FROM users WHERE (username = ${username} OR "loginId" = ${username}) AND "isActive" = true
+  635 |     `;
+  636 | {
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: 'Perhaps you meant to reference the column "users.userType".',
+  position: '36',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3723',
+  routine: 'errorMissingColumn',
+  sourceError: undefined
+}
+ POST /register/veterinarian 200 in 496ms
+ ✓ Compiled /_not-found in 294ms (1298 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 409ms
+ ✓ Compiled in 1546ms (2263 modules)
+ GET /register/veterinarian 200 in 99ms
+ ✓ Compiled in 573ms (2263 modules)
+ GET /register/veterinarian 200 in 41ms
+ ✓ Compiled in 1112ms (2385 modules)
+ GET /register/veterinarian 200 in 102ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 1007ms (2385 modules)
+ GET /register/veterinarian 200 in 55ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /register/veterinarian 200 in 177ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 655ms (1413 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 819ms
+ ○ Compiling /api/auth/check-username-duplicate ...
+ ✓ Compiled /api/auth/check-username-duplicate in 724ms (2384 modules)
+[API] 아이디 중복확인 요청: test2
+[API] 아이디 중복확인 오류: Error [NeonDbError]: column "username" does not exist
+    at async POST (src/app/api/auth/check-username-duplicate/route.ts:18:25)
+  16 |
+  17 |     // 아이디 중복 확인
+> 18 |     const existingUser = await sql`
+     |                         ^
+  19 |       SELECT id FROM users WHERE username = ${username} AND "isActive" = true
+  20 |     `;
+  21 |      {
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: 'Perhaps you meant to reference the column "users.userType".',
+  position: '35',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3723',
+  routine: 'errorMissingColumn',
+  sourceError: undefined
+}
+ POST /api/auth/check-username-duplicate 500 in 1157ms
+ ✓ Compiled in 1429ms (2403 modules)
+ GET /register/veterinarian 200 in 84ms
+ ✓ Compiled in 529ms (2385 modules)
+ GET /register/veterinarian 200 in 110ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /register/veterinarian 200 in 150ms
+ ✓ Compiled /_not-found in 230ms (1413 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 334ms
+ ✓ Compiled /api/auth/check-username-duplicate in 185ms (1431 modules)
+[API] check-username-duplicate 요청 시작
+[API] 요청 body: { username: 'test2' }
+[API] 아이디 중복확인 요청: test2
+[API] 데이터베이스 쿼리 실행 중...
+ GET /register/veterinarian 200 in 109ms
+[API] 데이터베이스 쿼리 에러: Error [NeonDbError]: column "username" does not exist
+    at async POST (src/app/api/auth/check-username-duplicate/route.ts:30:27)
+  28 |     try {
+  29 |       // 아이디 중복 확인 - loginId 필드도 체크
+> 30 |       const existingUser = await sql`
+     |                           ^
+  31 |         SELECT id FROM users WHERE ("username" = ${username} OR "loginId" = ${username}) AND "isActive" = true
+  32 |       `;
+  33 |        {
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: 'Perhaps you meant to reference the column "users.userType".',
+  position: '38',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '3723',
+  routine: 'errorMissingColumn',
+  sourceError: undefined
+}
+[API] 데이터베이스 연결 실패, 중복 확인 우회
+[API] 아이디 중복확인 결과: { username: 'test2', isDuplicate: false }
+ POST /api/auth/check-username-duplicate 200 in 594ms
+[S3] uploadImage 시작: {
+  fileName: 'image (4).jpg',
+  fileSize: 121140,
+  fileType: 'image/jpeg',
+  folder: 'profiles'
+}
+[S3] 파일명 생성: {
+  originalName: 'image (4).jpg',
+  extension: 'jpg',
+  safeName: 'profiles/at8benm19iknua9gib53u9rn.jpg'
+}
+[S3] S3 업로드 명령 실행 중... {
+  bucket: 'iamvet-bucket',
+  key: 'profiles/at8benm19iknua9gib53u9rn.jpg',
+  contentType: 'image/jpeg',
+  bodySize: 121140
+}
+[S3] S3 업로드 성공: {
+  '$metadata': {
+    httpStatusCode: 200,
+    requestId: 'MRKP3JC7W825RDST',
+    extendedRequestId: 'k79O2N4UUdkYx7+X+O3Un7V6V9QmyjFnDCnvwUKEZXDj6VyBju1v2CxoTsgzGWC+uYfkOubMyuxjMfpU9SXa3b4WOZHYWoKpPQ2XXJE5LIM=',
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  ETag: '"8ec84d63d217f1f90a129ed67e41f4ff"',
+  ChecksumCRC32: 'OfFVVQ==',
+  ChecksumType: 'FULL_OBJECT',
+  ServerSideEncryption: 'AES256'
+}
+[S3] 최종 URL 생성: https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg
+ POST /register/veterinarian 200 in 352ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/kangpungyun/Desktop/Projects/iamvet/.next/cache/webpack/client-development/0.pack.gz'
+Checking email duplicate for: test@kakao.com
+All emails in DB: [ 'test@snu.ac.kr', 'test@naver.com' ]
+Email duplicate check result: []
+Result length: 0
+Active email check result: []
+ POST /register/veterinarian 200 in 796ms
+[S3] uploadImage 시작: {
+  fileName: 'image-9.png',
+  fileSize: 76414,
+  fileType: 'image/png',
+  folder: 'licenses'
+}
+[S3] 파일명 생성: {
+  originalName: 'image-9.png',
+  extension: 'png',
+  safeName: 'licenses/sfbdurvv7ved3c9p4u48sb9f.png'
+}
+[S3] S3 업로드 명령 실행 중... {
+  bucket: 'iamvet-bucket',
+  key: 'licenses/sfbdurvv7ved3c9p4u48sb9f.png',
+  contentType: 'image/png',
+  bodySize: 76414
+}
+[S3] S3 업로드 성공: {
+  '$metadata': {
+    httpStatusCode: 200,
+    requestId: '3HFMJHVA8CAADY3Y',
+    extendedRequestId: 'GE2S0cj3N8tcDUL8vgmg+7/wgk91z8OLfbyUDg7k/vUmTZSnYqctrhxV5QAaQM66hewZY8oIqcOzW02UIha/yXJ6qzNDDaJB2YJX3iOTrho=',
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  ETag: '"2291c5f6ab3726a14d1bf7cf01537e1c"',
+  ChecksumCRC32: 'xS2XXw==',
+  ChecksumType: 'FULL_OBJECT',
+  ServerSideEncryption: 'AES256'
+}
+[S3] 최종 URL 생성: https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/licenses/sfbdurvv7ved3c9p4u48sb9f.png
+ POST /register/veterinarian 200 in 251ms
+SERVER: registerVeterinarian called with data: {
+  userId: 'test2',
+  password: 'test1234',
+  realName: '박보검',
+  nickname: '닉네임',
+  phone: '010-1111-1114',
+  email: 'test@kakao.com',
+  birthDate: '2022-11-11',
+  profileImage: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg',
+  licenseImage: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/licenses/sfbdurvv7ved3c9p4u48sb9f.png',
+  termsAgreed: true,
+  privacyAgreed: true,
+  marketingAgreed: true
+}
+SERVER: User created successfully: mVTzzWLtXOtuNwJ_
+ POST /register/veterinarian 200 in 737ms
+ GET /login/veterinarian 200 in 49ms
+ GET /login/veterinarian 200 in 16ms
+[login] Final login result: {
+  "success": true,
+  "user": {
+    "id": "mVTzzWLtXOtuNwJ_",
+    "email": "test@kakao.com",
+    "realName": "박보검",
+    "phone": "010-1111-1114",
+    "userType": "VETERINARIAN",
+    "profileImage": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg",
+    "hospitalName": null,
+    "hospitalLogo": null
+  }
+}
+ POST /login/veterinarian 200 in 588ms
+[getCurrentUser] Getting profile for userType: VETERINARIAN userId: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Veterinarian profile query result: []
+[getCurrentUser] No veterinarian profile found for user: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "mVTzzWLtXOtuNwJ_",
+    "email": "test@kakao.com",
+    "phone": "010-1111-1114",
+    "realName": "박보검",
+    "birthDate": "2022-11-11T00:00:00.000Z",
+    "userType": "VETERINARIAN",
+    "profileImage": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg",
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T22:08:41.447Z",
+    "privacyAgreedAt": "2025-09-18T22:08:41.447Z",
+    "marketingAgreedAt": "2025-09-18T22:08:41.447Z",
+    "createdAt": "2025-09-18T22:08:41.447Z",
+    "updatedAt": "2025-09-18T22:08:41.447Z",
+    "hospitalLogo": null
+  }
+}
+ ○ Compiling /dashboard/veterinarian ...
+ POST /login/veterinarian 200 in 536ms
+ ✓ Compiled /dashboard/veterinarian in 884ms (1425 modules)
+ GET /dashboard/veterinarian 200 in 1076ms
+ GET /dashboard/veterinarian 200 in 17ms
+[getCurrentUser] Getting profile for userType: VETERINARIAN userId: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Veterinarian profile query result: []
+[getCurrentUser] No veterinarian profile found for user: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "mVTzzWLtXOtuNwJ_",
+    "email": "test@kakao.com",
+    "phone": "010-1111-1114",
+    "realName": "박보검",
+    "birthDate": "2022-11-11T00:00:00.000Z",
+    "userType": "VETERINARIAN",
+    "profileImage": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg",
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T22:08:41.447Z",
+    "privacyAgreedAt": "2025-09-18T22:08:41.447Z",
+    "marketingAgreedAt": "2025-09-18T22:08:41.447Z",
+    "createdAt": "2025-09-18T22:08:41.447Z",
+    "updatedAt": "2025-09-18T22:08:41.447Z",
+    "hospitalLogo": null
+  }
+}
+[DB] getVeterinarianProfile called with userId: mVTzzWLtXOtuNwJ_
+[DB] Executing query: 
+    SELECT id, email, phone, "profileImage", "loginId", nickname, "realName", "birthDate", 
+           "licenseImage", "userType", provider, "isActive", "updatedAt", "createdAt"
+    FROM users 
+    WHERE id = $1 AND "isActive" = true
+  
+[DB] User query result: [
+  {
+    id: 'mVTzzWLtXOtuNwJ_',
+    email: 'test@kakao.com',
+    phone: '010-1111-1114',
+    profileImage: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg',
+    loginId: 'test2',
+    nickname: '닉네임',
+    realName: '박보검',
+    birthDate: 2022-11-11T00:00:00.000Z,
+    licenseImage: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/licenses/sfbdurvv7ved3c9p4u48sb9f.png',
+    userType: 'VETERINARIAN',
+    provider: 'NORMAL',
+    isActive: true,
+    updatedAt: 2025-09-18T22:08:41.447Z,
+    createdAt: 2025-09-18T22:08:41.447Z
+  }
+]
+[DB] Number of rows returned: 1
+[DB] Found user: {
+  userType: 'VETERINARIAN',
+  nickname: '닉네임',
+  email: 'test@kakao.com',
+  isActive: true,
+  licenseImage: 'https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/licenses/sfbdurvv7ved3c9p4u48sb9f.png',
+  hasLicenseImage: true
+}
+[DB] User type: VETERINARIAN
+ POST /dashboard/veterinarian 200 in 915ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian 200 in 12ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian 200 in 12ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian 200 in 14ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian 200 in 17ms
+ GET /dashboard/veterinarian/resume 200 in 41ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 76ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 14ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 14ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 19ms
+ ✓ Compiled in 513ms (973 modules)
+ GET /dashboard/veterinarian/resume 200 in 24ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 605ms (1384 modules)
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /_next/static/webpack/34dad4ee1441dfc6.webpack.hot-update.json 404 in 749ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /dashboard/veterinarian/resume 200 in 80ms
+[getCurrentUser] Getting profile for userType: VETERINARIAN userId: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Veterinarian profile query result: []
+[getCurrentUser] No veterinarian profile found for user: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "mVTzzWLtXOtuNwJ_",
+    "email": "test@kakao.com",
+    "phone": "010-1111-1114",
+    "realName": "박보검",
+    "birthDate": "2022-11-11T00:00:00.000Z",
+    "userType": "VETERINARIAN",
+    "profileImage": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg",
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T22:08:41.447Z",
+    "privacyAgreedAt": "2025-09-18T22:08:41.447Z",
+    "marketingAgreedAt": "2025-09-18T22:08:41.447Z",
+    "createdAt": "2025-09-18T22:08:41.447Z",
+    "updatedAt": "2025-09-18T22:08:41.447Z",
+    "hospitalLogo": null
+  }
+}
+ POST /dashboard/veterinarian/resume 200 in 634ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 23ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 23ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 13ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 12ms
+ ✓ Compiled in 993ms (2337 modules)
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 965ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 177ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 7ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 10ms
+[S3] uploadImage 시작: {
+  fileName: 'Trophy02.png',
+  fileSize: 2308,
+  fileType: 'image/png',
+  folder: 'resumes'
+}
+[S3] 파일명 생성: {
+  originalName: 'Trophy02.png',
+  extension: 'png',
+  safeName: 'resumes/fwt85bz1loqd1fexff3mi99o.png'
+}
+[S3] S3 업로드 명령 실행 중... {
+  bucket: 'iamvet-bucket',
+  key: 'resumes/fwt85bz1loqd1fexff3mi99o.png',
+  contentType: 'image/png',
+  bodySize: 2308
+}
+[S3] S3 업로드 성공: {
+  '$metadata': {
+    httpStatusCode: 200,
+    requestId: 'XVKRAJE33SC9J3WY',
+    extendedRequestId: 'Joj048d3y83jp2hXOO2Xzx1pGT4ie1/EMhGVAWDlG7FEK37nVI1BUUSSOCfZ+4goTwR8a88nGAuGmQHkD04OQa6eEgXh67J5PS2ofSBJ/3Y=',
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  ETag: '"7e0f3aa097b31b943bbccd85f98b0867"',
+  ChecksumCRC32: 'c8a35w==',
+  ChecksumType: 'FULL_OBJECT',
+  ServerSideEncryption: 'AES256'
+}
+[S3] 최종 URL 생성: https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/resumes/fwt85bz1loqd1fexff3mi99o.png
+ POST /dashboard/veterinarian/resume 200 in 173ms
+[Resume Server Action] saveVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 26ms
+ ✓ Compiled in 630ms (973 modules)
+ GET /dashboard/veterinarian/resume 200 in 80ms
+ ✓ Compiled in 386ms (973 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 898ms (2380 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js'
+}
+ GET /dashboard/veterinarian/resume 500 in 962ms
+[useAuth] Current state: {
+  user: false,
+  isUserLoading: false,
+  error: false,
+  isAuthenticated: false,
+  isAuthLoading: false
+}
+[useAuth] Authentication status: {
+  actuallyAuthenticated: false,
+  isAuthenticated: false,
+  userExists: false,
+  hasError: false
+}
+ GET /dashboard/veterinarian/resume 200 in 193ms
+[getCurrentUser] Getting profile for userType: VETERINARIAN userId: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Veterinarian profile query result: []
+[getCurrentUser] No veterinarian profile found for user: mVTzzWLtXOtuNwJ_
+[getCurrentUser] Final user result: {
+  "success": true,
+  "user": {
+    "id": "mVTzzWLtXOtuNwJ_",
+    "email": "test@kakao.com",
+    "phone": "010-1111-1114",
+    "realName": "박보검",
+    "birthDate": "2022-11-11T00:00:00.000Z",
+    "userType": "VETERINARIAN",
+    "profileImage": "https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/profiles/at8benm19iknua9gib53u9rn.jpg",
+    "provider": "NORMAL",
+    "isActive": true,
+    "termsAgreedAt": "2025-09-18T22:08:41.447Z",
+    "privacyAgreedAt": "2025-09-18T22:08:41.447Z",
+    "marketingAgreedAt": "2025-09-18T22:08:41.447Z",
+    "createdAt": "2025-09-18T22:08:41.447Z",
+    "updatedAt": "2025-09-18T22:08:41.447Z",
+    "hospitalLogo": null
+  }
+}
+ POST /dashboard/veterinarian/resume 200 in 626ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 22ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 17ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 12ms
+[Resume Server Action] getVeterinarianResumeAction called
+[isTokenValid] Checking token validity
+[isTokenValid] Invalid token format
+ POST /dashboard/veterinarian/resume 200 in 8ms
+ ✓ Compiled in 319ms (974 modules)
+ GET /dashboard/veterinarian/resume 404 in 20ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 12ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 17ms
+ GET /dashboard/veterinarian/resume 404 in 18ms
+ GET /dashboard/veterinarian/resume 404 in 7ms
+ GET /dashboard/veterinarian/resume 404 in 24ms
+ GET /dashboard/veterinarian/resume 404 in 7ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ ✓ Compiled in 298ms (974 modules)
+ GET /dashboard/veterinarian/resume 404 in 8ms
+ GET /dashboard/veterinarian/resume 404 in 6ms
+ GET /dashboard/veterinarian/resume 404 in 23ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 13ms
+ GET /dashboard/veterinarian/resume 404 in 10ms
+ GET /dashboard/veterinarian/resume 404 in 17ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 20ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 22ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 12ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 13ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 20ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 13ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 18ms
+ GET /dashboard/veterinarian/resume 404 in 17ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 24ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 63ms
+ GET /dashboard/veterinarian/resume 404 in 19ms
+ GET /dashboard/veterinarian/resume 404 in 8ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 26ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 18ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ ✓ Compiled in 383ms (974 modules)
+ GET /dashboard/veterinarian/resume 404 in 136ms
+ GET /dashboard/veterinarian/resume 404 in 10ms
+ GET /dashboard/veterinarian/resume 404 in 17ms
+ GET /dashboard/veterinarian/resume 404 in 24ms
+ GET /dashboard/veterinarian/resume 404 in 8ms
+ GET /dashboard/veterinarian/resume 404 in 7ms
+ GET /dashboard/veterinarian/resume 404 in 8ms
+ GET /dashboard/veterinarian/resume 404 in 9ms
+ GET /dashboard/veterinarian/resume 404 in 13ms
+ ✓ Compiled in 367ms (974 modules)
+ GET /dashboard/veterinarian/resume 404 in 155ms
+ GET /dashboard/veterinarian/resume 404 in 8ms
+ GET /dashboard/veterinarian/resume 404 in 17ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 9ms
+ GET /dashboard/veterinarian/resume 404 in 11ms
+ GET /dashboard/veterinarian/resume 404 in 8ms
+ GET /dashboard/veterinarian/resume 404 in 19ms
+ GET /dashboard/veterinarian/resume 404 in 9ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 11ms
+ GET /dashboard/veterinarian/resume 404 in 10ms
+ GET /dashboard/veterinarian/resume 404 in 6ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 22ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 20ms
+ GET /dashboard/veterinarian/resume 404 in 13ms
+ GET /dashboard/veterinarian/resume 404 in 13ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 22ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 18ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 20ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 14ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 20ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 13ms
+ GET /dashboard/veterinarian/resume 404 in 21ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 12ms
+ GET /dashboard/veterinarian/resume 404 in 9ms
+ GET /dashboard/veterinarian/resume 404 in 9ms
+ GET /dashboard/veterinarian/resume 404 in 15ms
+ GET /dashboard/veterinarian/resume 404 in 10ms
+ GET /dashboard/veterinarian/resume 404 in 16ms
+ GET /dashboard/veterinarian/resume 404 in 19ms
+ GET /dashboard/veterinarian 404 in 18ms
+ GET /dashboard/veterinarian 404 in 15ms
+ GET /dashboard/veterinarian 404 in 12ms
+ GET /dashboard/veterinarian 404 in 15ms
+ GET /dashboard/veterinarian 404 in 16ms
+ GET /dashboard/veterinarian 404 in 18ms
+ GET /dashboard/veterinarian 404 in 24ms
+ GET /dashboard/veterinarian 404 in 7ms
+ GET /dashboard/veterinarian 404 in 11ms
+ GET /dashboard/veterinarian 404 in 15ms
+ GET /dashboard/veterinarian 404 in 9ms
+ GET /dashboard/veterinarian 404 in 4ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app-paths-manifest.json',
+  page: '/dashboard/veterinarian'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages-manifest.json'
+}
+ GET /dashboard/veterinarian 500 in 42ms
+ GET /dashboard/veterinarian 404 in 15ms
+ GET /dashboard/veterinarian 404 in 19ms
+ GET /dashboard/veterinarian 404 in 12ms
+ GET /dashboard/veterinarian 404 in 15ms
+ GET /dashboard/veterinarian 404 in 27ms
+ GET /dashboard/veterinarian 404 in 14ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1207ms (1468 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/dashboard/veterinarian/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/dashboard/veterinarian/page.js',
+  page: '/dashboard/veterinarian'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js'
+}
+ GET /dashboard/veterinarian 500 in 899ms
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'clientModules')] {
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/pages/_document.js'
+}
+ GET / 500 in 1866ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 38ms
+ GET /_next/static/chunks/fallback/main.js 500 in 34ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/kangpungyun/Desktop/Projects/iamvet/.next/server/app/_not-found/page.js'
+}
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 73ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 73ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 69ms
+[?25h

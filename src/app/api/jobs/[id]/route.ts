@@ -9,9 +9,9 @@ import {
   getJobById,
   incrementJobViewCount,
   getRelatedJobs,
-  getHospitalByUserId,
   updateJobPosting,
   deleteJobPosting,
+  query,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
 
@@ -51,9 +51,24 @@ export async function GET(
     // 관련 채용공고
     const relatedJobs = await getRelatedJobs(jobId, job.medicalField, 5);
 
+    // 사용자가 이미 지원했는지 확인 (수의사인 경우에만)
+    let hasApplied = false;
+    if (userId) {
+      const applicationCheck = await query(
+        `SELECT id FROM applications WHERE "jobId" = $1 AND "veterinarianId" = $2`,
+        [jobId, userId]
+      );
+      hasApplied = applicationCheck.length > 0;
+    }
+
+    // 병원의 userId를 포함하여 응답
+    const hospitalUserId = job.hospital?.userId || job.userid || job.hospitalId;
     const jobDetail = {
       ...job,
       relatedJobs,
+      hospitalUserId: hospitalUserId,
+      isOwner: userId && hospitalUserId === userId,
+      hasApplied: hasApplied,
     };
 
     return NextResponse.json(
@@ -73,13 +88,22 @@ export const PUT = withAuth(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
   ) => {
+    console.log('=== PUT /api/jobs/[id] 요청 받음 ===');
     try {
       const user = (request as any).user;
       const resolvedParams = await params;
       const jobId = resolvedParams.id;
       const jobData = await request.json();
+      
+      console.log('PUT /api/jobs/[id] - 요청 시작:', {
+        jobId,
+        userId: user.userId,
+        userType: user.userType
+      });
 
-      if (user.userType !== "hospital") {
+      console.log('userType 체크:', { userType: user.userType, isHospital: user.userType.toLowerCase() === "hospital" });
+      
+      if (user.userType.toLowerCase() !== "hospital") {
         return NextResponse.json(
           createErrorResponse("병원만 채용공고를 수정할 수 있습니다"),
           { status: 403 }
@@ -95,9 +119,16 @@ export const PUT = withAuth(
         );
       }
 
-      // 병원 ID 조회
-      const hospital = await getHospitalByUserId(user.userId);
-      if (!hospital || job.hospitalId !== hospital.id) {
+      // 권한 체크: hospitalId가 사용자 ID와 직접 매치되어야 함
+      const isAuthorized = job.hospitalId === user.userId;
+      
+      console.log('권한 체크:', {
+        userId: user.userId,
+        jobHospitalId: job.hospitalId,
+        isAuthorized: isAuthorized
+      });
+      
+      if (!isAuthorized) {
         return NextResponse.json(
           createErrorResponse("이 채용공고를 수정할 권한이 없습니다"),
           { status: 403 }
@@ -105,13 +136,16 @@ export const PUT = withAuth(
       }
 
       // 채용공고 수정
+      console.log('updateJobPosting 호출 시작:', { jobId, hasJobData: !!jobData });
       const updatedJob = await updateJobPosting(jobId, jobData);
+      console.log('updateJobPosting 완료:', { updatedJob: !!updatedJob });
 
       return NextResponse.json(
         createApiResponse("success", "채용공고가 수정되었습니다", updatedJob)
       );
     } catch (error) {
       console.error("Job update error:", error);
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
       return NextResponse.json(
         createErrorResponse("채용공고 수정 중 오류가 발생했습니다"),
         { status: 500 }
@@ -146,9 +180,10 @@ export const DELETE = withAuth(
         );
       }
 
-      // 병원 ID 조회
-      const hospital = await getHospitalByUserId(user.userId);
-      if (!hospital || job.hospitalId !== hospital.id) {
+      // 권한 체크: hospitalId가 사용자 ID와 직접 매치되어야 함
+      const isAuthorized = job.hospitalId === user.userId;
+      
+      if (!isAuthorized) {
         return NextResponse.json(
           createErrorResponse("이 채용공고를 삭제할 권한이 없습니다"),
           { status: 403 }

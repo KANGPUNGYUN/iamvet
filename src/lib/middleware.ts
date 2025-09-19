@@ -6,6 +6,7 @@ import { verifyToken } from "./auth";
 
 export const withAuth = (handler: Function) => {
   return async (request: NextRequest, ...args: any[]) => {
+    console.log(`=== withAuth: ${request.method} ${request.url} ===`);
     try {
       let token: string | null = null;
       let payload: any = null;
@@ -26,10 +27,18 @@ export const withAuth = (handler: Function) => {
       }
 
       if (!payload) {
+        console.log('withAuth: 인증 실패 - 토큰이나 페이로드가 없음');
         return NextResponse.json(createErrorResponse("인증이 필요합니다"), {
           status: 401,
         });
       }
+
+      // 디버깅 로그
+      console.log('withAuth: 인증 성공', {
+        userId: payload.userId,
+        userType: payload.userType,
+        hasToken: !!token
+      });
 
       // 요청 객체에 사용자 정보 추가
       (request as any).user = payload;

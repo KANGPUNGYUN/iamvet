@@ -1435,11 +1435,10 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
                   status: {
                     type: "string",
                     enum: [
-                      "pending",
-                      "document_passed",
-                      "document_failed",
-                      "final_passed",
-                      "final_failed",
+                      "PENDING",
+                      "REVIEWING",
+                      "ACCEPTED",
+                      "REJECTED",
                     ],
                     description: "지원 상태",
                   },
@@ -4127,11 +4126,10 @@ Bearer JWT Token을 Authorization 헤더에 포함하여 전송
           status: {
             type: "string",
             enum: [
-              "pending",
-              "document_passed",
-              "document_failed",
-              "final_passed",
-              "final_failed",
+              "PENDING",
+              "REVIEWING",
+              "ACCEPTED",
+              "REJECTED",
             ],
           },
           appliedAt: { type: "string", format: "date-time" },

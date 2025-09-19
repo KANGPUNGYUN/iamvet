@@ -59,7 +59,7 @@ export async function createJob(data: CreateJobRequest): Promise<{
     console.log("Inserting job with hospitalId:", hospitalId);
 
     const jobResult = await sql`
-      INSERT INTO job_postings (
+      INSERT INTO jobs (
         id, "hospitalId", title, "workType", "isUnlimitedRecruit", "recruitEndDate",
         major, experience, position, "salaryType", salary, "workDays", 
         "isWorkDaysNegotiable", "workStartTime", "workEndTime", "isWorkTimeNegotiable",
@@ -172,7 +172,7 @@ export async function saveDraftJob(data: CreateJobRequest): Promise<{
     } = data;
 
     const jobResult = await sql`
-      INSERT INTO job_postings (
+      INSERT INTO jobs (
         id, "hospitalId", title, "workType", "isUnlimitedRecruit", "recruitEndDate",
         major, experience, position, "salaryType", salary, "workDays", 
         "isWorkDaysNegotiable", "workStartTime", "workEndTime", "isWorkTimeNegotiable",
@@ -255,7 +255,7 @@ export async function getJobsByHospital(): Promise<{
     const hospitalId = userResult.user.id;
 
     const jobResults = await sql`
-      SELECT * FROM job_postings 
+      SELECT * FROM jobs 
       WHERE "hospitalId" = ${hospitalId} 
       ORDER BY "createdAt" DESC
     `;

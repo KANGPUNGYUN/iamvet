@@ -25,6 +25,7 @@ interface Hospital {
   phone: string;
   keywords: string[];
   image?: string;
+  userId?: string;
 }
 
 interface JobDetail {
@@ -40,6 +41,7 @@ interface JobDetail {
   qualifications: Qualifications;
   preferredQualifications: string[];
   hospital: Hospital;
+  hospitalId: string;
   viewCount: number;
   applicationCount: number;
   createdAt: string;
@@ -61,23 +63,34 @@ interface JobDetail {
   salary: string;
   salaryType: string;
   relatedJobs: any[];
+  hospitalUserId?: string;
+  isOwner?: boolean;
+  hasApplied?: boolean;
 }
 
 export const useJobDetail = (jobId: string) => {
   return useQuery<JobDetail>({
     queryKey: [QUERY_KEYS.JOB_DETAIL, jobId],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
+      console.log('API request with headers:', headers);
       const response = await axios.get(`/api/jobs/${jobId}`, { headers });
       
       if (response.data.status === "success") {
         const job = response.data.data;
         
+        // 디버깅: API 응답 확인
+        console.log('API response job data:', job);
+        console.log('hasApplied from API:', job.hasApplied);
+        
         // Transform API response to match the expected format
-        return {
+        const transformedJob = {
           ...job,
+          isOwner: job.isOwner,
+          hasApplied: job.hasApplied || false,
+          hospitalUserId: job.hospitalUserId || job.userid || job.hospitalId,
           experienceLevel: Array.isArray(job.experience) 
             ? job.experience.join(', ') 
             : job.experience || '경력무관',
@@ -135,8 +148,12 @@ export const useJobDetail = (jobId: string) => {
             phone: job.hospital_phone || '',
             keywords: [],
             image: job.hospital_logo,
+            userId: job.hospital?.userId || job.hospitalUserId || job.userId,
           },
         };
+        
+        console.log('Transformed job hasApplied:', transformedJob.hasApplied);
+        return transformedJob;
       }
       
       throw new Error(response.data.message || "채용공고를 불러올 수 없습니다");

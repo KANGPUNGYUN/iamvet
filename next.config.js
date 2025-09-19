@@ -37,6 +37,27 @@ const nextConfig = {
     // 필요한 경우에만 다른 experimental 옵션 추가
   },
 
+  webpack: (config, { isServer }) => {
+    // Handle @neondatabase/serverless module
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        dns: false,
+      };
+    }
+
+    // Ensure proper module resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@neondatabase/serverless': require.resolve('@neondatabase/serverless'),
+    };
+
+    return config;
+  },
+
   async headers() {
     return [
       {

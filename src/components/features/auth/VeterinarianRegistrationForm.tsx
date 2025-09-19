@@ -8,9 +8,10 @@ import {
   ProfileImageUpload,
   LicenseImageUpload,
 } from "@/components/features/profile";
-import { checkEmailDuplicate, checkUsernameDuplicate } from "@/actions/auth";
+import { checkEmailDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
+import axios from "axios";
 
 interface VeterinarianRegistrationData {
   loginId: string;
@@ -211,10 +212,13 @@ export const VeterinarianRegistrationForm: React.FC<
     }));
 
     try {
-      console.log("CLIENT: Calling checkUsernameDuplicate with:", formData.loginId);
-      // loginId는 checkUsernameDuplicate를 사용
-      const result = await checkUsernameDuplicate(formData.loginId);
-      console.log("CLIENT: checkUsernameDuplicate result:", result);
+      console.log("CLIENT: Calling username duplicate check API with:", formData.loginId);
+      // API 라우트 사용
+      const response = await axios.post("/api/auth/check-username-duplicate", {
+        username: formData.loginId
+      });
+      const result = response.data;
+      console.log("CLIENT: Username duplicate check result:", result);
 
       if (result.success) {
         const isValid = !result.isDuplicate;
@@ -233,20 +237,21 @@ export const VeterinarianRegistrationForm: React.FC<
         }));
         alert(result.message);
       } else {
-        console.log("CLIENT: checkUsernameDuplicate failed:", result.error);
+        console.log("CLIENT: Username duplicate check failed:", result.error);
         setDuplicateCheck((prev) => ({
           ...prev,
           loginId: { ...prev.loginId, isChecking: false },
         }));
         alert(result.error || "아이디 중복 확인 중 오류가 발생했습니다.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("CLIENT: 아이디 중복 확인 오류:", error);
       setDuplicateCheck((prev) => ({
         ...prev,
         loginId: { ...prev.loginId, isChecking: false },
       }));
-      alert("아이디 중복 확인 중 오류가 발생했습니다.");
+      const errorMessage = error.response?.data?.error || "아이디 중복 확인 중 오류가 발생했습니다.";
+      alert(errorMessage);
     }
   };
 

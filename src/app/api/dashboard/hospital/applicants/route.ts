@@ -24,7 +24,7 @@ export const GET = withAuth(async (request: NextRequest) => {
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status") || "all"; // "pending" | "document_passed" | "document_failed" | "final_passed" | "final_failed" | "all"
+    const status = searchParams.get("status") || "all"; // "PENDING" | "REVIEWING" | "ACCEPTED" | "REJECTED" | "all"
     const jobId = searchParams.get("jobId") || undefined;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");

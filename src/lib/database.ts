@@ -13,15 +13,10 @@ type NotificationType =
   | 'interview_scheduled';
 
 type ApplicationStatus = 
-  | 'document_pending'
-  | 'document_passed'
-  | 'document_failed'
-  | 'interview_pending'
-  | 'interview_passed'
-  | 'interview_failed'
-  | 'final_pending'
-  | 'final_passed'
-  | 'final_failed';
+  | 'PENDING'
+  | 'REVIEWING' 
+  | 'ACCEPTED'
+  | 'REJECTED';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -153,19 +148,19 @@ export const createHospitalProfile = async (profileData: any) => {
 export const getJobsWithPagination = async (params: any) => {
   console.log('[DB] getJobsWithPagination called with params:', params);
   
-  // First, check if job_postings table exists
+  // First, check if jobs table exists
   try {
     const tableCheck = await pool.query(`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'public' 
-        AND table_name = 'job_postings'
+        AND table_name = 'jobs'
       );
     `);
-    console.log('[DB] job_postings table exists:', tableCheck.rows[0].exists);
+    console.log('[DB] jobs table exists:', tableCheck.rows[0].exists);
     
     if (!tableCheck.rows[0].exists) {
-      console.warn('[DB] job_postings table does not exist, returning empty result');
+      console.warn('[DB] jobs table does not exist, returning empty result');
       return {
         jobs: [],
         totalCount: 0,
@@ -178,7 +173,7 @@ export const getJobsWithPagination = async (params: any) => {
   
   let query = `
     SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
-    FROM job_postings j
+    FROM jobs j
     JOIN users u ON j."hospitalId" = u.id
     WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
   `;
@@ -267,7 +262,7 @@ export const getJobsWithPagination = async (params: any) => {
   // 전체 개수 조회
   let countQuery = `
     SELECT COUNT(*) as total
-    FROM job_postings j
+    FROM jobs j
     JOIN users u ON j."hospitalId" = u.id
     WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
   `;
@@ -331,13 +326,15 @@ export const getJobsWithPagination = async (params: any) => {
 };
 
 export const getJobById = async (jobId: string) => {
-  // 일단 job_postings 테이블만 조회
+  // jobs 테이블 조회
   const query = `
-    SELECT * FROM job_postings 
+    SELECT * FROM jobs 
     WHERE id = $1 AND "isActive" = true
   `;
 
+  console.log('getJobById query:', { jobId, query });
   const result = await pool.query(query, [jobId]);
+  console.log('getJobById result:', { found: result.rows.length > 0 });
   
   if (!result.rows[0]) {
     return null;
@@ -350,6 +347,7 @@ export const getJobById = async (jobId: string) => {
     try {
       const hospitalQuery = `
         SELECT 
+          id as userId,
           email as hospital_email,
           phone as hospital_phone,
           "hospitalName" as hospital_name,
@@ -365,6 +363,16 @@ export const getJobById = async (jobId: string) => {
       if (hospitalResult.rows[0]) {
         // 병원 정보를 job 객체에 추가
         Object.assign(job, hospitalResult.rows[0]);
+        // hospital 객체도 추가
+        job.hospital = {
+          userId: hospitalResult.rows[0].userId,
+          name: hospitalResult.rows[0].hospital_name,
+          email: hospitalResult.rows[0].hospital_email,
+          phone: hospitalResult.rows[0].hospital_phone,
+          address: hospitalResult.rows[0].hospital_address,
+          website: hospitalResult.rows[0].hospital_website,
+          logo: hospitalResult.rows[0].hospital_logo
+        };
       }
     } catch (error) {
       console.warn('Hospital data fetch failed:', error);
@@ -676,7 +684,7 @@ export const incrementJobApplicantCount = async (
   jobId: string
 ): Promise<void> => {
   const query =
-    "UPDATE job_postings SET applicant_count = applicant_count + 1 WHERE id = $1";
+    "UPDATE jobs SET applicant_count = applicant_count + 1 WHERE id = $1";
   await pool.query(query, [jobId]);
 };
 
@@ -691,7 +699,7 @@ export const getRelatedJobs = async (
       u."hospitalName" as hospital_name,
       u."hospitalLogo" as hospital_logo,
       u."hospitalAddress" as hospital_location
-    FROM job_postings jp
+    FROM jobs jp
     LEFT JOIN users u ON jp."hospitalId" = u.id AND u."userType" = 'HOSPITAL'
     WHERE jp.id != $1 AND jp."isActive" = true
   `;
@@ -715,7 +723,7 @@ export const getRelatedJobs = async (
 export const getPopularJobs = async (limit: number = 10) => {
   const query = `
     SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address as hospital_location
-    FROM job_postings j
+    FROM jobs j
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE j.is_active = true AND j.is_public = true
     ORDER BY j.view_count DESC, j.applicant_count DESC
@@ -729,7 +737,7 @@ export const getPopularJobs = async (limit: number = 10) => {
 export const getRecentJobs = async (limit: number = 10) => {
   const query = `
     SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address as hospital_location
-    FROM job_postings j
+    FROM jobs j
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE j.is_active = true AND j.is_public = true
     ORDER BY j.created_at DESC
@@ -956,21 +964,24 @@ export const deleteResumeBookmark = async (
 export const getApplication = async (jobId: string, veterinarianId: string) => {
   const query = `
     SELECT a.* FROM applications a
-    JOIN veterinarians v ON a.veterinarian_id = v.id
-    WHERE a.job_id = $1 AND v.user_id = $2
+    WHERE a."jobId" = $1 AND a."veterinarianId" = $2
   `;
   const result = await pool.query(query, [jobId, veterinarianId]);
   return result.rows[0] || null;
 };
 
 export const createApplication = async (applicationData: any) => {
+  const { createId } = await import('@paralleldrive/cuid2');
+  const applicationId = createId();
+  
   const query = `
-    INSERT INTO applications (job_id, veterinarian_id, status)
-    VALUES ($1, $2, $3)
+    INSERT INTO applications (id, "jobId", "veterinarianId", status, "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     RETURNING *
   `;
 
   const values = [
+    applicationId,
     applicationData.jobId,
     applicationData.veterinarianId,
     applicationData.status,
@@ -993,14 +1004,10 @@ export const getApplicationStatus = async (userId: string) => {
   const query = `
     SELECT 
       COUNT(*) as total_applications,
-      COUNT(CASE WHEN a.status = 'final_passed' THEN 1 END) as final_passed,
-      COUNT(CASE WHEN a.status = 'document_passed' THEN 1 END) as document_passed,
-      COUNT(CASE WHEN a.status = 'document_failed' THEN 1 END) as document_failed,
-      COUNT(CASE WHEN a.status = 'document_pending' THEN 1 END) as document_pending,
-      COUNT(CASE WHEN a.status = 'interview_pending' THEN 1 END) as interview_pending,
-      COUNT(CASE WHEN a.status = 'interview_passed' THEN 1 END) as interview_passed,
-      COUNT(CASE WHEN a.status = 'interview_failed' THEN 1 END) as interview_failed,
-      COUNT(CASE WHEN a.status = 'final_pending' THEN 1 END) as final_pending
+      COUNT(CASE WHEN a.status = 'ACCEPTED' THEN 1 END) as accepted,
+      COUNT(CASE WHEN a.status = 'REVIEWING' THEN 1 END) as reviewing,
+      COUNT(CASE WHEN a.status = 'REJECTED' THEN 1 END) as rejected,
+      COUNT(CASE WHEN a.status = 'PENDING' THEN 1 END) as pending
     FROM applications a
     JOIN veterinarians v ON a.veterinarian_id = v.id
     WHERE v.user_id = $1
@@ -1011,14 +1018,10 @@ export const getApplicationStatus = async (userId: string) => {
 
   return {
     totalApplications: parseInt(row.total_applications) || 0,
-    finalPassed: parseInt(row.final_passed) || 0,
-    documentPassed: parseInt(row.document_passed) || 0,
-    documentFailed: parseInt(row.document_failed) || 0,
-    documentPending: parseInt(row.document_pending) || 0,
-    interviewPending: parseInt(row.interview_pending) || 0,
-    interviewPassed: parseInt(row.interview_passed) || 0,
-    interviewFailed: parseInt(row.interview_failed) || 0,
-    finalPending: parseInt(row.final_pending) || 0,
+    accepted: parseInt(row.accepted) || 0,
+    reviewing: parseInt(row.reviewing) || 0,
+    rejected: parseInt(row.rejected) || 0,
+    pending: parseInt(row.pending) || 0,
   };
 };
 
@@ -1093,15 +1096,10 @@ export const getStatusNotificationTitle = (
   status: ApplicationStatus
 ): string => {
   const statusMap: Record<ApplicationStatus, string> = {
-    document_pending: "서류 심사 중",
-    document_passed: "서류 심사 통과",
-    document_failed: "서류 심사 불합격",
-    interview_pending: "면접 일정 안내",
-    interview_passed: "면접 합격",
-    interview_failed: "면접 불합격",
-    final_pending: "최종 심사 중",
-    final_passed: "최종 합격 축하드립니다!",
-    final_failed: "최종 불합격",
+    PENDING: "지원서 접수 완료",
+    REVIEWING: "지원서 검토 중",
+    ACCEPTED: "지원 승인 축하드립니다!",
+    REJECTED: "지원 결과 안내",
   };
 
   return statusMap[status] || "지원 상태 업데이트";
@@ -1315,7 +1313,7 @@ export const getBookmarkedJobs = async (userId: string, limit?: number) => {
     SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address as hospital_location,
            jb.created_at as bookmarked_date
     FROM job_bookmarks jb
-    JOIN job_postings j ON jb.job_id = j.id
+    JOIN jobs j ON jb.job_id = j.id
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE jb.user_id = $1 AND j.is_active = true
     ORDER BY jb.created_at DESC
@@ -1346,7 +1344,7 @@ export const getVeterinarianApplications = async (
     SELECT a.*, j.title as job_title, j.position, h.hospital_name, h.phone as contact_phone, h.email as contact_email
     FROM applications a
     JOIN veterinarians v ON a.veterinarian_id = v.id
-    JOIN job_postings j ON a.job_id = j.id
+    JOIN jobs j ON a.job_id = j.id
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE v.user_id = $1
     ORDER BY ${orderBy}
@@ -1364,7 +1362,7 @@ export const getRecentApplications = async (
     SELECT a.*, j.title as job_title, h.hospital_name
     FROM applications a
     JOIN veterinarians v ON a.veterinarian_id = v.id
-    JOIN job_postings j ON a.job_id = j.id
+    JOIN jobs j ON a.job_id = j.id
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE v.user_id = $1
     ORDER BY a.applied_at DESC
@@ -1378,11 +1376,11 @@ export const getRecentApplications = async (
 export const getRecruitmentStatus = async (userId: string) => {
   const query = `
     SELECT 
-      COUNT(CASE WHEN a.status IN ('document_pending', 'interview_pending', 'final_pending') THEN 1 END) as new_applicants,
-      COUNT(CASE WHEN a.status = 'interview_pending' THEN 1 END) as upcoming_interviews,
-      COUNT(CASE WHEN a.status = 'final_passed' THEN 1 END) as completed_recruitments
+      COUNT(CASE WHEN a.status IN ('PENDING', 'REVIEWING') THEN 1 END) as new_applicants,
+      COUNT(CASE WHEN a.status = 'REVIEWING' THEN 1 END) as upcoming_interviews,
+      COUNT(CASE WHEN a.status = 'ACCEPTED' THEN 1 END) as completed_recruitments
     FROM applications a
-    JOIN job_postings j ON a.job_id = j.id
+    JOIN jobs j ON a.job_id = j.id
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE h.user_id = $1
   `;
@@ -1400,7 +1398,7 @@ export const getRecruitmentStatus = async (userId: string) => {
 export const getActiveJobs = async (userId: string, limit?: number) => {
   let query = `
     SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address as hospital_location
-    FROM job_postings j
+    FROM jobs j
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE h.user_id = $1 AND j.is_active = true
     ORDER BY j.created_at DESC
@@ -1426,7 +1424,7 @@ export const getRecentApplicants = async (
     FROM applications a
     JOIN veterinarians v ON a.veterinarian_id = v.id
     JOIN users u ON v.user_id = u.id
-    JOIN job_postings j ON a.job_id = j.id
+    JOIN jobs j ON a.job_id = j.id
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE h.user_id = $1
     ORDER BY a.applied_at DESC
@@ -1443,7 +1441,7 @@ export const getRecentApplicants = async (
 
 export const createJobPosting = async (jobData: any) => {
   const query = `
-    INSERT INTO job_postings (
+    INSERT INTO jobs (
       hospital_id, title, description, position, medical_field, work_type, required_experience,
       salary, salary_type, work_days, is_days_negotiable, work_start_time, work_end_time, 
       is_time_negotiable, benefits, education_requirements, license_requirements, 
@@ -1493,32 +1491,66 @@ export const updateJobPosting = async (jobId: string, jobData: any) => {
   const values: any[] = [];
   let paramCount = 0;
 
+  // 필드명 매핑 (camelCase -> database column name)
+  const fieldMapping: Record<string, string> = {
+    title: 'title',
+    workType: '"workType"',
+    isUnlimitedRecruit: '"isUnlimitedRecruit"',
+    recruitEndDate: '"recruitEndDate"',
+    major: 'major',
+    experience: 'experience',
+    position: 'position',
+    salaryType: '"salaryType"',
+    salary: 'salary',
+    workDays: '"workDays"',
+    isWorkDaysNegotiable: '"isWorkDaysNegotiable"',
+    workStartTime: '"workStartTime"',
+    workEndTime: '"workEndTime"',
+    isWorkTimeNegotiable: '"isWorkTimeNegotiable"',
+    benefits: 'benefits',
+    education: 'education',
+    certifications: 'certifications',
+    experienceDetails: '"experienceDetails"',
+    preferences: 'preferences',
+    managerName: '"managerName"',
+    managerPhone: '"managerPhone"',
+    managerEmail: '"managerEmail"',
+    department: 'department'
+  };
+
   // 동적으로 업데이트할 필드 구성
   Object.entries(jobData).forEach(([key, value]) => {
-    if (value !== undefined) {
+    if (value !== undefined && fieldMapping[key]) {
       paramCount++;
-      fields.push(`${key} = ${paramCount}`);
+      fields.push(`${fieldMapping[key]} = $${paramCount}`);
       values.push(value);
     }
   });
 
-  if (fields.length === 0) return null;
+  if (fields.length === 0) {
+    console.log('updateJobPosting: 업데이트할 필드가 없습니다');
+    return null;
+  }
 
   const query = `
-    UPDATE job_postings 
-    SET ${fields.join(", ")}, updated_at = CURRENT_TIMESTAMP 
-    WHERE id = ${paramCount + 1}
+    UPDATE jobs 
+    SET ${fields.join(", ")}, "updatedAt" = CURRENT_TIMESTAMP 
+    WHERE id = $${paramCount + 1}
     RETURNING *
   `;
 
+  console.log('updateJobPosting 쿼리:', { query, values: [...values, jobId] });
+
   const result = await pool.query(query, [...values, jobId]);
+  console.log('updateJobPosting 결과:', { rowCount: result.rowCount, hasResult: !!result.rows[0] });
+  
   return result.rows[0];
 };
 
 export const getJobByIdWithHospital = async (jobId: string) => {
   const query = `
     SELECT j.*, h.user_id as hospital_user_id, h.hospital_name
-    FROM job_postings j
+    FROM jobs j
     JOIN hospitals h ON j.hospital_id = h.id
     WHERE j.id = $1
   `;
@@ -1546,7 +1578,7 @@ export const getApplicationWithJobAndHospital = async (
            h.user_id as hospital_user_id, h.hospital_name,
            v.user_id as veterinarian_user_id, v.nickname as veterinarian_name
     FROM applications a
-    JOIN job_postings j ON a.job_id = j.id
+    JOIN jobs j ON a.job_id = j.id
     JOIN hospitals h ON j.hospital_id = h.id
     JOIN veterinarians v ON a.veterinarian_id = v.id
     WHERE a.id = $1
@@ -1917,19 +1949,13 @@ export const calculateApplicationsStats = (applications: any[]) => {
   return {
     total: applications.length,
     pending: applications.filter((app) =>
-      ["document_pending", "interview_pending", "final_pending"].includes(
-        app.status
-      )
+      ["PENDING", "REVIEWING"].includes(app.status)
     ).length,
-    passed: applications.filter((app) =>
-      ["document_passed", "interview_passed", "final_passed"].includes(
-        app.status
-      )
+    accepted: applications.filter((app) =>
+      app.status === "ACCEPTED"
     ).length,
-    failed: applications.filter((app) =>
-      ["document_failed", "interview_failed", "final_failed"].includes(
-        app.status
-      )
+    rejected: applications.filter((app) =>
+      app.status === "REJECTED"
     ).length,
   };
 };
@@ -2517,7 +2543,7 @@ export const getJobStatistics = async (hospitalId?: string) => {
       COUNT(CASE WHEN is_active = true THEN 1 END) as active_jobs,
       AVG(view_count) as avg_view_count,
       AVG(applicant_count) as avg_applicant_count
-    FROM job_postings
+    FROM jobs
   `;
 
   const params: any[] = [];
@@ -2555,7 +2581,7 @@ export const getUserEngagementStats = async (
         COUNT(DISTINCT rb.id) as total_bookmarks
       FROM users u
       LEFT JOIN hospitals h ON u.id = h.user_id
-      LEFT JOIN job_postings j ON h.id = j.hospital_id
+      LEFT JOIN jobs j ON h.id = j.hospital_id
       LEFT JOIN applications a ON j.id = a.job_id
       LEFT JOIN resume_bookmarks rb ON u.id = rb.user_id
       WHERE u.id = $1
@@ -2608,10 +2634,10 @@ export const cleanupOldLogs = async (
 
 export const updateJobStatistics = async (): Promise<void> => {
   await pool.query(`
-    UPDATE job_postings 
+    UPDATE jobs 
     SET applicant_count = (
       SELECT COUNT(*) FROM applications 
-      WHERE job_id = job_postings.id
+      WHERE job_id = jobs.id
     )
   `);
 };
@@ -2666,7 +2692,7 @@ export const getRecommendedJobs = async (
 
     let query = `
       SELECT j.*, h.hospital_name, h.logo_image as hospital_logo, h.address as hospital_location
-      FROM job_postings j
+      FROM jobs j
       JOIN hospitals h ON j.hospital_id = h.id
       WHERE j.is_active = true AND j.is_public = true
     `;
@@ -2995,7 +3021,7 @@ export const incrementViewCount = async (
     // 콘텐츠 유형에 따른 테이블명과 컬럼명 매핑
     const tableMap = {
       forum: 'forum_posts',
-      job: 'job_postings', 
+      job: 'jobs', 
       lecture: 'lectures',
       resume: 'users', // Changed from veterinarian_profiles to users
       transfer: 'transfers'
@@ -3324,7 +3350,7 @@ export const softDeleteUserData = async (userId: string) => {
     
     // 채용공고 soft delete
     await pool.query(`
-      UPDATE job_postings 
+      UPDATE jobs 
       SET deleted_at = $1 
       WHERE hospital_id IN (SELECT id FROM hospitals WHERE user_id = $2)
     `, [deletedAt, userId]);
@@ -3402,7 +3428,7 @@ export const restoreUserData = async (userId: string) => {
     
     // 채용공고 복구
     await pool.query(`
-      UPDATE job_postings 
+      UPDATE jobs 
       SET deleted_at = NULL 
       WHERE hospital_id IN (SELECT id FROM hospitals WHERE user_id = $1) 
       AND deleted_at IS NOT NULL
@@ -3453,4 +3479,10 @@ export const generateTokens = async (user: any) => {
     accessToken,
     refreshToken,
   };
+};
+
+// Export query function for direct database access
+export const query = async (text: string, params?: any[]) => {
+  const result = await pool.query(text, params);
+  return result.rows;
 };

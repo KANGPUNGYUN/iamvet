@@ -160,6 +160,10 @@ export async function login(credentials: LoginCredentials) {
         hospitalName: hospitalName,
         hospitalLogo: hospitalLogo,
       },
+      tokens: {
+        accessToken: token,
+        refreshToken: token, // 현재는 동일한 토큰 사용
+      },
     };
 
     console.log("[login] Final login result:", JSON.stringify(loginResult, null, 2));
@@ -1385,7 +1389,7 @@ export async function getDetailedResume(): Promise<{
       return { success: false, error: "인증되지 않은 사용자입니다." };
     }
 
-    if (userResult.user.userType !== "VETERINARIAN") {
+    if (userResult.user.userType !== "VETERINARIAN" && userResult.user.userType !== "VETERINARY_STUDENT") {
       return {
         success: false,
         error: "수의사 또는 수의학과 학생 계정이 아닙니다.",
@@ -1496,7 +1500,7 @@ export async function saveDetailedResume(data: DetailedResumeData): Promise<{
       return { success: false, error: "인증되지 않은 사용자입니다." };
     }
 
-    if (userResult.user.userType !== "VETERINARIAN") {
+    if (userResult.user.userType !== "VETERINARIAN" && userResult.user.userType !== "VETERINARY_STUDENT") {
       return {
         success: false,
         error: "수의사 또는 수의학과 학생 계정이 아닙니다.",
