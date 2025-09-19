@@ -92,14 +92,79 @@ import { allTransferData } from "@/data/transfersData";
 import Link from "next/link";
 import ResumeCard from "@/components/ui/ResumeCard";
 import { useResumes } from "@/hooks/useResumes";
+import { useJobs } from "@/hooks/useJobs";
 import { convertDDayToNumber } from "@/utils/dDayConverter";
 
 export default function HomePage() {
+  // 지역 이름 한국어 맵핑 함수
+  const getKoreanRegionName = (englishName: string) => {
+    if (!englishName) return "";
+
+    const regionMap: { [key: string]: string } = {
+      seoul: "서울",
+      busan: "부산",
+      daegu: "대구",
+      incheon: "인천",
+      gwangju: "광주",
+      daejeon: "대전",
+      ulsan: "울산",
+      gyeonggi: "경기",
+      gangwon: "강원",
+      chungbuk: "충북",
+      chungnam: "충남",
+      jeonbuk: "전북",
+      jeonnam: "전남",
+      gyeongbuk: "경북",
+      gyeongnam: "경남",
+      jeju: "제주",
+      sejong: "세종",
+      // 영어 전체 이름도 추가
+      "seoul-si": "서울",
+      "seoul-city": "서울",
+      "busan-si": "부산",
+      "busan-city": "부산",
+      "gyeonggi-do": "경기",
+      "gyeonggi-province": "경기",
+      // 이미 한국어인 경우도 처리
+      서울: "서울",
+      부산: "부산",
+      대구: "대구",
+      인천: "인천",
+      광주: "광주",
+      대전: "대전",
+      울산: "울산",
+      경기: "경기",
+      강원: "강원",
+      충북: "충북",
+      충남: "충남",
+      전북: "전북",
+      전남: "전남",
+      경북: "경북",
+      경남: "경남",
+      제주: "제주",
+      세종: "세종",
+    };
+
+    // 소문자로 변환해서 매핑 시도
+    const lowerCase = englishName.toLowerCase().trim();
+    const mapped = regionMap[lowerCase];
+
+    // 매핑된 값이 있으면 반환, 없으면 원본 반환
+    return mapped || englishName;
+  };
+
   // 이력서 목록 조회
   const { data: resumesData, isLoading: resumesLoading } = useResumes({
     limit: 5,
     sort: "latest",
   });
+
+  // 채용공고 목록 조회
+  const { data: jobsData, isLoading: jobsLoading } = useJobs({
+    limit: 5,
+    sort: "latest",
+  });
+
   // 수술 강의 필터링
   const surgeryLectures = allLecturesData
     .filter((lecture) => lecture.medicalField === "surgery")
@@ -110,10 +175,10 @@ export default function HomePage() {
     .filter((lecture) => lecture.medicalField === "behavior")
     .slice(0, 4);
 
-  // 구인정보 데이터 (최신 5개)
-  const jobPostings = allJobData.slice(0, 5);
-
   // 구직정보 데이터는 useResumes 훅에서 가져옴
+
+  // 현재 활성화된 탭 상태
+  const [activeTab, setActiveTab] = useState("internal");
 
   // 양도매물 데이터 카테고리별 필터링
   const hospitalTransfers = allTransferData
@@ -543,6 +608,7 @@ export default function HomePage() {
             defaultTab="internal"
             variant="default"
             className="bg-box-light xl:px-[32px] py-[36px] px-[16px] rounded-[16px] mt-[30px]"
+            onTabChange={setActiveTab}
           >
             <Tab.List className="flex md:justify-between md:items-center flex-col md:flex-row gap-[16px] md:gap-0">
               <div className="flex gap-4">
@@ -551,22 +617,19 @@ export default function HomePage() {
               </div>
               <Link
                 className="flex font-title title-light text-[16px] text-sub hover:underline self-end md:self-auto"
-                href="/jobs"
+                href={activeTab === "internal" ? "/resumes" : "/jobs"}
               >
                 {<PlusIcon size="21" />} 전체보기
               </Link>
             </Tab.List>
             <Tab.Content value="internal">
-              <div
-                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar pb-4"
-                style={{ alignSelf: "stretch" }}
-              >
+              <div className="flex items-start gap-[10px] overflow-x-auto custom-scrollbar pb-4">
                 {resumesLoading
                   ? // 로딩 스켈레톤
                     [...Array(5)].map((_, i) => (
                       <div
                         key={i}
-                        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] mx-auto flex-shrink-0 animate-pulse"
+                        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] flex-shrink-0 animate-pulse"
                       >
                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
                         <div className="h-6 bg-gray-200 rounded w-full mb-4"></div>
@@ -576,91 +639,146 @@ export default function HomePage() {
                         </div>
                       </div>
                     ))
-                  : resumesData?.data?.map((resume) => {
-                      // 한국어 라벨 변환
-                      const getKoreanLabel = (keyword: string) => {
-                        const labelMap: { [key: string]: string } = {
-                          internal: "내과",
-                          surgery: "외과",
-                          dermatology: "피부과",
-                          orthopedics: "정형외과",
-                          veterinarian: "수의사",
-                          assistant: "수의테크니션",
-                          manager: "병원장",
-                          beginner: "초급",
-                          intermediate: "중급",
-                          advanced: "고급",
-                          expert: "전문가",
-                        };
-                        return labelMap[keyword?.toLowerCase()] || keyword;
-                      };
-
-                      // 태그 준비
-                      const tags = resume.specialties
-                        ? resume.specialties
-                            .map((spec) => getKoreanLabel(spec))
-                            .slice(0, 5)
-                        : [];
-
-                      // 위치 정보
-                      const location =
-                        resume.preferredRegions &&
-                        resume.preferredRegions.length > 0
-                          ? resume.preferredRegions[0]
-                          : "지역 미정";
-
-                      // 경력 정보
-                      const position = resume.position
-                        ? getKoreanLabel(resume.position)
-                        : "수의사";
-
-                      // 날짜 계산 (수정일로부터 며칠 지났는지)
-                      const updatedDate = new Date(
-                        resume.updatedAt || resume.createdAt
-                      );
-                      const today = new Date();
-                      const diffTime = today.getTime() - updatedDate.getTime();
-                      const diffDays = Math.ceil(
-                        diffTime / (1000 * 60 * 60 * 24)
-                      );
-                      const dDay = diffDays;
+                  : (() => {
+                      const resumes = resumesData?.data || [];
+                      const emptyCards = 5 - resumes.length;
 
                       return (
-                        <JobInfoCard
-                          key={resume.id}
-                          hospital={resume.name}
-                          dDay={dDay}
-                          position={position}
-                          location={location}
-                          jobType="구직자"
-                          tags={tags}
-                          isBookmarked={false}
-                          onClick={() =>
-                            (window.location.href = `/resumes/${resume.id}`)
-                          }
-                        />
+                        <>
+                          {resumes.map((resume) => {
+                            // 한국어 라벨 변환
+                            const getKoreanLabel = (keyword: string) => {
+                              const labelMap: { [key: string]: string } = {
+                                internal: "내과",
+                                surgery: "외과",
+                                dermatology: "피부과",
+                                orthopedics: "정형외과",
+                                veterinarian: "수의사",
+                                assistant: "수의테크니션",
+                                manager: "병원장",
+                                beginner: "초급",
+                                intermediate: "중급",
+                                advanced: "고급",
+                                expert: "전문가",
+                              };
+                              return (
+                                labelMap[keyword?.toLowerCase()] || keyword
+                              );
+                            };
+
+                            // 태그 준비
+                            const tags = resume.specialties
+                              ? resume.specialties
+                                  .map((spec) => getKoreanLabel(spec))
+                                  .slice(0, 5)
+                              : [];
+
+                            // 위치 정보
+                            const location =
+                              resume.preferredRegions &&
+                              resume.preferredRegions.length > 0
+                                ? getKoreanRegionName(
+                                    resume.preferredRegions[0]
+                                  )
+                                : "지역 미정";
+
+                            // 경력 정보
+                            const position = resume.position
+                              ? getKoreanLabel(resume.position)
+                              : "수의사";
+
+                            // 날짜 계산 (수정일로부터 며칠 지났는지)
+                            const updatedDate = new Date(
+                              resume.updatedAt || resume.createdAt
+                            );
+                            const today = new Date();
+                            const diffTime =
+                              today.getTime() - updatedDate.getTime();
+                            const diffDays = Math.ceil(
+                              diffTime / (1000 * 60 * 60 * 24)
+                            );
+                            const dDay = diffDays;
+
+                            return (
+                              <JobInfoCard
+                                key={resume.id}
+                                hospital={resume.name}
+                                dDay={dDay}
+                                position={position}
+                                location={location}
+                                jobType="구직자"
+                                tags={tags}
+                                isBookmarked={false}
+                                onClick={() =>
+                                  (window.location.href = `/resumes/${resume.id}`)
+                                }
+                              />
+                            );
+                          })}
+                          {/* 빈 카드 채우기 */}
+                          {emptyCards > 0 &&
+                            [...Array(emptyCards)].map((_, i) => (
+                              <div
+                                key={`empty-resume-${i}`}
+                                className="bg-gray-200 rounded-xl border border-gray-200 p-6 max-w-sm w-[294px] h-[310px] flex-shrink-0 opacity-50"
+                              ></div>
+                            ))}
+                        </>
                       );
-                    })}
+                    })()}
               </div>
             </Tab.Content>
             <Tab.Content value="surgery">
-              <div
-                className="flex items-center gap-[10px] overflow-x-auto custom-scrollbar pb-4"
-                style={{ alignSelf: "stretch" }}
-              >
-                {jobPostings.map((job) => (
-                  <JobInfoCard
-                    key={job.id}
-                    hospital={job.hospital}
-                    dDay={convertDDayToNumber(job.dDay)}
-                    position={job.position}
-                    location={job.location}
-                    jobType={job.jobType}
-                    tags={job.tags}
-                    isBookmarked={job.isBookmarked}
-                    onClick={() => (window.location.href = `/jobs/${job.id}`)}
-                  />
-                ))}
+              <div className="flex items-start gap-[10px] overflow-x-auto custom-scrollbar pb-4">
+                {jobsLoading
+                  ? // 로딩 스켈레톤
+                    [...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] flex-shrink-0 animate-pulse"
+                      >
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="h-6 bg-gray-200 rounded w-full mb-4"></div>
+                        <div className="space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                        </div>
+                      </div>
+                    ))
+                  : (() => {
+                      const jobs = jobsData?.data?.jobs || [];
+                      const emptyCards = 5 - jobs.length;
+
+                      return (
+                        <>
+                          {jobs.map((job: any) => {
+                            return (
+                              <JobInfoCard
+                                key={job.id}
+                                hospital={job.hospital}
+                                dDay={job.dDay || 0}
+                                position={job.title}
+                                location={job.location}
+                                jobType={job.jobType}
+                                tags={job.tags}
+                                isBookmarked={job.isBookmarked}
+                                onClick={() =>
+                                  (window.location.href = `/jobs/${job.id}`)
+                                }
+                              />
+                            );
+                          })}
+                          {/* 빈 카드 채우기 */}
+                          {emptyCards > 0 &&
+                            [...Array(emptyCards)].map((_, i) => (
+                              <div
+                                key={`empty-job-${i}`}
+                                className="bg-gray-200 rounded-xl border border-gray-200 p-6 max-w-sm w-[294px] h-[310px] flex-shrink-0 opacity-50"
+                              ></div>
+                            ))}
+                        </>
+                      );
+                    })()}
               </div>
             </Tab.Content>
             <Tab.Content value="regular">

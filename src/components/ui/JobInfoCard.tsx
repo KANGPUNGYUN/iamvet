@@ -43,7 +43,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
   // Wide 버전일 때의 스타일
   const containerClass = isWide
     ? "bg-white rounded-lg border border-[#E5E5E5] p-6 w-full hover:shadow-md transition-shadow duration-200 cursor-pointer"
-    : "bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] mx-auto hover:shadow-md transition-shadow duration-200 cursor-pointer flex-shrink-0";
+    : "bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] hover:shadow-md transition-shadow duration-200 cursor-pointer flex-shrink-0";
 
   const titleClass = "font-text text-extrabold text-primary text-[16px]";
 
