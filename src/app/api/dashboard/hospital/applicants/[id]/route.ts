@@ -16,7 +16,7 @@ export const GET = withAuth(
       const params = await context.params;
       const applicationId = params.id;
 
-      if (user.userType !== "hospital") {
+      if (user.userType !== "hospital" && user.userType !== "HOSPITAL") {
         return NextResponse.json(
           createErrorResponse("병원만 접근할 수 있습니다"),
           { status: 403 }

@@ -3,7 +3,7 @@
 import { useState, use, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeftIcon,
   MoreVerticalIcon,
@@ -17,6 +17,15 @@ import {
 import { Button } from "@/components/ui/Button";
 import ResumeCard from "@/components/ui/ResumeCard/ResumeCard";
 import { Tab } from "@/components/ui/Tab";
+import { SelectBox } from "@/components/ui/SelectBox";
+import { Tag } from "@/components/ui/Tag";
+import { 
+  ApplicationStatus, 
+  APPLICATION_STATUS_LABELS, 
+  APPLICATION_STATUS_OPTIONS,
+  APPLICATION_STATUS_COLORS,
+  mapFromLegacyStatus 
+} from "@/constants/applicationStatus";
 import { useResumeDetail } from "@/hooks/useResumeDetail";
 import { useCurrentUser } from "@/hooks/api/useAuth";
 import { deleteResumeAction } from "@/actions/resumes";
@@ -67,6 +76,10 @@ export default function ResumeDetailPage({
   });
   const [isOwner, setIsOwner] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [applicationInfo, setApplicationInfo] = useState<any>(null);
+  const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | "">("");
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isEditingStatus, setIsEditingStatus] = useState(false);
 
   // 평가하기 관련 상태 (향후 API 연동 예정)
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -98,8 +111,31 @@ export default function ResumeDetailPage({
   const { id } = use(params);
   const { data: resumeData, isLoading, error } = useResumeDetail(id);
   const { data: user } = useCurrentUser();
+  const searchParams = useSearchParams();
+
+  // URL에서 applicationId 파라미터 가져오기
+  const applicationId = searchParams.get("applicationId");
+
+  // 이력서 ID에서 veterinarianId 추출하는 함수
+  const extractVeterinarianId = (resumeId: string): string | null => {
+    // resume_mVTzzWLtXOtuNwJ__1758234128553 -> mVTzzWLtXOtuNwJ_
+    const match = resumeId.match(/^resume_([^_]+_)/);
+    return match ? match[1] : null;
+  };
+
+  const veterinarianId = extractVeterinarianId(id);
 
   useEffect(() => {
+    console.log("=== Debug info ===");
+    console.log("User:", user);
+    console.log("User type:", user?.type);
+    console.log("Resume ID:", id);
+    console.log("Extracted VeterinarianId:", veterinarianId);
+    console.log("ApplicationId from URL:", applicationId);
+    console.log("ResumeData:", resumeData);
+    console.log("ApplicationInfo state:", applicationInfo);
+    console.log("==================");
+
     if (resumeData && user) {
       console.log("Ownership check:", {
         resumeUserId: resumeData.userId,
@@ -107,6 +143,32 @@ export default function ResumeDetailPage({
         isEqual: resumeData.userId === user.id,
       });
       setIsOwner(resumeData.userId === user.id);
+
+      // 병원 계정인 경우 지원 정보 가져오기
+      if (user.type === "hospital") {
+        if (applicationId) {
+          // URL에 applicationId가 있는 경우
+          console.log("✅ Using applicationId from URL:", applicationId);
+          fetchApplicationInfo(applicationId);
+        } else if (veterinarianId) {
+          // applicationId가 없지만 veterinarianId를 추출할 수 있는 경우
+          console.log(
+            "✅ Using veterinarianId to find application:",
+            veterinarianId
+          );
+          findApplicationByVeterinarian(veterinarianId);
+        } else {
+          console.log(
+            "❌ Cannot find application - no applicationId or veterinarianId"
+          );
+        }
+      } else {
+        console.log("❌ Not a hospital user:", {
+          userType: user.type,
+          hasApplicationId: !!applicationId,
+          hasVeterinarianId: !!veterinarianId,
+        });
+      }
     } else {
       console.log("Missing data for ownership check:", {
         hasResumeData: !!resumeData,
@@ -115,7 +177,7 @@ export default function ResumeDetailPage({
         currentUserId: user?.id,
       });
     }
-  }, [resumeData, user]);
+  }, [resumeData, user, applicationId, veterinarianId]);
 
   if (isLoading) {
     return (
@@ -167,14 +229,14 @@ export default function ResumeDetailPage({
       radiology: "영상의학과",
       pathology: "병리과",
       laboratory: "임상병리과",
-      
+
       // 직무
       veterinarian: "수의사",
       assistant: "수의테크니션",
       manager: "병원장",
       intern: "인턴",
       resident: "전공의",
-      
+
       // 근무 형태
       "full-time": "정규직",
       fulltime: "정규직",
@@ -183,7 +245,7 @@ export default function ResumeDetailPage({
       contract: "계약직",
       freelance: "프리랜서",
       internship: "인턴십",
-      
+
       // 지역
       seoul: "서울",
       busan: "부산",
@@ -202,19 +264,19 @@ export default function ResumeDetailPage({
       gyeongnam: "경남",
       jeju: "제주",
       sejong: "세종",
-      
+
       // 근무가능일 맵핑
       immediate: "즉시 가능",
-      "asap": "즉시 가능",
+      asap: "즉시 가능",
       "1week": "1주 후",
       "2weeks": "2주 후",
       "1month": "1개월 후",
       "2months": "2개월 후",
       "3months": "3개월 후",
       "6months": "6개월 후",
-      "negotiable": "협의 가능",
-      "discussion": "협의 가능",
-      
+      negotiable: "협의 가능",
+      discussion: "협의 가능",
+
       // 근무 요일 맵핑
       monday: "월요일",
       tuesday: "화요일",
@@ -402,6 +464,166 @@ export default function ResumeDetailPage({
     router.push("/dashboard/veterinarian/resume");
   };
 
+  // 상태에 따른 Tag variant 반환
+  const getStatusVariant = (status: ApplicationStatus | ""): 1 | 2 | 3 | 4 | 5 | 6 => {
+    if (!status) return 4;
+    return APPLICATION_STATUS_COLORS[status] || 4;
+  };
+
+  // 병원의 공고에 해당 수의사가 지원한 내역 찾기
+  const findApplicationByVeterinarian = async (veterinarianId: string) => {
+    try {
+      console.log("🔍 Finding application for veterinarian:", veterinarianId);
+
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("/api/dashboard/hospital/applicants", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("📋 All hospital applications:", result);
+
+        if (result.status === "success" && result.data) {
+          // 해당 수의사가 이 병원의 공고에 지원한 내역 찾기
+          const targetApplication = result.data.find(
+            (app: any) => app.veterinarianId === veterinarianId
+          );
+
+          if (targetApplication) {
+            console.log("🎯 Found matching application:", targetApplication);
+            const legacyStatus = targetApplication.status;
+            const newStatus = mapFromLegacyStatus(legacyStatus);
+            console.log("🔄 Status conversion:", { legacyStatus, newStatus });
+            
+            const updatedApplication = {
+              ...targetApplication,
+              status: newStatus
+            };
+            
+            setApplicationInfo(updatedApplication);
+            setApplicationStatus(newStatus);
+            return updatedApplication;
+          } else {
+            console.log("❌ No application found for this veterinarian");
+            return null;
+          }
+        }
+      } else {
+        console.error("❌ Failed to fetch applications:", response.status);
+      }
+    } catch (error) {
+      console.error("💥 Error finding application:", error);
+    }
+    return null;
+  };
+
+  // 지원 정보 가져오기
+  const fetchApplicationInfo = async (applicationId: string) => {
+    try {
+      console.log(
+        "🔍 Fetching application info from:",
+        `/api/dashboard/hospital/applicants/${applicationId}`
+      );
+
+      // Authorization 헤더 추가
+      const token = localStorage.getItem("accessToken");
+      console.log(
+        "🔑 Using token:",
+        token ? `${token.substring(0, 20)}...` : "No token"
+      );
+
+      const response = await fetch(
+        `/api/dashboard/hospital/applicants/${applicationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("📡 Response status:", response.status);
+      console.log("📡 Response ok:", response.ok);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("✅ Application data received:", result);
+
+        // API 응답 구조 확인
+        if (result.status === "success" && result.data) {
+          console.log("📊 Setting application info:", result.data);
+          const legacyStatus = result.data.status;
+          const newStatus = mapFromLegacyStatus(legacyStatus);
+          console.log("🔄 Status conversion:", { legacyStatus, newStatus });
+          
+          setApplicationInfo({
+            ...result.data,
+            status: newStatus // 새 상태로 변환
+          });
+          setApplicationStatus(newStatus);
+        } else {
+          console.error("❌ Unexpected response structure:", result);
+        }
+      } else {
+        const errorData = await response.text();
+        console.error("❌ Failed to fetch application info:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+        });
+      }
+    } catch (error) {
+      console.error("💥 Error fetching application info:", error);
+    }
+  };
+
+  // 지원 상태 변경
+  const handleStatusChange = async (newStatus: ApplicationStatus) => {
+    if (!applicationInfo) return;
+    if (newStatus === applicationInfo.status) return; // 상태가 동일하면 변경하지 않음
+
+    setIsUpdatingStatus(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `/api/dashboard/hospital/applicants/${applicationInfo.id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (response.ok) {
+        // applicationInfo 상태도 업데이트
+        setApplicationInfo({
+          ...applicationInfo,
+          status: newStatus,
+        });
+        alert("지원 상태가 성공적으로 변경되었습니다.");
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || "상태 변경 중 오류가 발생했습니다.");
+        // 오류 발생 시 원래 상태로 되돌림
+        setApplicationStatus(applicationInfo.status);
+      }
+    } catch (error) {
+      console.error("상태 변경 중 오류 발생:", error);
+      alert("상태 변경 중 오류가 발생했습니다.");
+      // 오류 발생 시 원래 상태로 되돌림
+      setApplicationStatus(applicationInfo.status);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen bg-[#FBFBFB]">
@@ -415,36 +637,98 @@ export default function ResumeDetailPage({
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
 
-            <div className="relative">
-              <button
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <MoreVerticalIcon size="28" currentColor="currentColor" />
-              </button>
+            {isOwner && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <MoreVerticalIcon size="28" currentColor="currentColor" />
+                </button>
 
-              {isOwner && showMoreMenu && (
-                <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
-                  <button
-                    onClick={handleEditResume}
-                    className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <EditIcon size="24" currentColor="currentColor" />
-                    <span className="ml-2">수정하기</span>
-                  </button>
-                  <button
-                    onClick={handleDeleteResume}
-                    disabled={isDeleting}
-                    className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    <TrashIcon currentColor="currentColor" />
-                    <span className="ml-2">
-                      {isDeleting ? "삭제 중..." : "삭제하기"}
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
+                {showMoreMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
+                    <button
+                      onClick={handleEditResume}
+                      className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <EditIcon size="24" currentColor="currentColor" />
+                      <span className="ml-2">수정하기</span>
+                    </button>
+                    <button
+                      onClick={handleDeleteResume}
+                      disabled={isDeleting}
+                      className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      <TrashIcon currentColor="currentColor" />
+                      <span className="ml-2">
+                        {isDeleting ? "삭제 중..." : "삭제하기"}
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 병원 계정이고 지원자인 경우 상태 변경 SelectBox */}
+            {console.log("SelectBox render check:", {
+              isHospital: user?.type === "hospital",
+              hasApplicationInfo: !!applicationInfo,
+              shouldShow: user?.type === "hospital" && applicationInfo,
+            })}
+            {user?.type === "hospital" && applicationInfo && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600">지원 상태:</span>
+                {isEditingStatus ? (
+                  <>
+                    <SelectBox
+                      value={applicationStatus}
+                      onChange={(value) => setApplicationStatus(value as ApplicationStatus)}
+                      disabled={isUpdatingStatus}
+                      placeholder="상태 선택"
+                      options={APPLICATION_STATUS_OPTIONS}
+                    />
+                    <Button
+                      variant="keycolor"
+                      size="small"
+                      onClick={() => {
+                        if (applicationStatus) {
+                          handleStatusChange(applicationStatus);
+                          setIsEditingStatus(false);
+                        }
+                      }}
+                      disabled={isUpdatingStatus}
+                    >
+                      {isUpdatingStatus ? "변경 중..." : "변경"}
+                    </Button>
+                    <Button
+                      variant="line"
+                      size="small"
+                      onClick={() => {
+                        setApplicationStatus(applicationInfo.status);
+                        setIsEditingStatus(false);
+                      }}
+                      disabled={isUpdatingStatus}
+                    >
+                      취소
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Tag variant={getStatusVariant(applicationStatus)}>
+                      {applicationStatus && APPLICATION_STATUS_LABELS[applicationStatus]}
+                    </Tag>
+                    <Button
+                      variant="line"
+                      size="small"
+                      onClick={() => setIsEditingStatus(true)}
+                    >
+                      수정하기
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <section>

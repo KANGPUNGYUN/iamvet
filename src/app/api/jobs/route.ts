@@ -108,7 +108,7 @@ export const POST = withAuth(async (request: NextRequest) => {
     const user = (request as any).user;
     const jobData = await request.json();
 
-    if (user.userType !== "hospital") {
+    if (user.userType !== "hospital" && user.userType !== "HOSPITAL") {
       return NextResponse.json(
         createErrorResponse("병원만 채용공고를 등록할 수 있습니다"),
         { status: 403 }

@@ -12,11 +12,15 @@ type NotificationType =
   | 'job_posted'
   | 'interview_scheduled';
 
-type ApplicationStatus = 
-  | 'PENDING'
-  | 'REVIEWING' 
-  | 'ACCEPTED'
-  | 'REJECTED';
+// Import from constants file
+import { 
+  ApplicationStatus as ApplicationStatusEnum,
+  mapToLegacyStatus,
+  mapFromLegacyStatus 
+} from '@/constants/applicationStatus';
+
+// Use the enum values for type safety
+type ApplicationStatus = ApplicationStatusEnum;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -995,9 +999,11 @@ export const updateApplicationStatus = async (
   applicationId: string,
   status: ApplicationStatus
 ) => {
+  // 임시로 레거시 상태로 변환하여 데이터베이스에 저장
+  const legacyStatus = mapToLegacyStatus(status);
   const query =
-    "UPDATE applications SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2";
-  await pool.query(query, [status, applicationId]);
+    'UPDATE applications SET status = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2';
+  await pool.query(query, [legacyStatus, applicationId]);
 };
 
 export const getApplicationStatus = async (userId: string) => {
@@ -1096,10 +1102,12 @@ export const getStatusNotificationTitle = (
   status: ApplicationStatus
 ): string => {
   const statusMap: Record<ApplicationStatus, string> = {
-    PENDING: "지원서 접수 완료",
-    REVIEWING: "지원서 검토 중",
-    ACCEPTED: "지원 승인 축하드립니다!",
-    REJECTED: "지원 결과 안내",
+    [ApplicationStatusEnum.APPLYING]: "지원서 접수 완료",
+    [ApplicationStatusEnum.DOCUMENT_REVIEW]: "서류 검토 중",
+    [ApplicationStatusEnum.DOCUMENT_PASS]: "서류 합격 축하드립니다!",
+    [ApplicationStatusEnum.INTERVIEW_PASS]: "면접 합격 축하드립니다!",
+    [ApplicationStatusEnum.FINAL_PASS]: "최종 합격 축하드립니다!",
+    [ApplicationStatusEnum.REJECTED]: "지원 결과 안내",
   };
 
   return statusMap[status] || "지원 상태 업데이트";
@@ -1166,7 +1174,18 @@ export const getHospitalProfile = async (userId: string) => {
 };
 
 export const getHospitalByUserId = async (userId: string) => {
-  const query = "SELECT * FROM hospitals WHERE user_id = $1";
+  const query = `
+    SELECT 
+      id,
+      "hospitalName",
+      "businessNumber",
+      "hospitalAddress",
+      "hospitalLogo",
+      email,
+      phone
+    FROM users 
+    WHERE id = $1 AND "userType" = 'HOSPITAL'
+  `;
   const result = await pool.query(query, [userId]);
   return result.rows[0] || null;
 };
@@ -1589,13 +1608,13 @@ export const getApplicationWithJobAndHospital = async (
 ) => {
   const query = `
     SELECT a.*, 
-           j.title as job_title, j.hospital_id,
-           h.user_id as hospital_user_id, h.hospital_name,
-           v.user_id as veterinarian_user_id, v.nickname as veterinarian_name
+           j.title as job_title, j."hospitalId",
+           h.id as hospital_user_id, h."hospitalName",
+           v.id as veterinarian_user_id, v.nickname as veterinarian_name
     FROM applications a
-    JOIN jobs j ON a.job_id = j.id
-    JOIN hospitals h ON j.hospital_id = h.id
-    JOIN veterinarians v ON a.veterinarian_id = v.id
+    JOIN jobs j ON a."jobId" = j.id
+    JOIN users h ON j."hospitalId" = h.id
+    JOIN users v ON a."veterinarianId" = v.id
     WHERE a.id = $1
   `;
 
@@ -1610,7 +1629,7 @@ export const getApplicationWithJobAndHospital = async (
       title: app.job_title,
       hospital: {
         userId: app.hospital_user_id,
-        name: app.hospital_name,
+        name: app.hospitalName,
       },
     },
     veterinarian: {
@@ -2883,17 +2902,79 @@ export const getUserById = async (userId: string) => {
 };
 
 export const getApplicationById = async (applicationId: string) => {
-  const query = `SELECT * FROM applications WHERE id = $1`;
+  const query = `
+    SELECT 
+      a.*,
+      j.title as job_title,
+      j.position as job_position,
+      j."hospitalId",
+      h.name as hospital_name,
+      u.nickname as veterinarian_nickname,
+      u.email as veterinarian_email,
+      u.phone as veterinarian_phone,
+      u."realName" as veterinarian_realName,
+      dr.id as resume_id
+    FROM applications a
+    JOIN jobs j ON a."jobId" = j.id
+    JOIN hospitals h ON j."hospitalId" = h.id
+    JOIN users u ON a."veterinarianId" = u.id
+    LEFT JOIN detailed_resumes dr ON dr."userId" = u.id
+    WHERE a.id = $1
+  `;
   const result = await pool.query(query, [applicationId]);
-  return result.rows[0] || null;
+  
+  if (result.rows.length === 0) {
+    return null;
+  }
+  
+  const application = result.rows[0];
+  
+  // 구조를 맞춰서 반환
+  return {
+    id: application.id,
+    status: application.status,
+    appliedAt: application.appliedAt,
+    veterinarianId: application.veterinarianId,
+    jobId: application.jobId,
+    job: {
+      id: application.jobId,
+      title: application.job_title,
+      position: application.job_position,
+      hospitalId: application.hospitalId,
+      hospital: {
+        id: application.hospitalId,
+        name: application.hospital_name
+      }
+    },
+    veterinarian: {
+      id: application.veterinarianId,
+      nickname: application.veterinarian_nickname,
+      email: application.veterinarian_email,
+      phone: application.veterinarian_phone,
+      realName: application.veterinarian_realName,
+      resumeId: application.resume_id
+    }
+  };
 };
 
 export const getHospitalApplicants = async (hospitalId: string) => {
   const query = `
-    SELECT a.*, u.username, u.nickname 
+    SELECT 
+      a.*,
+      u.nickname,
+      u.email,
+      u.phone,
+      u."profileImage",
+      u."realName",
+      j.title as job_title,
+      j.position as job_position,
+      dr.id as resume_id
     FROM applications a
-    JOIN users u ON a.veterinarian_id = u.id
-    WHERE a.job_id IN (SELECT id FROM jobs WHERE hospital_id = $1)
+    JOIN users u ON a."veterinarianId" = u.id
+    JOIN jobs j ON a."jobId" = j.id
+    LEFT JOIN detailed_resumes dr ON dr."userId" = u.id
+    WHERE j."hospitalId" = $1
+    ORDER BY a."appliedAt" DESC
   `;
   const result = await pool.query(query, [hospitalId]);
   return result.rows;
@@ -3481,9 +3562,14 @@ export const generateTokens = async (user: any) => {
   const jwt = require('jsonwebtoken');
   const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
   
+  // 데이터베이스의 대문자 userType을 JWT용 소문자로 변환
+  const normalizedUserType = user.userType === "HOSPITAL" ? "hospital" : 
+                            (user.userType === "VETERINARIAN" || user.userType === "VETERINARY_STUDENT") ? "veterinarian" :
+                            user.userType.toLowerCase();
+  
   const payload = {
     userId: user.id,
-    userType: user.userType,
+    userType: normalizedUserType,
     email: user.email,
   };
   

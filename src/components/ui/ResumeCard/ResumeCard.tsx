@@ -62,12 +62,16 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
                 <Image
                   src={profileImage}
                   alt={`${name} 프로필`}
+                  width={36}
+                  height={36}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <Image
                   src={defaultProfileImg}
                   alt="기본 프로필"
+                  width={36}
+                  height={36}
                   className="w-full h-full object-cover"
                 />
               )}
@@ -83,12 +87,16 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
                 <Image
                   src={profileImage}
                   alt={`${name} 프로필`}
+                  width={100}
+                  height={100}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <Image
                   src={defaultProfileImg}
                   alt="기본 프로필"
+                  width={100}
+                  height={100}
                   className="w-full h-full object-cover"
                 />
               )}

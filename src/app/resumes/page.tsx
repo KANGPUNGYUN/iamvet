@@ -243,6 +243,7 @@ export default function ResumesPage() {
       ].filter(Boolean).map((keyword: string) => getKoreanLabel(keyword)),
       lastAccessDate: new Date(resume.updatedAt).toLocaleDateString('ko-KR').replace(/\//g, '.'),
       isBookmarked: false,
+      profileImage: resume.photo || undefined,
       createdAt: new Date(resume.createdAt),
       // 원본 데이터도 보관 (필터링용)
       originalData: resume
@@ -618,6 +619,7 @@ export default function ResumesPage() {
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
                     isBookmarked={resume.isBookmarked}
+                    profileImage={resume.profileImage}
                     onClick={() => {
                       window.location.href = `/resumes/${resume.id}`;
                     }}
@@ -713,6 +715,7 @@ export default function ResumesPage() {
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
                     isBookmarked={resume.isBookmarked}
+                    profileImage={resume.profileImage}
                     onClick={() => {
                       window.location.href = `/resumes/${resume.id}`;
                     }}

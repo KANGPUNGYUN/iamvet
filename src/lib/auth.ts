@@ -16,10 +16,15 @@ export interface JwtPayload {
   email: string;
 }
 
-export const generateTokens = async (user: User) => {
+export const generateTokens = async (user: any) => {
+  // 데이터베이스의 대문자 userType을 JWT용 소문자로 변환
+  const normalizedUserType = user.userType === "HOSPITAL" ? "hospital" as const : 
+                            (user.userType === "VETERINARIAN" || user.userType === "VETERINARY_STUDENT") ? "veterinarian" as const :
+                            user.userType.toLowerCase() as "veterinarian" | "hospital";
+
   const payload: JwtPayload = {
     userId: user.id,
-    userType: user.userType,
+    userType: normalizedUserType,
     email: user.email,
   };
 

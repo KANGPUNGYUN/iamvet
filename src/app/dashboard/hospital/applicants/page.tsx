@@ -15,18 +15,16 @@ interface ApplicationData {
   id: string;
   appliedAt: string;
   status: string;
-  veterinarian: {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-    profileImage?: string;
-  };
-  job: {
-    id: string;
-    title: string;
-    position: string;
-  };
+  veterinarianId: string;
+  jobId: string;
+  nickname: string;
+  email: string;
+  phone?: string;
+  profileImage?: string;
+  realName: string;
+  job_title: string;
+  job_position: string;
+  resume_id?: string;
 }
 
 const getStatusVariant = (status: string) => {
@@ -61,24 +59,23 @@ const getStatusText = (status: string) => {
 
 const MobileApplicationCard: React.FC<{ 
   application: ApplicationData;
-  onStatusChange: (applicationId: string, newStatus: string) => void;
-}> = ({ application, onStatusChange }) => {
+}> = ({ application }) => {
   return (
     <div className="bg-white border border-[#EFEFF0] rounded-[12px] p-4 mb-3">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <Image
-            src={application.veterinarian.profileImage || profileImg}
+            src={application.profileImage || profileImg}
             alt="프로필"
             width={36}
             height={36}
             className="w-9 h-9 rounded-full object-cover"
           />
           <span className="text-[16px] font-bold text-primary">
-            {application.veterinarian.name}
+            {application.realName || application.nickname}
           </span>
         </div>
-        <Link href={`/dashboard/hospital/applicants/${application.id}`}>
+        <Link href={`/resumes/${application.resume_id || application.veterinarianId}`}>
           <ArrowRightIcon currentColor="currentColor" size="20" />
         </Link>
       </div>
@@ -89,7 +86,7 @@ const MobileApplicationCard: React.FC<{
             지원 포지션
           </span>
           <span className="text-[14px] text-primary font-medium">
-            {application.job.position}
+            {application.job_position}
           </span>
         </div>
         <div className="flex gap-[20px]">
@@ -97,7 +94,7 @@ const MobileApplicationCard: React.FC<{
             연락처
           </span>
           <span className="text-[14px] text-gray-700">
-            {application.veterinarian.phone} / {application.veterinarian.email}
+            {application.phone} / {application.email}
           </span>
         </div>
       </div>
@@ -106,21 +103,9 @@ const MobileApplicationCard: React.FC<{
         <span className="text-[12px] text-gray-500">
           {new Date(application.appliedAt).toLocaleDateString('ko-KR')}
         </span>
-        <div className="flex items-center gap-2">
-          <Tag variant={getStatusVariant(application.status)}>
-            {getStatusText(application.status)}
-          </Tag>
-          <select 
-            value={application.status}
-            onChange={(e) => onStatusChange(application.id, e.target.value)}
-            className="text-xs border rounded px-2 py-1"
-          >
-            <option value="PENDING">지원서 접수</option>
-            <option value="REVIEWING">검토 중</option>
-            <option value="ACCEPTED">승인됨</option>
-            <option value="REJECTED">거부됨</option>
-          </select>
-        </div>
+        <Tag variant={getStatusVariant(application.status)}>
+          {getStatusText(application.status)}
+        </Tag>
       </div>
     </div>
   );
@@ -169,35 +154,6 @@ export default function HospitalApplicantsPage() {
     }
   };
 
-  const handleStatusChange = async (applicationId: string, newStatus: string) => {
-    try {
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
-      const response = await axios.put(
-        `/api/dashboard/hospital/applicants/${applicationId}/status`,
-        { status: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.status === "success") {
-        // 상태 업데이트 성공 시 로컬 상태 업데이트
-        setApplications(prev => 
-          prev.map(app => 
-            app.id === applicationId 
-              ? { ...app, status: newStatus }
-              : app
-          )
-        );
-        alert("지원 상태가 업데이트되었습니다.");
-      }
-    } catch (error: any) {
-      console.error("Failed to update status:", error);
-      alert("상태 업데이트에 실패했습니다.");
-    }
-  };
 
   // 정렬 로직
   const sortedApplications = useMemo(() => {
@@ -306,7 +262,6 @@ export default function HospitalApplicantsPage() {
                   <MobileApplicationCard
                     key={application.id}
                     application={application}
-                    onStatusChange={handleStatusChange}
                   />
                 ))}
               </div>
@@ -343,37 +298,25 @@ export default function HospitalApplicantsPage() {
                           {new Date(application.appliedAt).toLocaleDateString('ko-KR')}
                         </td>
                         <td className="py-[22px] text-sm text-gray-900">
-                          {application.veterinarian.name}
+                          {application.realName || application.nickname}
                         </td>
                         <td className="py-[22px] text-sm text-gray-900">
-                          {application.job.position}
+                          {application.job_position}
                         </td>
                         <td className="py-[22px] text-sm text-gray-600">
-                          {application.veterinarian.phone} / {application.veterinarian.email}
+                          {application.phone} / {application.email}
                         </td>
                         <td className="py-[22px]">
-                          <div className="flex items-center gap-2">
-                            <Tag variant={getStatusVariant(application.status)}>
-                              {getStatusText(application.status)}
-                            </Tag>
-                            <select 
-                              value={application.status}
-                              onChange={(e) => handleStatusChange(application.id, e.target.value)}
-                              className="text-xs border rounded px-2 py-1"
-                            >
-                              <option value="PENDING">지원서 접수</option>
-                              <option value="REVIEWING">검토 중</option>
-                              <option value="ACCEPTED">승인됨</option>
-                              <option value="REJECTED">거부됨</option>
-                            </select>
-                          </div>
+                          <Tag variant={getStatusVariant(application.status)}>
+                            {getStatusText(application.status)}
+                          </Tag>
                         </td>
                         <td className="py-[22px] pr-[30px]">
                           <Link
-                            href={`/dashboard/hospital/applicants/${application.id}`}
+                            href={`/resumes/${application.resume_id || application.veterinarianId}`}
                             className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
                           >
-                            상세보기
+                            이력서 보기
                           </Link>
                         </td>
                       </tr>
