@@ -3,7 +3,9 @@
 import { useEffect, useRef } from "react";
 
 interface NaverMapProps {
-  location: string;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
   width?: string;
   height?: string;
 }
@@ -17,6 +19,8 @@ declare global {
 
 const NaverMap = ({
   location,
+  latitude,
+  longitude,
   width = "100%",
   height = "265px",
 }: NaverMapProps) => {
@@ -56,7 +60,7 @@ const NaverMap = ({
               </svg>
             </div>
             <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px; color: #495057;">위치 정보</div>
-            <div style="font-size: 14px; color: #6c757d;">대한수의학회</div>
+            <div style="font-size: 14px; color: #6c757d;">${location || '위치 정보 없음'}</div>
           </div>
         `;
       }
@@ -92,9 +96,10 @@ const NaverMap = ({
           showFallbackUI();
         };
 
-        // 고정 위치: 대한수의학회
-        const fixedCoords = { lat: 37.4675986079, lng: 126.9538284887057 };
-        const coords = fixedCoords;
+        // 좌표 설정: props로 받은 좌표 또는 기본 좌표
+        const coords = (latitude && longitude) 
+          ? { lat: latitude, lng: longitude }
+          : { lat: 37.4675986079, lng: 126.9538284887057 }; // 기본값: 대한수의학회
 
         if (mapRef.current && window.naver && window.naver.maps) {
           const mapOptions = {
@@ -118,14 +123,14 @@ const NaverMap = ({
           const marker = new window.naver.maps.Marker({
             position: new window.naver.maps.LatLng(coords.lat, coords.lng),
             map: map,
-            title: "대한수의학회",
+            title: location || "위치",
           });
 
           // 정보창 추가
           const infoWindow = new window.naver.maps.InfoWindow({
             content: `
               <div style="padding: 15px; font-size: 14px; max-width: 200px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                <strong style="color: #333; font-size: 16px;">대한수의학회</strong>
+                <strong style="color: #333; font-size: 16px;">${location || '위치 정보'}</strong>
               </div>
             `,
             maxWidth: 200,
@@ -165,7 +170,7 @@ const NaverMap = ({
     };
 
     initNaverMap();
-  }, [location]);
+  }, [location, latitude, longitude]);
 
   return (
     <div

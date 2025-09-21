@@ -3208,7 +3208,7 @@ export const getRecentResumes = async (limit = 5) => {
 };
 
 export const getRecentTransfers = async (limit = 5) => {
-  const query = `SELECT * FROM transfers WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT $1`;
+  const query = `SELECT * FROM transfers WHERE "deletedAt" IS NULL ORDER BY "createdAt" DESC LIMIT $1`;
   const result = await pool.query(query, [limit]);
   return result.rows;
 };
@@ -3322,13 +3322,36 @@ export const createResumeEvaluation = async (evaluationData: any) => {
 };
 
 export const getTransferById = async (transferId: string) => {
-  const query = `SELECT * FROM transfers WHERE id = $1 AND deleted_at IS NULL`;
+  const query = `
+    SELECT 
+      t.*,
+      u.id as "userId",
+      u."hospitalName",
+      u."profileImage",
+      u."hospitalAddress"
+    FROM transfers t
+    LEFT JOIN users u ON t."userId" = u.id
+    WHERE t.id = $1 AND t."deletedAt" IS NULL
+  `;
   const result = await pool.query(query, [transferId]);
-  return result.rows[0] || null;
+  if (!result.rows[0]) return null;
+  
+  const transfer = result.rows[0];
+  return {
+    ...transfer,
+    user: {
+      id: transfer.userId,
+      hospitalName: transfer.hospitalName,
+      profileImage: transfer.profileImage,
+      hospitalAddress: transfer.hospitalAddress
+    },
+    latitude: transfer.latitude,
+    longitude: transfer.longitude
+  };
 };
 
 export const checkTransferBookmarkExists = async (userId: string, transferId: string) => {
-  const query = `SELECT id FROM transfer_bookmarks WHERE user_id = $1 AND transfer_id = $2 AND deleted_at IS NULL`;
+  const query = `SELECT id FROM transfer_bookmarks WHERE user_id = $1 AND transfer_id = $2 AND "deletedAt" IS NULL`;
   const result = await pool.query(query, [userId, transferId]);
   return result.rows.length > 0;
 };
@@ -3340,13 +3363,13 @@ export const createTransferBookmark = async (userId: string, transferId: string)
 };
 
 export const removeTransferBookmark = async (userId: string, transferId: string) => {
-  const query = `UPDATE transfer_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND transfer_id = $2`;
+  const query = `UPDATE transfer_bookmarks SET "deletedAt" = NOW() WHERE user_id = $1 AND transfer_id = $2`;
   const result = await pool.query(query, [userId, transferId]);
   return (result.rowCount ?? 0) > 0;
 };
 
 export const incrementTransferViewCount = async (transferId: string) => {
-  const query = `UPDATE transfers SET view_count = view_count + 1 WHERE id = $1`;
+  const query = `UPDATE transfers SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
   const result = await pool.query(query, [transferId]);
   return (result.rowCount ?? 0) > 0;
 };
@@ -3354,8 +3377,8 @@ export const incrementTransferViewCount = async (transferId: string) => {
 export const getRelatedTransfers = async (transferId: string, limit = 5) => {
   const query = `
     SELECT * FROM transfers 
-    WHERE id != $1 AND deleted_at IS NULL 
-    ORDER BY created_at DESC 
+    WHERE id != $1 AND "deletedAt" IS NULL 
+    ORDER BY "createdAt" DESC 
     LIMIT $2
   `;
   const result = await pool.query(query, [transferId, limit]);
@@ -3369,7 +3392,7 @@ export const updateTransfer = async (transferId: string, updateData: any) => {
 };
 
 export const deleteTransfer = async (transferId: string) => {
-  const query = `UPDATE transfers SET deleted_at = NOW() WHERE id = $1`;
+  const query = `UPDATE transfers SET "deletedAt" = NOW() WHERE id = $1`;
   const result = await pool.query(query, [transferId]);
   return (result.rowCount ?? 0) > 0;
 };

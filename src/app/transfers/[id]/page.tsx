@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
   MoreVerticalIcon,
@@ -17,15 +18,12 @@ import {
   PlusIcon,
 } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
-import { allTransferData } from "@/data/transfersData";
 import transfer1Img from "@/assets/images/transfer/transfer1.jpg";
 import transfer2Img from "@/assets/images/transfer/transfer2.jpg";
 import transfer3Img from "@/assets/images/transfer/transfer3.jpg";
 import transfer4Img from "@/assets/images/transfer/transfer4.jpg";
 import transfer5Img from "@/assets/images/transfer/transfer5.jpg";
 import transfer6Img from "@/assets/images/transfer/transfer6.jpg";
-import transfer7Img from "@/assets/images/transfer/transfer7.jpg";
-import transfer8Img from "@/assets/images/transfer/transfer8.jpg";
 import profileImg from "@/assets/images/profile.png";
 import NaverMap from "@/components/NaverMap";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
@@ -125,6 +123,35 @@ const ImageSlider = ({ images }: { images: string[] }) => {
   );
 };
 
+interface TransferData {
+  id: string;
+  title: string;
+  description?: string;
+  price?: string;
+  area?: string;
+  location?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  hospitalType?: string;
+  businessPeriod?: string;
+  monthlyRevenue?: string;
+  monthlyPatients?: string;
+  operatingHours?: string;
+  equipment?: string[];
+  images?: string[];
+  viewCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  user?: {
+    id: string;
+    hospitalName?: string;
+    profileImage?: string;
+  };
+  relatedTransfers?: any[];
+  isBookmarked?: boolean;
+}
+
 export default function TransferDetailPage({
   params,
 }: {
@@ -134,38 +161,154 @@ export default function TransferDetailPage({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showMoreRecommendations, setShowMoreRecommendations] = useState(false);
+  const [transferData, setTransferData] = useState<TransferData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   const { id } = use(params);
 
-  const handleBookmarkClick = (e: React.MouseEvent) => {
+  useEffect(() => {
+    const fetchTransferDetail = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/transfers/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('게시글을 불러오는데 실패했습니다.');
+        }
+
+        const data = await response.json();
+        if (data.status === 'success' && data.data) {
+          setTransferData(data.data);
+          setIsBookmarked(data.data.isBookmarked || false);
+        } else {
+          throw new Error(data.message || '게시글을 불러오는데 실패했습니다.');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransferDetail();
+  }, [id]);
+
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsBookmarked(!isBookmarked);
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('로그인이 필요한 서비스입니다.');
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const method = isBookmarked ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/transfers/${id}/bookmark`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setIsBookmarked(!isBookmarked);
+      } else {
+        const data = await response.json();
+        alert(data.message || '북마크 처리에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Bookmark error:', error);
+      alert('북마크 처리 중 오류가 발생했습니다.');
+    }
   };
 
-  // 실제 데이터에서 ID로 찾기 (임시로 첫 번째 데이터 사용)
-  const transferData =
-    allTransferData.find((item) => item.id.toString() === id) ||
-    allTransferData[0];
+  const handleDelete = async () => {
+    if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) return;
 
-  // 임시 슬라이더 이미지들
-  const sliderImages = [
-    transfer1Img.src,
-    transfer2Img.src,
-    transfer3Img.src,
-    transfer4Img.src,
-    transfer5Img.src,
-    transfer6Img.src,
-  ];
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('로그인이 필요한 서비스입니다.');
+      return;
+    }
 
-  // 임시 작성자 정보
+    try {
+      const response = await fetch(`/api/transfers/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        alert('게시글이 삭제되었습니다.');
+        router.push('/transfers');
+      } else {
+        const data = await response.json();
+        alert(data.message || '게시글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('게시글 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 로딩 중이거나 에러가 있을 때의 렌더링
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff8796] mx-auto"></div>
+          <p className="mt-4 text-gray-600">게시글을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !transferData) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || '게시글을 찾을 수 없습니다.'}</p>
+          <Link href="/transfers" className="text-[#ff8796] hover:underline">
+            목록으로 돌아가기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // 이미지 배열 (없으면 기본 이미지 사용)
+  const sliderImages = transferData.images && transferData.images.length > 0 
+    ? transferData.images 
+    : [
+        transfer1Img.src,
+        transfer2Img.src,
+        transfer3Img.src,
+        transfer4Img.src,
+        transfer5Img.src,
+        transfer6Img.src,
+      ];
+
+  // 작성자 정보
   const author = {
-    name: "베디닥",
-    profileImage: null, // null이면 기본 이미지 사용
+    name: transferData.user?.hospitalName || "익명",
+    profileImage: transferData.user?.profileImage || null,
   };
+  
+  // 프로필 이미지 URL 처리
+  const profileImageSrc = author.profileImage 
+    ? (typeof author.profileImage === 'string' ? author.profileImage : profileImg)
+    : profileImg;
 
-  // 추천 카드 데이터 (현재 아이템 제외)
-  const recommendedTransfers = allTransferData.filter(
-    (item) => item.id.toString() !== id
-  );
+  // 추천 카드 데이터
+  const recommendedTransfers = transferData.relatedTransfers || [];
 
   // 카드 슬라이드 관련 계산
   const cardsPerView = 3; // 한 번에 보이는 카드 개수
@@ -215,7 +358,10 @@ export default function TransferDetailPage({
                     <EditIcon size="24" currentColor="currentColor" />
                     <span className="ml-2">수정하기</span>
                   </Link>
-                  <button className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50">
+                  <button 
+                    onClick={handleDelete}
+                    className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50"
+                  >
                     <TrashIcon currentColor="currentColor" />
                     <span className="ml-2">삭제하기</span>
                   </button>
@@ -247,7 +393,7 @@ export default function TransferDetailPage({
 
               {/* 제목 */}
               <h1 className="font-text text-[32px] text-bold text-primary mt-[10px]">
-                {transferData.title}
+                {transferData.title || '제목 없음'}
               </h1>
 
               {/* 위치 */}
@@ -255,7 +401,7 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-1">
                   <LocationIcon currentColor="currentColor" />
                   <span className="text-[16px] font-text text-sub">
-                    {transferData.location}
+                    {transferData.location || '위치 정보 없음'}
                   </span>
                 </div>
               </div>
@@ -265,7 +411,7 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-[10px]">
                   <div className="w-[36px] h-[36px] rounded-full overflow-hidden">
                     <Image
-                      src={author.profileImage || profileImg}
+                      src={profileImageSrc}
                       alt="프로필 이미지"
                       width={36}
                       height={36}
@@ -279,9 +425,11 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-[33px]">
                   <div className="flex items-center gap-1">
                     <EyeIcon currentColor="currentColor" />
-                    <span className="text-sm">{transferData.views}</span>
+                    <span className="text-sm">{transferData.viewCount || 0}</span>
                   </div>
-                  <span className="text-sm">{transferData.date}</span>
+                  <span className="text-sm">
+                    {transferData.createdAt ? new Date(transferData.createdAt).toLocaleDateString() : ''}
+                  </span>
                 </div>
               </div>
             </div>
@@ -313,14 +461,14 @@ export default function TransferDetailPage({
 
               {/* 제목 */}
               <h1 className="font-text text-[24px] text-bold text-primary mb-2">
-                {transferData.title}
+                {transferData.title || '제목 없음'}
               </h1>
 
               {/* 위치 */}
               <div className="flex items-center gap-2 mb-4">
                 <LocationIcon currentColor="currentColor" />
                 <span className="text-[14px] font-text text-sub">
-                  {transferData.location}
+                  {transferData.location || '위치 정보 없음'}
                 </span>
               </div>
 
@@ -329,7 +477,7 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-2">
                   <div className="w-[32px] h-[32px] rounded-full overflow-hidden">
                     <Image
-                      src={author.profileImage || profileImg}
+                      src={profileImageSrc}
                       alt="프로필 이미지"
                       width={32}
                       height={32}
@@ -343,9 +491,11 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <EyeIcon currentColor="currentColor" />
-                    <span className="text-[12px]">{transferData.views}</span>
+                    <span className="text-[12px]">{transferData.viewCount || 0}</span>
                   </div>
-                  <span className="text-[12px]">{transferData.date}</span>
+                  <span className="text-[12px]">
+                    {transferData.createdAt ? new Date(transferData.createdAt).toLocaleDateString() : ''}
+                  </span>
                 </div>
               </div>
             </div>
@@ -358,7 +508,7 @@ export default function TransferDetailPage({
                     가격
                   </span>
                   <p className="font-text text-[24px] lg:text-[32px] text-bold text-key1">
-                    {transferData.price}
+                    {transferData.price || '가격 협의'}
                   </p>
                 </div>
                 <div>
@@ -366,7 +516,7 @@ export default function TransferDetailPage({
                     평수
                   </span>
                   <p className="font-text text-[24px] lg:text-[32px] text-nomal text-sub">
-                    {transferData.area}m² (44평)
+                    {transferData.area ? `${transferData.area}m²` : '평수 정보 없음'}
                   </p>
                 </div>
               </div>
@@ -379,22 +529,7 @@ export default function TransferDetailPage({
               </h2>
               <div className="prose max-w-none">
                 <p className="font-text text-[14px] lg:text-[16px] text-light text-sub whitespace-pre-line">
-                  {`강남구 역삼동에 위치한 병원을 양도합니다.
-지하철 2호선 역삼역에서 도보 5분 거리에 위치하여 접근성이 매우 좋습니다.
-
-2023년에 전체 리모델링을 완료하여 내부 시설이 매우 깨끗하고 현대적입니다.
-총 3개의 진료실과 1개의 처치실이 있으며, X-ray 장비와 초음파 기기를 보유하고 있습니다.
-
-현재 내과로 운영 중이나 다른 과로 변경하여 운영 가능합니다.
-기존 환자 데이터베이스 인계 가능하며, 숙련된 간호사 2명이 계속 근무 가능합니다.
-
-개인 사정으로 인해 빠른 양도를 원하며, 인테리어와 장비 모두 포함된 가격입니다.
-관심 있으신 분들은 문의 부탁드립니다.
-
-월 평균 환자 : 약 800명
-월 평균 매출 : 약 5,000만원
-운영 시간 : 평일 9:00 - 18:00 / 토요일 9:00 - 13:00
-주변 환경 : 대형 오피스 빌딩, 주거 단지 인접`}
+                  {transferData.description || '상세 설명이 없습니다.'}
                 </p>
               </div>
             </div>
@@ -404,9 +539,14 @@ export default function TransferDetailPage({
               <h2 className="font-title text-[16px] lg:text-[20px] title-light text-primary mb-[15px] lg:mb-[20px]">
                 위치 정보
               </h2>
-              <NaverMap location={transferData.location} height="265px" />
+              <NaverMap 
+                location={transferData.location || ''} 
+                latitude={transferData.latitude}
+                longitude={transferData.longitude}
+                height="265px" 
+              />
               <p className="font-text text-[14px] lg:text-[16px] text-light mt-[15px] lg:mt-[20px] text-sub">
-                서울 관악구 관악로 1 서울대학교 수의과대학 85동 401-1호
+                {transferData.address || transferData.location || '주소 정보 없음'}
               </p>
             </div>
           </section>
@@ -463,24 +603,24 @@ export default function TransferDetailPage({
                         width: `${recommendedTransfers.length * slideWidth}px`,
                       }}
                     >
-                      {recommendedTransfers.map((transfer) => (
+                      {recommendedTransfers.map((transfer: any) => (
                         <div
                           key={transfer.id}
                           className="flex-shrink-0 w-[320px]"
                         >
                           <TransferCard
                             id={transfer.id}
-                            title={transfer.title}
-                            location={transfer.location}
-                            hospitalType={transfer.hospitalType}
-                            area={transfer.area}
-                            price={transfer.price}
-                            date={transfer.date}
-                            views={transfer.views}
-                            imageUrl={transfer.imageUrl}
-                            categories={transfer.categories}
-                            isAd={transfer.isAd}
-                            isLiked={transfer.isLiked}
+                            title={transfer.title || '제목 없음'}
+                            location={transfer.location || '위치 정보 없음'}
+                            hospitalType={transfer.hospitalType || ''}
+                            area={transfer.area || ''}
+                            price={transfer.price || '가격 협의'}
+                            date={transfer.createdAt ? new Date(transfer.createdAt).toLocaleDateString() : ''}
+                            views={transfer.viewCount || 0}
+                            imageUrl={transfer.images?.[0] || transfer1Img.src}
+                            categories={transfer.categories || []}
+                            isAd={false}
+                            isLiked={transfer.isBookmarked || false}
                             onLike={() => {
                               // 좋아요 기능 구현
                               console.log("좋아요:", transfer.id);
@@ -520,21 +660,21 @@ export default function TransferDetailPage({
                     0,
                     showMoreRecommendations ? recommendedTransfers.length : 3
                   )
-                  .map((transfer) => (
+                  .map((transfer: any) => (
                     <TransferCard
                       key={transfer.id}
                       id={transfer.id}
-                      title={transfer.title}
-                      location={transfer.location}
-                      hospitalType={transfer.hospitalType}
-                      area={transfer.area}
-                      price={transfer.price}
-                      date={transfer.date}
-                      views={transfer.views}
-                      imageUrl={transfer.imageUrl}
-                      categories={transfer.categories}
-                      isAd={transfer.isAd}
-                      isLiked={transfer.isLiked}
+                      title={transfer.title || '제목 없음'}
+                      location={transfer.location || '위치 정보 없음'}
+                      hospitalType={transfer.hospitalType || ''}
+                      area={transfer.area || ''}
+                      price={transfer.price || '가격 협의'}
+                      date={transfer.createdAt ? new Date(transfer.createdAt).toLocaleDateString() : ''}
+                      views={transfer.viewCount || 0}
+                      imageUrl={transfer.images?.[0] || transfer1Img.src}
+                      categories={transfer.categories || []}
+                      isAd={false}
+                      isLiked={transfer.isBookmarked || false}
                       onLike={() => {
                         // 좋아요 기능 구현
                         console.log("좋아요:", transfer.id);
