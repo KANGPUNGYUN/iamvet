@@ -10,7 +10,7 @@ import {
   validateEmail,
 } from "@/lib/types";
 import { generateTokens, comparePassword } from "@/lib/auth";
-import { getUserByEmail, updateLastLogin } from "@/lib/database"; // 데이터베이스 함수
+import { getUserByEmailOrLoginId, updateLastLogin } from "@/lib/database"; // 데이터베이스 함수
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,15 +24,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!validateEmail(body.username)) {
-      return NextResponse.json(
-        createErrorResponse("올바른 이메일 형식이 아닙니다"),
-        { status: 400 }
-      );
-    }
-
-    // 사용자 조회
-    const user = await getUserByEmail(body.username, "veterinarian");
+    // 이메일 형식 검증 제거 - 로그인 ID도 허용
+    // 사용자 조회 (이메일 또는 로그인 ID)
+    const user = await getUserByEmailOrLoginId(body.username, "veterinarian");
     if (!user) {
       return NextResponse.json(
         createErrorResponse("존재하지 않는 사용자입니다"),
@@ -97,7 +91,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Veterinarian login error:", error);
+    console.error("Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : "No stack"
+    });
     return NextResponse.json(
       createErrorResponse("로그인 처리 중 오류가 발생했습니다"),
       { status: 500 }

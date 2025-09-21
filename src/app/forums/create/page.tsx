@@ -8,6 +8,7 @@ import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useAuth } from "@/hooks/api/useAuth";
 
 // Quill을 동적으로 import (SSR 방지)
 const QuillEditor = dynamic(() => import("../../../components/QuillEditor"), {
@@ -19,26 +20,34 @@ const QuillEditor = dynamic(() => import("../../../components/QuillEditor"), {
 
 export default function ForumCreatePage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
-  const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [selectedAnimal, setSelectedAnimal] = useState<string>("");
+  const [selectedField, setSelectedField] = useState<string>("");
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAnimalChange = (value: string[]) => {
-    setSelectedAnimals(value);
+    setSelectedAnimal(value[0] || "");
   };
 
   const handleFieldChange = (value: string[]) => {
-    setSelectedFields(value);
+    setSelectedField(value[0] || "");
   };
 
   const handleSubmit = async () => {
+    // 사용자 로그인 상태 확인
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      router.push("/login");
+      return;
+    }
+
     if (
       !title.trim() ||
       !content.trim() ||
-      selectedAnimals.length === 0 ||
-      selectedFields.length === 0
+      !selectedAnimal ||
+      !selectedField
     ) {
       alert("모든 필드를 입력해주세요.");
       return;
@@ -47,22 +56,40 @@ export default function ForumCreatePage() {
     setIsSubmitting(true);
 
     try {
-      // 실제로는 API 호출
-      const newForum = {
+      const forumData = {
         title: title.trim(),
         content,
-        tags: [...selectedAnimals, ...selectedFields],
-        author: "작성자",
-        createdAt: new Date(),
+        animalType: selectedAnimal,
+        medicalField: selectedField,
       };
 
-      console.log("새 포럼 게시글:", newForum);
+      // localStorage에서 토큰 가져오기
+      const accessToken = localStorage.getItem('accessToken');
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
 
-      // 성공 시 포럼 목록으로 이동
-      router.push("/forums");
+      const response = await fetch("/api/forums", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(forumData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === "success") {
+        alert("게시글이 성공적으로 등록되었습니다.");
+        router.push("/forums");
+      } else {
+        throw new Error(result.message || "게시글 등록에 실패했습니다.");
+      }
     } catch (error) {
       console.error("게시글 작성 실패:", error);
-      alert("게시글 작성에 실패했습니다.");
+      alert(error instanceof Error ? error.message : "게시글 작성에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +143,7 @@ export default function ForumCreatePage() {
                   진료 동물
                 </label>
                 <FilterBox.Group
-                  value={selectedAnimals}
+                  value={selectedAnimal ? [selectedAnimal] : []}
                   onChange={handleAnimalChange}
                 >
                   <div className="flex flex-wrap gap-2">
@@ -134,7 +161,7 @@ export default function ForumCreatePage() {
                   진료 분야
                 </label>
                 <FilterBox.Group
-                  value={selectedFields}
+                  value={selectedField ? [selectedField] : []}
                   onChange={handleFieldChange}
                 >
                   <div className="flex flex-wrap gap-2">

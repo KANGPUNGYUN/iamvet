@@ -31,11 +31,42 @@ const pool = new Pool({
 });
 
 export const getUserByEmail = async (email: string, userType?: string) => {
+  // userType을 대문자로 변환 (hospital -> HOSPITAL, veterinarian -> VETERINARIAN)
+  const normalizedUserType = userType ? userType.toUpperCase() : undefined;
+  
   const query = userType
     ? 'SELECT * FROM users WHERE email = $1 AND "userType" = $2'
     : "SELECT * FROM users WHERE email = $1";
 
-  const params = userType ? [email, userType] : [email];
+  const params = userType ? [email, normalizedUserType] : [email];
+  const result = await pool.query(query, params);
+
+  return result.rows[0] || null;
+};
+
+export const getUserByLoginId = async (loginId: string, userType?: string) => {
+  // userType을 대문자로 변환 (hospital -> HOSPITAL, veterinarian -> VETERINARIAN)
+  const normalizedUserType = userType ? userType.toUpperCase() : undefined;
+  
+  const query = userType
+    ? 'SELECT * FROM users WHERE "loginId" = $1 AND "userType" = $2'
+    : 'SELECT * FROM users WHERE "loginId" = $1';
+
+  const params = userType ? [loginId, normalizedUserType] : [loginId];
+  const result = await pool.query(query, params);
+
+  return result.rows[0] || null;
+};
+
+export const getUserByEmailOrLoginId = async (identifier: string, userType?: string) => {
+  // userType을 대문자로 변환 (hospital -> HOSPITAL, veterinarian -> VETERINARIAN)
+  const normalizedUserType = userType ? userType.toUpperCase() : undefined;
+  
+  const query = userType
+    ? 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1) AND "userType" = $2'
+    : 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1)';
+
+  const params = userType ? [identifier, normalizedUserType] : [identifier];
   const result = await pool.query(query, params);
 
   return result.rows[0] || null;
@@ -392,7 +423,7 @@ export const getJobById = async (jobId: string) => {
 
 export const updateLastLogin = async (userId: string): Promise<void> => {
   const query =
-    "UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1";
+    'UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = $1';
   await pool.query(query, [userId]);
 };
 
@@ -3077,7 +3108,16 @@ export const deleteLectureComment = async (commentId: string) => {
 };
 
 export const getForumById = async (forumId: string) => {
-  const query = `SELECT * FROM forum_posts WHERE id = $1 AND deleted_at IS NULL`;
+  const query = `
+    SELECT 
+      fp.*,
+      u.nickname as author_name,
+      u."profileImage" as author_profile_image,
+      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+    FROM forum_posts fp
+    LEFT JOIN users u ON fp."userId" = u.id
+    WHERE fp.id = $1 AND fp."deletedAt" IS NULL
+  `;
   const result = await pool.query(query, [forumId]);
   return result.rows[0] || null;
 };
@@ -3125,8 +3165,13 @@ export const incrementViewCount = async (
 
     const tableName = tableMap[contentType];
     
-    // 조회수 증가
-    const updateQuery = `UPDATE ${tableName} SET view_count = view_count + 1 WHERE id = $1`;
+    // 조회수 증가 (테이블에 따라 컬럼명 다르게 처리)
+    let updateQuery: string;
+    if (contentType === 'forum') {
+      updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
+    } else {
+      updateQuery = `UPDATE ${tableName} SET view_count = view_count + 1 WHERE id = $1`;
+    }
     await pool.query(updateQuery, [contentId]);
 
     // 조회 기록 저장
@@ -3155,19 +3200,109 @@ export const incrementForumViewCount = async (
 };
 
 export const getForumComments = async (forumId: string) => {
-  const query = `SELECT * FROM forum_comments WHERE forum_id = $1 AND deleted_at IS NULL`;
+  const query = `
+    SELECT 
+      fc.*,
+      u.nickname as author_name,
+      u."profileImage" as author_profile_image,
+      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+    FROM forum_comments fc
+    LEFT JOIN users u ON fc.user_id = u.id
+    WHERE fc.forum_id = $1 AND fc."deletedAt" IS NULL
+    ORDER BY fc."createdAt" ASC
+  `;
   const result = await pool.query(query, [forumId]);
   return result.rows;
 };
 
+// 댓글 생성
+export const createForumComment = async (commentData: {
+  forumId: string;
+  userId: string;
+  content: string;
+  parentId?: string;
+}) => {
+  const commentId = `comment_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  
+  const query = `
+    INSERT INTO forum_comments (id, forum_id, user_id, parent_id, content, "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+    RETURNING *
+  `;
+  
+  const values = [
+    commentId,
+    commentData.forumId,
+    commentData.userId,
+    commentData.parentId || null,
+    commentData.content
+  ];
+  
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+// 댓글 수정
+export const updateForumComment = async (commentId: string, content: string, userId: string) => {
+  const query = `
+    UPDATE forum_comments 
+    SET content = $1, "updatedAt" = NOW() 
+    WHERE id = $2 AND user_id = $3 AND "deletedAt" IS NULL
+    RETURNING *
+  `;
+  
+  const result = await pool.query(query, [content, commentId, userId]);
+  return result.rows[0];
+};
+
+// 댓글 삭제 (soft delete)
+export const deleteForumComment = async (commentId: string, userId: string) => {
+  const query = `
+    UPDATE forum_comments 
+    SET "deletedAt" = NOW() 
+    WHERE id = $1 AND user_id = $2 AND "deletedAt" IS NULL
+    RETURNING *
+  `;
+  
+  const result = await pool.query(query, [commentId, userId]);
+  return result.rows[0];
+};
+
+// 특정 댓글 조회 (권한 확인용)
+export const getForumCommentById = async (commentId: string) => {
+  const query = `
+    SELECT 
+      fc.*,
+      u.nickname as author_name,
+      u."profileImage" as author_profile_image,
+      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+    FROM forum_comments fc
+    LEFT JOIN users u ON fc.user_id = u.id
+    WHERE fc.id = $1 AND fc."deletedAt" IS NULL
+  `;
+  
+  const result = await pool.query(query, [commentId]);
+  return result.rows[0];
+};
+
 export const updateForum = async (forumId: string, updateData: any) => {
-  const query = `UPDATE forum_posts SET title = $1, content = $2 WHERE id = $3`;
-  const result = await pool.query(query, [updateData.title, updateData.content, forumId]);
+  const query = `
+    UPDATE forum_posts 
+    SET title = $1, content = $2, "animalType" = $3, "medicalField" = $4, "updatedAt" = NOW() 
+    WHERE id = $5
+  `;
+  const result = await pool.query(query, [
+    updateData.title, 
+    updateData.content, 
+    updateData.animalType, 
+    updateData.medicalField, 
+    forumId
+  ]);
   return (result.rowCount ?? 0) > 0;
 };
 
 export const deleteForum = async (forumId: string) => {
-  const query = `UPDATE forum_posts SET deleted_at = NOW() WHERE id = $1`;
+  const query = `UPDATE forum_posts SET "deletedAt" = NOW() WHERE id = $1`;
   const result = await pool.query(query, [forumId]);
   return (result.rowCount ?? 0) > 0;
 };
@@ -3175,9 +3310,15 @@ export const deleteForum = async (forumId: string) => {
 export const getForumsWithPagination = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
   const query = `
-    SELECT * FROM forum_posts 
-    WHERE deleted_at IS NULL 
-    ORDER BY created_at DESC 
+    SELECT 
+      fp.*,
+      u.nickname as author_name,
+      u."profileImage" as author_profile_image,
+      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+    FROM forum_posts fp
+    LEFT JOIN users u ON fp."userId" = u.id
+    WHERE fp."deletedAt" IS NULL 
+    ORDER BY fp."createdAt" DESC 
     LIMIT $1 OFFSET $2
   `;
   const result = await pool.query(query, [limit, offset]);
@@ -3185,12 +3326,24 @@ export const getForumsWithPagination = async (page = 1, limit = 10) => {
 };
 
 export const createForum = async (forumData: any) => {
+  const forumId = `forum_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  
   const query = `
-    INSERT INTO forum_posts (user_id, title, content, category, tags)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO forum_posts (id, "userId", title, content, "animalType", "medicalField", "viewCount", "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
     RETURNING *
   `;
-  const values = [forumData.userId, forumData.title, forumData.content, forumData.category, forumData.tags];
+  
+  const values = [
+    forumId,
+    forumData.userId,
+    forumData.title,
+    forumData.content,
+    forumData.animalType,
+    forumData.medicalField,
+    0
+  ];
+  
   const result = await pool.query(query, values);
   return result.rows[0];
 };

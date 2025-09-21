@@ -12,19 +12,15 @@ if (!JWT_SECRET) {
 
 export interface JwtPayload {
   userId: string;
-  userType: "veterinarian" | "hospital";
+  userType: "veterinarian" | "hospital" | "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
   email: string;
 }
 
 export const generateTokens = async (user: any) => {
-  // 데이터베이스의 대문자 userType을 JWT용 소문자로 변환
-  const normalizedUserType = user.userType === "HOSPITAL" ? "hospital" as const : 
-                            (user.userType === "VETERINARIAN" || user.userType === "VETERINARY_STUDENT") ? "veterinarian" as const :
-                            user.userType.toLowerCase() as "veterinarian" | "hospital";
-
+  // userType을 대문자로 유지 (데이터베이스와 일치)
   const payload: JwtPayload = {
     userId: user.id,
-    userType: normalizedUserType,
+    userType: user.userType,
     email: user.email,
   };
 

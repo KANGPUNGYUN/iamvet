@@ -10,7 +10,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { EditIcon } from "public/icons";
-import { allForumsData } from "@/data/forumsData";
 
 export default function ForumsPage() {
   const router = useRouter();
@@ -88,15 +87,53 @@ export default function ForumsPage() {
     router.replace(newPath);
   };
 
-  // forumsData를 ForumCard 형식에 맞게 변환
-  const forumData = allForumsData.map(forum => ({
-    id: parseInt(forum.id),
-    title: forum.title,
-    tags: forum.tags,
-    viewCount: forum.viewCount,
-    commentCount: forum.comments.length,
-    createdAt: forum.createdAt,
-  }));
+  interface ForumPost {
+    id: string;
+    title: string;
+    tags: string[];
+    viewCount: number;
+    commentCount: number;
+    createdAt: Date;
+  }
+
+  const [forumData, setForumData] = useState<ForumPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 포럼 데이터 가져오기
+  useEffect(() => {
+    const fetchForums = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/forums');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success') {
+            const forums = data.data.forums.map((forum: any) => {
+              const tags = [];
+              if (forum.animalType) tags.push(forum.animalType);
+              if (forum.medicalField) tags.push(forum.medicalField);
+              
+              return {
+                id: forum.id, // parseInt 제거하여 문자열 ID 그대로 사용
+                title: forum.title,
+                tags,
+                viewCount: forum.viewCount || 0,
+                commentCount: forum.commentCount || 0,
+                createdAt: new Date(forum.createdAt),
+              };
+            });
+            setForumData(forums);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch forums:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchForums();
+  }, []);
 
   // 필터링 및 정렬 로직 (검색과 정렬은 즉시 적용, 나머지는 appliedFilters 사용)
   const getFilteredData = () => {
@@ -305,17 +342,27 @@ export default function ForumsPage() {
 
               {/* 게시글 목록 */}
               <div className="space-y-0">
-                {currentPosts.map((post) => (
-                  <ForumCard
-                    key={post.id}
-                    id={post.id}
-                    title={post.title}
-                    tags={post.tags}
-                    viewCount={post.viewCount}
-                    commentCount={post.commentCount}
-                    createdAt={post.createdAt}
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-[#9098A4]">로딩 중...</p>
+                  </div>
+                ) : currentPosts.length > 0 ? (
+                  currentPosts.map((post) => (
+                    <ForumCard
+                      key={post.id}
+                      id={post.id}
+                      title={post.title}
+                      tags={post.tags}
+                      viewCount={post.viewCount}
+                      commentCount={post.commentCount}
+                      createdAt={post.createdAt}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-[#9098A4]">등록된 게시글이 없습니다.</p>
+                  </div>
+                )}
               </div>
 
               {/* 페이지네이션 */}
@@ -399,17 +446,27 @@ export default function ForumsPage() {
 
               {/* 게시글 목록 */}
               <div className="space-y-0">
-                {currentPosts.map((post) => (
-                  <ForumCard
-                    key={post.id}
-                    id={post.id}
-                    title={post.title}
-                    tags={post.tags}
-                    viewCount={post.viewCount}
-                    commentCount={post.commentCount}
-                    createdAt={post.createdAt}
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-[#9098A4]">로딩 중...</p>
+                  </div>
+                ) : currentPosts.length > 0 ? (
+                  currentPosts.map((post) => (
+                    <ForumCard
+                      key={post.id}
+                      id={post.id}
+                      title={post.title}
+                      tags={post.tags}
+                      viewCount={post.viewCount}
+                      commentCount={post.commentCount}
+                      createdAt={post.createdAt}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-[#9098A4]">등록된 게시글이 없습니다.</p>
+                  </div>
+                )}
               </div>
 
               {/* 페이지네이션 */}

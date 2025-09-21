@@ -1,7 +1,7 @@
 // src/app/api/login/hospital/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import type { HospitalLoginRequest } from "@/lib/types";
-import { getUserByEmail, updateLastLogin } from "@/lib/database";
+import { getUserByEmailOrLoginId, updateLastLogin } from "@/lib/database";
 import { createErrorResponse } from "@/lib/utils";
 import { comparePassword } from "@/lib/auth";
 import { generateTokens } from "@/lib/auth";
@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
   try {
     const body: HospitalLoginRequest = await request.json();
 
-    // 병원 로그인 로직 (수의사와 유사하지만 userType이 'hospital')
-    const user = await getUserByEmail(body.username, "hospital");
+    // 병원 로그인 로직 (이메일 또는 로그인 ID 지원)
+    const user = await getUserByEmailOrLoginId(body.username, "hospital");
 
     if (!user) {
       return NextResponse.json(

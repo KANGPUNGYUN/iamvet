@@ -46,11 +46,21 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     // 조회수 증가 (회원/비회원 모두 처리, 24시간 중복 방지)
-    const userIdentifier = generateUserIdentifier(request, userId);
-    await incrementForumViewCount(forumId, userIdentifier, userId);
+    try {
+      const userIdentifier = generateUserIdentifier(request, userId);
+      await incrementForumViewCount(forumId, userIdentifier, userId);
+    } catch (error) {
+      console.warn("View count increment failed (table may not exist):", error);
+    }
 
     // 댓글 조회
-    const comments = await getForumComments(forumId);
+    let comments = [];
+    try {
+      comments = await getForumComments(forumId);
+    } catch (error) {
+      console.warn("Comments fetch failed (table may not exist):", error);
+      comments = []; // 빈 배열로 설정
+    }
 
     const forumDetail = {
       ...forum,

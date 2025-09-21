@@ -32,6 +32,13 @@ export const POST = withAuth(async (request: NextRequest) => {
     const user = (request as any).user;
     const forumData = await request.json();
 
+    console.log("Creating forum with user:", user);
+    console.log("Forum data:", forumData);
+
+    // JWT에서 받은 사용자 ID로 바로 포럼 게시글 생성
+    // 나중에 조회할 때 users 테이블과 JOIN하여 사용자 정보를 가져옴
+    console.log("Creating forum with userId:", user.userId);
+
     // 임상포럼 게시글 생성
     const forum = await createForum({
       ...forumData,

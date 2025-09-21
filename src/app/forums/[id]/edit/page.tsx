@@ -6,9 +6,8 @@ import { FilterBox } from "@/components/ui/FilterBox";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { getForumById } from "@/data/forumsData";
-import { notFound } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
+import { useAuth } from "@/hooks/api/useAuth";
 import dynamic from "next/dynamic";
 
 // Quill을 동적으로 import (SSR 방지)
@@ -29,6 +28,7 @@ export default function ForumEditPage({
 }) {
   const router = useRouter();
   const { id } = React.use(params);
+  const { user: currentUser, isAuthenticated } = useAuth();
   const [title, setTitle] = useState("");
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
@@ -36,31 +36,57 @@ export default function ForumEditPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const currentForum = getForumById(id);
-
-  if (!currentForum) {
-    notFound();
-  }
-
-  // 기존 데이터 로드
+  // API에서 포럼 데이터 로드
   useEffect(() => {
-    if (currentForum) {
-      setTitle(currentForum.title);
-      setContent(currentForum.content);
-
-      // 태그를 동물과 분야로 분리
-      const animals = currentForum.tags.filter((tag) =>
-        ["강아지", "고양이", "대동물", "특수동물"].includes(tag)
-      );
-      const fields = currentForum.tags.filter((tag) =>
-        ["내과", "외과", "피부과", "응급의학", "예방의학"].includes(tag)
-      );
-
-      setSelectedAnimals(animals);
-      setSelectedFields(fields);
-      setIsLoading(false);
-    }
-  }, [currentForum]);
+    const fetchForumData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/forums/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
+          },
+        });
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            notFound();
+          }
+          throw new Error('Failed to fetch forum');
+        }
+        
+        const data = await response.json();
+        if (data.status === 'success' && data.data) {
+          const forum = data.data;
+          
+          // 권한 체크
+          if (!isAuthenticated || currentUser?.id !== forum.userId) {
+            alert('이 게시글을 수정할 권한이 없습니다.');
+            router.push(`/forums/${id}`);
+            return;
+          }
+          
+          setTitle(forum.title);
+          setContent(forum.content);
+          
+          // 동물 종류와 진료 분야 설정
+          if (forum.animalType) {
+            setSelectedAnimals([forum.animalType]);
+          }
+          if (forum.medicalField) {
+            setSelectedFields([forum.medicalField]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch forum:', error);
+        alert('게시글을 불러오는데 실패했습니다.');
+        router.push('/forums');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchForumData();
+  }, [id, currentUser, isAuthenticated, router]);
 
   const handleAnimalChange = (value: string[]) => {
     setSelectedAnimals(value);
@@ -84,23 +110,31 @@ export default function ForumEditPage({
     setIsSubmitting(true);
 
     try {
-      // 실제로는 API 호출
-      const updatedForum = {
-        id,
-        title: title.trim(),
-        content,
-        tags: [...selectedAnimals, ...selectedFields],
-        author: currentForum.author,
-        updatedAt: new Date(),
-      };
+      const response = await fetch(`/api/forums/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          content,
+          animalType: selectedAnimals[0], // 단일 선택
+          medicalField: selectedFields[0], // 단일 선택
+        }),
+      });
 
-      console.log("포럼 게시글 수정:", updatedForum);
+      const data = await response.json();
 
-      // 성공 시 상세 페이지로 이동
-      router.push(`/forums/${id}`);
+      if (response.ok && data.status === 'success') {
+        // 성공 시 상세 페이지로 이동
+        router.push(`/forums/${id}`);
+      } else {
+        throw new Error(data.message || '게시글 수정에 실패했습니다.');
+      }
     } catch (error) {
       console.error("게시글 수정 실패:", error);
-      alert("게시글 수정에 실패했습니다.");
+      alert(error instanceof Error ? error.message : "게시글 수정에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }

@@ -1,0 +1,263 @@
+/* HTML Content Styling - Override all other styles */
+.html-content {
+  font-family: 'SUIT', sans-serif !important;
+  line-height: 1.6 !important;
+  color: #4F5866 !important;
+}
+
+/* Reset any prose styles that might interfere */
+.html-content.prose,
+.html-content .prose {
+  max-width: none !important;
+}
+
+/* Override any Tailwind CSS prose styles */
+.html-content.prose ul,
+.html-content.prose ol {
+  list-style-type: revert !important;
+  padding-left: 1.5rem !important;
+}
+
+.html-content.prose li {
+  margin: 0.5rem 0 !important;
+  display: list-item !important;
+}
+
+/* Links */
+.html-content a {
+  color: #3B82F6;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.html-content a:hover {
+  color: #2563EB;
+}
+
+/* Text alignment */
+.html-content [style*="text-align: center"],
+.html-content .text-center {
+  text-align: center !important;
+}
+
+.html-content [style*="text-align: right"],
+.html-content .text-right {
+  text-align: right !important;
+}
+
+.html-content [style*="text-align: left"],
+.html-content .text-left {
+  text-align: left !important;
+}
+
+.html-content [style*="text-align: justify"],
+.html-content .text-justify {
+  text-align: justify !important;
+}
+
+/* More specific text alignment selectors */
+.html-content div[style*="text-align: center"],
+.html-content p[style*="text-align: center"] {
+  text-align: center !important;
+}
+
+.html-content div[style*="text-align: right"],
+.html-content p[style*="text-align: right"] {
+  text-align: right !important;
+}
+
+.html-content div[style*="text-align: left"],
+.html-content p[style*="text-align: left"] {
+  text-align: left !important;
+}
+
+.html-content div[style*="text-align: justify"],
+.html-content p[style*="text-align: justify"] {
+  text-align: justify !important;
+}
+
+/* Lists - Override any conflicting styles */
+.html-content ul {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+  margin: 1rem 0 !important;
+}
+
+.html-content ol {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+  margin: 1rem 0 !important;
+}
+
+.html-content li {
+  margin: 0.5rem 0 !important;
+  padding-left: 0.25rem !important;
+  display: list-item !important;
+}
+
+.html-content ul ul {
+  list-style-type: circle !important;
+  margin: 0.5rem 0 !important;
+}
+
+.html-content ul ul ul {
+  list-style-type: square !important;
+}
+
+.html-content ol ol {
+  list-style-type: lower-alpha !important;
+  margin: 0.5rem 0 !important;
+}
+
+.html-content ol ol ol {
+  list-style-type: lower-roman !important;
+}
+
+/* Nested lists */
+.html-content li > ul,
+.html-content li > ol {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Force list styles for better visibility */
+.html-content ul > li {
+  list-style-type: disc !important;
+}
+
+.html-content ol > li {
+  list-style-type: decimal !important;
+}
+
+/* Headings */
+.html-content h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 1.5rem 0 1rem 0;
+  color: #3B394D;
+}
+
+.html-content h2 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin: 1.5rem 0 1rem 0;
+  color: #3B394D;
+}
+
+.html-content h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1.25rem 0 0.75rem 0;
+  color: #3B394D;
+}
+
+.html-content h4 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+  color: #3B394D;
+}
+
+.html-content h5 {
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+  color: #3B394D;
+}
+
+.html-content h6 {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+  color: #3B394D;
+}
+
+/* Paragraphs */
+.html-content p {
+  margin: 1rem 0;
+  line-height: 1.6;
+}
+
+/* Block quotes */
+.html-content blockquote {
+  border-left: 4px solid #FF8796;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #6B7280;
+  font-style: italic;
+}
+
+/* Code */
+.html-content code {
+  background-color: #F3F4F6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.html-content pre {
+  background-color: #F3F4F6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.html-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Tables */
+.html-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.html-content th,
+.html-content td {
+  border: 1px solid #E5E7EB;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.html-content th {
+  background-color: #F9FAFB;
+  font-weight: bold;
+}
+
+/* Images */
+.html-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* Horizontal rule */
+.html-content hr {
+  border: none;
+  border-top: 1px solid #E5E7EB;
+  margin: 2rem 0;
+}
+
+/* Strong and emphasis */
+.html-content strong,
+.html-content b {
+  font-weight: bold;
+  color: #3B394D;
+}
+
+.html-content em,
+.html-content i {
+  font-style: italic;
+}
+
+/* Line breaks */
+.html-content br {
+  line-height: 1.6;
+}

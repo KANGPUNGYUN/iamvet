@@ -3,7 +3,7 @@ import { EyeIcon, CommentIcon } from "public/icons";
 import { Tag } from "../Tag";
 
 export interface ForumCardProps {
-  id: number;
+  id: string;
   title: string;
   tags: string[];
   viewCount: number;

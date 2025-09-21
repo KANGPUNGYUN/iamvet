@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tag } from "@/components/ui/Tag";
 import dynamic from "next/dynamic";
+import { useAuth } from "@/hooks/api/useAuth";
+import { Toast } from "@/components/ui/Toast";
+import { useCommentStore, Comment } from "@/store/commentStore";
 
 const HTMLContent = dynamic(
   () =>
@@ -15,7 +18,6 @@ const HTMLContent = dynamic(
     loading: () => <div className="animate-pulse bg-gray-200 h-20 rounded" />,
   }
 );
-import { getForumById, Comment as ForumComment } from "@/data/forumsData";
 import { notFound, useRouter } from "next/navigation";
 import profileImg from "@/assets/images/profile.png";
 import {
@@ -48,60 +50,107 @@ export default function ForumDetailPage({
   >({});
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-  // 현재 로그인한 사용자 (예시용)
-  const currentUser = "김수의사";
+  interface ForumDetail {
+    id: string;
+    title: string;
+    content: string;
+    animalType?: string;
+    medicalField?: string;
+    viewCount: number;
+    createdAt: string;
+    userId?: string;
+    author_name?: string;
+    author_display_name?: string;
+    comments?: Comment[];
+  }
 
-  const currentForum = getForumById(id);
+  const [currentForum, setCurrentForum] = useState<ForumDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Zustand 스토어와 로그인 상태 사용
+  const { 
+    comments, 
+    isLoading: commentsLoading,
+    fetchComments, 
+    createComment, 
+    editComment, 
+    removeComment 
+  } = useCommentStore();
+  
+  // useAuth 훅으로 현재 로그인한 사용자 정보 가져오기
+  const { user: currentUser, isAuthenticated } = useAuth();
+
+  // 포럼 상세 데이터 가져오기
+  useEffect(() => {
+    const fetchForumDetail = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/forums/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === "success") {
+            console.log("Forum data:", data.data);
+            console.log("Forum userId:", data.data.userId);
+            console.log("Current user id:", currentUser?.id);
+            setCurrentForum(data.data);
+            // 댓글은 별도로 로드
+            await fetchComments(id);
+          }
+        } else if (response.status === 404) {
+          notFound();
+        }
+      } catch (error) {
+        console.error("Failed to fetch forum detail:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchForumDetail();
+  }, [id, fetchComments, currentUser]);
+
+  if (isLoading) {
+    return (
+      <main className="pt-[50px] bg-white">
+        <div className="max-w-[1440px] mx-auto px-[16px] mt-[50px] mb-[100px]">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!currentForum) {
     notFound();
   }
 
-  const [comments, setComments] = useState<ForumComment[]>(
-    currentForum.comments || []
-  );
-
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !isAuthenticated) return;
 
-    const comment: ForumComment = {
-      id: Date.now().toString(),
-      author: "김수의사",
-      authorProfile: "/assets/images/profile/default-profile.png",
-      content: newComment,
-      date: new Date().toLocaleDateString("ko-KR"),
-      replies: [],
-    };
-
-    setComments((prev) => [comment, ...prev]);
-    setNewComment("");
+    try {
+      await createComment(id, newComment.trim());
+      setNewComment("");
+    } catch (error) {
+      console.error('Failed to submit comment:', error);
+    }
   };
 
-  const handleReplySubmit = (parentId: string) => {
+  const handleReplySubmit = async (parentId: string) => {
     const replyContent = replyInputs[parentId];
-    if (!replyContent?.trim()) return;
+    if (!replyContent?.trim() || !isAuthenticated) return;
 
-    const reply: ForumComment = {
-      id: Date.now().toString(),
-      author: "김수의사",
-      authorProfile: "/assets/images/profile/default-profile.png",
-      content: replyContent,
-      date: new Date().toLocaleDateString("ko-KR"),
-      replies: [],
-    };
-
-    setComments((prev) =>
-      prev.map((comment) =>
-        comment.id === parentId
-          ? { ...comment, replies: [...comment.replies, reply] }
-          : comment
-      )
-    );
-
-    setReplyInputs((prev) => ({ ...prev, [parentId]: "" }));
-    setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
+    try {
+      await createComment(id, replyContent.trim(), parentId);
+      setReplyInputs((prev) => ({ ...prev, [parentId]: "" }));
+      setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
+    } catch (error) {
+      console.error('Failed to submit reply:', error);
+    }
   };
 
   const toggleReplies = (commentId: string) => {
@@ -116,31 +165,20 @@ export default function ForumDetailPage({
     setEditContent(content);
   };
 
-  const handleSaveEdit = (commentId: string) => {
+  const handleSaveEdit = async (commentId: string) => {
     if (!editContent.trim()) return;
 
-    setComments((prev) =>
-      prev.map((comment) => {
-        if (comment.id === commentId) {
-          return { ...comment, content: editContent };
-        }
-        // 대댓글 수정
-        if (comment.replies.some((reply) => reply.id === commentId)) {
-          return {
-            ...comment,
-            replies: comment.replies.map((reply) =>
-              reply.id === commentId
-                ? { ...reply, content: editContent }
-                : reply
-            ),
-          };
-        }
-        return comment;
-      })
-    );
-
-    setEditingCommentId(null);
-    setEditContent("");
+    try {
+      await editComment(id, commentId, editContent.trim());
+      setEditingCommentId(null);
+      setEditContent("");
+      setToast({ message: "댓글이 수정되었습니다.", type: 'success' });
+      // 댓글 목록 다시 불러오기
+      await fetchComments(id);
+    } catch (error) {
+      console.error('Failed to edit comment:', error);
+      setToast({ message: "댓글 수정에 실패했습니다.", type: 'error' });
+    }
   };
 
   const handleCancelEdit = () => {
@@ -148,23 +186,33 @@ export default function ForumDetailPage({
     setEditContent("");
   };
 
-  const handleDeleteComment = (commentId: string) => {
+  const handleDeleteComment = async (commentId: string) => {
     if (window.confirm("댓글을 삭제하시겠습니까?")) {
-      setComments((prev) => {
-        // 메인 댓글 삭제
-        const filteredComments = prev.filter(
-          (comment) => comment.id !== commentId
-        );
-        // 대댓글 삭제
-        return filteredComments.map((comment) => ({
-          ...comment,
-          replies: comment.replies.filter((reply) => reply.id !== commentId),
-        }));
-      });
+      try {
+        await removeComment(id, commentId);
+        setToast({ message: "댓글이 삭제되었습니다.", type: 'success' });
+        // 댓글 목록 다시 불러오기
+        await fetchComments(id);
+      } catch (error) {
+        console.error('Failed to delete comment:', error);
+        setToast({ message: "댓글 삭제에 실패했습니다.", type: 'error' });
+      }
     }
   };
 
   const displayedComments = showMoreComments ? comments : comments.slice(0, 5);
+  
+  // 전체 댓글 수 계산 (댓글 + 대댓글)
+  const getTotalCommentCount = () => {
+    let count = 0;
+    comments.forEach(comment => {
+      count++; // 댓글 카운트
+      if (comment.replies) {
+        count += comment.replies.length; // 대댓글 카운트
+      }
+    });
+    return count;
+  };
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -184,6 +232,36 @@ export default function ForumDetailPage({
     }
   };
 
+  const handleDeleteForum = async () => {
+    if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/forums/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setToast({ message: "게시글이 삭제되었습니다.", type: 'success' });
+        // 잠시 후 목록 페이지로 이동
+        setTimeout(() => {
+          router.push('/forums');
+        }, 1500);
+      } else {
+        setToast({ message: data.message || "게시글 삭제에 실패했습니다.", type: 'error' });
+      }
+    } catch (error) {
+      console.error('Failed to delete forum:', error);
+      setToast({ message: "게시글 삭제 중 오류가 발생했습니다.", type: 'error' });
+    }
+  };
+
   return (
     <>
       <main className="pt-[50px] bg-white">
@@ -197,30 +275,43 @@ export default function ForumDetailPage({
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
 
-            <div className="relative">
-              <button
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <MoreVerticalIcon size="28" currentColor="currentColor" />
-              </button>
+            {(() => {
+              const showMenu = isAuthenticated && currentUser?.id === currentForum?.userId;
+              console.log("Show menu check:", {
+                isAuthenticated,
+                currentUserId: currentUser?.id,
+                forumUserId: currentForum?.userId,
+                showMenu
+              });
+              return showMenu;
+            })() && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <MoreVerticalIcon size="28" currentColor="currentColor" />
+                </button>
 
-              {showMoreMenu && (
-                <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
-                  <Link
-                    href={`/forums/${id}/edit`}
-                    className="flex justify-center items-center px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <EditIcon size="24" currentColor="currentColor" />
-                    <span className="ml-2">수정하기</span>
-                  </Link>
-                  <button className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50">
-                    <TrashIcon currentColor="currentColor" />
-                    <span className="ml-2">삭제하기</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                {showMoreMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
+                    <Link
+                      href={`/forums/${id}/edit`}
+                      className="flex justify-center items-center px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <EditIcon size="20" currentColor="currentColor" />
+                      <span className="ml-2">수정하기</span>
+                    </Link>
+                    <button 
+                      onClick={handleDeleteForum}
+                      className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50">
+                      <TrashIcon currentColor="currentColor" />
+                      <span className="ml-2">삭제하기</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <section className="border border-[#EFEFF0] rounded-[16px] p-[16px] md:p-[20px]">
@@ -232,15 +323,20 @@ export default function ForumDetailPage({
 
               <div className="flex justify-between">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {currentForum.tags.map((tag, index) => (
-                    <Tag key={index} variant={1}>
-                      {tag}
+                  {currentForum.animalType && (
+                    <Tag key="animal" variant={1}>
+                      {currentForum.animalType}
                     </Tag>
-                  ))}
+                  )}
+                  {currentForum.medicalField && (
+                    <Tag key="field" variant={1}>
+                      {currentForum.medicalField}
+                    </Tag>
+                  )}
                 </div>
 
                 <div className="text-[14px] text-[#9098A4]">
-                  {currentForum.createdAt.toLocaleDateString("ko-KR")}
+                  {new Date(currentForum.createdAt).toLocaleDateString("ko-KR")}
                 </div>
               </div>
             </div>
@@ -265,7 +361,7 @@ export default function ForumDetailPage({
                 </div>
                 <div className="flex items-center gap-1">
                   <CommentIcon currentColor="#9098A4" />
-                  <span>{comments.length}</span>
+                  <span>{getTotalCommentCount()}</span>
                 </div>
               </div>
 
@@ -282,37 +378,44 @@ export default function ForumDetailPage({
           {/* 댓글 섹션 */}
           <div className="border border-[#EFEFF0] rounded-[16px] py-[30px] px-[16px] md:p-[40px] mt-[30px] mb-[270px]">
             <h2 className="text-[24px] font-title font-light text-sub mb-4">
-              댓글 ({comments.length}개)
+              댓글 ({getTotalCommentCount()}개)
             </h2>
 
             {/* 댓글 작성 */}
-            <form onSubmit={handleCommentSubmit} className="mb-8">
-              <div className="flex gap-3">
-                <Image
-                  src={profileImg}
-                  alt="내 프로필"
-                  width={40}
-                  height={40}
-                  className="w-[40px] h-[40px] rounded-full object-cover"
-                />
-                <div className="flex-1">
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="댓글을 입력하세요"
-                    className="w-full min-h-[80px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+            {isAuthenticated ? (
+              <form onSubmit={handleCommentSubmit} className="mb-8">
+                <div className="flex gap-3">
+                  <Image
+                    src={currentUser?.profileImage || profileImg}
+                    alt="내 프로필"
+                    width={40}
+                    height={40}
+                    className="w-[40px] h-[40px] rounded-full object-cover"
                   />
-                  <div className="flex justify-end mt-2">
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-[#FF8796] text-white rounded-[6px] text-[14px] font-medium hover:bg-[#FF7A8A] transition-colors"
-                    >
-                      댓글 달기
-                    </button>
+                  <div className="flex-1">
+                    <textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="댓글을 입력하세요"
+                      className="w-full min-h-[80px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+                    />
+                    <div className="flex justify-end mt-2">
+                      <button
+                        type="submit"
+                        disabled={!newComment.trim() || commentsLoading}
+                        className="px-4 py-2 bg-[#FF8796] text-white rounded-[6px] text-[14px] font-medium hover:bg-[#FF7A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {commentsLoading ? '작성 중...' : '댓글 달기'}
+                      </button>
+                    </div>
                   </div>
                 </div>
+              </form>
+            ) : (
+              <div className="mb-8 p-4 bg-gray-50 rounded-lg text-center">
+                <p className="text-gray-600">댓글을 작성하려면 로그인이 필요합니다.</p>
               </div>
-            </form>
+            )}
 
             {/* 댓글 목록 */}
             <div className="space-y-6">
@@ -321,8 +424,8 @@ export default function ForumDetailPage({
                   {/* 댓글 */}
                   <div className="flex gap-3">
                     <Image
-                      src={comment.authorProfile || profileImg}
-                      alt={comment.author}
+                      src={comment.author_profile_image || profileImg}
+                      alt={comment.author_display_name || comment.author_name || 'User'}
                       width={40}
                       height={40}
                       className="w-[40px] h-[40px] rounded-full object-cover"
@@ -331,13 +434,15 @@ export default function ForumDetailPage({
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                           <span className="text-[14px] font-semibold text-[#3B394D]">
-                            {comment.author}
+                            {comment.author_display_name || comment.author_name || 'User'}
                           </span>
                           <span className="text-[12px] text-[#9098A4]">
-                            {comment.date}
+                            {new Date(comment.createdAt).toLocaleDateString(
+                              "ko-KR"
+                            )}
                           </span>
                         </div>
-                        {comment.author === currentUser && (
+                        {isAuthenticated && comment.user_id === currentUser?.id && (
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() =>
@@ -345,7 +450,7 @@ export default function ForumDetailPage({
                               }
                               className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                             >
-                              <EditIcon currentColor="#9098A4" />
+                              <EditIcon size="20" currentColor="#9098A4" />
                             </button>
                             <button
                               onClick={() => handleDeleteComment(comment.id)}
@@ -385,7 +490,7 @@ export default function ForumDetailPage({
                       )}
                       <div className="flex items-center gap-4">
                         {/* 답글 토글 버튼 */}
-                        {comment.replies.length > 0 ? (
+                        {comment.replies && comment.replies.length > 0 ? (
                           <button
                             onClick={() => toggleReplies(comment.id)}
                             className="flex items-center gap-1 text-[14px] text-[#FF8796] hover:text-[#FF7A8A] transition-colors"
@@ -425,14 +530,15 @@ export default function ForumDetailPage({
                   </div>
 
                   {/* 답글 목록 */}
-                  {comment.replies.length > 0 &&
+                  {comment.replies &&
+                    comment.replies.length > 0 &&
                     expandedReplies[comment.id] && (
                       <div className="ml-[53px] space-y-4">
                         {comment.replies.map((reply) => (
                           <div key={reply.id} className="flex gap-3">
                             <Image
-                              src={reply.authorProfile || profileImg}
-                              alt={reply.author}
+                              src={reply.author_profile_image || profileImg}
+                              alt={reply.author_display_name || reply.author_name || 'User'}
                               width={32}
                               height={32}
                               className="w-[32px] h-[32px] rounded-full object-cover"
@@ -441,13 +547,15 @@ export default function ForumDetailPage({
                               <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-2">
                                   <span className="text-[14px] font-semibold text-[#3B394D]">
-                                    {reply.author}
+                                    {reply.author_display_name || reply.author_name || 'User'}
                                   </span>
                                   <span className="text-[12px] text-[#9098A4]">
-                                    {reply.date}
+                                    {new Date(
+                                      reply.createdAt
+                                    ).toLocaleDateString("ko-KR")}
                                   </span>
                                 </div>
-                                {reply.author === currentUser && (
+                                {isAuthenticated && reply.user_id === currentUser?.id && (
                                   <div className="flex items-center gap-1">
                                     <button
                                       onClick={() =>
@@ -510,11 +618,11 @@ export default function ForumDetailPage({
                     )}
 
                   {/* 답글 작성 */}
-                  {expandedReplies[comment.id] && (
+                  {expandedReplies[comment.id] && isAuthenticated && (
                     <div className="ml-[53px]">
                       <div className="flex gap-3">
                         <Image
-                          src={profileImg}
+                          src={currentUser?.profileImage || profileImg}
                           alt="내 프로필"
                           width={32}
                           height={32}
@@ -541,12 +649,22 @@ export default function ForumDetailPage({
                             </button>
                             <button
                               onClick={() => handleReplySubmit(comment.id)}
-                              className="px-3 py-1 bg-[#FF8796] text-white rounded-[4px] text-[12px] font-medium hover:bg-[#FF7A8A] transition-colors"
+                              disabled={!replyInputs[comment.id]?.trim() || commentsLoading}
+                              className="px-3 py-1 bg-[#FF8796] text-white rounded-[4px] text-[12px] font-medium hover:bg-[#FF7A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              답글 달기
+                              {commentsLoading ? '작성 중...' : '답글 달기'}
                             </button>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 로그인하지 않은 경우 답글 작성 불가 메시지 */}
+                  {expandedReplies[comment.id] && !isAuthenticated && (
+                    <div className="ml-[53px] mt-4">
+                      <div className="p-3 bg-gray-50 rounded-lg text-center">
+                        <p className="text-gray-600 text-sm">답글을 작성하려면 로그인이 필요합니다.</p>
                       </div>
                     </div>
                   )}
@@ -570,6 +688,13 @@ export default function ForumDetailPage({
           </div>
         </div>
       </main>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
   );
 }
