@@ -3,6 +3,7 @@
 import { useState, use, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/hooks/api/useAuth";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
@@ -125,6 +126,7 @@ const ImageSlider = ({ images }: { images: string[] }) => {
 
 interface TransferData {
   id: string;
+  userId?: string;
   title: string;
   description?: string;
   price?: string;
@@ -165,6 +167,7 @@ export default function TransferDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { user } = useAuth();
   const { id } = use(params);
 
   useEffect(() => {
@@ -183,6 +186,8 @@ export default function TransferDetailPage({
 
         const data = await response.json();
         if (data.status === 'success' && data.data) {
+          console.log('Transfer data:', data.data);
+          console.log('Current user:', user);
           setTransferData(data.data);
           setIsBookmarked(data.data.isBookmarked || false);
         } else {
@@ -201,8 +206,7 @@ export default function TransferDetailPage({
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!user) {
       alert('로그인이 필요한 서비스입니다.');
       router.push('/login');
       return;
@@ -213,7 +217,7 @@ export default function TransferDetailPage({
       const response = await fetch(`/api/transfers/${id}/bookmark`, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -232,9 +236,9 @@ export default function TransferDetailPage({
   const handleDelete = async () => {
     if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) return;
 
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!user) {
       alert('로그인이 필요한 서비스입니다.');
+      router.push('/login');
       return;
     }
 
@@ -242,7 +246,7 @@ export default function TransferDetailPage({
       const response = await fetch(`/api/transfers/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -341,33 +345,45 @@ export default function TransferDetailPage({
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
 
-            <div className="relative">
-              <button
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <MoreVerticalIcon size="28" currentColor="currentColor" />
-              </button>
+            {/* 작성자만 수정/삭제 메뉴 표시 */}
+            {(() => {
+              console.log('Menu visibility check:');
+              console.log('user:', user);
+              console.log('transferData:', transferData);
+              console.log('transferData.user:', transferData?.user);
+              console.log('transferData.userId:', transferData?.userId);
+              console.log('user.id:', user?.id);
+              console.log('Match:', user && transferData && (transferData.user?.id === user.id || transferData.userId === user.id));
+              return user && transferData && (transferData.user?.id === user.id || transferData.userId === user.id);
+            })() && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <MoreVerticalIcon size="28" currentColor="currentColor" />
+                </button>
 
-              {showMoreMenu && (
-                <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
-                  <Link
-                    href={`/transfers/${id}/edit`}
-                    className="flex justify-center items-center px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <EditIcon size="24" currentColor="currentColor" />
-                    <span className="ml-2">수정하기</span>
-                  </Link>
-                  <button 
-                    onClick={handleDelete}
-                    className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50"
-                  >
-                    <TrashIcon currentColor="currentColor" />
-                    <span className="ml-2">삭제하기</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                {showMoreMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-[130px] bg-white border rounded-lg shadow-lg z-10">
+                    <Link
+                      href={`/transfers/${id}/edit`}
+                      className="flex justify-center items-center px-[20px] py-[10px] text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <EditIcon size="24" currentColor="currentColor" />
+                      <span className="ml-2">수정하기</span>
+                    </Link>
+                    <button 
+                      onClick={handleDelete}
+                      className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50"
+                    >
+                      <TrashIcon currentColor="currentColor" />
+                      <span className="ml-2">삭제하기</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <section className="p-4 lg:p-[60px] border-[1px] border-[#EFEFF0] rounded-[20px]">

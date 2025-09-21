@@ -6,6 +6,7 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
+import { TransferCardSkeleton } from "@/components/ui/TransferCard/TransferCardSkeleton";
 import AdCard from "@/components/ui/AdCard";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { InputBox } from "@/components/ui/Input/InputBox";
@@ -301,10 +302,6 @@ export default function TransfersPage() {
   // 광고는 1페이지(index 0)에서만 표시
   const shouldShowAd = currentPage === 1 && transferData.length > 0;
 
-  // 항상 9개 슬롯을 채우기 위한 빈 카드 생성
-  const totalSlots = 9;
-  const currentContentCount = (shouldShowAd ? 1 : 0) + transferData.length;
-  const emptySlots = Math.max(0, totalSlots - currentContentCount);
 
   // URL에서 필터 상태 초기화
   useEffect(() => {
@@ -944,8 +941,19 @@ export default function TransfersPage() {
           {/* 양도 게시글 목록 */}
           <div className="flex flex-col gap-[20px]">
             {isLoadingData ? (
-              <div className="flex justify-center items-center h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              // 스켈레톤 로딩
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
+                {Array.from({ length: 9 }).map((_, index) => (
+                  <TransferCardSkeleton key={`skeleton-${index}`} />
+                ))}
+              </div>
+            ) : transferData.length === 0 ? (
+              // 데이터가 없는 경우
+              <div className="flex flex-col items-center justify-center h-[400px] text-gray-500">
+                <div className="text-lg font-medium mb-2">
+                  등록된 양수양도가 없습니다
+                </div>
+                <div className="text-sm">첫 번째 양수양도를 등록해보세요!</div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
@@ -978,30 +986,6 @@ export default function TransfersPage() {
                     isLiked={false}
                     onLike={() => console.log("좋아요 클릭")}
                   />
-                ))}
-
-                {/* 빈 슬롯으로 높이 고정 (모바일 제외) */}
-                {Array.from({ length: emptySlots }).map((_, index) => (
-                  <div
-                    key={`empty-slot-${index}`}
-                    className="invisible hidden sm:block"
-                  >
-                    <TransferCard
-                      title="Placeholder"
-                      location="Placeholder"
-                      hospitalType="Placeholder"
-                      area={0}
-                      price="0"
-                      date="2025-01-01"
-                      views={0}
-                      imageUrl=""
-                      categories=""
-                      isAd={false}
-                      isLiked={false}
-                      onLike={() => {}}
-                      onClick={() => {}}
-                    />
-                  </div>
                 ))}
               </div>
             )}
