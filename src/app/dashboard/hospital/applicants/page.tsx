@@ -166,7 +166,7 @@ export default function HospitalApplicantsPage() {
             new Date(a.appliedAt).getTime()
         );
       case "popular":
-        return sorted.sort((a, b) => a.veterinarian.name.localeCompare(b.veterinarian.name));
+        return sorted.sort((a, b) => (a.realName || a.nickname).localeCompare(b.realName || b.nickname));
       case "deadline":
         return sorted.sort(
           (a, b) =>
