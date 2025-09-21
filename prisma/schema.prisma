@@ -26,22 +26,24 @@ model User {
   updatedAt               DateTime                 @updatedAt
   realName                String
   birthDate               DateTime?
-  nickname                String?                  @db.VarChar(100)
-  loginId                 String?                  @unique @db.VarChar(100)
-  universityEmail         String?                  @unique
-  hospitalName            String?
-  establishedDate         DateTime?
   businessNumber          String?                  @unique
-  hospitalWebsite         String?
-  hospitalLogo            String?
+  establishedDate         DateTime?
   hospitalAddress         String?
   hospitalAddressDetail   String?
+  hospitalLogo            String?
+  hospitalName            String?
+  hospitalWebsite         String?
   licenseImage            String?
+  loginId                 String?                  @unique @db.VarChar(100)
+  nickname                String?                  @db.VarChar(100)
   seq                     Int                      @unique @default(autoincrement())
+  universityEmail         String?                  @unique
+  lastLoginAt             DateTime?                @db.Timestamp(6)
   applications            Application[]
   commentReplies          CommentReply[]
   detailedHospitalProfile DetailedHospitalProfile?
   detailedResume          DetailedResume?
+  forum_comments          forum_comments[]
   forumPosts              ForumPost[]
   hospitalEvaluations     HospitalEvaluation[]     @relation("HospitalEvaluations")
   userHospitalEvaluations HospitalEvaluation[]     @relation("UserHospitalEvaluations")
@@ -84,33 +86,33 @@ model Job {
   id                   String    @id @default(cuid())
   hospitalId           String
   title                String
-  workType             String[]  @default([])
-  isUnlimitedRecruit   Boolean   @default(false)
-  recruitEndDate       DateTime?
-  major                String[]  @default([])
-  experience           String[]  @default([])
-  position             String
-  salaryType           String
-  salary               String
-  workDays             String[]  @default([])
-  isWorkDaysNegotiable Boolean   @default(false)
-  workStartTime        String?
-  workEndTime          String?
-  isWorkTimeNegotiable Boolean   @default(false)
   benefits             String?
-  education            String[]  @default([])
-  certifications       String[]  @default([])
-  experienceDetails    String[]  @default([])
-  preferences          String[]  @default([])
-  managerName          String
-  managerPhone         String
-  managerEmail         String
-  department           String
-  isActive             Boolean   @default(true)
-  isDraft              Boolean   @default(false)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @default(now()) @updatedAt
   deletedAt            DateTime?
+  certifications       String[]  @default([])
+  department           String
+  education            String[]  @default([])
+  experience           String[]  @default([])
+  experienceDetails    String[]  @default([])
+  isActive             Boolean   @default(true)
+  isDraft              Boolean   @default(false)
+  isUnlimitedRecruit   Boolean   @default(false)
+  isWorkDaysNegotiable Boolean   @default(false)
+  isWorkTimeNegotiable Boolean   @default(false)
+  major                String[]  @default([])
+  managerEmail         String
+  managerName          String
+  managerPhone         String
+  position             String
+  preferences          String[]  @default([])
+  recruitEndDate       DateTime?
+  salary               String
+  workDays             String[]  @default([])
+  workEndTime          String?
+  workStartTime        String?
+  salaryType           String
+  workType             String[]  @default([])
   hospital             User      @relation(fields: [hospitalId], references: [id], map: "jobs_hospitalid_fkey")
 
   @@index([createdAt], map: "idx_jobs_created_at")
@@ -186,17 +188,22 @@ model Lecture {
 }
 
 model LectureComment {
-  id        String         @id @default(cuid())
-  lectureId String
-  userId    String
-  content   String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  deletedAt DateTime?
-  replies   CommentReply[]
-  lecture   Lecture        @relation(fields: [lectureId], references: [id])
-  user      User           @relation(fields: [userId], references: [id])
+  id                     String           @id @default(cuid())
+  lectureId              String
+  userId                 String
+  content                String
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  deletedAt              DateTime?
+  parentId               String?          @db.VarChar(255)
+  replies                CommentReply[]
+  lecture_comments       LectureComment?  @relation("lecture_commentsTolecture_comments", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_lecture_comment_parent")
+  other_lecture_comments LectureComment[] @relation("lecture_commentsTolecture_comments")
+  lecture                Lecture          @relation(fields: [lectureId], references: [id])
+  user                   User             @relation(fields: [userId], references: [id])
 
+  @@index([lectureId], map: "idx_lecture_comments_lecture_id")
+  @@index([parentId], map: "idx_lecture_comments_parent_id")
   @@map("lecture_comments")
 }
 
@@ -220,21 +227,21 @@ model Transfer {
   title         String
   description   String
   location      String
-  baseAddress   String?            @map("base_address")
-  detailAddress String?            @map("detail_address")
-  sido          String?
-  sigungu       String?
   price         Int?
   category      String
   images        String[]
   status        TransferStatus     @default(ACTIVE)
-  area          Int?
-  views         Int                @default(0)
-  latitude      Float?
-  longitude     Float?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   deletedAt     DateTime?
+  area          Int?
+  baseAddress   String?            @map("base_address")
+  detailAddress String?            @map("detail_address")
+  latitude      Float?
+  longitude     Float?
+  sido          String?
+  sigungu       String?
+  views         Int                @default(0)
   bookmarks     TransferBookmark[]
   user          User               @relation(fields: [userId], references: [id])
 
@@ -242,17 +249,18 @@ model Transfer {
 }
 
 model ForumPost {
-  id            String    @id @default(cuid())
-  userId        String
-  title         String
-  content       String    // Rich text content from Quill editor
-  animalType    String    // 진료 동물: 강아지, 고양이, 대동물, 특수동물
-  medicalField  String    // 진료 분야: 내과, 외과, 피부과, 응급의학, 예방의학
-  viewCount     Int       @default(0)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  user          User      @relation(fields: [userId], references: [id])
+  id             String           @id @default(cuid())
+  userId         String
+  title          String
+  content        String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  animalType     String
+  medicalField   String
+  viewCount      Int              @default(0)
+  forum_comments forum_comments[]
+  user           User             @relation(fields: [userId], references: [id])
 
   @@map("forum_posts")
 }
@@ -566,6 +574,26 @@ model migration_log {
   migration_name String    @unique @db.VarChar(255)
   executed_at    DateTime? @default(now()) @db.Timestamp(6)
   description    String?
+}
+
+model forum_comments {
+  id                   String           @id @db.VarChar(255)
+  forum_id             String           @db.VarChar(255)
+  user_id              String           @db.VarChar(255)
+  parent_id            String?          @db.VarChar(255)
+  content              String
+  createdAt            DateTime?        @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime?        @default(now()) @db.Timestamptz(6)
+  deletedAt            DateTime?        @db.Timestamptz(6)
+  forum_posts          ForumPost        @relation(fields: [forum_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  forum_comments       forum_comments?  @relation("forum_commentsToforum_comments", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_forum_comments forum_comments[] @relation("forum_commentsToforum_comments")
+  users                User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([createdAt], map: "idx_forum_comments_created_at")
+  @@index([forum_id], map: "idx_forum_comments_forum_id")
+  @@index([parent_id], map: "idx_forum_comments_parent_id")
+  @@index([user_id], map: "idx_forum_comments_user_id")
 }
 
 enum UserType {

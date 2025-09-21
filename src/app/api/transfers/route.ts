@@ -10,7 +10,11 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
+    console.log(`[Transfers API] GET request - page: ${page}, limit: ${limit}`);
+
     const result = await getTransfersWithPagination(page, limit);
+    
+    console.log(`[Transfers API] Retrieved ${result.length} transfers`);
 
     return NextResponse.json(
       createApiResponse("success", "양도양수 목록 조회 성공", {

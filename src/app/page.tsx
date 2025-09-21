@@ -93,7 +93,10 @@ import Link from "next/link";
 import ResumeCard from "@/components/ui/ResumeCard";
 import { useResumes } from "@/hooks/useResumes";
 import { useJobs } from "@/hooks/useJobs";
+import { useLectures } from "@/hooks/api/useLectures";
+import { useTransfers } from "@/hooks/api/useTransfers";
 import { convertDDayToNumber } from "@/utils/dDayConverter";
+import React from "react";
 
 export default function HomePage() {
   // 지역 이름 한국어 맵핑 함수
@@ -165,36 +168,105 @@ export default function HomePage() {
     sort: "latest",
   });
 
-  // 수술 강의 필터링
-  const surgeryLectures = allLecturesData
-    .filter((lecture) => lecture.medicalField === "surgery")
-    .slice(0, 4);
+  // 인기 카테고리별 강의 조회 (조회수 기준)
+  const { data: emergencyLecturesData, isLoading: emergencyLoading } =
+    useLectures({
+      medicalField: "emergency",
+      sort: "view",
+      limit: 4,
+    });
 
-  // 행동/심리학 강의 필터링
-  const behaviorLectures = allLecturesData
-    .filter((lecture) => lecture.medicalField === "behavior")
-    .slice(0, 4);
+  const { data: dermatologyLecturesData, isLoading: dermatologyLoading } =
+    useLectures({
+      medicalField: "dermatology",
+      sort: "view",
+      limit: 4,
+    });
+
+  const { data: internalLecturesData, isLoading: internalLoading } =
+    useLectures({
+      medicalField: "internal",
+      sort: "view",
+      limit: 4,
+    });
+
+  // API 응답에서 실제 데이터 추출
+  const emergencyLectures = emergencyLecturesData?.data?.lectures?.data || [];
+  const dermatologyLectures =
+    dermatologyLecturesData?.data?.lectures?.data || [];
+  const internalLectures = internalLecturesData?.data?.lectures?.data || [];
 
   // 구직정보 데이터는 useResumes 훅에서 가져옴
 
   // 현재 활성화된 탭 상태
   const [activeTab, setActiveTab] = useState("internal");
 
-  // 양도매물 데이터 카테고리별 필터링
-  const hospitalTransfers = allTransferData
-    .filter((item) => item.category === "hospital")
+  // 양수양도 데이터 API 조회 (최대 32개 가져와서 카테고리별로 8개씩 분배)
+  const {
+    data: transfersData,
+    isLoading: transfersLoading,
+    error: transfersError,
+  } = useTransfers({
+    limit: 32,
+    sort: "latest",
+  });
+
+  // API 응답에서 실제 데이터 추출 및 카테고리별 필터링
+  const allTransfers = transfersData?.data?.transfers || [];
+
+  // 디버깅을 위한 로그
+  React.useEffect(() => {
+    if (transfersData) {
+      console.log("[HomePage] Transfers data received:", transfersData);
+      console.log("[HomePage] All transfers count:", allTransfers.length);
+      console.log("[HomePage] First transfer item:", allTransfers[0]);
+
+      // 카테고리별 개수 확인
+      const hospitalCount = allTransfers.filter(
+        (item: any) => item.category === "hospital"
+      ).length;
+      const machineCount = allTransfers.filter(
+        (item: any) => item.category === "machine"
+      ).length;
+      const deviceCount = allTransfers.filter(
+        (item: any) => item.category === "device"
+      ).length;
+      const interiorCount = allTransfers.filter(
+        (item: any) => item.category === "interior"
+      ).length;
+
+      console.log("[HomePage] Category counts:", {
+        hospital: hospitalCount,
+        machine: machineCount,
+        device: deviceCount,
+        interior: interiorCount,
+      });
+
+      // 실제 카테고리 값들 확인
+      const uniqueCategories = Array.from(
+        new Set(allTransfers.map((item: any) => item.category))
+      );
+      console.log("[HomePage] Unique categories found:", uniqueCategories);
+    }
+    if (transfersError) {
+      console.error("[HomePage] Transfers error:", transfersError);
+    }
+  }, [transfersData, transfersError, allTransfers.length]);
+
+  const hospitalTransfers = allTransfers
+    .filter((item: any) => item.category === "병원양도")
     .slice(0, 8);
 
-  const machineTransfers = allTransferData
-    .filter((item) => item.category === "machine")
+  const machineTransfers = allTransfers
+    .filter((item: any) => item.category === "기계장치")
     .slice(0, 8);
 
-  const deviceTransfers = allTransferData
-    .filter((item) => item.category === "device")
+  const deviceTransfers = allTransfers
+    .filter((item: any) => item.category === "의료장비")
     .slice(0, 8);
 
-  const interiorTransfers = allTransferData
-    .filter((item) => item.category === "interior")
+  const interiorTransfers = allTransfers
+    .filter((item: any) => item.category === "인테리어")
     .slice(0, 8);
 
   const handlePrivacyClick = () => {
@@ -542,7 +614,12 @@ export default function HomePage() {
 
   const handleAITalentSearch = () => {
     console.log("AI로 인재 찾기 클릭");
-    // AI 인재 검색 로직 또는 페이지 이동
+    window.location.href = "/resumes";
+  };
+
+  const handleAIHospitalSearch = () => {
+    console.log("AI로 병원 찾기 클릭");
+    window.location.href = "/jobs";
   };
 
   const sampleBanners: BannerItem[] = [
@@ -598,7 +675,7 @@ export default function HomePage() {
                   description="필요한 병원을 빠르고 신속하게!"
                   variant="hospital"
                   imageSrc={hospitalImg.src}
-                  onClick={handleAITalentSearch}
+                  onClick={handleAIHospitalSearch}
                 />
               </div>
               <JobFamousList />
@@ -812,21 +889,23 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* 수술 강의 섹션 */}
+            {/* 응급의학 강의 섹션 */}
             <div className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
               {/* 카테고리 카드 - 핑크 */}
               <div
                 className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-[#FF8796] md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
-                onClick={() => console.log("수술 강의 전체보기")}
+                onClick={() =>
+                  (window.location.href = "/lectures?medicalField=emergency")
+                }
               >
                 <div className="flex flex-col gap-[12px]">
                   <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-white mb-[px] leading-[135%]">
-                    수술 강의
+                    응급의학
                   </h4>
                   <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-white opacity-90">
-                    수술 전 준비부터 고급 수술까지
+                    응급 상황 대처부터 응급수술까지
                     <br />
-                    수술분야 종합적인 역량을 쌓습니다
+                    응급의학 전문 역량을 쌓습니다
                   </p>
                 </div>
                 <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] border border-white bg-white bg-opacity-20 rounded-full items-center justify-center hover:bg-opacity-30 transition-all duration-200">
@@ -836,38 +915,50 @@ export default function HomePage() {
 
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                {surgeryLectures.map((lecture) => (
-                  <LectureCard
-                    key={lecture.id}
-                    title={lecture.title}
-                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
-                    views={lecture.viewCount}
-                    category={lecture.category}
-                    imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                    isLiked={lecture.isLiked}
-                    onClick={() =>
-                      (window.location.href = `/lectures/${lecture.id}`)
-                    }
-                  />
-                ))}
+                {emergencyLoading
+                  ? // 로딩 스켈레톤
+                    [...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-[294px] h-[240px] bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
+                      ></div>
+                    ))
+                  : emergencyLectures.map((lecture: any) => (
+                      <LectureCard
+                        key={lecture.id}
+                        title={lecture.title}
+                        date={new Date(lecture.createdAt).toLocaleDateString(
+                          "ko-KR"
+                        )}
+                        views={lecture.viewCount || 0}
+                        category={lecture.category}
+                        imageUrl={lecture.thumbnailUrl || lecture1Img.src}
+                        isLiked={lecture.isLiked || false}
+                        onClick={() =>
+                          (window.location.href = `/lectures/${lecture.id}`)
+                        }
+                      />
+                    ))}
               </div>
             </div>
 
-            {/* 행동/심리학 섹션 */}
+            {/* 피부과 섹션 */}
             <div className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
               {/* 카테고리 카드 - 흰색 */}
               <div
                 className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-box md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
-                onClick={() => console.log("행동/심리학 전체보기")}
+                onClick={() =>
+                  (window.location.href = "/lectures?medicalField=dermatology")
+                }
               >
                 <div className="flex flex-col gap-[12px]">
                   <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-black mb-[px] leading-[135%]">
-                    행동/심리학
+                    피부과
                   </h4>
                   <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-[#6B6B6B]">
-                    반려동물의 행동/심리학 관련 다양한
+                    피부질환 진단부터 치료까지
                     <br />
-                    강의가 준비되어 있습니다
+                    피부과 전문 지식을 습득합니다
                   </p>
                 </div>
                 <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] bg-[#F8F8F9] border border-[#FF8796] rounded-full items-center justify-center hover:bg-[#EFEFF0] transition-all duration-200">
@@ -877,41 +968,50 @@ export default function HomePage() {
 
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                {behaviorLectures.map((lecture) => (
-                  <LectureCard
-                    key={lecture.id}
-                    title={lecture.title}
-                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
-                    views={lecture.viewCount}
-                    category={lecture.category}
-                    imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                    isLiked={lecture.isLiked}
-                    onClick={() =>
-                      (window.location.href = `/lectures/${lecture.id}`)
-                    }
-                  />
-                ))}
+                {dermatologyLoading
+                  ? // 로딩 스켈레톤
+                    [...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-[294px] h-[240px] bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
+                      ></div>
+                    ))
+                  : dermatologyLectures.map((lecture: any) => (
+                      <LectureCard
+                        key={lecture.id}
+                        title={lecture.title}
+                        date={new Date(lecture.createdAt).toLocaleDateString(
+                          "ko-KR"
+                        )}
+                        views={lecture.viewCount || 0}
+                        category={lecture.category}
+                        imageUrl={lecture.thumbnailUrl || lecture1Img.src}
+                        isLiked={lecture.isLiked || false}
+                        onClick={() =>
+                          (window.location.href = `/lectures/${lecture.id}`)
+                        }
+                      />
+                    ))}
               </div>
             </div>
 
-            {/* 행동/심리학 섹션 (세 번째) */}
+            {/* 내과 섹션 (세 번째) */}
             <div className="relative h-auto md:h-[400px]">
               {/* 카테고리 카드 - 핑크 */}
               <div
                 className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-[#FF8796] md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
-                onClick={() => console.log("행동/심리학 전체보기")}
+                onClick={() =>
+                  (window.location.href = "/lectures?medicalField=internal")
+                }
               >
                 <div className="flex flex-col gap-[12px]">
-                  <h4
-                    className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-white mb-[px] leading-[135%]"
-                    style={{ fontFamily: "Gmarket Sans" }}
-                  >
-                    행동/심리학
+                  <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-white mb-[px] leading-[135%]">
+                    내과
                   </h4>
                   <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-white opacity-90">
-                    반려동물의 행동/심리학 관련 다양한
+                    내과 질환 진단부터 치료까지
                     <br />
-                    강의가 준비되어 있습니다
+                    내과 전문 지식을 체계적으로 학습합니다
                   </p>
                 </div>
                 <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] border border-white bg-white bg-opacity-20 rounded-full items-center justify-center hover:bg-opacity-30 transition-all duration-200">
@@ -921,20 +1021,30 @@ export default function HomePage() {
 
               {/* 강의 리스트 */}
               <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                {behaviorLectures.map((lecture) => (
-                  <LectureCard
-                    key={lecture.id}
-                    title={lecture.title}
-                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
-                    views={lecture.viewCount}
-                    category={lecture.category}
-                    imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                    isLiked={lecture.isLiked}
-                    onClick={() =>
-                      (window.location.href = `/lectures/${lecture.id}`)
-                    }
-                  />
-                ))}
+                {internalLoading
+                  ? // 로딩 스켈레톤
+                    [...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-[294px] h-[240px] bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
+                      ></div>
+                    ))
+                  : internalLectures.map((lecture: any) => (
+                      <LectureCard
+                        key={lecture.id}
+                        title={lecture.title}
+                        date={new Date(lecture.createdAt).toLocaleDateString(
+                          "ko-KR"
+                        )}
+                        views={lecture.viewCount || 0}
+                        category={lecture.category}
+                        imageUrl={lecture.thumbnailUrl || lecture1Img.src}
+                        isLiked={lecture.isLiked || false}
+                        onClick={() =>
+                          (window.location.href = `/lectures/${lecture.id}`)
+                        }
+                      />
+                    ))}
               </div>
             </div>
           </section>
@@ -958,27 +1068,50 @@ export default function HomePage() {
 
               <Tab.Content value="transfer">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  {hospitalTransfers.map((transfer) => (
-                    <TransferCard
-                      key={transfer.id}
-                      id={transfer.id}
-                      title={transfer.title}
-                      location={transfer.location}
-                      hospitalType={transfer.hospitalType}
-                      area={transfer.area}
-                      price={transfer.price}
-                      categories={transfer.categories}
-                      isAd={transfer.isAd}
-                      date={transfer.date}
-                      views={transfer.views}
-                      imageUrl={transfer.imageUrl}
-                      isLiked={transfer.isLiked}
-                      onLike={() => console.log("좋아요 클릭")}
-                      onClick={() =>
-                        (window.location.href = `/transfers/${transfer.id}`)
-                      }
-                    />
-                  ))}
+                  {transfersLoading ? (
+                    // 로딩 스켈레톤
+                    [...Array(8)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-gray-200 rounded-xl h-[300px] animate-pulse"
+                      ></div>
+                    ))
+                  ) : transfersError ? (
+                    // 에러 상태
+                    <div className="col-span-full text-center py-8 text-red-500">
+                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        잠시 후 다시 시도해주세요.
+                      </p>
+                    </div>
+                  ) : hospitalTransfers.length === 0 ? (
+                    // 빈 데이터 상태
+                    <div className="col-span-full text-center py-8 text-gray-500">
+                      <p>현재 등록된 병원 양도 매물이 없습니다.</p>
+                    </div>
+                  ) : (
+                    hospitalTransfers.map((transfer: any) => (
+                      <TransferCard
+                        key={transfer.id}
+                        id={transfer.id}
+                        title={transfer.title}
+                        location={transfer.location}
+                        hospitalType={transfer.hospitalType}
+                        area={transfer.area}
+                        price={transfer.price}
+                        categories={transfer.categories}
+                        isAd={transfer.isAd}
+                        date={transfer.createdAt}
+                        views={transfer.views}
+                        imageUrl={transfer.images?.[0] || ""}
+                        isLiked={transfer.isLiked}
+                        onLike={() => console.log("좋아요 클릭")}
+                        onClick={() =>
+                          (window.location.href = `/transfers/${transfer.id}`)
+                        }
+                      />
+                    ))
+                  )}
                 </div>
                 <div className="flex justify-center">
                   <Link
@@ -991,77 +1124,137 @@ export default function HomePage() {
               </Tab.Content>
               <Tab.Content value="machine">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  {machineTransfers.map((transfer) => (
-                    <TransferCard
-                      key={transfer.id}
-                      id={transfer.id}
-                      title={transfer.title}
-                      location={transfer.location}
-                      hospitalType={transfer.hospitalType}
-                      area={transfer.area}
-                      price={transfer.price}
-                      categories={transfer.categories}
-                      isAd={transfer.isAd}
-                      date={transfer.date}
-                      views={transfer.views}
-                      imageUrl={transfer.imageUrl}
-                      isLiked={transfer.isLiked}
-                      onLike={() => console.log("좋아요 클릭")}
-                      onClick={() =>
-                        (window.location.href = `/transfers/${transfer.id}`)
-                      }
-                    />
-                  ))}
+                  {transfersLoading ? (
+                    // 로딩 스켈레톤
+                    [...Array(8)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-gray-200 rounded-xl h-[300px] animate-pulse"
+                      ></div>
+                    ))
+                  ) : transfersError ? (
+                    // 에러 상태
+                    <div className="col-span-full text-center py-8 text-red-500">
+                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                    </div>
+                  ) : machineTransfers.length === 0 ? (
+                    // 빈 데이터 상태
+                    <div className="col-span-full text-center py-8 text-gray-500">
+                      <p>현재 등록된 기계장치 양도 매물이 없습니다.</p>
+                    </div>
+                  ) : (
+                    machineTransfers.map((transfer: any) => (
+                      <TransferCard
+                        key={transfer.id}
+                        id={transfer.id}
+                        title={transfer.title}
+                        location={transfer.location}
+                        hospitalType={transfer.hospitalType}
+                        area={transfer.area}
+                        price={transfer.price}
+                        categories={transfer.categories}
+                        isAd={transfer.isAd}
+                        date={transfer.createdAt}
+                        views={transfer.views}
+                        imageUrl={transfer.images?.[0] || ""}
+                        isLiked={transfer.isLiked}
+                        onLike={() => console.log("좋아요 클릭")}
+                        onClick={() =>
+                          (window.location.href = `/transfers/${transfer.id}`)
+                        }
+                      />
+                    ))
+                  )}
                 </div>
               </Tab.Content>
               <Tab.Content value="device">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  {deviceTransfers.map((transfer) => (
-                    <TransferCard
-                      key={transfer.id}
-                      id={transfer.id}
-                      title={transfer.title}
-                      location={transfer.location}
-                      hospitalType={transfer.hospitalType}
-                      area={transfer.area}
-                      price={transfer.price}
-                      categories={transfer.categories}
-                      isAd={transfer.isAd}
-                      date={transfer.date}
-                      views={transfer.views}
-                      imageUrl={transfer.imageUrl}
-                      isLiked={transfer.isLiked}
-                      onLike={() => console.log("좋아요 클릭")}
-                      onClick={() =>
-                        (window.location.href = `/transfers/${transfer.id}`)
-                      }
-                    />
-                  ))}
+                  {transfersLoading ? (
+                    // 로딩 스켈레톤
+                    [...Array(8)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-gray-200 rounded-xl h-[300px] animate-pulse"
+                      ></div>
+                    ))
+                  ) : transfersError ? (
+                    // 에러 상태
+                    <div className="col-span-full text-center py-8 text-red-500">
+                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                    </div>
+                  ) : deviceTransfers.length === 0 ? (
+                    // 빈 데이터 상태
+                    <div className="col-span-full text-center py-8 text-gray-500">
+                      <p>현재 등록된 의료장비 양도 매물이 없습니다.</p>
+                    </div>
+                  ) : (
+                    deviceTransfers.map((transfer: any) => (
+                      <TransferCard
+                        key={transfer.id}
+                        id={transfer.id}
+                        title={transfer.title}
+                        location={transfer.location}
+                        hospitalType={transfer.hospitalType}
+                        area={transfer.area}
+                        price={transfer.price}
+                        categories={transfer.categories}
+                        isAd={transfer.isAd}
+                        date={transfer.createdAt}
+                        views={transfer.views}
+                        imageUrl={transfer.images?.[0] || ""}
+                        isLiked={transfer.isLiked}
+                        onLike={() => console.log("좋아요 클릭")}
+                        onClick={() =>
+                          (window.location.href = `/transfers/${transfer.id}`)
+                        }
+                      />
+                    ))
+                  )}
                 </div>
               </Tab.Content>
               <Tab.Content value="Interior">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
-                  {interiorTransfers.map((transfer) => (
-                    <TransferCard
-                      key={transfer.id}
-                      id={transfer.id}
-                      title={transfer.title}
-                      location={transfer.location}
-                      hospitalType={transfer.hospitalType}
-                      area={transfer.area}
-                      price={transfer.price}
-                      categories={transfer.categories}
-                      isAd={transfer.isAd}
-                      date={transfer.date}
-                      views={transfer.views}
-                      imageUrl={transfer.imageUrl}
-                      isLiked={transfer.isLiked}
-                      onLike={() => console.log("좋아요 클릭")}
-                      onClick={() =>
-                        (window.location.href = `/transfers/${transfer.id}`)
-                      }
-                    />
-                  ))}
+                  {transfersLoading ? (
+                    // 로딩 스켈레톤
+                    [...Array(8)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-gray-200 rounded-xl h-[300px] animate-pulse"
+                      ></div>
+                    ))
+                  ) : transfersError ? (
+                    // 에러 상태
+                    <div className="col-span-full text-center py-8 text-red-500">
+                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                    </div>
+                  ) : interiorTransfers.length === 0 ? (
+                    // 빈 데이터 상태
+                    <div className="col-span-full text-center py-8 text-gray-500">
+                      <p>현재 등록된 인테리어 양도 매물이 없습니다.</p>
+                    </div>
+                  ) : (
+                    interiorTransfers.map((transfer: any) => (
+                      <TransferCard
+                        key={transfer.id}
+                        id={transfer.id}
+                        title={transfer.title}
+                        location={transfer.location}
+                        hospitalType={transfer.hospitalType}
+                        area={transfer.area}
+                        price={transfer.price}
+                        categories={transfer.categories}
+                        isAd={transfer.isAd}
+                        date={transfer.createdAt}
+                        views={transfer.views}
+                        imageUrl={transfer.images?.[0] || ""}
+                        isLiked={transfer.isLiked}
+                        onLike={() => console.log("좋아요 클릭")}
+                        onClick={() =>
+                          (window.location.href = `/transfers/${transfer.id}`)
+                        }
+                      />
+                    ))
+                  )}
                 </div>
               </Tab.Content>
             </Tab>
