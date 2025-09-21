@@ -215,20 +215,28 @@ model CommentReply {
 }
 
 model Transfer {
-  id          String             @id @default(cuid())
-  userId      String
-  title       String
-  description String
-  location    String
-  price       Int?
-  category    String
-  images      String[]
-  status      TransferStatus     @default(ACTIVE)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  deletedAt   DateTime?
-  bookmarks   TransferBookmark[]
-  user        User               @relation(fields: [userId], references: [id])
+  id            String             @id @default(cuid())
+  userId        String
+  title         String
+  description   String
+  location      String
+  baseAddress   String?            @map("base_address")
+  detailAddress String?            @map("detail_address")
+  sido          String?
+  sigungu       String?
+  price         Int?
+  category      String
+  images        String[]
+  status        TransferStatus     @default(ACTIVE)
+  area          Int?
+  views         Int                @default(0)
+  latitude      Float?
+  longitude     Float?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  deletedAt     DateTime?
+  bookmarks     TransferBookmark[]
+  user          User               @relation(fields: [userId], references: [id])
 
   @@map("transfers")
 }
@@ -620,6 +628,7 @@ enum TransferStatus {
   ACTIVE
   SOLD
   RESERVED
+  DISABLED
 }
 
 enum MessageStatus {

@@ -3,6 +3,7 @@ import { withAuth } from "@/lib/middleware";
 import { createApiResponse, createErrorResponse, generateUserIdentifier } from "@/lib/utils";
 import {
   getTransferById,
+  getTransferByIdForEdit,
   updateTransfer,
   deleteTransfer,
   incrementViewCount,

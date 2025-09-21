@@ -3208,7 +3208,7 @@ export const getRecentResumes = async (limit = 5) => {
 };
 
 export const getRecentTransfers = async (limit = 5) => {
-  const query = `SELECT * FROM transfers WHERE "deletedAt" IS NULL ORDER BY "createdAt" DESC LIMIT $1`;
+  const query = `SELECT * FROM transfers WHERE "deletedAt" IS NULL AND status != 'DISABLED' ORDER BY "createdAt" DESC LIMIT $1`;
   const result = await pool.query(query, [limit]);
   return result.rows;
 };
@@ -3377,7 +3377,7 @@ export const incrementTransferViewCount = async (transferId: string) => {
 export const getRelatedTransfers = async (transferId: string, limit = 5) => {
   const query = `
     SELECT * FROM transfers 
-    WHERE id != $1 AND "deletedAt" IS NULL 
+    WHERE id != $1 AND "deletedAt" IS NULL AND status != 'DISABLED'
     ORDER BY "createdAt" DESC 
     LIMIT $2
   `;
@@ -3386,8 +3386,70 @@ export const getRelatedTransfers = async (transferId: string, limit = 5) => {
 };
 
 export const updateTransfer = async (transferId: string, updateData: any) => {
-  const query = `UPDATE transfers SET title = $1, description = $2, price = $3 WHERE id = $4`;
-  const result = await pool.query(query, [updateData.title, updateData.description, updateData.price, transferId]);
+  const fields = [];
+  const values = [];
+  let paramIndex = 1;
+
+  // Build dynamic query based on provided fields
+  if (updateData.title !== undefined) {
+    fields.push(`title = $${paramIndex++}`);
+    values.push(updateData.title);
+  }
+  if (updateData.description !== undefined) {
+    fields.push(`description = $${paramIndex++}`);
+    values.push(updateData.description);
+  }
+  if (updateData.price !== undefined) {
+    fields.push(`price = $${paramIndex++}`);
+    values.push(updateData.price);
+  }
+  if (updateData.category !== undefined) {
+    fields.push(`category = $${paramIndex++}`);
+    values.push(updateData.category);
+  }
+  if (updateData.baseAddress !== undefined) {
+    fields.push(`base_address = $${paramIndex++}`);
+    values.push(updateData.baseAddress);
+  }
+  if (updateData.detailAddress !== undefined) {
+    fields.push(`detail_address = $${paramIndex++}`);
+    values.push(updateData.detailAddress);
+  }
+  if (updateData.sido !== undefined) {
+    fields.push(`sido = $${paramIndex++}`);
+    values.push(updateData.sido);
+  }
+  if (updateData.sigungu !== undefined) {
+    fields.push(`sigungu = $${paramIndex++}`);
+    values.push(updateData.sigungu);
+  }
+  if (updateData.area !== undefined) {
+    fields.push(`area = $${paramIndex++}`);
+    values.push(updateData.area);
+  }
+  if (updateData.images !== undefined) {
+    fields.push(`images = $${paramIndex++}`);
+    values.push(updateData.images);
+  }
+  if (updateData.status !== undefined) {
+    fields.push(`status = $${paramIndex++}`);
+    values.push(updateData.status);
+  }
+  if (updateData.location !== undefined) {
+    fields.push(`location = $${paramIndex++}`);
+    values.push(updateData.location);
+  }
+
+  // Always update updatedAt
+  fields.push(`"updatedAt" = NOW()`);
+  
+  if (fields.length === 1) { // Only updatedAt field
+    return false;
+  }
+
+  values.push(transferId);
+  const query = `UPDATE transfers SET ${fields.join(', ')} WHERE id = $${paramIndex}`;
+  const result = await pool.query(query, values);
   return (result.rowCount ?? 0) > 0;
 };
 
@@ -3403,7 +3465,7 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
     SELECT id, "userId", title, description, location, base_address, detail_address, sido, sigungu, 
            price, category, images, status, area, views, "createdAt", "updatedAt"
     FROM transfers 
-    WHERE "deletedAt" IS NULL 
+    WHERE "deletedAt" IS NULL AND status != 'DISABLED'
     ORDER BY "createdAt" DESC 
     LIMIT $1 OFFSET $2
   `;
@@ -3439,6 +3501,18 @@ export const createTransfer = async (transferData: any) => {
   ];
   const result = await pool.query(query, values);
   return result.rows[0];
+};
+
+// 편집을 위한 양수양도 조회 (disabled 포함)
+export const getTransferByIdForEdit = async (transferId: string) => {
+  const query = `
+    SELECT t.*, u."hospitalName", u."profileImage", u."hospitalAddress"
+    FROM transfers t
+    LEFT JOIN users u ON t."userId" = u.id
+    WHERE t.id = $1 AND t."deletedAt" IS NULL
+  `;
+  const result = await pool.query(query, [transferId]);
+  return result.rows[0] || null;
 };
 
 // 사용자의 임시저장된 양수양도 조회

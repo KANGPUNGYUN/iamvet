@@ -12,19 +12,24 @@ import { Button } from "@/components/ui/Button";
 import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { DocumentUpload } from "@/components/features/profile/DocumentUpload";
 import { MultiImageUpload } from "@/components/features/profile/MultiImageUpload";
-import { allTransferData } from "@/data/transfersData";
+import { regionOptions } from "@/data/regionOptions";
+import { uploadFile } from "@/lib/s3";
+import { useAuth } from "@/hooks/api/useAuth";
 
 interface FormData {
   title: string;
   category: string;
   isSale: boolean; // 매매 여부 (true: 매매, false: 임대)
-  price: string;
-  area: string;
+  salePrice: string; // 매매 가격
+  rentPrice: string; // 월세 가격
+  area: string; // 평수 (병원양도일 때만)
   description: string;
-  address: string;
-  detailAddress: string;
-  images: File[];
-  documents: File[];
+  address: string; // 기본주소 (우편번호 검색으로 받은 주소)
+  detailAddress: string; // 상세주소 (사용자가 입력하는 상세 주소)
+  sido: string; // 시도 (서울, 경기, 부산 등)
+  sigungu: string; // 시군구 (강남구, 분당구 등)
+  images: string[]; // 양수양도 이미지 URL들 (MultiImageUpload에서 처리됨)
+  documents: File[]; // 양수양도 파일들
 }
 
 const categoryOptions = [
@@ -41,16 +46,20 @@ export default function EditTransferPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     title: "",
     category: "",
     isSale: true, // 기본값은 매매
-    price: "",
+    salePrice: "",
+    rentPrice: "",
     area: "",
     description: "",
     address: "",
     detailAddress: "",
-    images: [],
+    sido: "",
+    sigungu: "",
+    images: [], // URL 배열
     documents: [],
   });
 
@@ -60,29 +69,68 @@ export default function EditTransferPage({
 
   // 기존 데이터 로드
   useEffect(() => {
-    const transferData = allTransferData.find(
-      (item) => item.id.toString() === id
-    );
+    const loadTransferData = async () => {
+      if (!user) return;
 
-    if (transferData) {
-      setFormData({
-        title: transferData.title,
-        category: "병원양도", // 임시로 설정
-        isSale: true, // 임시로 설정 (매매)
-        price: transferData.price,
-        area: transferData.area.toString(),
-        description: "기존 상세 설명 내용", // 임시 데이터
-        address: transferData.location,
-        detailAddress: "",
-        images: [],
-        documents: [],
-      });
-      setIsDataLoaded(true);
-    } else {
-      alert("해당 게시글을 찾을 수 없습니다.");
-      router.push("/transfers");
-    }
-  }, [id, router]);
+      try {
+        const response = await fetch(`/api/transfers/${id}/edit`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "게시글을 불러올 수 없습니다.");
+        }
+
+        const result = await response.json();
+        const transferData = result.data;
+
+        // 가격 분리 로직 (병원양도 여부에 따라)
+        const isSale = transferData.category === "병원양도" ? true : true; // 기본값
+        let salePrice = "";
+        let rentPrice = "";
+        
+        if (transferData.price) {
+          if (transferData.category === "병원양도") {
+            // TODO: 실제로는 매매/임대 정보를 별도로 저장해야 함
+            salePrice = transferData.price.toString();
+          } else {
+            salePrice = transferData.price.toString();
+          }
+        }
+
+        // 주소 데이터 처리 - base_address와 detail_address 필드에서 직접 가져오기
+        const baseAddress = transferData.baseAddress || transferData.base_address || "";
+        const detailAddress = transferData.detailAddress || transferData.detail_address || "";
+
+        setFormData({
+          title: transferData.title || "",
+          category: transferData.category || "",
+          isSale: isSale,
+          salePrice: salePrice,
+          rentPrice: rentPrice,
+          area: transferData.area ? transferData.area.toString() : "",
+          description: transferData.description || "",
+          address: baseAddress,
+          detailAddress: detailAddress,
+          sido: transferData.sido || "",
+          sigungu: transferData.sigungu || "",
+          images: transferData.images || [],
+          documents: [], // 문서는 File 객체가 필요하므로 빈 배열
+        });
+        setIsDataLoaded(true);
+      } catch (error) {
+        console.error("Transfer load error:", error);
+        alert("게시글을 불러오는 중 오류가 발생했습니다.");
+        router.push("/transfers");
+      }
+    };
+
+    loadTransferData();
+  }, [id, router, user]);
 
   const handleInputChange = (field: keyof FormData) => (value: string) => {
     setFormData((prev) => ({
@@ -99,14 +147,13 @@ export default function EditTransferPage({
     setFormData((prev) => ({
       ...prev,
       isSale: isSale,
-      price: "", // 타입 변경시 가격 초기화
     }));
   };
 
-  const handleImageUpload = (files: File[]) => {
+  const handleImageUpload = (urls: string[]) => {
     setFormData((prev) => ({
       ...prev,
-      images: files,
+      images: urls,
     }));
   };
 
@@ -115,6 +162,38 @@ export default function EditTransferPage({
       ...prev,
       documents: files,
     }));
+  };
+
+  // 주소 검색 후 시도/시군구 추출 함수
+  const extractRegionFromAddress = (address: string) => {
+    // 주소에서 시도와 시군구 추출
+    for (const [sido, districts] of Object.entries(regionOptions)) {
+      if (address.includes(sido)) {
+        // 해당 시도의 시군구 중에서 주소에 포함된 것 찾기
+        const foundDistrict = districts.find(district => address.includes(district));
+        if (foundDistrict) {
+          return { sido, sigungu: foundDistrict };
+        }
+        // 시군구를 찾지 못한 경우 시도만 반환
+        return { sido, sigungu: "" };
+      }
+    }
+    return { sido: "", sigungu: "" };
+  };
+
+  // 기본주소 변경 시 시도/시군구 자동 추출
+  const handleAddressChange = (address: string) => {
+    const { sido, sigungu } = extractRegionFromAddress(address);
+    setFormData((prev) => ({
+      ...prev,
+      address,
+      sido,
+      sigungu,
+    }));
+    // 에러 제거
+    if (errors.address) {
+      setErrors((prev) => ({ ...prev, address: "" }));
+    }
   };
 
   const validateForm = (): boolean => {
@@ -134,8 +213,17 @@ export default function EditTransferPage({
       }
     }
 
-    if (!formData.price.trim()) {
-      newErrors.price = "가격을 입력해주세요.";
+    if (formData.category === "병원양도") {
+      if (formData.isSale && !formData.salePrice.trim()) {
+        newErrors.salePrice = "매매 가격을 입력해주세요.";
+      }
+      if (!formData.isSale && !formData.rentPrice.trim()) {
+        newErrors.rentPrice = "월세 가격을 입력해주세요.";
+      }
+    } else {
+      if (!formData.salePrice.trim()) {
+        newErrors.salePrice = "가격을 입력해주세요.";
+      }
     }
 
     if (!formData.description.trim()) {
@@ -143,7 +231,19 @@ export default function EditTransferPage({
     }
 
     if (!formData.address.trim()) {
-      newErrors.address = "주소를 입력해주세요.";
+      newErrors.address = "기본주소를 입력해주세요.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateDraftForm = (): boolean => {
+    // 임시저장 시에는 제목만 필수
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "제목은 필수입니다.";
     }
 
     setErrors(newErrors);
@@ -151,15 +251,86 @@ export default function EditTransferPage({
   };
 
   const handleSubmit = async (isDraft: boolean = false) => {
-    if (!validateForm() && !isDraft) return;
+    // 임시저장과 정식 등록에 따라 다른 유효성 검사
+    if (isDraft) {
+      if (!validateDraftForm()) return;
+    } else {
+      if (!validateForm()) return;
+    }
 
     setIsLoading(true);
     try {
-      // API 호출 로직
-      console.log("Updating transfer:", { ...formData, isDraft });
+      // S3에 이미지와 파일 업로드
+      const imageUrls: string[] = [];
+      const documentUrls: string[] = [];
 
-      // 성공 시 상세 페이지로 이동
-      router.push(`/transfers/${id}`);
+      // 양수양도 이미지들은 이미 MultiImageUpload에서 업로드됨 (첫 번째가 썸네일)
+      console.log("[DEBUG] 양수양도 이미지 URL들:", formData.images);
+      imageUrls.push(...formData.images);
+
+      // 문서 파일들 업로드
+      console.log("[DEBUG] 문서 파일 개수:", formData.documents.length);
+      for (let i = 0; i < formData.documents.length; i++) {
+        const document = formData.documents[i];
+        console.log(`[DEBUG] 문서 ${i + 1} 업로드 시작:`, document.name);
+        const result = await uploadFile(document, "transfers");
+        console.log(`[DEBUG] 문서 ${i + 1} 업로드 결과:`, result);
+        if (result) {
+          documentUrls.push(result);
+          console.log(`[DEBUG] 문서 ${i + 1} URL 추가됨:`, result);
+        }
+      }
+
+      console.log("[DEBUG] 최종 이미지 URL 배열:", imageUrls);
+      console.log("[DEBUG] 최종 문서 URL 배열:", documentUrls);
+
+      // API 요청 데이터 구성
+      const updateData = {
+        title: formData.title,
+        category: formData.category,
+        description: formData.description,
+        location: `${formData.address} ${formData.detailAddress}`.trim(), // 호환성을 위해 유지
+        baseAddress: formData.address, // 기본주소
+        detailAddress: formData.detailAddress, // 상세주소
+        sido: formData.sido, // 시도
+        sigungu: formData.sigungu, // 시군구
+        price:
+          parseInt(
+            formData.category === "병원양도"
+              ? formData.isSale
+                ? formData.salePrice
+                : formData.rentPrice
+              : formData.salePrice
+          ) || 0,
+        area: formData.category === "병원양도" ? parseInt(formData.area) || null : null,
+        images: [...imageUrls, ...documentUrls], // 이미지와 문서를 하나의 배열로 통합
+        status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
+      };
+
+      // API 호출
+      const response = await fetch(`/api/transfers/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "양수양도 게시글 수정에 실패했습니다."
+        );
+      }
+
+      // 성공 알림 및 상세 페이지로 이동
+      if (isDraft) {
+        alert("양수양도 게시글이 임시저장되었습니다!");
+        router.push("/transfers");
+      } else {
+        alert("양수양도 게시글이 성공적으로 수정되었습니다!");
+        router.push(`/transfers/${id}`);
+      }
     } catch (error) {
       console.error("Update error:", error);
       alert("수정 중 오류가 발생했습니다.");
@@ -168,24 +339,14 @@ export default function EditTransferPage({
     }
   };
 
-  const getPricePlaceholder = () => {
-    if (formData.category === "병원양도") {
-      return formData.isSale
-        ? "매물 가격을 입력해주세요"
-        : "월세 가격을 입력해주세요";
-    }
-    return "가격을 입력해주세요";
+  const getSalePricePlaceholder = () => {
+    return formData.category === "병원양도"
+      ? "매매 가격을 입력해주세요"
+      : "가격을 입력해주세요";
   };
 
-  const getPriceSuffix = () => {
-    if (formData.category === "병원양도") {
-      return formData.isSale ? "원" : "원/월";
-    }
-    return "원";
-  };
-
-  const isPriceDisabled = () => {
-    return false; // 더 이상 비활성화할 필요 없음
+  const getRentPricePlaceholder = () => {
+    return "월세 가격을 입력해주세요";
   };
 
   if (!isDataLoaded) {
@@ -271,25 +432,64 @@ export default function EditTransferPage({
               </div>
             )}
 
-            {/* 가격 */}
+            {/* 가격 설정 */}
             <div className="mb-8">
               <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
-                가격
+                가격 설정
               </label>
-              <InputBox
-                value={formData.price}
-                onChange={handleInputChange("price")}
-                placeholder={getPricePlaceholder()}
-                suffix={getPriceSuffix()}
-                state={isPriceDisabled() ? "disabled" : undefined}
-                error={!!errors.price}
-                guide={
-                  errors.price
-                    ? { text: errors.price, type: "error" }
-                    : undefined
-                }
-                disabled={isPriceDisabled()}
-              />
+
+              {/* 병원양도일 때 매매/임대에 따른 가격 입력 */}
+              {formData.category === "병원양도" ? (
+                <>
+                  {formData.isSale && (
+                    <div className="mb-4">
+                      <InputBox
+                        value={formData.salePrice}
+                        onChange={handleInputChange("salePrice")}
+                        placeholder={getSalePricePlaceholder()}
+                        suffix="원"
+                        error={!!errors.salePrice}
+                        guide={
+                          errors.salePrice
+                            ? { text: errors.salePrice, type: "error" }
+                            : undefined
+                        }
+                      />
+                    </div>
+                  )}
+                  {!formData.isSale && (
+                    <div className="mb-4">
+                      <InputBox
+                        value={formData.rentPrice}
+                        onChange={handleInputChange("rentPrice")}
+                        placeholder={getRentPricePlaceholder()}
+                        suffix="원/월"
+                        error={!!errors.rentPrice}
+                        guide={
+                          errors.rentPrice
+                            ? { text: errors.rentPrice, type: "error" }
+                            : undefined
+                        }
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="mb-4">
+                  <InputBox
+                    value={formData.salePrice}
+                    onChange={handleInputChange("salePrice")}
+                    placeholder={getSalePricePlaceholder()}
+                    suffix="원"
+                    error={!!errors.salePrice}
+                    guide={
+                      errors.salePrice
+                        ? { text: errors.salePrice, type: "error" }
+                        : undefined
+                    }
+                  />
+                </div>
+              )}
             </div>
 
             {/* 평수 (병원양도일 때만) */}
@@ -337,12 +537,14 @@ export default function EditTransferPage({
               <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
                 주소 검색
               </label>
-              <AddressSearch
-                address={formData.address}
-                detailAddress={formData.detailAddress}
-                onAddressChange={handleInputChange("address")}
-                onDetailAddressChange={handleInputChange("detailAddress")}
-              />
+              <div className="w-full">
+                <AddressSearch
+                  address={formData.address}
+                  detailAddress={formData.detailAddress}
+                  onAddressChange={handleAddressChange}
+                  onDetailAddressChange={handleInputChange("detailAddress")}
+                />
+              </div>
               {errors.address && (
                 <p className="mt-2 text-sm text-red-500">{errors.address}</p>
               )}
@@ -356,23 +558,21 @@ export default function EditTransferPage({
                 이미지/파일 첨부
               </label>
 
-              {/* 파일 업로드 */}
-              <div className="mb-6 max-w-[758px]">
-                <DocumentUpload
-                  value={formData.documents}
-                  onChange={handleDocumentUpload}
-                  maxFiles={3}
-                />
-              </div>
+              {/* 양수양도 파일들 업로드 */}
+              <DocumentUpload
+                value={formData.documents}
+                onChange={handleDocumentUpload}
+                maxFiles={3}
+              />
 
-              {/* 이미지 업로드 */}
-              <div>
-                <MultiImageUpload
-                  value={formData.images as any}
-                  onChange={handleImageUpload as any}
-                  maxImages={10}
-                />
-              </div>
+              {/* 양수양도 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
+              <MultiImageUpload
+                value={formData.images}
+                onChange={handleImageUpload}
+                maxImages={10}
+                folder="transfers"
+                className="mt-[40px]"
+              />
             </div>
           </div>
 

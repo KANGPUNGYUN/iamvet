@@ -263,8 +263,7 @@ export default function CreateTransferPage() {
           ) || 0,
         area: formData.category === "병원양도" ? parseInt(formData.area) || null : null,
         images: [...imageUrls, ...documentUrls], // 이미지와 문서를 하나의 배열로 통합
-        status: "ACTIVE", // TransferStatus enum에 DRAFT가 없으므로 모두 ACTIVE로
-        isDraft: isDraft, // 별도 필드로 임시저장 여부 구분
+        status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
       };
 
       // API 호출
