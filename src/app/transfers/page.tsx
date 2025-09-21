@@ -13,7 +13,6 @@ import MobileFilterModal from "@/components/ui/MobileFilterModal";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
-import { allTransferData } from "@/data/transfersData";
 import { regionOptions } from "@/data/regionOptions";
 import { CloseIcon, ArrowRightIcon, EditIcon } from "public/icons";
 import Link from "next/link";
@@ -21,6 +20,10 @@ import Link from "next/link";
 export default function TransfersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // API에서 가져온 양수양도 데이터
+  const [transfersData, setTransfersData] = useState<any[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   // 적용된 필터 상태 (실제 필터링에 사용)
   const [appliedFilters, setAppliedFilters] = useState({
@@ -64,6 +67,62 @@ export default function TransfersPage() {
 
   // 모바일 필터 모달 상태
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // API에서 양수양도 데이터 가져오기 (임시저장 제외)
+  useEffect(() => {
+    const fetchTransfers = async () => {
+      setIsLoadingData(true);
+      try {
+        const response = await fetch("/api/transfers");
+        console.log("API Response status:", response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("API Response data:", data);
+
+          if (data.data?.transfers) {
+            console.log("Raw transfers:", data.data.transfers);
+
+            // 임시저장이 아닌 게시글만 필터링 (필수 필드가 모두 있는 것만)
+            const activeTransfers = data.data.transfers.filter(
+              (transfer: any) => {
+                const hasRequiredFields =
+                  transfer.title &&
+                  transfer.description &&
+                  transfer.location &&
+                  transfer.price !== null &&
+                  transfer.category;
+
+                console.log("Transfer filtering:", {
+                  id: transfer.id,
+                  title: transfer.title,
+                  hasRequiredFields,
+                  fields: {
+                    title: !!transfer.title,
+                    description: !!transfer.description,
+                    location: !!transfer.location,
+                    price: transfer.price,
+                    category: !!transfer.category,
+                  },
+                });
+
+                return hasRequiredFields;
+              }
+            );
+
+            console.log("Active transfers after filtering:", activeTransfers);
+            setTransfersData(activeTransfers);
+          }
+        }
+      } catch (error) {
+        console.error("양수양도 목록 조회 오류:", error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchTransfers();
+  }, []);
 
   // URL 쿼리 스트링에서 필터 상태 파싱
   const parseFiltersFromURL = () => {
@@ -116,7 +175,7 @@ export default function TransfersPage() {
 
   // 필터링 로직 (적용된 필터 사용)
   const getFilteredData = () => {
-    let filtered = [...allTransferData];
+    let filtered = [...transfersData];
 
     // 키워드 검색
     if (appliedFilters.searchKeyword.trim()) {
@@ -125,38 +184,48 @@ export default function TransfersPage() {
         (transfer) =>
           transfer.title.toLowerCase().includes(keyword) ||
           transfer.location.toLowerCase().includes(keyword) ||
-          transfer.hospitalType.toLowerCase().includes(keyword)
+          transfer.category.toLowerCase().includes(keyword)
       );
     }
 
     // 카테고리 필터
     if (appliedFilters.category.length > 0) {
-      filtered = filtered.filter((transfer) =>
-        appliedFilters.category.includes(transfer.category)
-      );
+      filtered = filtered.filter((transfer) => {
+        // 카테고리 매핑
+        const categoryMap: Record<string, string> = {
+          hospital: "병원양도",
+          machine: "기계장치",
+          device: "의료장비",
+          interior: "인테리어",
+        };
+
+        return appliedFilters.category.some(
+          (filterCat) => categoryMap[filterCat] === transfer.category
+        );
+      });
     }
 
     // 지역 필터
     if (appliedFilters.regions.length > 0) {
       filtered = filtered.filter((transfer) => {
         return appliedFilters.regions.some((region) => {
-          // 전체 시/도 선택 시 해당 시/도의 모든 시군구 포함
+          // transfer.location에서 지역 정보 추출
+          const location = transfer.location || "";
+
+          // 전체 시/도 선택 시
           if (Object.keys(regionOptions).includes(region)) {
-            return transfer.sido === region;
+            return location.includes(region);
           }
-          // 시군구 필터링 시 "시/도|시군구" 형태로 저장된 경우 분리해서 비교
+
+          // 시군구 필터링
           if (region.includes("|")) {
             const [filterSido, filterSigungu] = region.split("|");
             return (
-              transfer.sido === filterSido && transfer.sigungu === filterSigungu
+              location.includes(filterSido) && location.includes(filterSigungu)
             );
           }
 
-          // 기존 시군구 필터링 (하위 호환성)
-          const regionSido = Object.keys(regionOptions).find((sido) =>
-            regionOptions[sido as keyof typeof regionOptions].includes(region)
-          );
-          return transfer.sido === regionSido && transfer.sigungu === region;
+          return location.includes(region);
         });
       });
     }
@@ -164,7 +233,7 @@ export default function TransfersPage() {
     // 가격 필터
     if (appliedFilters.minPrice || appliedFilters.maxPrice) {
       filtered = filtered.filter((transfer) => {
-        const price = transfer.priceValue;
+        const price = transfer.price || 0;
         const min = appliedFilters.minPrice
           ? parseInt(appliedFilters.minPrice) * 10000
           : 0;
@@ -192,16 +261,19 @@ export default function TransfersPage() {
     // 정렬
     switch (appliedFilters.sortBy) {
       case "recent":
-        filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
         break;
       case "priceHigh":
-        filtered.sort((a, b) => b.priceValue - a.priceValue);
+        filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
         break;
       case "priceLow":
-        filtered.sort((a, b) => a.priceValue - b.priceValue);
+        filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
         break;
       case "popular":
-        filtered.sort((a, b) => b.views - a.views);
+        filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
         break;
       default:
         break;
@@ -871,60 +943,68 @@ export default function TransfersPage() {
 
           {/* 양도 게시글 목록 */}
           <div className="flex flex-col gap-[20px]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
-              {/* 9로 나눈 나머지가 1인 위치에 광고 표시 */}
-              {shouldShowAd && (
-                <AdCard
-                  title="가산점"
-                  subtitle="어떤 과목 선택도 부담없이!\n강의 들어 가산점으로 환산받자!"
-                  variant="default"
-                  onClick={() => console.log("광고 클릭")}
-                />
-              )}
+            {isLoadingData ? (
+              <div className="flex justify-center items-center h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
+                {/* 9로 나눈 나머지가 1인 위치에 광고 표시 */}
+                {shouldShowAd && (
+                  <AdCard
+                    title="가산점"
+                    subtitle="어떤 과목 선택도 부담없이!\n강의 들어 가산점으로 환산받자!"
+                    variant="default"
+                    onClick={() => console.log("광고 클릭")}
+                  />
+                )}
 
-              {transferData.map((transfer) => (
-                <TransferCard
-                  key={transfer.id}
-                  id={transfer.id}
-                  title={transfer.title}
-                  location={transfer.location}
-                  hospitalType={transfer.hospitalType}
-                  area={transfer.area}
-                  price={transfer.price}
-                  date={transfer.date}
-                  views={transfer.views}
-                  imageUrl={transfer.imageUrl}
-                  categories={transfer.categories}
-                  isAd={false}
-                  isLiked={transfer.isLiked}
-                  onLike={() => console.log("좋아요 클릭")}
-                />
-              ))}
-
-              {/* 빈 슬롯으로 높이 고정 (모바일 제외) */}
-              {Array.from({ length: emptySlots }).map((_, index) => (
-                <div
-                  key={`empty-slot-${index}`}
-                  className="invisible hidden sm:block"
-                >
+                {transferData.map((transfer) => (
                   <TransferCard
-                    title="Placeholder"
-                    location="Placeholder"
-                    hospitalType="Placeholder"
-                    area={0}
-                    price="0"
-                    date="2025-01-01"
-                    views={0}
-                    imageUrl=""
-                    categories=""
+                    key={transfer.id}
+                    id={transfer.id}
+                    title={transfer.title}
+                    location={`${transfer.sido} ${transfer.sigungu}`}
+                    hospitalType={transfer.category}
+                    area={
+                      transfer.category === "병원양도" ? transfer.area || 0 : 0
+                    }
+                    price={`${(transfer.price / 10000).toFixed(0)}만원`}
+                    date={new Date(transfer.createdAt).toLocaleDateString()}
+                    views={transfer.views || 0}
+                    imageUrl={transfer.images?.[0] || ""}
+                    categories={transfer.category}
                     isAd={false}
                     isLiked={false}
-                    onLike={() => {}}
-                    onClick={() => {}}
+                    onLike={() => console.log("좋아요 클릭")}
                   />
-                </div>
-              ))}
-            </div>
+                ))}
+
+                {/* 빈 슬롯으로 높이 고정 (모바일 제외) */}
+                {Array.from({ length: emptySlots }).map((_, index) => (
+                  <div
+                    key={`empty-slot-${index}`}
+                    className="invisible hidden sm:block"
+                  >
+                    <TransferCard
+                      title="Placeholder"
+                      location="Placeholder"
+                      hospitalType="Placeholder"
+                      area={0}
+                      price="0"
+                      date="2025-01-01"
+                      views={0}
+                      imageUrl=""
+                      categories=""
+                      isAd={false}
+                      isLiked={false}
+                      onLike={() => {}}
+                      onClick={() => {}}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
             <Link
               href={"/transfers/create"}
               className="w-[140px] bg-subtext hover:bg-[#3b394d] p-[10px] gap-[10px] flex items-center justify-center text-[white] rounded-[6px] font-text text-semibold text-[18px] self-end mb-[20px]"

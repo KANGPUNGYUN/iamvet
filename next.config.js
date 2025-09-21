@@ -3,6 +3,7 @@ const nextConfig = {
   // skipMiddlewareUrlNormalize를 experimental 밖으로 이동
   skipMiddlewareUrlNormalize: true,
 
+
   // 외부 이미지 도메인 허용
   images: {
     domains: [
@@ -35,6 +36,9 @@ const nextConfig = {
     // Next.js 15에서 appDir는 기본값이므로 제거
     // devToolsButton은 더 이상 사용되지 않음
     // 필요한 경우에만 다른 experimental 옵션 추가
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
   },
 
   webpack: (config, { isServer }) => {

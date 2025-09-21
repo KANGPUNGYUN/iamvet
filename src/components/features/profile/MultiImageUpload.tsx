@@ -11,7 +11,7 @@ interface MultiImageUploadProps {
   disabled?: boolean;
   className?: string;
   maxImages?: number;
-  folder?: 'profiles' | 'licenses' | 'hospitals' | 'resumes'; // S3 폴더명
+  folder?: 'profiles' | 'licenses' | 'hospitals' | 'resumes' | 'transfers'; // S3 폴더명
 }
 
 export const MultiImageUpload: React.FC<MultiImageUploadProps> = ({

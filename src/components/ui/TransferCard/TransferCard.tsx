@@ -153,10 +153,12 @@ const TransferCard: React.FC<TransferCardProps> = ({
         <div className="mb-3">
           <div className="flex items-center text-[14px] text-medium text-subtext2 mb-1">
             <span>{location}</span>
-            <span className="mx-1">·</span>
-            <span>{hospitalType}</span>
-            <span className="mx-1">·</span>
-            <span>{area}평</span>
+            {categories === "병원양도" && area > 0 && (
+              <>
+                <span className="mx-1">·</span>
+                <span>{area}평</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -261,8 +263,12 @@ const TransferCard: React.FC<TransferCardProps> = ({
             <span className="truncate">{location}</span>
             <span className="mx-1 flex-shrink-0">·</span>
             <span className="truncate">{hospitalType}</span>
-            <span className="mx-1 flex-shrink-0">·</span>
-            <span className="flex-shrink-0">{area}평</span>
+            {categories === "병원양도" && area > 0 && (
+              <>
+                <span className="mx-1 flex-shrink-0">·</span>
+                <span className="flex-shrink-0">{area}평</span>
+              </>
+            )}
           </div>
         </div>
 

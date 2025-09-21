@@ -3377,9 +3377,11 @@ export const deleteTransfer = async (transferId: string) => {
 export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
   const query = `
-    SELECT * FROM transfers 
-    WHERE deleted_at IS NULL 
-    ORDER BY created_at DESC 
+    SELECT id, "userId", title, description, location, base_address, detail_address, sido, sigungu, 
+           price, category, images, status, area, views, "createdAt", "updatedAt"
+    FROM transfers 
+    WHERE "deletedAt" IS NULL 
+    ORDER BY "createdAt" DESC 
     LIMIT $1 OFFSET $2
   `;
   const result = await pool.query(query, [limit, offset]);
@@ -3387,23 +3389,51 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
 };
 
 export const createTransfer = async (transferData: any) => {
+  // Generate unique ID for the transfer
+  const transferId = `transfer_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  
   const query = `
-    INSERT INTO transfers (user_id, title, description, location, price, category, images, status)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, price, category, images, status, area, views, "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW())
     RETURNING *
   `;
   const values = [
+    transferId,
     transferData.userId,
     transferData.title,
     transferData.description,
-    transferData.location,
+    transferData.location, // 호환성을 위해 유지
+    transferData.baseAddress, // 기본주소
+    transferData.detailAddress, // 상세주소
+    transferData.sido, // 시도
+    transferData.sigungu, // 시군구
     transferData.price,
     transferData.category,
     transferData.images,
-    transferData.status
+    transferData.status || 'ACTIVE',
+    transferData.area || null, // 평수 (병원양도일 때만)
+    0 // views 초기값
   ];
   const result = await pool.query(query, values);
   return result.rows[0];
+};
+
+// 사용자의 임시저장된 양수양도 조회
+export const getDraftTransferByUserId = async (userId: string) => {
+  const query = `
+    SELECT * FROM transfers 
+    WHERE "userId" = $1 
+    AND status = 'ACTIVE'
+    AND "deletedAt" IS NULL
+    ORDER BY "createdAt" DESC
+    LIMIT 1
+  `;
+  const result = await pool.query(query, [userId]);
+  
+  // 필수 필드가 비어있으면 임시저장으로 간주
+  return result.rows.find(row => {
+    return !row.description || !row.base_address || row.price === null;
+  }) || null;
 };
 
 // ============================================================================
