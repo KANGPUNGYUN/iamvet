@@ -1675,72 +1675,83 @@ export const getApplicationWithJobAndHospital = async (
 // ============================================================================
 
 export const getLecturesWithPagination = async (params: any) => {
+  // 총 개수 조회 쿼리
+  let countQuery = `
+    SELECT COUNT(*) as total FROM lectures 
+    WHERE "deletedAt" IS NULL
+  `;
+
+  // 데이터 조회 쿼리
   let query = `
     SELECT * FROM lectures 
-    WHERE is_public = true AND is_active = true
+    WHERE "deletedAt" IS NULL
   `;
 
   const queryParams: any[] = [];
+  const countParams: any[] = [];
   let paramCount = 0;
+  let countParamCount = 0;
 
   // 키워드 검색
   if (params.keyword) {
     paramCount++;
-    query += ` AND (title ILIKE ${paramCount} OR description ILIKE ${paramCount} OR instructor ILIKE ${paramCount})`;
+    countParamCount++;
+    const searchCondition = ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
+    query += searchCondition;
+    countQuery += ` AND (title ILIKE $${countParamCount} OR description ILIKE $${countParamCount})`;
     queryParams.push(`%${params.keyword}%`);
+    countParams.push(`%${params.keyword}%`);
   }
 
-  // 의료 분야 필터
+  // 카테고리 필터 (medicalField를 category로 매핑)
   if (params.medicalField) {
     paramCount++;
-    query += ` AND medical_field = ${paramCount}`;
+    countParamCount++;
+    query += ` AND category = $${paramCount}`;
+    countQuery += ` AND category = $${countParamCount}`;
     queryParams.push(params.medicalField);
-  }
-
-  // 동물 종류 필터
-  if (params.animal) {
-    paramCount++;
-    query += ` AND animal_type = ${paramCount}`;
-    queryParams.push(params.animal);
-  }
-
-  // 난이도 필터
-  if (params.difficulty) {
-    paramCount++;
-    query += ` AND difficulty = ${paramCount}`;
-    queryParams.push(params.difficulty);
+    countParams.push(params.medicalField);
   }
 
   // 정렬
   switch (params.sort) {
     case "latest":
-      query += " ORDER BY upload_date DESC";
+      query += ` ORDER BY "createdAt" DESC`;
       break;
     case "oldest":
-      query += " ORDER BY upload_date ASC";
+      query += ` ORDER BY "createdAt" ASC`;
       break;
     case "view":
-      query += " ORDER BY view_count DESC";
-      break;
-    case "rating":
-      query += " ORDER BY rating DESC";
+      query += ` ORDER BY "viewCount" DESC`;
       break;
     default:
-      query += " ORDER BY upload_date DESC";
+      query += ` ORDER BY "createdAt" DESC`;
   }
 
   // 페이지네이션
   const offset = (params.page - 1) * params.limit;
   paramCount += 2;
-  query += ` LIMIT ${paramCount - 1} OFFSET ${paramCount}`;
+  query += ` LIMIT $${paramCount - 1} OFFSET $${paramCount}`;
   queryParams.push(params.limit, offset);
 
+  // 총 개수 조회
+  const countResult = await pool.query(countQuery, countParams);
+  const total = parseInt(countResult.rows[0].total);
+
+  // 데이터 조회
   const result = await pool.query(query, queryParams);
-  return result.rows;
+  
+  return {
+    data: result.rows,
+    total,
+    page: params.page,
+    limit: params.limit,
+    totalPages: Math.ceil(total / params.limit)
+  };
 };
 
 export const getLectureById = async (lectureId: string) => {
-  const query = "SELECT * FROM lectures WHERE id = $1 AND is_active = true";
+  const query = `SELECT * FROM lectures WHERE id = $1 AND "deletedAt" IS NULL`;
   const result = await pool.query(query, [lectureId]);
   return result.rows[0] || null;
 };
@@ -1760,18 +1771,18 @@ export const getRecommendedLectures = async (
 ) => {
   let query = `
     SELECT * FROM lectures 
-    WHERE id != $1 AND is_public = true AND is_active = true
+    WHERE id != $1 AND "deletedAt" IS NULL
   `;
 
   const params = [lectureId];
 
   if (medicalField) {
-    query += ` AND medical_field = $2`;
+    query += ` AND category = $2`;
     params.push(medicalField);
-    query += ` ORDER BY view_count DESC, upload_date DESC LIMIT $3`;
+    query += ` ORDER BY "viewCount" DESC, "createdAt" DESC LIMIT $3`;
     params.push(limit.toString());
   } else {
-    query += ` ORDER BY view_count DESC, upload_date DESC LIMIT $2`;
+    query += ` ORDER BY "viewCount" DESC, "createdAt" DESC LIMIT $2`;
     params.push(limit.toString());
   }
 
@@ -1780,30 +1791,64 @@ export const getRecommendedLectures = async (
 };
 
 export const getLectureComments = async (lectureId: string) => {
-  const query = `
-    SELECT lc.*, u.profile_image, 
-           CASE 
-             WHEN u.user_type = 'veterinarian' THEN v.nickname
-             WHEN u.user_type = 'hospital' THEN h.hospital_name
-           END as author_name
-    FROM lecture_comments lc
-    JOIN users u ON lc.user_id = u.id
-    LEFT JOIN veterinarians v ON u.id = v.user_id
-    LEFT JOIN hospitals h ON u.id = h.user_id
-    WHERE lc.lecture_id = $1 AND lc.is_deleted = false
-    ORDER BY lc.created_at DESC
-  `;
-
-  const result = await pool.query(query, [lectureId]);
-
-  // 댓글과 대댓글 구조화
-  const comments = result.rows.filter((comment) => !comment.parent_comment_id);
-  const replies = result.rows.filter((comment) => comment.parent_comment_id);
-
-  return comments.map((comment) => ({
-    ...comment,
-    replies: replies.filter((reply) => reply.parent_comment_id === comment.id),
-  }));
+  try {
+    // 강의 댓글 조회 - 사용자 정보와 조인
+    const query = `
+      SELECT 
+        lc.*,
+        u."realName" as author_name,
+        u."profileImage" as author_profile_image
+      FROM lecture_comments lc
+      LEFT JOIN users u ON lc."userId" = u.id
+      WHERE lc."lectureId" = $1 
+      ORDER BY lc."createdAt" DESC
+    `;
+    const result = await pool.query(query, [lectureId]);
+    
+    // 댓글을 계층구조로 정리
+    const commentMap = new Map();
+    const rootComments: any[] = [];
+    
+    // 모든 댓글을 맵에 저장
+    result.rows.forEach((comment: any) => {
+      const mappedComment = {
+        id: comment.id,
+        lecture_id: comment.lectureId,
+        user_id: comment.userId,
+        parent_id: comment.parentId,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        author_name: comment.author_name || "익명 사용자",
+        author_profile_image: comment.author_profile_image || null,
+        author_display_name: comment.author_name || "익명 사용자",
+        replies: []
+      };
+      commentMap.set(comment.id, mappedComment);
+    });
+    
+    // 부모-자식 관계 설정
+    result.rows.forEach((comment: any) => {
+      const mappedComment = commentMap.get(comment.id);
+      
+      if (comment.parentId) {
+        // 대댓글인 경우 부모 댓글의 replies에 추가
+        const parentComment = commentMap.get(comment.parentId);
+        if (parentComment) {
+          parentComment.replies.push(mappedComment);
+        }
+      } else {
+        // 최상위 댓글인 경우 rootComments에 추가
+        rootComments.push(mappedComment);
+      }
+    });
+    
+    return rootComments;
+  } catch (error) {
+    console.log("Comments table not found or error:", error instanceof Error ? error.message : error);
+    // 댓글 테이블이 없으면 빈 배열 반환
+    return [];
+  }
 };
 
 export const getPopularLectures = async (limit: number = 10) => {
@@ -3079,18 +3124,35 @@ export const getLectureCommentById = async (commentId: string) => {
 };
 
 export const getLectureCommentReplies = async (commentId: string) => {
-  const query = `SELECT * FROM comment_replies WHERE comment_id = $1 AND deleted_at IS NULL`;
+  const query = `
+    SELECT 
+      lc.*,
+      u.nickname as author_name,
+      u."profileImage" as author_profile_image,
+      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+    FROM lecture_comments lc
+    LEFT JOIN users u ON lc."userId" = u.id
+    WHERE lc."parentId" = $1 AND lc."deletedAt" IS NULL
+    ORDER BY lc."createdAt" ASC
+  `;
   const result = await pool.query(query, [commentId]);
   return result.rows;
 };
 
-export const createLectureComment = async (commentData: any) => {
+export const createLectureComment = async (commentData: {
+  lectureId: string;
+  userId: string;
+  content: string;
+  parentId?: string;
+}) => {
+  const commentId = `comment_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  
   const query = `
-    INSERT INTO lecture_comments (lecture_id, user_id, content)
-    VALUES ($1, $2, $3)
+    INSERT INTO lecture_comments (id, "lectureId", "userId", "parentId", content, "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
     RETURNING *
   `;
-  const values = [commentData.lectureId, commentData.userId, commentData.content];
+  const values = [commentId, commentData.lectureId, commentData.userId, commentData.parentId || null, commentData.content];
   const result = await pool.query(query, values);
   return result.rows[0];
 };
@@ -3624,6 +3686,30 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   `;
   const result = await pool.query(query, [limit, offset]);
   return result.rows;
+};
+
+export const createLecture = async (lectureData: any) => {
+  // Generate unique ID for the lecture
+  const lectureId = `lecture_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  
+  const query = `
+    INSERT INTO lectures (id, title, description, "videoUrl", thumbnail, duration, category, tags, "viewCount", "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+    RETURNING *
+  `;
+  const values = [
+    lectureId,
+    lectureData.title,
+    lectureData.description,
+    lectureData.videoUrl,
+    lectureData.thumbnail || null,
+    lectureData.duration || null,
+    lectureData.category,
+    lectureData.tags || [],
+    0 // 초기 조회수
+  ];
+  const result = await pool.query(query, values);
+  return result.rows[0];
 };
 
 export const createTransfer = async (transferData: any) => {

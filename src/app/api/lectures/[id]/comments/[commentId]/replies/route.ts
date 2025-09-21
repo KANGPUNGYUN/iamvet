@@ -79,7 +79,7 @@ export const POST = withAuth(
       }
 
       // 대댓글의 대댓글은 불가 (최대 1단계 깊이)
-      if (parentComment.parentCommentId) {
+      if (parentComment.parentId) {
         return NextResponse.json(
           createErrorResponse("대댓글에는 답글을 달 수 없습니다"),
           { status: 400 }
@@ -91,7 +91,7 @@ export const POST = withAuth(
         lectureId,
         userId: user.userId,
         content: content.trim(),
-        parentCommentId: commentId,
+        parentId: commentId,
       });
 
       return NextResponse.json(

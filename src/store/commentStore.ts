@@ -2,7 +2,8 @@ import { create } from 'zustand';
 
 export interface Comment {
   id: string;
-  forum_id: string;
+  forum_id?: string;
+  lecture_id?: string;
   user_id: string;
   parent_id?: string;
   content: string;
@@ -28,10 +29,10 @@ interface CommentState {
   setError: (error: string | null) => void;
   
   // API Actions
-  fetchComments: (forumId: string) => Promise<void>;
-  createComment: (forumId: string, content: string, parentId?: string) => Promise<void>;
-  editComment: (forumId: string, commentId: string, content: string) => Promise<void>;
-  removeComment: (forumId: string, commentId: string) => Promise<void>;
+  fetchComments: (contentId: string, contentType: 'forum' | 'lecture') => Promise<void>;
+  createComment: (contentId: string, contentType: 'forum' | 'lecture', content: string, parentId?: string) => Promise<void>;
+  editComment: (contentId: string, contentType: 'forum' | 'lecture', commentId: string, content: string) => Promise<void>;
+  removeComment: (contentId: string, contentType: 'forum' | 'lecture', commentId: string) => Promise<void>;
 }
 
 export const useCommentStore = create<CommentState>((set, get) => ({
@@ -62,41 +63,49 @@ export const useCommentStore = create<CommentState>((set, get) => ({
   setError: (error) => set({ error }),
 
   // API Actions
-  fetchComments: async (forumId: string) => {
+  fetchComments: async (contentId: string, contentType: 'forum' | 'lecture') => {
     try {
       set({ isLoading: true, error: null });
       
-      const response = await fetch(`/api/forums/${forumId}/comments`);
+      const apiPath = contentType === 'forum' ? 'forums' : 'lectures';
+      const response = await fetch(`/api/${apiPath}/${contentId}/comments`);
       const data = await response.json();
       
       if (data.status === 'success') {
-        // 댓글을 계층구조로 정리
+        // 강의 댓글의 경우 이미 계층구조로 반환됨, 포럼 댓글은 계층구조 처리 필요
         const comments = data.data;
-        const commentMap = new Map<string, Comment>();
-        const rootComments: Comment[] = [];
         
-        // 모든 댓글을 맵에 저장
-        comments.forEach((comment: Comment) => {
-          commentMap.set(comment.id, { ...comment, replies: [] });
-        });
-        
-        // 부모-자식 관계 설정
-        comments.forEach((comment: Comment) => {
-          const commentWithReplies = commentMap.get(comment.id)!;
+        if (contentType === 'lecture') {
+          // 강의 댓글은 이미 계층구조로 반환됨
+          set({ comments, isLoading: false });
+        } else {
+          // 포럼 댓글을 계층구조로 정리
+          const commentMap = new Map<string, Comment>();
+          const rootComments: Comment[] = [];
           
-          if (comment.parent_id) {
-            // 대댓글인 경우 부모 댓글의 replies에 추가
-            const parentComment = commentMap.get(comment.parent_id);
-            if (parentComment) {
-              parentComment.replies!.push(commentWithReplies);
+          // 모든 댓글을 맵에 저장
+          comments.forEach((comment: Comment) => {
+            commentMap.set(comment.id, { ...comment, replies: [] });
+          });
+          
+          // 부모-자식 관계 설정
+          comments.forEach((comment: Comment) => {
+            const commentWithReplies = commentMap.get(comment.id)!;
+            
+            if (comment.parent_id) {
+              // 대댓글인 경우 부모 댓글의 replies에 추가
+              const parentComment = commentMap.get(comment.parent_id);
+              if (parentComment) {
+                parentComment.replies!.push(commentWithReplies);
+              }
+            } else {
+              // 최상위 댓글인 경우 rootComments에 추가
+              rootComments.push(commentWithReplies);
             }
-          } else {
-            // 최상위 댓글인 경우 rootComments에 추가
-            rootComments.push(commentWithReplies);
-          }
-        });
-        
-        set({ comments: rootComments, isLoading: false });
+          });
+          
+          set({ comments: rootComments, isLoading: false });
+        }
       } else {
         set({ error: data.message, isLoading: false });
       }
@@ -106,11 +115,12 @@ export const useCommentStore = create<CommentState>((set, get) => ({
     }
   },
 
-  createComment: async (forumId: string, content: string, parentId?: string) => {
+  createComment: async (contentId: string, contentType: 'forum' | 'lecture', content: string, parentId?: string) => {
     try {
       set({ error: null });
       
-      const response = await fetch(`/api/forums/${forumId}/comments`, {
+      const apiPath = contentType === 'forum' ? 'forums' : 'lectures';
+      const response = await fetch(`/api/${apiPath}/${contentId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +132,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       
       if (data.status === 'success') {
         // 댓글 목록을 다시 불러와서 최신 상태 유지
-        await get().fetchComments(forumId);
+        await get().fetchComments(contentId, contentType);
       } else {
         set({ error: data.message });
       }
@@ -132,11 +142,12 @@ export const useCommentStore = create<CommentState>((set, get) => ({
     }
   },
 
-  editComment: async (forumId: string, commentId: string, content: string) => {
+  editComment: async (contentId: string, contentType: 'forum' | 'lecture', commentId: string, content: string) => {
     try {
       set({ error: null });
       
-      const response = await fetch(`/api/forums/${forumId}/comments/${commentId}`, {
+      const apiPath = contentType === 'forum' ? 'forums' : 'lectures';
+      const response = await fetch(`/api/${apiPath}/${contentId}/comments/${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -157,11 +168,12 @@ export const useCommentStore = create<CommentState>((set, get) => ({
     }
   },
 
-  removeComment: async (forumId: string, commentId: string) => {
+  removeComment: async (contentId: string, contentType: 'forum' | 'lecture', commentId: string) => {
     try {
       set({ error: null });
       
-      const response = await fetch(`/api/forums/${forumId}/comments/${commentId}`, {
+      const apiPath = contentType === 'forum' ? 'forums' : 'lectures';
+      const response = await fetch(`/api/${apiPath}/${contentId}/comments/${commentId}`, {
         method: 'DELETE'
       });
       

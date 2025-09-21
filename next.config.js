@@ -11,6 +11,7 @@ const nextConfig = {
       'k.kakaocdn.net', // 카카오 프로필 이미지
       'lh3.googleusercontent.com', // 구글 프로필 이미지
       'iamvet-bucket.s3.ap-northeast-2.amazonaws.com', // S3 버킷
+      'img.youtube.com', // 유튜브 썸네일 이미지
     ],
     remotePatterns: [
       {
@@ -28,6 +29,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
       },
     ],
   },

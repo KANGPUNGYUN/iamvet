@@ -96,7 +96,7 @@ export default function ForumDetailPage({
             console.log("Current user id:", currentUser?.id);
             setCurrentForum(data.data);
             // 댓글은 별도로 로드
-            await fetchComments(id);
+            await fetchComments(id, 'forum');
           }
         } else if (response.status === 404) {
           notFound();
@@ -133,7 +133,7 @@ export default function ForumDetailPage({
     if (!newComment.trim() || !isAuthenticated) return;
 
     try {
-      await createComment(id, newComment.trim());
+      await createComment(id, 'forum', newComment.trim());
       setNewComment("");
     } catch (error) {
       console.error('Failed to submit comment:', error);
@@ -145,7 +145,7 @@ export default function ForumDetailPage({
     if (!replyContent?.trim() || !isAuthenticated) return;
 
     try {
-      await createComment(id, replyContent.trim(), parentId);
+      await createComment(id, 'forum', replyContent.trim(), parentId);
       setReplyInputs((prev) => ({ ...prev, [parentId]: "" }));
       setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
     } catch (error) {
@@ -169,12 +169,10 @@ export default function ForumDetailPage({
     if (!editContent.trim()) return;
 
     try {
-      await editComment(id, commentId, editContent.trim());
+      await editComment(id, 'forum', commentId, editContent.trim());
       setEditingCommentId(null);
       setEditContent("");
       setToast({ message: "댓글이 수정되었습니다.", type: 'success' });
-      // 댓글 목록 다시 불러오기
-      await fetchComments(id);
     } catch (error) {
       console.error('Failed to edit comment:', error);
       setToast({ message: "댓글 수정에 실패했습니다.", type: 'error' });
@@ -189,10 +187,8 @@ export default function ForumDetailPage({
   const handleDeleteComment = async (commentId: string) => {
     if (window.confirm("댓글을 삭제하시겠습니까?")) {
       try {
-        await removeComment(id, commentId);
+        await removeComment(id, 'forum', commentId);
         setToast({ message: "댓글이 삭제되었습니다.", type: 'success' });
-        // 댓글 목록 다시 불러오기
-        await fetchComments(id);
       } catch (error) {
         console.error('Failed to delete comment:', error);
         setToast({ message: "댓글 삭제에 실패했습니다.", type: 'error' });

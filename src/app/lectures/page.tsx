@@ -9,7 +9,19 @@ import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import { useState, useEffect } from "react";
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { allLecturesData } from "@/data/lecturesData";
+
+interface Lecture {
+  id: string;
+  title: string;
+  description: string;
+  videoUrl: string;
+  thumbnail?: string;
+  duration?: number;
+  category: string;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function LecturesPage() {
   const router = useRouter();
@@ -35,6 +47,13 @@ export default function LecturesPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  
+  // API 상태 관리
+  const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalLectures, setTotalLectures] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   // 모바일 필터 모달이 열렸을 때 body 스크롤 방지
   useEffect(() => {
@@ -114,6 +133,52 @@ export default function LecturesPage() {
     router.replace(newPath);
   };
 
+  // API 호출 함수
+  const fetchLectures = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams();
+      
+      if (appliedFilters.searchKeyword.trim()) {
+        params.set("keyword", appliedFilters.searchKeyword.trim());
+      }
+      if (appliedFilters.medicalField.length > 0) {
+        params.set("medicalField", appliedFilters.medicalField.join(","));
+      }
+      if (appliedFilters.difficulty.length > 0) {
+        params.set("difficulty", appliedFilters.difficulty.join(","));
+      }
+      
+      params.set("page", currentPage.toString());
+      params.set("limit", "9"); // 3x3 그리드
+      params.set("sort", appliedFilters.sortBy);
+
+      const response = await fetch(`/api/lectures?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error("강의 목록을 불러오는데 실패했습니다.");
+      }
+
+      const result = await response.json();
+      
+      if (result.status === "success") {
+        const lecturesData = result.data.lectures;
+        setLectures(lecturesData.data || []);
+        setTotalLectures(lecturesData.total || 0);
+        setTotalPages(lecturesData.totalPages || 0);
+      } else {
+        throw new Error(result.message || "강의 목록을 불러오는데 실패했습니다.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
+      console.error("강의 목록 조회 오류:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 초기 로드 시 URL에서 필터 읽어오기
   useEffect(() => {
     const urlFilters = parseFiltersFromURL();
@@ -131,75 +196,23 @@ export default function LecturesPage() {
     setCurrentPage(urlFilters.page);
   }, [searchParams]);
 
-  // 필터링 및 검색 로직
-  const getFilteredData = () => {
-    let filtered = [...allLecturesData];
+  // 필터나 페이지가 변경될 때마다 API 호출
+  useEffect(() => {
+    fetchLectures();
+  }, [appliedFilters, currentPage]);
 
-    // 키워드 검색 (즉시 적용)
-    if (filters.searchKeyword.trim()) {
-      const keyword = filters.searchKeyword.toLowerCase().trim();
-      filtered = filtered.filter(
-        (lecture) =>
-          lecture.title.toLowerCase().includes(keyword) ||
-          lecture.instructor.toLowerCase().includes(keyword) ||
-          lecture.description.toLowerCase().includes(keyword) ||
-          lecture.category.toLowerCase().includes(keyword)
-      );
-    }
-
-    // 의료 분야 필터 (필터 적용 버튼 필요)
-    if (appliedFilters.medicalField.length > 0) {
-      filtered = filtered.filter((lecture) =>
-        appliedFilters.medicalField.includes(lecture.medicalField)
-      );
-    }
-
-    // 동물 종류 필터 (필터 적용 버튼 필요)
-    if (appliedFilters.animalType.length > 0) {
-      filtered = filtered.filter((lecture) =>
-        appliedFilters.animalType.includes(lecture.animalType || "")
-      );
-    }
-
-    // 난이도 필터 (필터 적용 버튼 필요)
-    if (appliedFilters.difficulty.length > 0) {
-      filtered = filtered.filter((lecture) =>
-        appliedFilters.difficulty.includes(lecture.difficulty || "")
-      );
-    }
-
-    // 정렬 (즉시 적용)
-    switch (filters.sortBy) {
-      case "latest":
-        filtered.sort(
-          (a, b) => b.uploadDate.getTime() - a.uploadDate.getTime()
-        );
-        break;
-      case "oldest":
-        filtered.sort(
-          (a, b) => a.uploadDate.getTime() - b.uploadDate.getTime()
-        );
-        break;
-      case "view":
-        filtered.sort((a, b) => b.viewCount - a.viewCount);
-        break;
-      case "rating":
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      default:
-        break;
-    }
-
-    return filtered;
+  // 강의 데이터 변환 함수
+  const transformLectureData = (lecture: Lecture) => {
+    return {
+      id: lecture.id,
+      title: lecture.title,
+      date: new Date(lecture.createdAt).toLocaleDateString("ko-KR"),
+      views: lecture.viewCount,
+      imageUrl: lecture.thumbnail || "/assets/images/lecture/default.png",
+      category: lecture.category,
+      isLiked: false, // 추후 좋아요 기능 구현 시 수정
+    };
   };
-
-  const filteredData = getFilteredData();
-  const totalLectures = filteredData.length;
-  const totalPages = Math.ceil(totalLectures / 9); // 3x3 그리드로 9개씩
-
-  // 페이지네이션
-  const startIndex = (currentPage - 1) * 9;
-  const lectureData = filteredData.slice(startIndex, startIndex + 9);
 
   const handleFilterChange = (type: keyof typeof filters, value: any) => {
     setFilters((prev) => ({ ...prev, [type]: value }));
@@ -255,7 +268,7 @@ export default function LecturesPage() {
     updateURL(appliedFilters, page);
   };
 
-  console.log("lectureData", lectureData);
+  console.log("lectures", lectures);
 
   return (
     <>
@@ -368,39 +381,78 @@ export default function LecturesPage() {
                 />
               </div>
 
+              {/* 로딩 상태 */}
+              {loading && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff8796] mx-auto mb-4"></div>
+                    <p className="text-[#9098A4]">강의 목록을 불러오는 중...</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 에러 상태 */}
+              {error && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button 
+                      onClick={fetchLectures}
+                      className="px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
+                    >
+                      다시 시도
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* 강의 목록 - 3x3 그리드 */}
-              <div className="grid grid-cols-3 gap-6">
-                {lectureData.map((lecture) => (
-                  <LectureCard
-                    key={lecture.id}
-                    title={lecture.title}
-                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
-                    views={lecture.viewCount}
-                    imageUrl={
-                      lecture.thumbnailUrl ||
-                      "/assets/images/lecture/default.png"
-                    }
-                    category={lecture.category}
-                    isLiked={lecture.isLiked}
-                    onLike={() => {
-                      // 좋아요 기능 구현
-                      console.log("Like clicked for lecture:", lecture.id);
-                    }}
-                    onClick={() => {
-                      window.location.href = `/lectures/${lecture.id}`;
-                    }}
-                  />
-                ))}
-              </div>
+              {!loading && !error && (
+                <div className="grid grid-cols-3 gap-6">
+                  {lectures.map((lecture) => {
+                    const transformedLecture = transformLectureData(lecture);
+                    return (
+                      <LectureCard
+                        key={lecture.id}
+                        title={transformedLecture.title}
+                        date={transformedLecture.date}
+                        views={transformedLecture.views}
+                        imageUrl={transformedLecture.imageUrl}
+                        category={transformedLecture.category}
+                        isLiked={transformedLecture.isLiked}
+                        onLike={() => {
+                          // 좋아요 기능 구현
+                          console.log("Like clicked for lecture:", lecture.id);
+                        }}
+                        onClick={() => {
+                          window.location.href = `/lectures/${lecture.id}`;
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 데이터 없음 상태 */}
+              {!loading && !error && lectures.length === 0 && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <p className="text-[#9098A4] text-lg">검색 결과가 없습니다.</p>
+                    <p className="text-[#9098A4] text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
+                  </div>
+                </div>
+              )}
 
               {/* 페이지네이션 */}
-              <div className="py-8">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
+              {!loading && !error && totalPages > 1 && (
+                <div className="py-8">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -467,39 +519,78 @@ export default function LecturesPage() {
                 />
               </div>
 
+              {/* 로딩 상태 (모바일) */}
+              {loading && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff8796] mx-auto mb-4"></div>
+                    <p className="text-[#9098A4]">강의 목록을 불러오는 중...</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 에러 상태 (모바일) */}
+              {error && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error}</p>
+                    <button 
+                      onClick={fetchLectures}
+                      className="px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
+                    >
+                      다시 시도
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* 강의 목록 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
-                {lectureData.map((lecture) => (
-                  <LectureCard
-                    key={lecture.id}
-                    title={lecture.title}
-                    date={lecture.uploadDate.toLocaleDateString("ko-KR")}
-                    views={lecture.viewCount}
-                    imageUrl={
-                      lecture.thumbnailUrl ||
-                      "/assets/images/lecture/default.png"
-                    }
-                    category={lecture.category}
-                    isLiked={lecture.isLiked}
-                    onLike={() => {
-                      console.log("Like clicked for lecture:", lecture.id);
-                    }}
-                    onClick={() => {
-                      window.location.href = `/lectures/${lecture.id}`;
-                    }}
-                  />
-                ))}
-              </div>
+              {!loading && !error && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
+                  {lectures.map((lecture) => {
+                    const transformedLecture = transformLectureData(lecture);
+                    return (
+                      <LectureCard
+                        key={lecture.id}
+                        title={transformedLecture.title}
+                        date={transformedLecture.date}
+                        views={transformedLecture.views}
+                        imageUrl={transformedLecture.imageUrl}
+                        category={transformedLecture.category}
+                        isLiked={transformedLecture.isLiked}
+                        onLike={() => {
+                          console.log("Like clicked for lecture:", lecture.id);
+                        }}
+                        onClick={() => {
+                          window.location.href = `/lectures/${lecture.id}`;
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 데이터 없음 상태 (모바일) */}
+              {!loading && !error && lectures.length === 0 && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <p className="text-[#9098A4] text-lg">검색 결과가 없습니다.</p>
+                    <p className="text-[#9098A4] text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
+                  </div>
+                </div>
+              )}
 
               {/* 페이지네이션 */}
-              <div className="py-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  maxVisiblePages={3}
-                />
-              </div>
+              {!loading && !error && totalPages > 1 && (
+                <div className="py-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    maxVisiblePages={3}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

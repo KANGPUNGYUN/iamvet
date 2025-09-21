@@ -51,7 +51,7 @@ export const POST = withAuth(
       const user = (request as any).user;
       const params = await context.params;
       const lectureId = params.id;
-      const { content, parentCommentId } = await request.json();
+      const { content, parentId } = await request.json();
 
       // 입력 검증
       if (!content || content.trim().length === 0) {
@@ -82,7 +82,7 @@ export const POST = withAuth(
         lectureId,
         userId: user.userId,
         content: content.trim(),
-        parentCommentId: parentCommentId || null,
+        parentId: parentId || null,
       });
 
       return NextResponse.json(

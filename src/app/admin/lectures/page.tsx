@@ -47,7 +47,7 @@ import {
 import { Tag } from "@/components/ui/Tag";
 
 interface Lecture {
-  id: number;
+  id: number | string;
   title: string;
   instructor: string;
   category: string;
@@ -283,6 +283,12 @@ export default function LecturesManagement() {
     return null;
   };
 
+  // YouTube 비디오 ID에서 썸네일 URL을 생성하는 함수
+  const getYouTubeThumbnail = (videoId: string): string => {
+    // 고화질 썸네일 우선순위: maxresdefault > hqdefault > mqdefault > default
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  };
+
   const getStatusTag = (isActive: boolean) => {
     return (
       <Tag variant={isActive ? 2 : 1}>{isActive ? "활성화" : "비활성화"}</Tag>
@@ -376,7 +382,7 @@ export default function LecturesManagement() {
     setSelectedLecture(null);
   };
 
-  const handleCreateLecture = () => {
+  const handleCreateLecture = async () => {
     if (!newLecture.title || !newLecture.instructor || !newLecture.category) {
       alert("제목, 강사명, 카테고리는 필수 필드입니다.");
       return;
@@ -389,29 +395,62 @@ export default function LecturesManagement() {
       return;
     }
 
-    const newId = Math.max(...lectures.map((l) => l.id)) + 1;
-    const newLectureData: Lecture = {
-      id: newId,
-      title: newLecture.title,
-      instructor: newLecture.instructor,
-      category: newLecture.category,
-      youtubeUrl: newLecture.youtubeUrl,
-      isActive: false,
-      viewCount: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-      description: newLecture.description || "강의 설명이 입력되지 않았습니다.",
-    };
+    try {
+      // 썸네일 URL 생성
+      let thumbnailUrl = null;
+      if (newLecture.youtubeUrl && videoId) {
+        thumbnailUrl = getYouTubeThumbnail(videoId);
+      }
 
-    setLectures((prev) => [newLectureData, ...prev]);
-    setCreateModalVisible(false);
-    setNewLecture({
-      title: "",
-      instructor: "",
-      category: "",
-      youtubeUrl: "",
-      description: "",
-      referenceMaterials: [],
-    });
+      const response = await fetch('/api/lectures', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: newLecture.title,
+          instructor: newLecture.instructor,
+          category: newLecture.category,
+          youtubeUrl: newLecture.youtubeUrl,
+          description: newLecture.description || "강의 설명이 입력되지 않았습니다.",
+          thumbnail: thumbnailUrl,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 'success') {
+        // API에서 반환된 데이터를 기존 형식에 맞게 변환
+        const newLectureData: Lecture = {
+          id: result.data.lecture.id, // 문자열 ID 그대로 사용
+          title: result.data.lecture.title,
+          instructor: newLecture.instructor, // API에 instructor 필드가 없어서 입력값 사용
+          category: result.data.lecture.category,
+          youtubeUrl: result.data.lecture.videoUrl,
+          isActive: false, // 새로 생성된 강의는 기본적으로 비활성화
+          viewCount: result.data.lecture.viewCount,
+          createdAt: new Date().toISOString().split("T")[0],
+          description: result.data.lecture.description,
+        };
+
+        setLectures((prev) => [newLectureData, ...prev]);
+        alert("강의가 성공적으로 생성되었습니다.");
+        setCreateModalVisible(false);
+        setNewLecture({
+          title: "",
+          instructor: "",
+          category: "",
+          youtubeUrl: "",
+          description: "",
+          referenceMaterials: [],
+        });
+      } else {
+        alert(result.message || "강의 생성에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("강의 생성 오류:", error);
+      alert("강의 생성 중 오류가 발생했습니다.");
+    }
   };
 
   const renderActionButtons = (lecture: Lecture) => (
@@ -1611,6 +1650,56 @@ export default function LecturesManagement() {
               placeholder="다음 중 하나를 입력하세요:&#10;1. https://www.youtube.com/watch?v=VIDEO_ID&#10;2. https://youtu.be/VIDEO_ID&#10;3. <iframe src='https://www.youtube.com/embed/VIDEO_ID'></iframe>"
               helperText="유튜브 동영상 URL을 입력하거나 유튜브에서 제공하는 iframe 임베드 코드를 붙여넣으세요."
             />
+
+            {/* 썸네일 미리보기 */}
+            {newLecture.youtubeUrl && (() => {
+              const videoId = extractYouTubeVideoId(newLecture.youtubeUrl);
+              if (videoId) {
+                const thumbnailUrl = getYouTubeThumbnail(videoId);
+                return (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      썸네일 미리보기
+                    </Typography>
+                    <Box
+                      sx={{
+                        position: "relative",
+                        display: "inline-block",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        border: "1px solid #efeff0",
+                        bgcolor: "#fafafa",
+                      }}
+                    >
+                      <img
+                        src={thumbnailUrl}
+                        alt="유튜브 썸네일"
+                        style={{
+                          width: "200px",
+                          height: "112px",
+                          objectFit: "cover",
+                        }}
+                        onError={(e) => {
+                          // 고화질 썸네일이 없으면 기본 썸네일로 fallback
+                          const target = e.target as HTMLImageElement;
+                          if (target.src.includes('maxresdefault')) {
+                            target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                          } else if (target.src.includes('hqdefault')) {
+                            target.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                          } else if (target.src.includes('mqdefault')) {
+                            target.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
+                          }
+                        }}
+                      />
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+                      이 썸네일이 자동으로 저장됩니다
+                    </Typography>
+                  </Box>
+                );
+              }
+              return null;
+            })()}
             <TextField
               label="강의 설명"
               fullWidth
