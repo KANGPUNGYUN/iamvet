@@ -9,9 +9,7 @@ interface FooterProps {
   className?: string;
 }
 
-export const Footer: React.FC<FooterProps> = ({ 
-  className = "" 
-}) => {
+export const Footer: React.FC<FooterProps> = ({ className = "" }) => {
   return (
     <footer className={`footer ${className}`}>
       <div className="footer-container">
@@ -42,6 +40,9 @@ export const Footer: React.FC<FooterProps> = ({
             </Link>
             <Link href="/terms" className="footer-nav-item">
               이용약관
+            </Link>
+            <Link href="/marketing" className="footer-nav-item">
+              마케팅정보수신
             </Link>
             <Link href="/sitemap" className="footer-nav-item">
               오시는길
