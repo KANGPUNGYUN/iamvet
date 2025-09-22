@@ -53,21 +53,27 @@ export const Footer: React.FC<FooterProps> = ({ className = "" }) => {
           <div className="footer-address">
             <div className="footer-contact">
               <div className="footer-contact-item">
-                05029 서울특별시 광진구 능동로 120 건국대학교 1F
+                법인단체명: 주식회사 아이엠벳
               </div>
               <div className="footer-contact-item">
-                E-mail:{" "}
-                <a href="mailto:seouledtech@konkuk.ac.kr">
-                  seouledtech@konkuk.ac.kr
-                </a>
+                주소: 서울특별시 서초구 서초대로77길 39, 9층 102호
               </div>
               <div className="footer-contact-item">
-                Tel: <a href="tel:02-450-0697">02-450-0697~9</a>
+                이메일: <a href="mailto:iamvet25@gmail.com">iamvet25@gmail.com</a>
+              </div>
+              <div className="footer-contact-item">
+                연락처: <a href="tel:01042031721">010-4203-1721</a>
+              </div>
+              <div className="footer-contact-item">
+                사업자등록번호: 507-81-17466
+              </div>
+              <div className="footer-contact-item">
+                대표자명: 김국현
               </div>
             </div>
 
             <div className="footer-copyright">
-              Copyright © 2025 아이엠벳 All Right Reserved.
+              Copyright © 2025 주식회사 아이엠벳 All Right Reserved.
             </div>
           </div>
         </div>
