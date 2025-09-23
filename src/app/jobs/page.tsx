@@ -11,10 +11,19 @@ import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import JobFamousList from "@/components/features/main/JobFamousList";
 import { useJobs, JobFilters } from "@/hooks/api/useJobs";
+import { useLikeStore } from "@/stores/likeStore";
 
 export default function JobsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Zustand 스토어에서 좋아요 상태 관리
+  const {
+    setJobLike,
+    toggleJobLike,
+    initializeJobLikes,
+    isJobLiked
+  } = useLikeStore();
 
   // 필터 상태 관리 (UI용 - 아직 적용되지 않은 상태)
   const [filters, setFilters] = useState({
@@ -140,6 +149,79 @@ export default function JobsPage() {
   const totalJobs = jobsData?.totalCount || 0;
   const totalPages = jobsData?.totalPages || 0;
   const jobData = jobsData?.jobs || [];
+
+  // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
+  React.useEffect(() => {
+    const jobs = jobData || [];
+    if (jobs.length > 0) {
+      const likedJobIds = jobs
+        .filter((job: any) => job.isLiked)
+        .map((job: any) => job.id);
+      
+      if (likedJobIds.length > 0) {
+        console.log('[JobsPage] 서버에서 받은 좋아요 채용공고:', likedJobIds);
+        initializeJobLikes(likedJobIds);
+      }
+    }
+  }, [jobData, initializeJobLikes]);
+
+  // 채용공고 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
+  const handleJobLike = async (jobId: string | number) => {
+    const id = jobId.toString();
+    const isCurrentlyLiked = isJobLiked(id);
+    
+    console.log(`[JobsPage Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleJobLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[JobsPage Like] API 요청: ${method} /api/jobs/${jobId}/like`);
+      
+      const response = await fetch(`/api/jobs/${jobId}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[JobsPage Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setJobLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('채용공고를 찾을 수 없습니다:', jobId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[JobsPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setJobLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[JobsPage Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[JobsPage Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setJobLike(id, isCurrentlyLiked);
+    }
+  };
 
   const handleFilterChange = (type: keyof typeof filters, value: any) => {
     setFilters((prev) => ({ ...prev, [type]: value }));
@@ -365,6 +447,7 @@ export default function JobsPage() {
                   jobData.map((job) => (
                     <JobInfoCard
                       key={job.id}
+                      id={job.id}
                       hospital={job.hospital}
                       dDay={job.dDay}
                       position={job.title || job.position}
@@ -372,6 +455,8 @@ export default function JobsPage() {
                       jobType={job.jobType}
                       tags={job.tags}
                       isBookmarked={job.isBookmarked}
+                      isLiked={isJobLiked(job.id)}
+                      onLike={handleJobLike}
                       variant="wide"
                       showDeadline={true}
                       isNew={job.isNew}
@@ -539,6 +624,7 @@ export default function JobsPage() {
                   jobData.slice(0, Math.ceil(jobData.length / 2)).map((job) => (
                     <JobInfoCard
                       key={job.id}
+                      id={job.id}
                       hospital={job.hospital}
                       dDay={job.dDay}
                       position={job.title || job.position}
@@ -546,6 +632,8 @@ export default function JobsPage() {
                       jobType={job.jobType}
                       tags={job.tags.slice(0, 3)}
                       isBookmarked={job.isBookmarked}
+                      isLiked={isJobLiked(job.id)}
+                      onLike={handleJobLike}
                       variant="wide"
                       showDeadline={false}
                       isNew={job.isNew}
@@ -597,6 +685,7 @@ export default function JobsPage() {
                   jobData.slice(Math.ceil(jobData.length / 2)).map((job) => (
                     <JobInfoCard
                       key={job.id}
+                      id={job.id}
                       hospital={job.hospital}
                       dDay={job.dDay}
                       position={job.title || job.position}
@@ -604,6 +693,8 @@ export default function JobsPage() {
                       jobType={job.jobType}
                       tags={job.tags.slice(0, 3)}
                       isBookmarked={job.isBookmarked}
+                      isLiked={isJobLiked(job.id)}
+                      onLike={handleJobLike}
                       variant="wide"
                       showDeadline={false}
                       isNew={job.isNew}
