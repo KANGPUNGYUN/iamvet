@@ -7,6 +7,8 @@ import {
   getHospitalByUserId,
   getAdvertisements,
 } from "@/lib/database";
+import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -29,6 +31,37 @@ export async function GET(request: NextRequest) {
   };
 
   try {
+    // 사용자 정보 확인 (선택적) - Bearer token과 쿠키 인증 모두 지원
+    let userId: string | undefined;
+    
+    // Authorization 헤더 확인
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
+    }
+    
+    // Authorization 헤더가 없으면 쿠키에서 확인 (withAuth 미들웨어와 동일한 방식)
+    if (!userId) {
+      const authTokenCookie = request.cookies.get("auth-token")?.value;
+      console.log("[Jobs API] auth-token 쿠키:", authTokenCookie ? "존재함" : "없음");
+      
+      if (authTokenCookie) {
+        console.log("[Jobs API] auth-token:", authTokenCookie.substring(0, 20) + "...");
+        const payload = verifyToken(authTokenCookie);
+        if (payload) {
+          userId = payload.userId;
+          console.log("[Jobs API] 토큰 검증 성공, userId:", userId);
+        } else {
+          console.log("[Jobs API] 토큰 검증 실패");
+        }
+      }
+    }
+    
+    console.log("[Jobs API] 최종 사용자 ID:", userId);
 
     console.log('Jobs API params:', params);
 
@@ -38,6 +71,29 @@ export async function GET(request: NextRequest) {
       totalCount: result.totalCount,
       firstJob: result.jobs[0] ? Object.keys(result.jobs[0]) : 'No jobs'
     });
+    
+    // 좋아요 정보 조회 (로그인한 경우에만)
+    let userLikes: string[] = [];
+    console.log("[Jobs API] 사용자 ID:", userId);
+    console.log("[Jobs API] result.jobs 개수:", result.jobs?.length);
+    
+    if (userId && result.jobs) {
+      const jobIds = result.jobs.map((job: any) => job.id).filter(Boolean);
+      console.log("[Jobs API] 조회할 job IDs:", jobIds);
+      
+      if (jobIds.length > 0) {
+        const likes = await (prisma as any).jobLike.findMany({
+          where: { 
+            userId,
+            jobId: { in: jobIds }
+          },
+          select: { jobId: true }
+        });
+        console.log("[Jobs API] 조회된 좋아요:", likes);
+        userLikes = likes.map((like: any) => like.jobId);
+        console.log("[Jobs API] 좋아요된 job IDs:", userLikes);
+      }
+    }
     
     // Transform the data to match the expected format for JobInfoCard
     const transformedJobs = result.jobs.map((job: any) => ({
@@ -57,6 +113,7 @@ export async function GET(request: NextRequest) {
       ].filter(Boolean),
       isNew: new Date(job.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // New if created within 7 days
       isBookmarked: false, // TODO: Check user bookmarks
+      isLiked: userLikes.includes(job.id),
       dDay: job.recruitEndDate ? Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null,
       deadline: job.recruitEndDate ? new Date(job.recruitEndDate) : null,
       createdAt: new Date(job.createdAt),
