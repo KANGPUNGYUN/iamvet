@@ -39,35 +39,37 @@ model User {
   seq                     Int                      @unique @default(autoincrement())
   universityEmail         String?                  @unique
   lastLoginAt             DateTime?                @db.Timestamp(6)
-  announcementsCreated    Announcement[]
-  applications            Application[]
-  commentReplies          CommentReply[]
-  detailedHospitalProfile DetailedHospitalProfile?
-  detailedResume          DetailedResume?
-  forum_comments          forum_comments[]
-  forumPostLikes          ForumPostLike[]
-  forumPosts              ForumPost[]
-  hospitalEvaluations     HospitalEvaluation[]     @relation("HospitalEvaluations")
-  userHospitalEvaluations HospitalEvaluation[]     @relation("UserHospitalEvaluations")
-  hospital_profiles       hospital_profiles?
-  jobLikes                JobLike[]
-  jobs                    Job[]
-  lectureComments         LectureComment[]
-  lectureLikes            LectureLike[]
-  receivedMessages        Message[]                @relation("ReceivedMessages")
-  sentMessages            Message[]                @relation("SentMessages")
-  notificationSettings    NotificationSettings?
-  notificationsReceived   Notification[]           @relation("NotificationRecipient")
-  notificationsSent       Notification[]           @relation("NotificationSender")
-  resumeEvaluations       ResumeEvaluation[]
-  resumeLikes             ResumeLike[]
-  resumes                 Resume[]
-  socialAccounts          SocialAccount[]
-  transferLikes           TransferLike[]
-  transfers               Transfer[]
-  veterinarian_profiles   veterinarian_profiles?
-  hospitalAnimals         HospitalAnimal[]
-  hospitalSpecialties     HospitalSpecialty[]
+  announcementsCreated     Announcement[]
+  applications             Application[]
+  commentReplies           CommentReply[]
+  receivedInquiries        ContactInquiry[]          @relation("InquiryRecipient")
+  sentInquiries            ContactInquiry[]          @relation("InquirySender")
+  detailedHospitalProfile  DetailedHospitalProfile?
+  detailedResume           DetailedResume?
+  forum_comments           forum_comments[]
+  forumPostLikes           ForumPostLike[]
+  forumPosts               ForumPost[]
+  hospitalEvaluations      HospitalEvaluation[]      @relation("HospitalEvaluations")
+  userHospitalEvaluations  HospitalEvaluation[]      @relation("UserHospitalEvaluations")
+  hospital_profiles        hospital_profiles?
+  jobLikes                 JobLike[]
+  jobs                     Job[]
+  lectureComments          LectureComment[]
+  lectureLikes             LectureLike[]
+  receivedMessages         Message[]                 @relation("ReceivedMessages")
+  sentMessages             Message[]                 @relation("SentMessages")
+  notificationSettings     NotificationSettings?
+  notificationsReceived    Notification[]            @relation("NotificationRecipient")
+  notificationsSent        Notification[]            @relation("NotificationSender")
+  resumeEvaluations        ResumeEvaluation[]
+  resumeLikes              ResumeLike[]
+  resumes                  Resume[]
+  socialAccounts           SocialAccount[]
+  transferLikes            TransferLike[]
+  transfers                Transfer[]
+  veterinarian_profiles    veterinarian_profiles?
+  hospitalAnimals          HospitalAnimal[]
+  hospitalSpecialties      HospitalSpecialty[]
   hospitalBusinessLicenses HospitalBusinessLicense[]
 
   @@index([loginId], map: "idx_users_loginid")
@@ -122,6 +124,7 @@ model Job {
   salaryType           String
   workType             String[]          @default([])
   viewCount            Int               @default(0)
+  inquiries            ContactInquiry[]
   likes                JobLike[]
   jobNotifications     JobNotification[]
   hospital             User              @relation(fields: [hospitalId], references: [id], map: "jobs_hospitalid_fkey")
@@ -153,6 +156,7 @@ model Resume {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   deletedAt         DateTime?
+  inquiries         ContactInquiry[]
   evaluations       ResumeEvaluation[]
   veterinarian      User               @relation(fields: [veterinarianId], references: [id])
 
@@ -877,6 +881,32 @@ enum NotificationBatchStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+model ContactInquiry {
+  id          String   @id @default(cuid())
+  senderId    String   @map("sender_id")
+  recipientId String   @map("recipient_id")
+  jobId       String?  @map("job_id")
+  resumeId    String?  @map("resume_id")
+  subject     String
+  message     String
+  type        String   @default("general")
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  job         Job?     @relation(fields: [jobId], references: [id])
+  recipient   User     @relation("InquiryRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  resume      Resume?  @relation(fields: [resumeId], references: [id])
+  sender      User     @relation("InquirySender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([jobId])
+  @@index([resumeId])
+  @@index([createdAt])
+  @@index([isRead])
+  @@map("contact_inquiries")
 }
 
 model ViewLog {

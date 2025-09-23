@@ -76,9 +76,9 @@ export default function NoticesPage() {
   };
 
   // 알림 읽음 처리
-  const handleMarkAsRead = async (notificationId: number) => {
-    // ID 타입 변환 (string to number)
-    const announcement = announcements.find(a => a.id === notificationId.toString());
+  const handleMarkAsRead = async (notificationId: string) => {
+    // Find announcement by string ID
+    const announcement = announcements.find(a => a.id === notificationId);
     if (!announcement) return;
 
     setAnnouncements((prev) =>
@@ -262,7 +262,7 @@ export default function NoticesPage() {
                   </span>
                 </div>
                 <NotificationCard
-                  id={parseInt(announcement.id)}
+                  id={announcement.id}
                   title={announcement.title}
                   content={announcement.content}
                   createdAt={formatDate(announcement.createdAt)}

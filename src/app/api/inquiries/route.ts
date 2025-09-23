@@ -129,7 +129,13 @@ export async function GET(request: NextRequest) {
           select: { id: true, nickname: true, email: true, userType: true }
         },
         job: {
-          select: { id: true, title: true, hospitalName: true }
+          select: { 
+            id: true, 
+            title: true,
+            hospital: {
+              select: { hospitalName: true }
+            }
+          }
         },
         resume: {
           select: { id: true, title: true }

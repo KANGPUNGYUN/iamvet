@@ -66,6 +66,7 @@ interface JobDetail {
   hospitalUserId?: string;
   isOwner?: boolean;
   hasApplied?: boolean;
+  isLiked?: boolean;
 }
 
 export const useJobDetail = (jobId: string) => {

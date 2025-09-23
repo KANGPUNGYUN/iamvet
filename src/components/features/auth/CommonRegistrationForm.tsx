@@ -4,7 +4,7 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
 import { ProfileImageUpload, LicenseImageUpload } from "@/components/features/profile";
-import { checkUsernameDuplicate, checkEmailDuplicate } from "@/actions/auth";
+import { checkUserIdDuplicate, checkEmailDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
 import { 
@@ -115,7 +115,7 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
     }
 
     try {
-      const result = await checkUsernameDuplicate(formData.userId);
+      const result = await checkUserIdDuplicate(formData.userId);
       setDuplicateChecks((prev) => ({
         ...prev,
         userId: {

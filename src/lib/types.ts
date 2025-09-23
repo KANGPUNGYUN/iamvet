@@ -227,7 +227,7 @@ export interface ResumesQueryParams {
   keyword?: string;
   page?: number;
   limit?: number;
-  sort?: "latest" | "oldest";
+  sort?: "latest" | "oldest" | "popular";
   workType?: string;
   experience?: string;
   region?: string;

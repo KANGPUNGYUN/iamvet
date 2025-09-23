@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         };
       } else {
         // 좋아요한 이력서들만 조회
-        const offset = (params.page - 1) * params.limit;
+        const offset = ((params.page || 1) - 1) * (params.limit || 10);
         
         // DetailedResume 모델 기준으로 직접 쿼리
         let orderBy: any = {};

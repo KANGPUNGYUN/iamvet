@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "public/icons";
@@ -23,14 +23,15 @@ interface AnnouncementDetail {
   };
 }
 
-export default function NoticeDetailPage({ params }: { params: { id: string } }) {
+export default function NoticeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [announcement, setAnnouncement] = useState<AnnouncementDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchAnnouncementDetail();
-  }, [params.id]);
+  }, [id]);
 
   const fetchAnnouncementDetail = async () => {
     try {
@@ -38,7 +39,7 @@ export default function NoticeDetailPage({ params }: { params: { id: string } })
       // 현재는 전체 목록에서 필터링 (추후 개별 API 엔드포인트 필요)
       const response = await axios.get("/api/notices");
       if (response.data.success) {
-        const found = response.data.data.find((item: AnnouncementDetail) => item.id === params.id);
+        const found = response.data.data.find((item: AnnouncementDetail) => item.id === id);
         if (found) {
           setAnnouncement(found);
         }
