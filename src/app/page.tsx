@@ -1,71 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Input/Checkbox";
-import { FilterBox } from "@/components/ui/FilterBox";
-import { Radio } from "@/components/ui/Input/Radio";
 import { Tab } from "@/components/ui/Tab";
-import { Tag } from "@/components/ui/Tag";
 import {
-  ArrowLeftIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  UserLargeIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  BookmarkIcon,
-  BookmarkFilledIcon,
-  HeartIcon,
-  HeartFilledIcon,
-  ShareIcon,
-  Edit2Icon,
-  MenuIcon,
-  GridIcon,
-  CheckIcon,
-  ExcelIcon,
-  WordIcon,
-  PdfIcon,
-  SearchIcon,
-  ExternalLinkIcon,
-  MoreIcon,
-  MoreVerticalIcon,
-  HomeIcon,
-  UserPlusIcon,
-  ListIcon,
-  BellOutlineIcon,
-  UsersIcon,
-  HeartMenuIcon,
-  SettingsIcon,
-  calendarIcon,
-  EditIcon,
-  PlusIcon,
-  UserIcon,
-  LocationIcon,
-  ConnectionIcon,
-  WalletIcon,
-  PhoneIcon,
-  DollarIcon,
-  EyeIcon,
-  EyeSmallIcon,
-  DocumentIcon,
-  InfoIcon,
-  MailIcon,
-  FilterIcon,
   ArrowRightIcon,
-  TrashIcon,
-  BellIcon,
-  CloseIcon,
-  UploadIcon,
-  DoublePrevIcon,
-  PrevIcon,
-  NextIcon,
-  DoubleNextIcon,
-  LinkIcon,
-  ImageIcon,
-  WebIcon,
-  PageIcon,
-  Link2Icon,
-  DownloadIcon,
+  PlusIcon,
 } from "public/icons";
 import banner1Img from "@/assets/images/banner1.png";
 import banner2Img from "@/assets/images/banner2.png";
@@ -76,7 +14,6 @@ import lecture1Img from "@/assets/images/lecture/lecture1.png";
 import AdvertisementSlider from "@/components/ui/AdvertisementSlider";
 import { advertisementsData } from "@/data/advertisementsData";
 import { useState } from "react";
-import { TimePicker, TimeValue } from "@/components/ui/TimePicker";
 import BannerSlider, {
   BannerItem,
 } from "@/components/features/main/BannerSlider";
@@ -85,17 +22,12 @@ import JobFamousList from "@/components/features/main/JobFamousList";
 import JobInfoCard from "@/components/ui/JobInfoCard";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
 import LectureCard from "@/components/ui/LectureCard/LectureCard";
-import { allLecturesData } from "@/data/lecturesData";
-import { allJobData } from "@/data/jobsData";
-import { allResumeData } from "@/data/resumesData";
-import { allTransferData } from "@/data/transfersData";
 import Link from "next/link";
-import ResumeCard from "@/components/ui/ResumeCard";
 import { useResumes } from "@/hooks/useResumes";
 import { useJobs } from "@/hooks/useJobs";
 import { useLectures } from "@/hooks/api/useLectures";
 import { useTransfers } from "@/hooks/api/useTransfers";
-import { convertDDayToNumber } from "@/utils/dDayConverter";
+import { useLikeStore } from "@/stores/likeStore";
 import React from "react";
 
 export default function HomePage() {
@@ -269,348 +201,8 @@ export default function HomePage() {
     .filter((item: any) => item.category === "인테리어")
     .slice(0, 8);
 
-  const handlePrivacyClick = () => {
-    console.log("개인정보처리방침 클릭");
-    // 실제 라우팅 로직
-  };
 
-  const [inputValue1, setInputValue1] = useState("");
-  const [price, setPrice] = useState("");
 
-  const options = [
-    { value: "option1", label: "옵션 1" },
-    { value: "option2", label: "옵션 2" },
-    { value: "option3", label: "옵션 3", disabled: true },
-  ];
-
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<TimeValue | null>(null);
-
-  // DatePicker 핸들러 함수들
-  const handleDateChange = (date: Date) => {
-    setSelectedDate(date);
-    console.log("선택된 날짜:", date.toLocaleDateString("ko-KR"));
-  };
-
-  const handleRangeChange = (start: Date | null, end: Date | null) => {
-    setStartDate(start);
-    setEndDate(end);
-    console.log("선택된 기간:", {
-      시작일: start?.toLocaleDateString("ko-KR"),
-      종료일: end?.toLocaleDateString("ko-KR"),
-    });
-  };
-
-  const handleTimeChange = (time: TimeValue) => {
-    setSelectedTime(time);
-    console.log("선택된 시간:", {
-      시간: time.hour,
-      분: time.minute,
-      오전오후: time.period || "24시간 형식",
-    });
-
-    // 시간을 문자열로 포맷팅하여 로그 출력
-    const formattedTime = time.period
-      ? `${time.hour.toString().padStart(2, "0")}:${time.minute
-          .toString()
-          .padStart(2, "0")} ${time.period}`
-      : `${time.hour.toString().padStart(2, "0")}:${time.minute
-          .toString()
-          .padStart(2, "0")}`;
-
-    console.log("포맷된 시간:", formattedTime);
-  };
-
-  // 페이지네이션을 위한 간단한 컴포넌트들
-  const PaginationButton = ({
-    children,
-    isActive = false,
-    disabled = false,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    isActive?: boolean;
-    disabled?: boolean;
-    onClick?: () => void;
-  }) => {
-    const [isHovered, setIsHovered] = useState(false);
-
-    const getButtonStyle = () => {
-      let baseStyle = {
-        display: "flex",
-        width: "40px",
-        height: "40px",
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: "8px",
-        fontFamily: "Pretendard, sans-serif",
-        fontSize: "14px",
-        fontWeight: 500,
-        cursor: disabled ? "not-allowed" : "pointer",
-        transition: "all 0.2s ease-in-out",
-        userSelect: "none" as const,
-        border: "1px solid #EFEFF0",
-        background: "#FFF",
-        color: "#3B394D",
-      };
-
-      if (disabled) {
-        baseStyle.color = "#9098A4";
-        baseStyle.cursor = "not-allowed";
-      } else if (isActive) {
-        baseStyle.background = "#FF8796";
-        baseStyle.color = "#FFF";
-        baseStyle.border = "1px solid #FF8796";
-      } else if (isHovered) {
-        baseStyle.background = "#FFF7F7";
-        baseStyle.border = "1px solid #FFF7F7";
-      }
-
-      return baseStyle;
-    };
-
-    return (
-      <button
-        style={getButtonStyle()}
-        onClick={onClick}
-        disabled={disabled}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {children}
-      </button>
-    );
-  };
-
-  const PrevIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path
-        d="M10.06 12L11 11.06L7.94667 8L11 4.94L10.06 4L6.06 8L10.06 12Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-
-  const NextIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path
-        d="M6.94 4L6 4.94L9.05333 8L6 11.06L6.94 12L10.94 8L6.94 4Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-
-  const MoreIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 13 2" fill="none">
-      <circle cx="1.5" cy="1" r="1" fill="currentColor" />
-      <circle cx="6.5" cy="1" r="1" fill="currentColor" />
-      <circle cx="11.5" cy="1" r="1" fill="currentColor" />
-    </svg>
-  );
-
-  const SimplePagination = ({
-    currentPage,
-    totalPages,
-    onPageChange,
-  }: {
-    currentPage: number;
-    totalPages: number;
-    onPageChange: (page: number) => void;
-  }) => {
-    const generatePageNumbers = () => {
-      const pages: (number | "ellipsis")[] = [];
-      const maxVisiblePages = 7;
-
-      if (totalPages <= maxVisiblePages) {
-        for (let i = 1; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        const sidePages = Math.floor((maxVisiblePages - 3) / 2);
-
-        if (currentPage <= sidePages + 2) {
-          for (let i = 1; i <= maxVisiblePages - 2; i++) {
-            pages.push(i);
-          }
-          pages.push("ellipsis");
-          pages.push(totalPages);
-        } else if (currentPage >= totalPages - sidePages - 1) {
-          pages.push(1);
-          pages.push("ellipsis");
-          for (let i = totalPages - maxVisiblePages + 3; i <= totalPages; i++) {
-            pages.push(i);
-          }
-        } else {
-          pages.push(1);
-          pages.push("ellipsis");
-          for (
-            let i = currentPage - sidePages;
-            i <= currentPage + sidePages;
-            i++
-          ) {
-            pages.push(i);
-          }
-          pages.push("ellipsis");
-          pages.push(totalPages);
-        }
-      }
-
-      return pages;
-    };
-
-    const pageNumbers = generatePageNumbers();
-
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: "8px",
-          justifyContent: "center",
-        }}
-      >
-        {/* 이전 버튼 */}
-        <PaginationButton
-          disabled={currentPage === 1}
-          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-        >
-          <PrevIcon />
-        </PaginationButton>
-
-        {/* 페이지 번호들 */}
-        {pageNumbers.map((page, index) => {
-          if (page === "ellipsis") {
-            return (
-              <PaginationButton key={`ellipsis-${index}`} disabled={true}>
-                <MoreIcon />
-              </PaginationButton>
-            );
-          }
-
-          return (
-            <PaginationButton
-              key={page}
-              isActive={currentPage === page}
-              onClick={() => onPageChange(page)}
-            >
-              {page}
-            </PaginationButton>
-          );
-        })}
-
-        {/* 다음 버튼 */}
-        <PaginationButton
-          disabled={currentPage === totalPages}
-          onClick={() =>
-            currentPage < totalPages && onPageChange(currentPage + 1)
-          }
-        >
-          <NextIcon />
-        </PaginationButton>
-      </div>
-    );
-  };
-
-  const iconComponents = [
-    { name: "ArrowLeftIcon", component: ArrowLeftIcon },
-    { name: "ArrowRightIcon", component: ArrowRightIcon },
-    { name: "ChevronLeftIcon", component: ChevronLeftIcon },
-    { name: "ChevronRightIcon", component: ChevronRightIcon },
-    { name: "ChevronDownIcon", component: ChevronDownIcon },
-    { name: "ChevronUpIcon", component: ChevronUpIcon },
-    { name: "UserIcon", component: UserIcon },
-    { name: "UserLargeIcon", component: UserLargeIcon },
-    { name: "BookmarkIcon", component: BookmarkIcon },
-    { name: "BookmarkFilledIcon", component: BookmarkFilledIcon },
-    { name: "HeartIcon", component: HeartIcon },
-    { name: "HeartFilledIcon", component: HeartFilledIcon },
-    { name: "ShareIcon", component: ShareIcon },
-    { name: "EditIcon", component: EditIcon },
-    { name: "Edit2Icon", component: Edit2Icon },
-    { name: "MenuIcon", component: MenuIcon },
-    { name: "GridIcon", component: GridIcon },
-    { name: "CheckIcon", component: CheckIcon },
-    { name: "ExcelIcon", component: ExcelIcon },
-    { name: "WordIcon", component: WordIcon },
-    { name: "PdfIcon", component: PdfIcon },
-    { name: "SearchIcon", component: SearchIcon },
-    { name: "ExternalLinkIcon", component: ExternalLinkIcon },
-    { name: "MoreIcon", component: MoreIcon },
-    { name: "MoreVerticalIcon", component: MoreVerticalIcon },
-    { name: "HomeIcon", component: HomeIcon },
-    { name: "UserPlusIcon", component: UserPlusIcon },
-    { name: "ListIcon", component: ListIcon },
-    { name: "BellOutlineIcon", component: BellOutlineIcon },
-    { name: "UsersIcon", component: UsersIcon },
-    { name: "HeartMenuIcon", component: HeartMenuIcon },
-    { name: "SettingsIcon", component: SettingsIcon },
-    { name: "calendarIcon", component: calendarIcon },
-    { name: "PlusIcon", component: PlusIcon },
-    { name: "LocationIcon", component: LocationIcon },
-    { name: "ConnectionIcon", component: ConnectionIcon },
-    { name: "WalletIcon", component: WalletIcon },
-    { name: "PhoneIcon", component: PhoneIcon },
-    { name: "DollarIcon", component: DollarIcon },
-    { name: "EyeIcon", component: EyeIcon },
-    { name: "EyeSmallIcon", component: EyeSmallIcon },
-    { name: "DocumentIcon", component: DocumentIcon },
-    { name: "InfoIcon", component: InfoIcon },
-    { name: "MailIcon", component: MailIcon },
-    { name: "FilterIcon", component: FilterIcon },
-    { name: "TrashIcon", component: TrashIcon },
-    { name: "BellIcon", component: BellIcon },
-    { name: "CloseIcon", component: CloseIcon },
-    { name: "UploadIcon", component: UploadIcon },
-    { name: "DoublePrevIcon", component: DoublePrevIcon },
-    { name: "PrevIcon", component: PrevIcon },
-    { name: "NextIcon", component: NextIcon },
-    { name: "DoubleNextIcon", component: DoubleNextIcon },
-    { name: "LinkIcon", component: LinkIcon },
-    { name: "ImageIcon", component: ImageIcon },
-    { name: "WebIcon", component: WebIcon },
-    { name: "PageIcon", component: PageIcon },
-    { name: "Link2Icon", component: Link2Icon },
-    { name: "DownloadIcon", component: DownloadIcon },
-  ];
-
-  const groupedIcons = [];
-  for (let i = 0; i < iconComponents.length; i += 4) {
-    groupedIcons.push(iconComponents.slice(i, i + 4));
-  }
-
-  const [selectedPeriod, setSelectedPeriod] = useState("");
-  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([
-    "",
-  ]);
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([""]);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const [searchValue, setSearchValue] = useState("");
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-
-  const handleSearch = (value: string) => {
-    console.log("검색:", value);
-    setSearchResults([
-      `"${value}" 검색 결과 1`,
-      `"${value}" 검색 결과 2`,
-      `"${value}" 검색 결과 3`,
-    ]);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    console.log(`페이지 ${page}로 이동`);
-  };
-
-  const [selectedValue, setSelectedValue] = useState("");
-
-  const handleSelectChange = (value: string) => {
-    setSelectedValue(value);
-    console.log("Selected value:", value);
-  };
 
   const handleAITalentSearch = () => {
     console.log("AI로 인재 찾기 클릭");
@@ -620,6 +212,165 @@ export default function HomePage() {
   const handleAIHospitalSearch = () => {
     console.log("AI로 병원 찾기 클릭");
     window.location.href = "/jobs";
+  };
+
+  // Zustand 스토어에서 좋아요 상태 관리
+  const {
+    likedResumes,
+    likedJobs,
+    setResumeLike,
+    setJobLike,
+    toggleResumeLike,
+    toggleJobLike,
+    initializeResumeLikes,
+    initializeJobLikes,
+    isResumeLiked,
+    isJobLiked
+  } = useLikeStore();
+
+  // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
+  React.useEffect(() => {
+    const resumes = resumesData?.data || [];
+    if (resumes.length > 0) {
+      const likedResumeIds = resumes
+        .filter((resume: any) => resume.isLiked)
+        .map((resume: any) => resume.id);
+      
+      if (likedResumeIds.length > 0) {
+        console.log('[Resume Like] 서버에서 받은 좋아요 이력서:', likedResumeIds);
+        initializeResumeLikes(likedResumeIds);
+      }
+    }
+  }, [resumesData, initializeResumeLikes]);
+
+  React.useEffect(() => {
+    const jobs = jobsData?.data?.jobs || [];
+    if (jobs.length > 0) {
+      const likedJobIds = jobs
+        .filter((job: any) => job.isLiked)
+        .map((job: any) => job.id);
+      
+      if (likedJobIds.length > 0) {
+        console.log('[Job Like] 서버에서 받은 좋아요 채용공고:', likedJobIds);
+        initializeJobLikes(likedJobIds);
+      }
+    }
+  }, [jobsData, initializeJobLikes]);
+
+  // 이력서 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
+  const handleResumeLike = async (resumeId: string | number) => {
+    const id = resumeId.toString();
+    const isCurrentlyLiked = isResumeLiked(id);
+    
+    console.log(`[Resume Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleResumeLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[Resume Like] API 요청: ${method} /api/resumes/${resumeId}/like`);
+      
+      const response = await fetch(`/api/resumes/${resumeId}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[Resume Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setResumeLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('이력서를 찾을 수 없습니다:', resumeId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[Resume Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setResumeLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[Resume Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[Resume Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setResumeLike(id, isCurrentlyLiked);
+    }
+  };
+
+  // 채용공고 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
+  const handleJobLike = async (jobId: string | number) => {
+    const id = jobId.toString();
+    const isCurrentlyLiked = isJobLiked(id);
+    
+    console.log(`[Job Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleJobLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[Job Like] API 요청: ${method} /api/jobs/${jobId}/like`);
+      
+      const response = await fetch(`/api/jobs/${jobId}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[Job Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setJobLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('채용공고를 찾을 수 없습니다:', jobId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[Job Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setJobLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[Job Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[Job Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setJobLike(id, isCurrentlyLiked);
+    }
   };
 
   const sampleBanners: BannerItem[] = [
@@ -779,6 +530,7 @@ export default function HomePage() {
                             return (
                               <JobInfoCard
                                 key={resume.id}
+                                id={resume.id}
                                 hospital={resume.name}
                                 dDay={dDay}
                                 position={position}
@@ -786,6 +538,8 @@ export default function HomePage() {
                                 jobType="구직자"
                                 tags={tags}
                                 isBookmarked={false}
+                                isLiked={isResumeLiked(resume.id)}
+                                onLike={handleResumeLike}
                                 onClick={() =>
                                   (window.location.href = `/resumes/${resume.id}`)
                                 }
@@ -832,13 +586,16 @@ export default function HomePage() {
                             return (
                               <JobInfoCard
                                 key={job.id}
-                                hospital={job.hospital}
+                                id={job.id}
+                                hospital={job.hospital?.name || job.hospital}
                                 dDay={job.dDay || 0}
                                 position={job.title}
                                 location={job.location}
-                                jobType={job.jobType}
-                                tags={job.tags}
-                                isBookmarked={job.isBookmarked}
+                                jobType={job.employmentType || job.jobType}
+                                tags={job.specialties || job.tags || []}
+                                isBookmarked={job.isBookmarked || false}
+                                isLiked={isJobLiked(job.id)}
+                                onLike={handleJobLike}
                                 onClick={() =>
                                   (window.location.href = `/jobs/${job.id}`)
                                 }
