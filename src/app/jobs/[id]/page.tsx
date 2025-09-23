@@ -47,9 +47,6 @@ export default function JobDetailPage({
   const [contactForm, setContactForm] = useState({
     subject: "",
     message: "",
-    senderName: "",
-    senderEmail: "",
-    senderPhone: "",
   });
   const router = useRouter();
   const { id } = use(params);
@@ -366,39 +363,60 @@ export default function JobDetailPage({
     }
   };
 
-  const handleContactSubmit = () => {
-    if (
-      !contactForm.subject ||
-      !contactForm.message ||
-      !contactForm.senderName ||
-      !contactForm.senderEmail
-    ) {
-      alert("모든 필수 항목을 입력해 주세요.");
+  const handleContactSubmit = async () => {
+    if (!contactForm.subject || !contactForm.message) {
+      alert("제목과 문의 내용을 모두 입력해 주세요.");
       return;
     }
 
-    // 여기에 메시지 전송 로직 추가
-    console.log("메시지 전송:", contactForm);
-    alert("메시지가 성공적으로 전송되었습니다!");
+    try {
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
 
-    // 폼 초기화 및 모달 닫기
-    setContactForm({
-      subject: "",
-      message: "",
-      senderName: "",
-      senderEmail: "",
-      senderPhone: "",
-    });
-    setContactModalOpen(false);
+      const response = await axios.post(
+        "/api/inquiries",
+        {
+          subject: contactForm.subject,
+          message: contactForm.message,
+          recipientId: jobData.hospitalUserId || jobData.hospital?.userId,
+          jobId: id,
+          type: "job",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        alert("문의가 성공적으로 전송되었습니다!");
+
+        // 폼 초기화 및 모달 닫기
+        setContactForm({
+          subject: "",
+          message: "",
+        });
+        setContactModalOpen(false);
+      }
+    } catch (error: any) {
+      console.error("Contact submit error:", error);
+
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        router.push("/login");
+      } else {
+        const errorMessage =
+          error.response?.data?.error || "문의 전송 중 오류가 발생했습니다.";
+        alert(errorMessage);
+      }
+    }
   };
 
   const resetContactForm = () => {
     setContactForm({
       subject: "",
       message: "",
-      senderName: "",
-      senderEmail: "",
-      senderPhone: "",
     });
     setContactModalOpen(false);
   };
@@ -885,7 +903,7 @@ export default function JobDetailPage({
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">문의하기</h3>
               <p className="text-gray-600 mb-6">
-                {jobData.hospital?.name || "병원"}에 {jobData.title} 포지션에
+                {jobData.hospital?.name || "병원"}의 {jobData.title} 포지션에
                 대해 문의하세요.
               </p>
 

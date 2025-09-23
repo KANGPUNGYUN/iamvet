@@ -1085,8 +1085,8 @@ export const createNotification = async (notificationData: {
   applicationStatus?: ApplicationStatus;
 }) => {
   const query = `
-    INSERT INTO notifications (user_id, type, title, description, content, url, sender_id, application_id, application_status)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    INSERT INTO notifications ("recipientId", type, title, content, "isRead", "senderId")
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *
   `;
 
@@ -1094,12 +1094,9 @@ export const createNotification = async (notificationData: {
     notificationData.userId,
     notificationData.type,
     notificationData.title,
-    notificationData.description,
     notificationData.content,
-    notificationData.url,
+    false, // isRead
     notificationData.senderId,
-    notificationData.applicationId,
-    notificationData.applicationStatus,
   ];
 
   const result = await pool.query(query, values);

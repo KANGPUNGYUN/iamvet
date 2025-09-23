@@ -5,14 +5,17 @@ import Link from "next/link";
 import { Tag } from "./Tag";
 
 interface NotificationCardProps {
-  id: number;
+  id: string;
   title: string;
   content: string;
   createdAt: string;
   isRead: boolean;
-  onMarkAsRead?: (id: number) => void;
+  onMarkAsRead?: (id: string) => void;
   jobId?: number;
   basePath?: string;
+  type?: 'notification' | 'inquiry';
+  notificationType?: string;
+  inquiryType?: string;
 }
 
 const NotificationCard: React.FC<NotificationCardProps> = ({
@@ -24,13 +27,46 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   onMarkAsRead,
   jobId,
   basePath = "/dashboard/veterinarian/messages",
+  type = 'notification',
+  notificationType,
+  inquiryType,
 }) => {
+  const getTagLabel = () => {
+    if (type === 'inquiry') {
+      switch (inquiryType) {
+        case 'job':
+          return '채용 문의';
+        case 'resume':
+          return '이력서 문의';
+        default:
+          return '일반 문의';
+      }
+    } else {
+      switch (notificationType) {
+        case 'ANNOUNCEMENT':
+          return '공지사항';
+        case 'INQUIRY':
+          return '문의 알림';
+        case 'COMMENT':
+          return '댓글 알림';
+        case 'REPLY':
+          return '답글 알림';
+        case 'APPLICATION_STATUS':
+          return '지원 결과';
+        case 'APPLICATION_NEW':
+          return '새 지원';
+        default:
+          return '일반 알림';
+      }
+    }
+  };
+
   const handleCardClick = () => {
     if (!isRead && onMarkAsRead) {
       onMarkAsRead(id);
     }
     // 모바일에서 카드 클릭 시 상세 페이지로 이동
-    window.location.href = `${basePath}/${id}`;
+    window.location.href = `${basePath}/${id}?type=${type}`;
   };
 
   return (
@@ -104,12 +140,11 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
       {/* 데스크톱에서만 태그와 링크 표시 */}
       <div className="hidden lg:flex items-center justify-between">
         <div className="flex gap-2">
-          <Tag variant={isRead ? 3 : 4}>지원 결과</Tag>
-          <Tag variant={isRead ? 3 : 4}>지원 결과</Tag>
+          <Tag variant={isRead ? 3 : 4}>{getTagLabel()}</Tag>
         </div>
 
         <Link
-          href={`${basePath}/${id}`}
+          href={`${basePath}/${id}?type=${type}`}
           className={`text-[12px] font-medium transition-colors ${
             isRead
               ? "text-[#CCCCCC] hover:text-[#999999]"

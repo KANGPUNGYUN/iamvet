@@ -472,20 +472,53 @@ export default function ResumeDetailPage({
     setContactModalOpen(true);
   };
 
-  const handleContactSubmit = () => {
+  const handleContactSubmit = async () => {
     if (!contactForm.subject || !contactForm.message) {
-      alert("모든 필수 항목을 입력해 주세요.");
+      alert("제목과 문의 내용을 모두 입력해 주세요.");
       return;
     }
 
-    console.log("메시지 전송:", contactForm);
-    alert("메시지가 성공적으로 전송되었습니다!");
+    try {
+      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      
+      const response = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          subject: contactForm.subject,
+          message: contactForm.message,
+          recipientId: resumeData.userId,
+          resumeId: id,
+          type: "resume"
+        })
+      });
 
-    setContactForm({
-      subject: "",
-      message: "",
-    });
-    setContactModalOpen(false);
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert("문의가 성공적으로 전송되었습니다!");
+        
+        setContactForm({
+          subject: "",
+          message: "",
+        });
+        setContactModalOpen(false);
+      } else {
+        throw new Error(result.error || "문의 전송에 실패했습니다.");
+      }
+    } catch (error: any) {
+      console.error("Contact submit error:", error);
+      
+      if (error.message.includes("Unauthorized")) {
+        alert("로그인이 필요합니다.");
+        router.push("/login/veterinarian");
+      } else {
+        alert(error.message || "문의 전송 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   // 평가하기 관련 핸들러 (향후 API 연동 예정)
