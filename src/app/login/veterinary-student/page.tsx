@@ -2,7 +2,7 @@
 
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Button } from "@/components/ui/Button";
-import { SocialLoginButton } from "@/components/ui/SocialLoginButton";
+// import { SocialLoginButton } from "@/components/ui/SocialLoginButton";
 import { ArrowLeftIcon } from "public/icons";
 import Link from "next/link";
 import { useState } from "react";
@@ -45,14 +45,14 @@ export default function VeterinaryStudentLoginPage() {
     }
   };
 
-  const handleSocialLogin = (provider: "google" | "kakao" | "naver") => {
-    // Direct redirect instead of using popup-based hooks
-    const baseUrl = window.location.origin;
-    const socialLoginUrl = `${baseUrl}/api/auth/${provider}/login?userType=veterinary-student`;
+  // const handleSocialLogin = (provider: "google" | "kakao" | "naver") => {
+  //   // Direct redirect instead of using popup-based hooks
+  //   const baseUrl = window.location.origin;
+  //   const socialLoginUrl = `${baseUrl}/api/auth/${provider}/login?userType=veterinary-student`;
 
-    // Force redirect in current window
-    window.location.href = socialLoginUrl;
-  };
+  //   // Force redirect in current window
+  //   window.location.href = socialLoginUrl;
+  // };
 
   return (
     <>
@@ -136,16 +136,16 @@ export default function VeterinaryStudentLoginPage() {
             </div>
 
             {/* 구분선 */}
-            <div className="flex items-center mt-[50px]">
+            {/* <div className="flex items-center mt-[50px]">
               <div className="flex-1 h-px bg-[#E5E5E5]"></div>
               <span className="px-4 text-[14px] text-[#9098A4]">
                 소셜 계정으로 간편 로그인
               </span>
               <div className="flex-1 h-px bg-[#E5E5E5]"></div>
-            </div>
+            </div> */}
 
             {/* SNS 로그인 버튼들 */}
-            <div className="flex flex-col md:grid md:grid-cols-3 gap-3">
+            {/* <div className="flex flex-col md:grid md:grid-cols-3 gap-3">
               <SocialLoginButton
                 type="naver"
                 onClick={() => handleSocialLogin("naver")}
@@ -158,7 +158,7 @@ export default function VeterinaryStudentLoginPage() {
                 type="google"
                 onClick={() => handleSocialLogin("google")}
               />
-            </div>
+            </div> */}
           </form>
         </div>
       </main>
