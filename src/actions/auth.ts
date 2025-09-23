@@ -621,21 +621,21 @@ export async function checkUserIdDuplicate(username: string) {
 }
 
 // 아이디 중복확인
-export async function checkUsernameDuplicate(username: string): Promise<{
+export async function checkLoginIdDuplicate(loginId: string): Promise<{
   success: boolean;
   isDuplicate?: boolean;
   message?: string;
   error?: string;
 }> {
   try {
-    console.log("[SERVER] checkUsernameDuplicate called with:", username);
+    console.log("[SERVER] checkLoginIdDuplicate called with:", loginId);
 
-    if (!username || username.trim() === "") {
+    if (!loginId || loginId.trim() === "") {
       return { success: false, error: "아이디를 입력해주세요." };
     }
 
     const existingUser = await sql`
-      SELECT id FROM users WHERE (username = ${username} OR "loginId" = ${username}) AND "isActive" = true
+      SELECT id FROM users WHERE "loginId" = ${loginId} AND "isActive" = true
     `;
 
     const isDuplicate = existingUser.length > 0;
@@ -648,7 +648,7 @@ export async function checkUsernameDuplicate(username: string): Promise<{
         : "사용 가능한 아이디입니다.",
     };
   } catch (error) {
-    console.error("[SERVER] checkUsernameDuplicate error:", error);
+    console.error("[SERVER] checkLoginIdDuplicate error:", error);
     return {
       success: false,
       error: "아이디 중복확인 중 오류가 발생했습니다.",
@@ -741,7 +741,6 @@ export interface HospitalRegisterData {
   address: string;
   detailAddress?: string; // 상세주소
   profileImage?: string;
-  facilityImages?: string[]; // 병원 시설 이미지 (최대 10장)
   treatmentAnimals?: string[]; // 진료 가능 동물
   treatmentSpecialties?: string[]; // 진료 분야
   businessLicense?: string;
@@ -930,7 +929,6 @@ export async function registerHospital(data: HospitalRegisterData) {
       address,
       detailAddress,
       profileImage,
-      facilityImages,
       treatmentAnimals,
       treatmentSpecialties,
       businessLicense,
@@ -980,20 +978,6 @@ export async function registerHospital(data: HospitalRegisterData) {
     const user = userResult[0];
     console.log("SERVER: Hospital user created successfully:", user.id);
 
-    // 병원 시설 이미지 저장
-    if (facilityImages && facilityImages.length > 0) {
-      for (let i = 0; i < facilityImages.length; i++) {
-        const imageUrl = facilityImages[i];
-        await sql`
-          INSERT INTO hospital_facility_images (
-            id, "userId", "imageUrl", "displayOrder", "createdAt", "updatedAt"
-          ) VALUES (
-            ${createId()}, ${user.id}, ${imageUrl}, ${i}, ${currentDate}, ${currentDate}
-          )
-        `;
-      }
-      console.log("SERVER: Hospital facility images saved:", facilityImages.length);
-    }
 
     // 진료 가능 동물 저장
     if (treatmentAnimals && treatmentAnimals.length > 0) {

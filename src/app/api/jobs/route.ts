@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     experience: parseArrayParam(searchParams.get("experience")),
     region: searchParams.get("region") || undefined,
     major: parseArrayParam(searchParams.get("major")),
+    myJobs: searchParams.get("myJobs") === "true",
   };
 
   try {
@@ -65,7 +66,18 @@ export async function GET(request: NextRequest) {
 
     console.log('Jobs API params:', params);
 
-    const result = await getJobsWithPagination(params);
+    // myJobs 요청인 경우 userId가 필요함
+    if (params.myJobs && !userId) {
+      return NextResponse.json(
+        createErrorResponse("내 채용공고 조회를 위해서는 로그인이 필요합니다."),
+        { status: 401 }
+      );
+    }
+
+    // myJobs 요청인 경우 userId를 params에 추가
+    const finalParams = params.myJobs ? { ...params, userId } : params;
+
+    const result = await getJobsWithPagination(finalParams);
     console.log('Database result:', { 
       jobsCount: result.jobs.length, 
       totalCount: result.totalCount,

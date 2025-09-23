@@ -13,12 +13,64 @@ import {
   SettingsIcon,
 } from "public/icons";
 
+// 간단한 펼침/접힘 아이콘 컴포넌트
+const ChevronDownIcon: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 9l-7 7-7-7"
+    />
+  </svg>
+);
+
+const ChevronRightIcon: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 5l7 7-7 7"
+    />
+  </svg>
+);
+
 interface SidebarMenuItem {
   id: string;
   label: string;
   icon: React.ComponentType<{ currentColor?: string }>;
   href: string;
   badge?: number;
+}
+
+interface SidebarChildMenuItem {
+  id: string;
+  label: string;
+  href: string;
+}
+
+interface SidebarMenuGroup {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ currentColor?: string }>;
+  children: SidebarChildMenuItem[];
 }
 
 interface SidebarProps {
@@ -28,6 +80,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
   const pathname = usePathname();
+  const [expandedGroups, setExpandedGroups] = React.useState<Set<string>>(
+    new Set(["bookmarks"])
+  );
 
   // 수의사용 메뉴
   const veterinarianMenu: SidebarMenuItem[] = [
@@ -42,12 +97,6 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
       label: "나의 이력서",
       icon: UserPlusIcon,
       href: "/dashboard/veterinarian/resume",
-    },
-    {
-      id: "bookmarks",
-      label: "찜한 공고 목록",
-      icon: HeartMenuIcon,
-      href: "/dashboard/veterinarian/bookmarks",
     },
     {
       id: "applications",
@@ -78,22 +127,16 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
       href: "/dashboard/hospital",
     },
     {
-      id: "transfer-bookmarks",
-      label: "양수양도 찜 목록",
-      icon: HeartMenuIcon,
-      href: "/dashboard/hospital/transfer-bookmarks",
-    },
-    {
       id: "my-jobs",
       label: "올린 공고 관리",
       icon: ListIcon,
       href: "/dashboard/hospital/my-jobs",
     },
     {
-      id: "favorite-talents",
-      label: "관심 인재 목록",
+      id: "applicants",
+      label: "지원자 목록",
       icon: UsersIcon,
-      href: "/dashboard/hospital/favorite-talents",
+      href: "/dashboard/hospital/applicants",
     },
     {
       id: "messages",
@@ -110,6 +153,54 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
     },
   ];
 
+  // 병원용 북마크 그룹
+  const hospitalBookmarkGroup: SidebarMenuGroup = {
+    id: "bookmarks",
+    label: "북마크 관리",
+    icon: HeartMenuIcon,
+    children: [
+      {
+        id: "transfer-bookmarks",
+        label: "양수양도 찜 목록",
+        href: "/dashboard/hospital/transfer-bookmarks",
+      },
+      {
+        id: "lecture-bookmarks",
+        label: "강의 북마크",
+        href: "/dashboard/hospital/lecture-bookmarks",
+      },
+      {
+        id: "favorite-talents",
+        label: "이력서 북마크",
+        href: "/dashboard/hospital/favorite-talents",
+      },
+    ],
+  };
+
+  // 수의사용 북마크 그룹
+  const veterinarianBookmarkGroup: SidebarMenuGroup = {
+    id: "bookmarks",
+    label: "북마크 관리",
+    icon: HeartMenuIcon,
+    children: [
+      {
+        id: "transfer-bookmarks",
+        label: "양수양도 북마크",
+        href: "/dashboard/veterinarian/transfer-bookmarks",
+      },
+      {
+        id: "lecture-bookmarks",
+        label: "강의 북마크",
+        href: "/dashboard/veterinarian/lecture-bookmarks",
+      },
+      {
+        id: "job-bookmarks",
+        label: "채용공고 북마크",
+        href: "/dashboard/veterinarian/job-bookmarks",
+      },
+    ],
+  };
+
   const menuItems =
     userType === "veterinarian" ? veterinarianMenu : hospitalMenu;
 
@@ -118,6 +209,22 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
       return pathname === href;
     }
     return pathname.startsWith(href);
+  };
+
+  const isGroupActive = (group: SidebarMenuGroup) => {
+    return group.children.some((child) => isActive(child.href));
+  };
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupId)) {
+        newSet.delete(groupId);
+      } else {
+        newSet.add(groupId);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -161,6 +268,109 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
               </li>
             );
           })}
+
+          {/* 북마크 그룹 */}
+          {userType === "hospital" && (
+            <li key={hospitalBookmarkGroup.id}>
+              <button
+                onClick={() => toggleGroup(hospitalBookmarkGroup.id)}
+                className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  isGroupActive(hospitalBookmarkGroup)
+                    ? "text-[#FF8796] bg-[#FFF7F7]"
+                    : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <hospitalBookmarkGroup.icon
+                  currentColor={
+                    isGroupActive(hospitalBookmarkGroup) ? "#FF8796" : "#4F5866"
+                  }
+                />
+                <span className="ml-3">{hospitalBookmarkGroup.label}</span>
+                <span className="ml-auto">
+                  {expandedGroups.has(hospitalBookmarkGroup.id) ? (
+                    <ChevronDownIcon className="w-4 h-4" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4" />
+                  )}
+                </span>
+              </button>
+
+              {/* 하위 메뉴 */}
+              {expandedGroups.has(hospitalBookmarkGroup.id) && (
+                <ul className="mt-2 ml-6 space-y-1">
+                  {hospitalBookmarkGroup.children.map((child) => {
+                    const childActive = isActive(child.href);
+
+                    return (
+                      <li key={child.id}>
+                        <Link
+                          href={child.href}
+                          className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                            childActive
+                              ? "text-[#FF8796] bg-[#FFF7F7]"
+                              : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                          }`}
+                        >
+                          <span>{child.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          )}
+
+          {userType === "veterinarian" && (
+            <li key={veterinarianBookmarkGroup.id}>
+              <button
+                onClick={() => toggleGroup(veterinarianBookmarkGroup.id)}
+                className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  isGroupActive(veterinarianBookmarkGroup)
+                    ? "text-[#FF8796] bg-[#FFF7F7]"
+                    : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <veterinarianBookmarkGroup.icon
+                  currentColor={
+                    isGroupActive(veterinarianBookmarkGroup) ? "#FF8796" : "#4F5866"
+                  }
+                />
+                <span className="ml-3">{veterinarianBookmarkGroup.label}</span>
+                <span className="ml-auto">
+                  {expandedGroups.has(veterinarianBookmarkGroup.id) ? (
+                    <ChevronDownIcon className="w-4 h-4" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4" />
+                  )}
+                </span>
+              </button>
+
+              {/* 하위 메뉴 */}
+              {expandedGroups.has(veterinarianBookmarkGroup.id) && (
+                <ul className="mt-2 ml-6 space-y-1">
+                  {veterinarianBookmarkGroup.children.map((child) => {
+                    const childActive = isActive(child.href);
+
+                    return (
+                      <li key={child.id}>
+                        <Link
+                          href={child.href}
+                          className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                            childActive
+                              ? "text-[#FF8796] bg-[#FFF7F7]"
+                              : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                          }`}
+                        >
+                          <span>{child.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          )}
         </ul>
       </nav>
     </aside>

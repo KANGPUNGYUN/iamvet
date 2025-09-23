@@ -10,6 +10,7 @@ import {
   getRelatedTransfers,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 interface RouteContext {
   params: Promise<{
@@ -46,12 +47,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const userIdentifier = generateUserIdentifier(request, userId);
     await incrementViewCount('transfer', transferId, userIdentifier, userId);
 
+    // 좋아요 여부 확인 (로그인한 경우에만)
+    let isLiked = false;
+    if (userId) {
+      const likeCheck = await prisma.transferLike.findUnique({
+        where: {
+          userId_transferId: {
+            userId: userId,
+            transferId: transferId
+          }
+        }
+      });
+      isLiked = !!likeCheck;
+    }
+
     // 관련 양도양수 게시글
     const relatedTransfers = await getRelatedTransfers(transferId, 5);
 
     const transferDetail = {
       ...transfer,
       relatedTransfers,
+      isLiked: isLiked,
     };
 
     return NextResponse.json(

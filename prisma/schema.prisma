@@ -39,28 +39,36 @@ model User {
   seq                     Int                      @unique @default(autoincrement())
   universityEmail         String?                  @unique
   lastLoginAt             DateTime?                @db.Timestamp(6)
+  announcementsCreated    Announcement[]
   applications            Application[]
   commentReplies          CommentReply[]
   detailedHospitalProfile DetailedHospitalProfile?
   detailedResume          DetailedResume?
   forum_comments          forum_comments[]
+  forumPostLikes          ForumPostLike[]
   forumPosts              ForumPost[]
   hospitalEvaluations     HospitalEvaluation[]     @relation("HospitalEvaluations")
   userHospitalEvaluations HospitalEvaluation[]     @relation("UserHospitalEvaluations")
   hospital_profiles       hospital_profiles?
-  jobBookmarks            JobBookmark[]
+  jobLikes                JobLike[]
   jobs                    Job[]
-  lectureBookmarks        LectureBookmark[]
   lectureComments         LectureComment[]
+  lectureLikes            LectureLike[]
   receivedMessages        Message[]                @relation("ReceivedMessages")
   sentMessages            Message[]                @relation("SentMessages")
-  resumeBookmarks         ResumeBookmark[]
+  notificationSettings    NotificationSettings?
+  notificationsReceived   Notification[]           @relation("NotificationRecipient")
+  notificationsSent       Notification[]           @relation("NotificationSender")
   resumeEvaluations       ResumeEvaluation[]
+  resumeLikes             ResumeLike[]
   resumes                 Resume[]
   socialAccounts          SocialAccount[]
-  transferBookmarks       TransferBookmark[]
+  transferLikes           TransferLike[]
   transfers               Transfer[]
   veterinarian_profiles   veterinarian_profiles?
+  hospitalAnimals         HospitalAnimal[]
+  hospitalSpecialties     HospitalSpecialty[]
+  hospitalBusinessLicenses HospitalBusinessLicense[]
 
   @@index([loginId], map: "idx_users_loginid")
   @@index([nickname], map: "idx_users_nickname")
@@ -83,37 +91,39 @@ model SocialAccount {
 }
 
 model Job {
-  id                   String    @id @default(cuid())
+  id                   String            @id @default(cuid())
   hospitalId           String
   title                String
   benefits             String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @default(now()) @updatedAt
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @default(now()) @updatedAt
   deletedAt            DateTime?
-  certifications       String[]  @default([])
+  certifications       String[]          @default([])
   department           String
-  education            String[]  @default([])
-  experience           String[]  @default([])
-  experienceDetails    String[]  @default([])
-  isActive             Boolean   @default(true)
-  isDraft              Boolean   @default(false)
-  isUnlimitedRecruit   Boolean   @default(false)
-  isWorkDaysNegotiable Boolean   @default(false)
-  isWorkTimeNegotiable Boolean   @default(false)
-  major                String[]  @default([])
+  education            String[]          @default([])
+  experience           String[]          @default([])
+  experienceDetails    String[]          @default([])
+  isActive             Boolean           @default(true)
+  isDraft              Boolean           @default(false)
+  isUnlimitedRecruit   Boolean           @default(false)
+  isWorkDaysNegotiable Boolean           @default(false)
+  isWorkTimeNegotiable Boolean           @default(false)
+  major                String[]          @default([])
   managerEmail         String
   managerName          String
   managerPhone         String
   position             String
-  preferences          String[]  @default([])
+  preferences          String[]          @default([])
   recruitEndDate       DateTime?
   salary               String
-  workDays             String[]  @default([])
+  workDays             String[]          @default([])
   workEndTime          String?
   workStartTime        String?
   salaryType           String
-  workType             String[]  @default([])
-  hospital             User      @relation(fields: [hospitalId], references: [id], map: "jobs_hospitalid_fkey")
+  workType             String[]          @default([])
+  likes                JobLike[]
+  jobNotifications     JobNotification[]
+  hospital             User              @relation(fields: [hospitalId], references: [id], map: "jobs_hospitalid_fkey")
 
   @@index([createdAt], map: "idx_jobs_created_at")
   @@index([deletedAt], map: "idx_jobs_deleted_at")
@@ -142,7 +152,6 @@ model Resume {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   deletedAt         DateTime?
-  bookmarks         ResumeBookmark[]
   evaluations       ResumeEvaluation[]
   veterinarian      User               @relation(fields: [veterinarianId], references: [id])
 
@@ -150,16 +159,17 @@ model Resume {
 }
 
 model Application {
-  id             String            @id @default(cuid())
-  jobId          String
-  veterinarianId String
-  coverLetter    String?
-  status         ApplicationStatus @default(PENDING)
-  appliedAt      DateTime          @default(now())
-  reviewedAt     DateTime?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  veterinarian   User              @relation(fields: [veterinarianId], references: [id])
+  id               String            @id @default(cuid())
+  jobId            String
+  veterinarianId   String
+  coverLetter      String?
+  status           ApplicationStatus @default(PENDING)
+  appliedAt        DateTime          @default(now())
+  reviewedAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  veterinarian     User              @relation(fields: [veterinarianId], references: [id])
+  jobNotifications JobNotification[]
 
   @@unique([jobId, veterinarianId])
   @@index([jobId], map: "idx_applications_job_id")
@@ -181,8 +191,8 @@ model Lecture {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   deletedAt   DateTime?
-  bookmarks   LectureBookmark[]
   comments    LectureComment[]
+  likes       LectureLike[]
 
   @@map("lectures")
 }
@@ -242,7 +252,7 @@ model Transfer {
   sido          String?
   sigungu       String?
   views         Int                @default(0)
-  bookmarks     TransferBookmark[]
+  likes         TransferLike[]
   user          User               @relation(fields: [userId], references: [id])
 
   @@map("transfers")
@@ -260,6 +270,7 @@ model ForumPost {
   medicalField   String
   viewCount      Int              @default(0)
   forum_comments forum_comments[]
+  likes          ForumPostLike[]
   user           User             @relation(fields: [userId], references: [id])
 
   @@map("forum_posts")
@@ -281,56 +292,6 @@ model Message {
   @@map("messages")
 }
 
-model JobBookmark {
-  id        String    @id @default(cuid())
-  userId    String
-  jobId     String
-  createdAt DateTime  @default(now())
-  deletedAt DateTime?
-  user      User      @relation(fields: [userId], references: [id])
-
-  @@unique([userId, jobId])
-  @@map("job_bookmarks")
-}
-
-model ResumeBookmark {
-  id        String    @id @default(cuid())
-  userId    String
-  resumeId  String
-  createdAt DateTime  @default(now())
-  deletedAt DateTime?
-  resume    Resume    @relation(fields: [resumeId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
-
-  @@unique([userId, resumeId])
-  @@map("resume_bookmarks")
-}
-
-model LectureBookmark {
-  id        String    @id @default(cuid())
-  userId    String
-  lectureId String
-  createdAt DateTime  @default(now())
-  deletedAt DateTime?
-  lecture   Lecture   @relation(fields: [lectureId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
-
-  @@unique([userId, lectureId])
-  @@map("lecture_bookmarks")
-}
-
-model TransferBookmark {
-  id         String    @id @default(cuid())
-  userId     String
-  transferId String
-  createdAt  DateTime  @default(now())
-  deletedAt  DateTime?
-  transfer   Transfer  @relation(fields: [transferId], references: [id])
-  user       User      @relation(fields: [userId], references: [id])
-
-  @@unique([userId, transferId])
-  @@map("transfer_bookmarks")
-}
 
 model HospitalEvaluation {
   id         String    @id @default(cuid())
@@ -395,6 +356,7 @@ model DetailedResume {
   experiences         ResumeExperience[]
   licenses            ResumeLicense[]
   medicalCapabilities ResumeMedicalCapability[]
+  likes               ResumeLike[]
 
   @@map("detailed_resumes")
 }
@@ -499,6 +461,7 @@ model DetailedHospitalProfile {
   user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   equipments          HospitalEquipment[]
   staff               HospitalStaff[]
+  facilityImages      HospitalFacilityImage[]
 
   @@map("detailed_hospital_profiles")
 }
@@ -537,6 +500,54 @@ model HospitalEquipment {
   hospitalProfile   DetailedHospitalProfile @relation(fields: [hospitalProfileId], references: [id], onDelete: Cascade)
 
   @@map("hospital_equipments")
+}
+
+model HospitalFacilityImage {
+  id                String                  @id @default(cuid())
+  userId            String
+  imageUrl          String
+  displayOrder      Int                     @default(0)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  hospitalProfile   DetailedHospitalProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("hospital_facility_images")
+}
+
+model HospitalAnimal {
+  id          String   @id @default(cuid())
+  userId      String
+  animalType  String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("hospital_animals")
+}
+
+model HospitalSpecialty {
+  id        String   @id @default(cuid())
+  userId    String
+  specialty String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("hospital_specialties")
+}
+
+model HospitalBusinessLicense {
+  id         String   @id @default(cuid())
+  userId     String
+  fileName   String
+  fileUrl    String
+  fileType   String
+  uploadedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("hospital_business_licenses")
 }
 
 model hospital_profiles {
@@ -594,6 +605,185 @@ model forum_comments {
   @@index([forum_id], map: "idx_forum_comments_forum_id")
   @@index([parent_id], map: "idx_forum_comments_parent_id")
   @@index([user_id], map: "idx_forum_comments_user_id")
+}
+
+model Notification {
+  id                  String               @id @default(cuid())
+  type                NotificationType
+  recipientId         String
+  recipientType       UserType
+  senderId            String?
+  title               String
+  content             String
+  isRead              Boolean              @default(false)
+  readAt              DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  announcement        Announcement?
+  commentNotification CommentNotification?
+  inquiry             Inquiry?
+  jobNotification     JobNotification?
+  recipient           User                 @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender              User?                @relation("NotificationSender", fields: [senderId], references: [id])
+
+  @@index([recipientId, isRead, createdAt(sort: Desc)])
+  @@index([type, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model Announcement {
+  id              String               @id @default(cuid())
+  notificationId  String               @unique
+  targetUserTypes String[]
+  priority        NotificationPriority @default(NORMAL)
+  expiresAt       DateTime?
+  createdBy       String
+  creator         User                 @relation(fields: [createdBy], references: [id])
+  notification    Notification         @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  batches         NotificationBatch[]
+
+  @@map("announcements")
+}
+
+model Inquiry {
+  id             String       @id @default(cuid())
+  notificationId String       @unique
+  inquiryType    String
+  subject        String
+  attachments    String[]
+  repliedAt      DateTime?
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@map("inquiries")
+}
+
+model CommentNotification {
+  id              String       @id @default(cuid())
+  notificationId  String       @unique
+  postType        String
+  postId          String
+  commentId       String
+  parentCommentId String?
+  notification    Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([postType, postId])
+  @@map("comment_notifications")
+}
+
+model JobNotification {
+  id             String            @id @default(cuid())
+  notificationId String            @unique
+  jobId          String
+  applicationId  String
+  previousStatus String?
+  newStatus      ApplicationStatus
+  application    Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  job            Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  notification   Notification      @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, applicationId])
+  @@map("job_notifications")
+}
+
+model NotificationSettings {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  announcementEnabled Boolean  @default(true)
+  inquiryEnabled      Boolean  @default(true)
+  commentEnabled      Boolean  @default(true)
+  jobEnabled          Boolean  @default(true)
+  emailNotifications  Boolean  @default(false)
+  pushNotifications   Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+model NotificationBatch {
+  id              String                  @id @default(cuid())
+  announcementId  String
+  totalRecipients Int
+  sentCount       Int                     @default(0)
+  failedCount     Int                     @default(0)
+  status          NotificationBatchStatus @default(PENDING)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime                @default(now())
+  announcement    Announcement            @relation(fields: [announcementId], references: [id])
+
+  @@map("notification_batches")
+}
+
+model ResumeLike {
+  id        String         @id @default(cuid())
+  userId    String
+  resumeId  String
+  createdAt DateTime       @default(now())
+  resume    DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resumeId])
+  @@index([resumeId])
+  @@index([userId])
+  @@map("resume_likes")
+}
+
+model JobLike {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([jobId])
+  @@index([userId])
+  @@map("job_likes")
+}
+
+model LectureLike {
+  id        String   @id @default(cuid())
+  userId    String
+  lectureId String
+  createdAt DateTime @default(now())
+  lecture   Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lectureId])
+  @@index([lectureId])
+  @@index([userId])
+  @@map("lecture_likes")
+}
+
+model TransferLike {
+  id         String   @id @default(cuid())
+  userId     String
+  transferId String
+  createdAt  DateTime @default(now())
+  transfer   Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, transferId])
+  @@index([transferId])
+  @@index([userId])
+  @@map("transfer_likes")
+}
+
+model ForumPostLike {
+  id          String    @id @default(cuid())
+  userId      String
+  forumPostId String
+  createdAt   DateTime  @default(now())
+  forumPost   ForumPost @relation(fields: [forumPostId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, forumPostId])
+  @@index([forumPostId])
+  @@index([userId])
+  @@map("forum_post_likes")
 }
 
 enum UserType {
@@ -663,4 +853,26 @@ enum TransferStatus {
 enum MessageStatus {
   UNREAD
   READ
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  INQUIRY
+  COMMENT
+  REPLY
+  APPLICATION_STATUS
+  APPLICATION_NEW
+}
+
+enum NotificationPriority {
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum NotificationBatchStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }

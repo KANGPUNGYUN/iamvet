@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
 import { PhoneInput, BirthDateInput } from "@/components/ui/FormattedInput";
 import { ProfileImageUpload } from "@/components/features/profile";
-import { checkEmailDuplicate, checkUsernameDuplicate } from "@/actions/auth";
+import { checkEmailDuplicate, checkLoginIdDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -226,10 +226,10 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     }));
 
     try {
-      console.log("CLIENT: Calling checkUsernameDuplicate with:", formData.loginId);
-      // loginId는 checkUsernameDuplicate를 사용
-      const result = await checkUsernameDuplicate(formData.loginId);
-      console.log("CLIENT: checkUsernameDuplicate result:", result);
+      console.log("CLIENT: Calling checkLoginIdDuplicate with:", formData.loginId);
+      // loginId는 checkLoginIdDuplicate를 사용
+      const result = await checkLoginIdDuplicate(formData.loginId);
+      console.log("CLIENT: checkLoginIdDuplicate result:", result);
 
       if (result.success) {
         const isValid = !result.isDuplicate;

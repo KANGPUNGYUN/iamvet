@@ -73,6 +73,10 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
       active: pathname === "/transfers",
     },
     { label: "임상포럼", href: "/forums", active: pathname === "/forums" },
+    // 로그인한 사용자에게만 공지사항 메뉴 표시
+    ...(isAuthenticated
+      ? [{ label: "공지사항", href: "/notices", active: pathname === "/notices" }]
+      : []),
   ];
 
   return (

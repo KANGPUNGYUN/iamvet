@@ -1,10 +1,7 @@
 "use client";
 
 import { Tab } from "@/components/ui/Tab";
-import {
-  ArrowRightIcon,
-  PlusIcon,
-} from "public/icons";
+import { ArrowRightIcon, PlusIcon } from "public/icons";
 import banner1Img from "@/assets/images/banner1.png";
 import banner2Img from "@/assets/images/banner2.png";
 import banner3Img from "@/assets/images/banner3.png";
@@ -201,9 +198,6 @@ export default function HomePage() {
     .filter((item: any) => item.category === "인테리어")
     .slice(0, 8);
 
-
-
-
   const handleAITalentSearch = () => {
     console.log("AI로 인재 찾기 클릭");
     window.location.href = "/resumes";
@@ -220,12 +214,20 @@ export default function HomePage() {
     likedJobs,
     setResumeLike,
     setJobLike,
+    setLectureLike,
+    setTransferLike,
     toggleResumeLike,
     toggleJobLike,
+    toggleLectureLike,
+    toggleTransferLike,
     initializeResumeLikes,
     initializeJobLikes,
+    initializeLectureLikes,
+    initializeTransferLikes,
     isResumeLiked,
-    isJobLiked
+    isJobLiked,
+    isLectureLiked,
+    isTransferLiked,
   } = useLikeStore();
 
   // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
@@ -235,9 +237,12 @@ export default function HomePage() {
       const likedResumeIds = resumes
         .filter((resume: any) => resume.isLiked)
         .map((resume: any) => resume.id);
-      
+
       if (likedResumeIds.length > 0) {
-        console.log('[Resume Like] 서버에서 받은 좋아요 이력서:', likedResumeIds);
+        console.log(
+          "[Resume Like] 서버에서 받은 좋아요 이력서:",
+          likedResumeIds
+        );
         initializeResumeLikes(likedResumeIds);
       }
     }
@@ -249,34 +254,108 @@ export default function HomePage() {
       const likedJobIds = jobs
         .filter((job: any) => job.isLiked)
         .map((job: any) => job.id);
-      
+
       if (likedJobIds.length > 0) {
-        console.log('[Job Like] 서버에서 받은 좋아요 채용공고:', likedJobIds);
+        console.log("[Job Like] 서버에서 받은 좋아요 채용공고:", likedJobIds);
         initializeJobLikes(likedJobIds);
       }
     }
   }, [jobsData, initializeJobLikes]);
 
+  // 강의 좋아요 상태 동기화 (Emergency 강의)
+  React.useEffect(() => {
+    if (emergencyLectures.length > 0) {
+      const likedLectureIds = emergencyLectures
+        .filter((lecture: any) => lecture.isLiked)
+        .map((lecture: any) => lecture.id);
+
+      if (likedLectureIds.length > 0) {
+        console.log(
+          "[Emergency Lecture Like] 서버에서 받은 좋아요 강의:",
+          likedLectureIds
+        );
+        initializeLectureLikes(likedLectureIds);
+      }
+    }
+  }, [emergencyLectures, initializeLectureLikes]);
+
+  // 강의 좋아요 상태 동기화 (Dermatology 강의)
+  React.useEffect(() => {
+    if (dermatologyLectures.length > 0) {
+      const likedLectureIds = dermatologyLectures
+        .filter((lecture: any) => lecture.isLiked)
+        .map((lecture: any) => lecture.id);
+
+      if (likedLectureIds.length > 0) {
+        console.log(
+          "[Dermatology Lecture Like] 서버에서 받은 좋아요 강의:",
+          likedLectureIds
+        );
+        initializeLectureLikes(likedLectureIds);
+      }
+    }
+  }, [dermatologyLectures, initializeLectureLikes]);
+
+  // 강의 좋아요 상태 동기화 (Internal 강의)
+  React.useEffect(() => {
+    if (internalLectures.length > 0) {
+      const likedLectureIds = internalLectures
+        .filter((lecture: any) => lecture.isLiked)
+        .map((lecture: any) => lecture.id);
+
+      if (likedLectureIds.length > 0) {
+        console.log(
+          "[Internal Lecture Like] 서버에서 받은 좋아요 강의:",
+          likedLectureIds
+        );
+        initializeLectureLikes(likedLectureIds);
+      }
+    }
+  }, [internalLectures, initializeLectureLikes]);
+
+  // Transfer 좋아요 상태 동기화
+  React.useEffect(() => {
+    if (allTransfers.length > 0) {
+      const likedTransferIds = allTransfers
+        .filter((transfer: any) => transfer.isLiked)
+        .map((transfer: any) => transfer.id);
+
+      if (likedTransferIds.length > 0) {
+        console.log(
+          "[Transfer Like] 서버에서 받은 좋아요 양수양도:",
+          likedTransferIds
+        );
+        initializeTransferLikes(likedTransferIds);
+      }
+    }
+  }, [allTransfers, initializeTransferLikes]);
+
   // 이력서 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
   const handleResumeLike = async (resumeId: string | number) => {
     const id = resumeId.toString();
     const isCurrentlyLiked = isResumeLiked(id);
-    
-    console.log(`[Resume Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[Resume Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleResumeLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[Resume Like] API 요청: ${method} /api/resumes/${resumeId}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[Resume Like] API 요청: ${method} /api/resumes/${resumeId}/like`
+      );
+
       const response = await fetch(`/api/resumes/${resumeId}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -284,23 +363,25 @@ export default function HomePage() {
 
       if (!response.ok) {
         console.error(`[Resume Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setResumeLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('이력서를 찾을 수 없습니다:', resumeId);
+          console.warn("이력서를 찾을 수 없습니다:", resumeId);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[Resume Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[Resume Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setResumeLike(id, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -308,8 +389,11 @@ export default function HomePage() {
 
       console.log(`[Resume Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[Resume Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[Resume Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setResumeLike(id, isCurrentlyLiked);
     }
@@ -319,22 +403,26 @@ export default function HomePage() {
   const handleJobLike = async (jobId: string | number) => {
     const id = jobId.toString();
     const isCurrentlyLiked = isJobLiked(id);
-    
-    console.log(`[Job Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[Job Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleJobLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
       console.log(`[Job Like] API 요청: ${method} /api/jobs/${jobId}/like`);
-      
+
       const response = await fetch(`/api/jobs/${jobId}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -342,23 +430,25 @@ export default function HomePage() {
 
       if (!response.ok) {
         console.error(`[Job Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setJobLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('채용공고를 찾을 수 없습니다:', jobId);
+          console.warn("채용공고를 찾을 수 없습니다:", jobId);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[Job Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[Job Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setJobLike(id, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -366,10 +456,151 @@ export default function HomePage() {
 
       console.log(`[Job Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[Job Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[Job Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setJobLike(id, isCurrentlyLiked);
+    }
+  };
+
+  // 강의 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
+  const handleLectureLike = async (lectureId: string | number) => {
+    const id = lectureId.toString();
+    const isCurrentlyLiked = isLectureLiked(id);
+
+    console.log(
+      `[Lecture Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleLectureLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[Lecture Like] API 요청: ${method} /api/lectures/${lectureId}/like`
+      );
+
+      const response = await fetch(`/api/lectures/${lectureId}/like`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[Lecture Like] ${actionText} 실패:`, result);
+
+        // 오류 발생 시 상태 롤백
+        setLectureLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn("강의를 찾을 수 없습니다:", lectureId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[Lecture Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
+            setLectureLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn("로그인이 필요합니다.");
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[Lecture Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(
+        `[Lecture Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
+      // 오류 발생 시 상태 롤백
+      setLectureLike(id, isCurrentlyLiked);
+    }
+  };
+
+  // 양수양도 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
+  const handleTransferLike = async (transferId: string | number) => {
+    const id = transferId.toString();
+    const isCurrentlyLiked = isTransferLiked(id);
+
+    console.log(
+      `[Transfer Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleTransferLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[Transfer Like] API 요청: ${method} /api/transfers/${transferId}/like`
+      );
+
+      const response = await fetch(`/api/transfers/${transferId}/like`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[Transfer Like] ${actionText} 실패:`, result);
+
+        // 오류 발생 시 상태 롤백
+        setTransferLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn("양수양도를 찾을 수 없습니다:", transferId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
+            setTransferLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn("로그인이 필요합니다.");
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[Transfer Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(
+        `[Transfer Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
+      // 오류 발생 시 상태 롤백
+      setTransferLike(id, isCurrentlyLiked);
     }
   };
 
@@ -683,6 +914,7 @@ export default function HomePage() {
                   : emergencyLectures.map((lecture: any) => (
                       <LectureCard
                         key={lecture.id}
+                        id={lecture.id}
                         title={lecture.title}
                         date={new Date(lecture.createdAt).toLocaleDateString(
                           "ko-KR"
@@ -690,7 +922,8 @@ export default function HomePage() {
                         views={lecture.viewCount || 0}
                         category={lecture.category}
                         imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                        isLiked={lecture.isLiked || false}
+                        isLiked={isLectureLiked(lecture.id)}
+                        onLike={handleLectureLike}
                         onClick={() =>
                           (window.location.href = `/lectures/${lecture.id}`)
                         }
@@ -736,6 +969,7 @@ export default function HomePage() {
                   : dermatologyLectures.map((lecture: any) => (
                       <LectureCard
                         key={lecture.id}
+                        id={lecture.id}
                         title={lecture.title}
                         date={new Date(lecture.createdAt).toLocaleDateString(
                           "ko-KR"
@@ -743,7 +977,8 @@ export default function HomePage() {
                         views={lecture.viewCount || 0}
                         category={lecture.category}
                         imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                        isLiked={lecture.isLiked || false}
+                        isLiked={isLectureLiked(lecture.id)}
+                        onLike={handleLectureLike}
                         onClick={() =>
                           (window.location.href = `/lectures/${lecture.id}`)
                         }
@@ -789,6 +1024,7 @@ export default function HomePage() {
                   : internalLectures.map((lecture: any) => (
                       <LectureCard
                         key={lecture.id}
+                        id={lecture.id}
                         title={lecture.title}
                         date={new Date(lecture.createdAt).toLocaleDateString(
                           "ko-KR"
@@ -796,7 +1032,8 @@ export default function HomePage() {
                         views={lecture.viewCount || 0}
                         category={lecture.category}
                         imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                        isLiked={lecture.isLiked || false}
+                        isLiked={isLectureLiked(lecture.id)}
+                        onLike={handleLectureLike}
                         onClick={() =>
                           (window.location.href = `/lectures/${lecture.id}`)
                         }
@@ -852,17 +1089,17 @@ export default function HomePage() {
                         key={transfer.id}
                         id={transfer.id}
                         title={transfer.title}
-                        location={transfer.location}
+                        location={`${transfer.sido} ${transfer.sigungu}`}
                         hospitalType={transfer.hospitalType}
                         area={transfer.area}
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={transfer.createdAt}
+                        date={new Date(transfer.createdAt).toLocaleDateString()}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
-                        isLiked={transfer.isLiked}
-                        onLike={() => console.log("좋아요 클릭")}
+                        isLiked={isTransferLiked(transfer.id)}
+                        onLike={() => handleTransferLike(transfer.id)}
                         onClick={() =>
                           (window.location.href = `/transfers/${transfer.id}`)
                         }
@@ -905,17 +1142,17 @@ export default function HomePage() {
                         key={transfer.id}
                         id={transfer.id}
                         title={transfer.title}
-                        location={transfer.location}
+                        location={`${transfer.sido} ${transfer.sigungu}`}
                         hospitalType={transfer.hospitalType}
                         area={transfer.area}
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={transfer.createdAt}
+                        date={new Date(transfer.createdAt).toLocaleDateString()}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
-                        isLiked={transfer.isLiked}
-                        onLike={() => console.log("좋아요 클릭")}
+                        isLiked={isTransferLiked(transfer.id)}
+                        onLike={() => handleTransferLike(transfer.id)}
                         onClick={() =>
                           (window.location.href = `/transfers/${transfer.id}`)
                         }
@@ -950,17 +1187,17 @@ export default function HomePage() {
                         key={transfer.id}
                         id={transfer.id}
                         title={transfer.title}
-                        location={transfer.location}
+                        location={`${transfer.sido} ${transfer.sigungu}`}
                         hospitalType={transfer.hospitalType}
                         area={transfer.area}
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={transfer.createdAt}
+                        date={new Date(transfer.createdAt).toLocaleDateString()}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
-                        isLiked={transfer.isLiked}
-                        onLike={() => console.log("좋아요 클릭")}
+                        isLiked={isTransferLiked(transfer.id)}
+                        onLike={() => handleTransferLike(transfer.id)}
                         onClick={() =>
                           (window.location.href = `/transfers/${transfer.id}`)
                         }
@@ -995,17 +1232,17 @@ export default function HomePage() {
                         key={transfer.id}
                         id={transfer.id}
                         title={transfer.title}
-                        location={transfer.location}
+                        location={`${transfer.sido} ${transfer.sigungu}`}
                         hospitalType={transfer.hospitalType}
                         area={transfer.area}
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={transfer.createdAt}
+                        date={new Date(transfer.createdAt).toLocaleDateString()}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
-                        isLiked={transfer.isLiked}
-                        onLike={() => console.log("좋아요 클릭")}
+                        isLiked={isTransferLiked(transfer.id)}
+                        onLike={() => handleTransferLike(transfer.id)}
                         onClick={() =>
                           (window.location.href = `/transfers/${transfer.id}`)
                         }

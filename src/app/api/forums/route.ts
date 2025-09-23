@@ -2,9 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { getForumsWithPagination, createForum } from "@/lib/database";
+import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
+    // 사용자 정보 확인 (선택적)
+    let userId: string | undefined;
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
+    }
+
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get("page") || "1");
@@ -12,9 +25,31 @@ export async function GET(request: NextRequest) {
 
     const result = await getForumsWithPagination(page, limit);
 
+    // 좋아요 정보 조회 (로그인한 경우에만)
+    let userLikes: string[] = [];
+    if (userId && result && result.length > 0) {
+      const forumIds = result.map((forum: any) => forum.id).filter(Boolean);
+      if (forumIds.length > 0) {
+        const likes = await (prisma as any).forumPostLike.findMany({
+          where: { 
+            userId,
+            forumPostId: { in: forumIds }
+          },
+          select: { forumPostId: true }
+        });
+        userLikes = likes.map((like: any) => like.forumPostId);
+      }
+    }
+
+    // 좋아요 정보를 포함한 포럼 데이터 변환
+    const forumsWithLikes = result ? result.map((forum: any) => ({
+      ...forum,
+      isLiked: userId ? userLikes.includes(forum.id) : false
+    })) : [];
+
     return NextResponse.json(
       createApiResponse("success", "임상포럼 목록 조회 성공", {
-        forums: result,
+        forums: forumsWithLikes,
         totalCount: result.length,
       })
     );

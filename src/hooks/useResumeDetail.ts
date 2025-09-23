@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getResumeByIdAction } from "@/actions/resumes";
 
 interface ResumeDetail {
   id: string;
@@ -28,6 +27,7 @@ interface ResumeDetail {
   birthDate?: string;
   createdAt: string;
   updatedAt: string;
+  isLiked?: boolean;
 }
 
 export function useResumeDetail(id: string) {
@@ -40,9 +40,26 @@ export function useResumeDetail(id: string) {
       try {
         console.log("[useResumeDetail] 이력서 상세 조회 시작");
         setIsLoading(true);
-        const result = await getResumeByIdAction(id);
-        console.log("[useResumeDetail] 받은 데이터:", result);
-        setData(result as ResumeDetail);
+        
+        const response = await fetch(`/api/resumes/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const apiResponse = await response.json();
+        console.log("[useResumeDetail] 받은 데이터:", apiResponse);
+        
+        if (apiResponse.status === 'success' && apiResponse.data) {
+          setData(apiResponse.data as ResumeDetail);
+        } else {
+          throw new Error(apiResponse.message || 'Failed to fetch resume detail');
+        }
       } catch (err) {
         console.error("[useResumeDetail] 에러 발생:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch resume detail");

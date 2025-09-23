@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Tag } from "./Tag";
 import { ArrowRightIcon } from "public/icons";
 import profileImg from "@/assets/images/profile.png";
+import { useApplications } from "@/hooks/useApplications";
 
 interface ApplicationData {
   id: number;
@@ -15,6 +16,8 @@ interface ApplicationData {
   contact: string;
   status: "서류 합격" | "면접 대기" | "불합격" | "최종합격";
   profileImage?: string;
+  jobId: string;
+  applicationId: string;
 }
 
 interface RecentApplicationsCardProps {
@@ -54,7 +57,7 @@ const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
             {application.applicant}
           </span>
         </div>
-        <Link href={`/jobs/${application.id}`}>
+        <Link href={`/jobs/${application.jobId}`}>
           <ArrowRightIcon size="20" />
         </Link>
       </div>
@@ -90,34 +93,47 @@ const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
   );
 };
 
-const RecentApplicationsCard: React.FC<RecentApplicationsCardProps> = ({
-  applications = [
-    {
-      id: 1,
-      applicationDate: "2024.05.03 19:01",
-      applicant: "강남 동물병원",
-      position: "내과 전문의",
-      contact: "010-1234-5678 / duwxr335@naver.com",
-      status: "서류 합격",
-    },
-    {
-      id: 2,
-      applicationDate: "2024.05.03 19:01",
-      applicant: "강남 수의사",
-      position: "일반 수의사",
-      contact: "010-1234-5678 / duwxr335@naver.com",
-      status: "면접 대기",
-    },
-    {
-      id: 3,
-      applicationDate: "2024.05.03 19:01",
-      applicant: "강남 중금 수의사",
-      position: "야간 수의사",
-      contact: "010-1234-5678 / duwxr335@naver.com",
-      status: "불합격",
-    },
-  ],
-}) => {
+const RecentApplicationsCard: React.FC<RecentApplicationsCardProps> = () => {
+  const { applications, loading, error } = useApplications(3);
+
+  if (loading) {
+    return (
+      <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[20px] font-bold text-primary">최근 지원 내역</h2>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <span className="text-gray-500">로딩 중...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[20px] font-bold text-primary">최근 지원 내역</h2>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <span className="text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!applications || applications.length === 0) {
+    return (
+      <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[20px] font-bold text-primary">최근 지원 내역</h2>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <span className="text-gray-500">아직 지원한 공고가 없습니다.</span>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
       <div className="flex items-center justify-between mb-6">
@@ -187,7 +203,7 @@ const RecentApplicationsCard: React.FC<RecentApplicationsCardProps> = ({
                 </td>
                 <td className="py-[22px] pr-[30px]">
                   <Link
-                    href={`/jobs/${application.id}`}
+                    href={`/jobs/${application.jobId}`}
                     className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
                   >
                     상세보기

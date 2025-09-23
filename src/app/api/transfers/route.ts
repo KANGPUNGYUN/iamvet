@@ -2,24 +2,149 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { getTransfersWithPagination, createTransfer } from "@/lib/database";
+import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
+    // 사용자 정보 확인 (선택적) - Bearer token과 쿠키 인증 모두 지원
+    let userId: string | undefined;
+    
+    // Authorization 헤더 확인
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
+    }
+    
+    // Authorization 헤더가 없으면 쿠키에서 확인
+    if (!userId) {
+      const authTokenCookie = request.cookies.get("auth-token")?.value;
+      if (authTokenCookie) {
+        const payload = verifyToken(authTokenCookie);
+        if (payload) {
+          userId = payload.userId;
+        }
+      }
+    }
+
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
+    const keyword = searchParams.get("keyword") || undefined;
+    const category = searchParams.get("category") || undefined;
 
-    console.log(`[Transfers API] GET request - page: ${page}, limit: ${limit}`);
+    // 북마크된 게시글만 조회하는 경우
+    const bookmarked = searchParams.get("bookmarked") === "true";
 
-    const result = await getTransfersWithPagination(page, limit);
+    console.log(`[Transfers API] GET request - page: ${page}, limit: ${limit}, bookmarked: ${bookmarked}`);
+
+    let transfers;
+    let total = 0;
     
-    console.log(`[Transfers API] Retrieved ${result.length} transfers`);
+    if (bookmarked && userId) {
+      // 사용자가 좋아요한 양수양도 ID들을 먼저 조회
+      const userLikedTransfers = await (prisma as any).transferLike.findMany({
+        where: { userId },
+        select: { transferId: true }
+      });
+      
+      const likedTransferIds = userLikedTransfers.map((like: any) => like.transferId);
+      
+      if (likedTransferIds.length === 0) {
+        // 좋아요한 양수양도가 없는 경우
+        transfers = [];
+        total = 0;
+      } else {
+        // 좋아요한 양수양도들만 조회
+        const offset = (page - 1) * limit;
+        const whereClause: any = { 
+          id: { in: likedTransferIds },
+          deletedAt: null,
+          status: { not: 'DISABLED' }
+        };
+        
+        // 추가 필터 적용
+        if (keyword) {
+          whereClause.OR = [
+            { title: { contains: keyword, mode: 'insensitive' } },
+            { description: { contains: keyword, mode: 'insensitive' } },
+            { location: { contains: keyword, mode: 'insensitive' } }
+          ];
+        }
+        if (category) {
+          const categories = category.split(',');
+          whereClause.category = { in: categories };
+        }
+        
+        total = await prisma.transfer.count({ where: whereClause });
+        
+        const result = await prisma.transfer.findMany({
+          where: whereClause,
+          orderBy: { createdAt: 'desc' },
+          skip: offset,
+          take: limit,
+          include: {
+            user: {
+              select: {
+                hospitalName: true,
+                profileImage: true,
+                hospitalAddress: true
+              }
+            }
+          }
+        });
+        
+        transfers = result.map(transfer => ({
+          ...transfer,
+          hospitalName: transfer.user?.hospitalName,
+          hospitalType: '병원', // 기본값 설정
+          categories: transfer.category
+        }));
+      }
+    } else {
+      // 일반 양수양도 목록 조회
+      transfers = await getTransfersWithPagination(page, limit);
+      total = transfers.length; // TODO: 실제로는 전체 카운트를 가져와야 함
+    }
+    
+    // 좋아요 정보 조회 (로그인한 경우에만)
+    let userLikes: string[] = [];
+    if (userId && transfers && transfers.length > 0) {
+      const transferIds = transfers.map((transfer: any) => transfer.id).filter(Boolean);
+      if (transferIds.length > 0) {
+        const likes = await (prisma as any).transferLike.findMany({
+          where: { 
+            userId,
+            transferId: { in: transferIds }
+          },
+          select: { transferId: true }
+        });
+        userLikes = likes.map((like: any) => like.transferId);
+      }
+    }
+
+    // 좋아요 정보를 포함한 양수양도 데이터 변환
+    const transfersWithLikes = transfers ? transfers.map((transfer: any) => ({
+      ...transfer,
+      isLiked: userId ? userLikes.includes(transfer.id) : false
+    })) : [];
+    
+    const totalPages = Math.ceil(total / limit);
+    
+    console.log(`[Transfers API] Retrieved ${transfers.length} transfers`);
 
     return NextResponse.json(
       createApiResponse("success", "양도양수 목록 조회 성공", {
-        transfers: result,
-        totalCount: result.length,
+        transfers: transfersWithLikes,
+        total,
+        totalPages,
+        page,
+        limit
       })
     );
   } catch (error) {

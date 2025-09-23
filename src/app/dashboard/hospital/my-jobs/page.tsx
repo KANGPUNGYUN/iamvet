@@ -9,7 +9,6 @@ import JobInfoCard from "@/components/ui/JobInfoCard";
 import { useMyJobs } from "@/hooks/api/useJobs";
 import { Job } from "@/types/job";
 
-
 export default function HospitalMyJobsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("recent");
@@ -20,11 +19,12 @@ export default function HospitalMyJobsPage() {
 
   const filteredAndSortedJobs = useMemo(() => {
     let filtered = [...jobs];
-    
+
     if (statusFilter !== "all") {
       filtered = filtered.filter((job) => {
-        const isExpired = job.recruitEndDate && new Date(job.recruitEndDate) < new Date();
-        
+        const isExpired =
+          job.recruitEndDate && new Date(job.recruitEndDate) < new Date();
+
         switch (statusFilter) {
           case "active":
             return job.isActive && !isExpired;
@@ -40,13 +40,19 @@ export default function HospitalMyJobsPage() {
 
     switch (sortBy) {
       case "recent":
-        return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
       case "deadline":
         return filtered.sort((a, b) => {
           if (!a.recruitEndDate && !b.recruitEndDate) return 0;
           if (!a.recruitEndDate) return 1;
           if (!b.recruitEndDate) return -1;
-          return new Date(a.recruitEndDate).getTime() - new Date(b.recruitEndDate).getTime();
+          return (
+            new Date(a.recruitEndDate).getTime() -
+            new Date(b.recruitEndDate).getTime()
+          );
         });
       default:
         return filtered;
@@ -56,7 +62,10 @@ export default function HospitalMyJobsPage() {
   // 페이지네이션
   const totalPages = Math.ceil(filteredAndSortedJobs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentJobs = filteredAndSortedJobs.slice(startIndex, startIndex + itemsPerPage);
+  const currentJobs = filteredAndSortedJobs.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const handleJobClick = (jobId: string) => {
     window.location.href = `/jobs/${jobId}`;
@@ -77,9 +86,11 @@ export default function HospitalMyJobsPage() {
   if (error) {
     return (
       <div className="bg-white">
-        <div className="max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">
+        <div className="max-w-[1240px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">
           <div className="flex justify-center items-center min-h-[400px]">
-            <div className="text-red-500">오류가 발생했습니다: {error.message}</div>
+            <div className="text-red-500">
+              오류가 발생했습니다: {error.message}
+            </div>
           </div>
         </div>
       </div>
@@ -87,10 +98,10 @@ export default function HospitalMyJobsPage() {
   }
 
   return (
-    <div className="bg-white">
+    <div className="bg-gray-50 min-h-screen">
       <div className="max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">
         {/* 컨텐츠 영역 */}
-        <div className="w-full mx-auto p-[16px] xl:p-[20px]">
+        <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
           {/* 헤더: 제목과 정렬 SelectBox */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-primary font-title text-[28px] text-bold mb-2">
@@ -136,9 +147,15 @@ export default function HospitalMyJobsPage() {
               </div>
             ) : (
               currentJobs.map((job) => {
-                const dDay = job.recruitEndDate 
-                  ? Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) > 0
-                    ? Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                const dDay = job.recruitEndDate
+                  ? Math.ceil(
+                      (new Date(job.recruitEndDate).getTime() - Date.now()) /
+                        (1000 * 60 * 60 * 24)
+                    ) > 0
+                    ? Math.ceil(
+                        (new Date(job.recruitEndDate).getTime() - Date.now()) /
+                          (1000 * 60 * 60 * 24)
+                      )
                     : 0
                   : null;
 
@@ -152,7 +169,10 @@ export default function HospitalMyJobsPage() {
                     jobType={job.experience.join(", ") || "경력무관"}
                     tags={[...job.major, ...job.workType]}
                     isBookmarked={false}
-                    isNew={new Date(job.createdAt).getTime() > Date.now() - (7 * 24 * 60 * 60 * 1000)}
+                    isNew={
+                      new Date(job.createdAt).getTime() >
+                      Date.now() - 7 * 24 * 60 * 60 * 1000
+                    }
                     variant="wide"
                     showDeadline={job.recruitEndDate !== null}
                     onClick={() => handleJobClick(job.id)}

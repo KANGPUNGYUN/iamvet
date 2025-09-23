@@ -35,6 +35,7 @@ interface Job {
   createdAt: string;
   updatedAt: string;
   hospitalId: string;
+  isLiked?: boolean;
   hospital: {
     id: string;
     name: string;

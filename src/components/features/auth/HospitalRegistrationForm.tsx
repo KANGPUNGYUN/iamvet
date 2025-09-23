@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { PhoneInput, BirthDateInput } from "@/components/ui/FormattedInput";
 import {
   ProfileImageUpload,
-  MultiImageUpload,
   AddressSearch,
 } from "@/components/features/profile";
 import { FileUpload } from "@/components/ui/FileUpload";
-import { checkEmailDuplicate, checkUsernameDuplicate } from "@/actions/auth";
+import { checkEmailDuplicate, checkLoginIdDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -28,7 +27,6 @@ interface HospitalRegistrationData {
   address: string;
   detailAddress: string;
   hospitalLogo: string | null; // 병원 로고
-  facilityImages: string[]; // 병원 시설 이미지 (최대 10장)
   treatmentAnimals: string[]; // 진료 가능 동물 추가
   treatmentSpecialties: string[]; // 진료 분야 추가
   businessLicenseFile: File | null; // 사업자등록증 파일 추가
@@ -62,7 +60,6 @@ export const HospitalRegistrationForm: React.FC<
     address: "",
     detailAddress: "",
     hospitalLogo: null,
-    facilityImages: [], // 병원 시설 이미지
     treatmentAnimals: [], // 진료 가능 동물
     treatmentSpecialties: [], // 진료 분야
     businessLicenseFile: null, // 사업자등록증 파일
@@ -220,10 +217,6 @@ export const HospitalRegistrationForm: React.FC<
     setFormData((prev) => ({ ...prev, [field]: url }));
   };
 
-  const handleFacilityImagesChange = (urls: string[]) => {
-    setFormData((prev) => ({ ...prev, facilityImages: urls }));
-  };
-
   const handleFileChange = (file: File | null) => {
     setFormData((prev) => ({ ...prev, businessLicenseFile: file }));
   };
@@ -261,7 +254,7 @@ export const HospitalRegistrationForm: React.FC<
         "CLIENT: Calling checkEmailDuplicate with:",
         formData.loginId
       );
-      const result = await checkEmailDuplicate(formData.loginId);
+      const result = await checkLoginIdDuplicate(formData.loginId);
       console.log("CLIENT: checkEmailDuplicate result:", result);
 
       if (result.success) {
@@ -782,19 +775,6 @@ export const HospitalRegistrationForm: React.FC<
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* 병원 시설 이미지 */}
-          <div className="mt-6">
-            <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-              병원 시설 이미지 (최대 10장, 선택)
-            </label>
-            <MultiImageUpload
-              value={formData.facilityImages}
-              onChange={handleFacilityImagesChange}
-              maxImages={10}
-              folder="hospitals"
-            />
           </div>
 
           {/* 사업자등록증 파일 */}

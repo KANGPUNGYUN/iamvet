@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/api/useAuth";
 import { useRouter } from "next/navigation";
+import { useLikeStore } from "@/stores/likeStore";
 import {
   ArrowLeftIcon,
   MoreVerticalIcon,
@@ -160,7 +161,6 @@ export default function TransferDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showMoreRecommendations, setShowMoreRecommendations] = useState(false);
   const [transferData, setTransferData] = useState<TransferData | null>(null);
@@ -169,6 +169,14 @@ export default function TransferDetailPage({
   const router = useRouter();
   const { user } = useAuth();
   const { id } = use(params);
+
+  // Zustand 스토어에서 좋아요 상태 관리
+  const {
+    setTransferLike,
+    toggleTransferLike,
+    initializeTransferLikes,
+    isTransferLiked
+  } = useLikeStore();
 
   useEffect(() => {
     const fetchTransferDetail = async () => {
@@ -189,7 +197,24 @@ export default function TransferDetailPage({
           console.log('Transfer data:', data.data);
           console.log('Current user:', user);
           setTransferData(data.data);
-          setIsBookmarked(data.data.isBookmarked || false);
+          
+          // 좋아요 상태를 Zustand 스토어에 동기화
+          if (data.data.isLiked) {
+            console.log('[Transfer Like] 서버에서 받은 좋아요 양수양도:', [id]);
+            initializeTransferLikes([id]);
+          }
+
+          // 추천 양수양도 카드의 좋아요 상태도 초기화
+          if (data.data.relatedTransfers && data.data.relatedTransfers.length > 0) {
+            const likedRelatedTransferIds = data.data.relatedTransfers
+              .filter((transfer: any) => transfer.isLiked || transfer.isBookmarked)
+              .map((transfer: any) => transfer.id);
+            
+            if (likedRelatedTransferIds.length > 0) {
+              console.log('[Transfer Like] 추천 양수양도 좋아요 초기화:', likedRelatedTransferIds);
+              initializeTransferLikes(likedRelatedTransferIds);
+            }
+          }
         } else {
           throw new Error(data.message || '게시글을 불러오는데 실패했습니다.');
         }
@@ -212,24 +237,121 @@ export default function TransferDetailPage({
       return;
     }
 
+    const isCurrentlyLiked = isTransferLiked(id);
+    
+    console.log(`[Transfer Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleTransferLike(id);
+
     try {
-      const method = isBookmarked ? 'DELETE' : 'POST';
-      const response = await fetch(`/api/transfers/${id}/bookmark`, {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[Transfer Like] API 요청: ${method} /api/transfers/${id}/like`);
+      
+      const response = await fetch(`/api/transfers/${id}/like`, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      if (response.ok) {
-        setIsBookmarked(!isBookmarked);
-      } else {
-        const data = await response.json();
-        alert(data.message || '북마크 처리에 실패했습니다.');
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[Transfer Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setTransferLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('양수양도를 찾을 수 없습니다:', id);
+          alert('양수양도를 찾을 수 없습니다.');
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setTransferLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          alert(result.message || `${actionText}에 실패했습니다.`);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          alert('로그인이 필요한 서비스입니다.');
+          router.push('/login');
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
       }
+
+      console.log(`[Transfer Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error('Bookmark error:', error);
+      console.error(`[Transfer Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setTransferLike(id, isCurrentlyLiked);
       alert('북마크 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 추천 양수양도 좋아요/취소 토글 핸들러
+  const handleRecommendedTransferLike = async (transferId: string | number) => {
+    const transferIdStr = transferId.toString();
+    const isCurrentlyLiked = isTransferLiked(transferIdStr);
+    
+    console.log(`[Transfer Like] ${transferIdStr} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleTransferLike(transferIdStr);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[Transfer Like] API 요청: ${method} /api/transfers/${transferId}/like`);
+      
+      const response = await fetch(`/api/transfers/${transferId}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[Transfer Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setTransferLike(transferIdStr, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('양수양도를 찾을 수 없습니다:', transferId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setTransferLike(transferIdStr, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[Transfer Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[Transfer Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setTransferLike(transferIdStr, isCurrentlyLiked);
     }
   };
 
@@ -398,7 +520,7 @@ export default function TransferDetailPage({
                   onClick={handleBookmarkClick}
                 >
                   <div className="flex items-center justify-center cursor-pointer">
-                    {isBookmarked ? (
+                    {isTransferLiked(id) ? (
                       <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
                     ) : (
                       <BookmarkIcon currentColor="var(--Subtext2)" />
@@ -466,7 +588,7 @@ export default function TransferDetailPage({
                   onClick={handleBookmarkClick}
                 >
                   <div className="flex items-center justify-center cursor-pointer">
-                    {isBookmarked ? (
+                    {isTransferLiked(id) ? (
                       <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
                     ) : (
                       <BookmarkIcon currentColor="var(--Subtext2)" />
@@ -636,11 +758,8 @@ export default function TransferDetailPage({
                             imageUrl={transfer.images?.[0] || transfer1Img.src}
                             categories={transfer.categories || []}
                             isAd={false}
-                            isLiked={transfer.isBookmarked || false}
-                            onLike={() => {
-                              // 좋아요 기능 구현
-                              console.log("좋아요:", transfer.id);
-                            }}
+                            isLiked={isTransferLiked(transfer.id)}
+                            onLike={() => handleRecommendedTransferLike(transfer.id)}
                           />
                         </div>
                       ))}
@@ -690,11 +809,8 @@ export default function TransferDetailPage({
                       imageUrl={transfer.images?.[0] || transfer1Img.src}
                       categories={transfer.categories || []}
                       isAd={false}
-                      isLiked={transfer.isBookmarked || false}
-                      onLike={() => {
-                        // 좋아요 기능 구현
-                        console.log("좋아요:", transfer.id);
-                      }}
+                      isLiked={isTransferLiked(transfer.id)}
+                      onLike={() => handleRecommendedTransferLike(transfer.id)}
                     />
                   ))}
               </div>

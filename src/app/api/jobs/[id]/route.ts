@@ -14,6 +14,7 @@ import {
   query,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 // src/app/api/jobs/[id]/route.ts - 채용공고 상세
 export async function GET(
@@ -53,12 +54,24 @@ export async function GET(
 
     // 사용자가 이미 지원했는지 확인 (수의사인 경우에만)
     let hasApplied = false;
+    let isLiked = false;
     if (userId) {
       const applicationCheck = await query(
         `SELECT id FROM applications WHERE "jobId" = $1 AND "veterinarianId" = $2`,
         [jobId, userId]
       );
       hasApplied = applicationCheck.length > 0;
+
+      // 좋아요 여부 확인
+      const likeCheck = await (prisma as any).jobLike.findUnique({
+        where: {
+          userId_jobId: {
+            userId: userId,
+            jobId: jobId
+          }
+        }
+      });
+      isLiked = !!likeCheck;
     }
 
     // 병원의 userId를 포함하여 응답
@@ -69,6 +82,7 @@ export async function GET(
       hospitalUserId: hospitalUserId,
       isOwner: userId && hospitalUserId === userId,
       hasApplied: hasApplied,
+      isLiked: isLiked,
     };
 
     return NextResponse.json(

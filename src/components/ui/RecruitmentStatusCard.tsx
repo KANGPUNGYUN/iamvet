@@ -115,12 +115,59 @@ const DonutChart: React.FC<{ data: RecruitmentData }> = ({ data }) => {
 };
 
 const RecruitmentStatusCard: React.FC<RecruitmentStatusCardProps> = ({
-  recruitmentData = {
-    newApplicants: 1,
-    interviewScheduled: 1,
-    hired: 1,
-  },
+  recruitmentData,
 }) => {
+  const [data, setData] = React.useState<RecruitmentData>({
+    newApplicants: 0,
+    interviewScheduled: 0,
+    hired: 0,
+  });
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (recruitmentData) {
+      setData(recruitmentData);
+      setIsLoading(false);
+    } else {
+      fetchRecruitmentStatus();
+    }
+  }, [recruitmentData]);
+
+  const fetchRecruitmentStatus = async () => {
+    try {
+      const response = await fetch('/api/hospitals/recruitment-status', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setData(result);
+      }
+    } catch (error) {
+      console.error('채용 현황 조회 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white w-full lg:max-w-[676px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[20px] font-bold text-primary">채용 현황</h2>
+          <Link
+            href="/dashboard/hospital/applicants"
+            className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
+          >
+            전체보기
+          </Link>
+        </div>
+        <div className="flex items-center justify-center h-[200px]">
+          <div className="text-gray-400">로딩 중...</div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white w-full lg:max-w-[676px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
       <div className="flex items-center justify-between mb-6">
@@ -134,7 +181,7 @@ const RecruitmentStatusCard: React.FC<RecruitmentStatusCardProps> = ({
       </div>
 
       <div className="flex flex-col xl:flex-row items-center gap-[52px]">
-        <DonutChart data={recruitmentData} />
+        <DonutChart data={data} />
 
         <div className="flex-1 space-y-4 w-full">
           <div className="flex w-full items-center justify-between">
@@ -143,7 +190,7 @@ const RecruitmentStatusCard: React.FC<RecruitmentStatusCardProps> = ({
                 신규 지원자
               </span>
             </div>
-            <Tag variant={2}>{recruitmentData.newApplicants}건</Tag>
+            <Tag variant={2}>{data.newApplicants}건</Tag>
           </div>
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
@@ -151,7 +198,7 @@ const RecruitmentStatusCard: React.FC<RecruitmentStatusCardProps> = ({
                 면접 예정
               </span>
             </div>
-            <Tag variant={1}>{recruitmentData.interviewScheduled}건</Tag>
+            <Tag variant={1}>{data.interviewScheduled}건</Tag>
           </div>
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
@@ -159,7 +206,7 @@ const RecruitmentStatusCard: React.FC<RecruitmentStatusCardProps> = ({
                 채용 완료
               </span>
             </div>
-            <Tag variant={4}>{recruitmentData.hired}건</Tag>
+            <Tag variant={4}>{data.hired}건</Tag>
           </div>
         </div>
       </div>

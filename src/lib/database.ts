@@ -254,6 +254,13 @@ export const getJobsWithPagination = async (params: any) => {
     queryParams.push(majors);
   }
 
+  // 내 채용공고 필터
+  if (params.myJobs && params.userId) {
+    paramCount++;
+    query += ` AND j."hospitalId" = $${paramCount}`;
+    queryParams.push(params.userId);
+  }
+
   // 정렬
   switch (params.sort) {
     case "recent":
@@ -1703,14 +1710,33 @@ export const getLecturesWithPagination = async (params: any) => {
     countParams.push(`%${params.keyword}%`);
   }
 
-  // 카테고리 필터 (medicalField를 category로 매핑)
+  // 카테고리 필터 (medicalField를 category로 매핑) - 다중 카테고리 지원
   if (params.medicalField) {
-    paramCount++;
-    countParamCount++;
-    query += ` AND category = $${paramCount}`;
-    countQuery += ` AND category = $${countParamCount}`;
-    queryParams.push(params.medicalField);
-    countParams.push(params.medicalField);
+    const categories = params.medicalField.split(',').map((cat: string) => cat.trim()).filter(Boolean);
+    if (categories.length === 1) {
+      paramCount++;
+      countParamCount++;
+      query += ` AND category = $${paramCount}`;
+      countQuery += ` AND category = $${countParamCount}`;
+      queryParams.push(categories[0]);
+      countParams.push(categories[0]);
+    } else if (categories.length > 1) {
+      paramCount++;
+      countParamCount++;
+      const placeholders = categories.map((_: string, index: number) => `$${paramCount + index}`).join(',');
+      query += ` AND category IN (${placeholders})`;
+      countQuery += ` AND category IN (${placeholders})`;
+      
+      // 배열의 모든 요소를 개별적으로 추가
+      categories.forEach((category: string) => {
+        queryParams.push(category);
+        countParams.push(category);
+      });
+      
+      // paramCount를 올바르게 업데이트
+      paramCount += categories.length - 1;
+      countParamCount += categories.length - 1;
+    }
   }
 
   // 정렬

@@ -17,10 +17,19 @@ import React from "react";
 import { regionOptions } from "@/data/regionOptions";
 import { CloseIcon, ArrowRightIcon, EditIcon } from "public/icons";
 import Link from "next/link";
+import { useLikeStore } from "@/stores/likeStore";
 
 export default function TransfersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Zustand 스토어에서 좋아요 상태 관리
+  const {
+    setTransferLike,
+    toggleTransferLike,
+    initializeTransferLikes,
+    isTransferLiked
+  } = useLikeStore();
 
   // API에서 가져온 양수양도 데이터
   const [transfersData, setTransfersData] = useState<any[]>([]);
@@ -124,6 +133,78 @@ export default function TransfersPage() {
 
     fetchTransfers();
   }, []);
+
+  // Transfer 좋아요 상태 동기화
+  useEffect(() => {
+    if (transfersData.length > 0) {
+      const likedTransferIds = transfersData
+        .filter((transfer: any) => transfer.isLiked)
+        .map((transfer: any) => transfer.id);
+      
+      if (likedTransferIds.length > 0) {
+        console.log('[Transfer Like] 서버에서 받은 좋아요 양수양도:', likedTransferIds);
+        initializeTransferLikes(likedTransferIds);
+      }
+    }
+  }, [transfersData, initializeTransferLikes]);
+
+  // 양수양도 좋아요/취소 토글 핸들러
+  const handleTransferLike = async (transferId: string | number) => {
+    const id = transferId.toString();
+    const isCurrentlyLiked = isTransferLiked(id);
+    
+    console.log(`[Transfer Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleTransferLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[Transfer Like] API 요청: ${method} /api/transfers/${transferId}/like`);
+      
+      const response = await fetch(`/api/transfers/${transferId}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[Transfer Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setTransferLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('양수양도를 찾을 수 없습니다:', transferId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setTransferLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[Transfer Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[Transfer Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setTransferLike(id, isCurrentlyLiked);
+    }
+  };
 
   // URL 쿼리 스트링에서 필터 상태 파싱
   const parseFiltersFromURL = () => {
@@ -983,8 +1064,8 @@ export default function TransfersPage() {
                     imageUrl={transfer.images?.[0] || ""}
                     categories={transfer.category}
                     isAd={false}
-                    isLiked={false}
-                    onLike={() => console.log("좋아요 클릭")}
+                    isLiked={isTransferLiked(transfer.id)}
+                    onLike={() => handleTransferLike(transfer.id)}
                   />
                 ))}
               </div>

@@ -2,19 +2,22 @@ import { HeartFilledIcon, HeartIcon } from "public/icons";
 import React from "react";
 import { Tag } from "../Tag";
 import Image from "next/image";
+import { useLikeStore } from "@/stores/likeStore";
 
 interface LectureCardProps {
+  id: string;
   title: string;
   date: string;
   views: number;
   imageUrl?: string;
   category?: string;
   isLiked?: boolean;
-  onLike?: () => void;
+  onLike?: (lectureId: string) => void;
   onClick?: () => void;
 }
 
 const LectureCard: React.FC<LectureCardProps> = ({
+  id,
   title = "강아지와 유치원 종합 지식 제거 방법",
   date = "2025-04-09",
   views = 127,
@@ -24,11 +27,16 @@ const LectureCard: React.FC<LectureCardProps> = ({
   onLike,
   onClick,
 }) => {
-  const [localIsLiked, setLocalIsLiked] = React.useState(isLiked);
+  const { isLectureLiked } = useLikeStore();
   
-  const handleLike = () => {
-    setLocalIsLiked(!localIsLiked);
-    onLike?.();
+  // Zustand 스토어에서 좋아요 상태를 가져오고, 없으면 props에서 가져옴
+  const currentIsLiked = id ? isLectureLiked(id) : isLiked;
+  
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (id && onLike) {
+      onLike(id);
+    }
   };
   
   const defaultImage =
@@ -59,16 +67,13 @@ const LectureCard: React.FC<LectureCardProps> = ({
         {/* 좋아요 버튼 */}
         <button
           className={`absolute top-[12px] right-[12px] w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-all duration-200 ${
-            localIsLiked
+            currentIsLiked
               ? "bg-[#FF8796] hover:bg-[#FF6B7D]"
               : "bg-[rgba(121,116,126,0.34)] bg-opacity-90 hover:bg-opacity-100"
           }`}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleLike();
-          }}
+          onClick={handleLike}
         >
-          {localIsLiked ? (
+          {currentIsLiked ? (
             <HeartFilledIcon size="28px" currentColor="white" />
           ) : (
             <HeartIcon size="28px" currentColor="white" />

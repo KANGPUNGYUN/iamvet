@@ -20,7 +20,6 @@ interface HospitalFormData {
   address: string;
   detailAddress: string;
   hospitalLogo: string | null; // 병원 로고
-  facilityImages: string[]; // 병원 시설 이미지 (최대 10장)
   treatmentAnimals: string[]; // 진료 가능 동물 추가
   treatmentSpecialties: string[]; // 진료 분야 추가
   businessLicenseFile: File | null; // 사업자등록증 파일 추가
@@ -56,7 +55,6 @@ export default function HospitalRegisterPage() {
         address: formData.address, // 주소 분리
         detailAddress: formData.detailAddress, // 상세주소 분리
         profileImage: profileImageUrl || undefined,
-        facilityImages: formData.facilityImages, // 병원 시설 이미지 추가
         treatmentAnimals: formData.treatmentAnimals, // 진료 가능 동물 추가
         treatmentSpecialties: formData.treatmentSpecialties, // 진료 분야 추가
         businessLicense: businessLicenseUrl,

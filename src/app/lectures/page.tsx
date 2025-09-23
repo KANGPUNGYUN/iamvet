@@ -9,6 +9,7 @@ import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import { useState, useEffect } from "react";
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLikeStore } from "@/stores/likeStore";
 
 interface Lecture {
   id: string;
@@ -21,11 +22,20 @@ interface Lecture {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
+  isLiked?: boolean;
 }
 
 export default function LecturesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Zustand 스토어에서 좋아요 상태 관리
+  const {
+    setLectureLike,
+    toggleLectureLike,
+    initializeLectureLikes,
+    isLectureLiked
+  } = useLikeStore();
 
   // 필터 상태 관리 (UI용 - 아직 적용되지 않은 상태)
   const [filters, setFilters] = useState({
@@ -165,9 +175,21 @@ export default function LecturesPage() {
       
       if (result.status === "success") {
         const lecturesData = result.data.lectures;
-        setLectures(lecturesData.data || []);
+        const lectures = lecturesData.data || [];
+        
+        setLectures(lectures);
         setTotalLectures(lecturesData.total || 0);
         setTotalPages(lecturesData.totalPages || 0);
+        
+        // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
+        const likedLectureIds = lectures
+          .filter((lecture: any) => lecture.isLiked)
+          .map((lecture: any) => lecture.id);
+        
+        if (likedLectureIds.length > 0) {
+          console.log('[LecturesPage] 서버에서 받은 좋아요 강의:', likedLectureIds);
+          initializeLectureLikes(likedLectureIds);
+        }
       } else {
         throw new Error(result.message || "강의 목록을 불러오는데 실패했습니다.");
       }
@@ -210,7 +232,7 @@ export default function LecturesPage() {
       views: lecture.viewCount,
       imageUrl: lecture.thumbnail || "/assets/images/lecture/default.png",
       category: lecture.category,
-      isLiked: false, // 추후 좋아요 기능 구현 시 수정
+      isLiked: isLectureLiked(lecture.id), // Zustand 스토어에서 좋아요 상태 가져오기
     };
   };
 
@@ -266,6 +288,66 @@ export default function LecturesPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     updateURL(appliedFilters, page);
+  };
+
+  // 강의 좋아요/취소 핸들러
+  const handleLectureLike = async (lectureId: string) => {
+    const isCurrentlyLiked = isLectureLiked(lectureId);
+    
+    console.log(`[LecturesPage Like] ${lectureId} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleLectureLike(lectureId);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[LecturesPage Like] API 요청: ${method} /api/lectures/${lectureId}/like`);
+      
+      const response = await fetch(`/api/lectures/${lectureId}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[LecturesPage Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setLectureLike(lectureId, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('강의를 찾을 수 없습니다:', lectureId);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[LecturesPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setLectureLike(lectureId, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          alert("로그인이 필요합니다.");
+          router.push("/login/veterinarian");
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[LecturesPage Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[LecturesPage Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setLectureLike(lectureId, isCurrentlyLiked);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+    }
   };
 
   console.log("lectures", lectures);
@@ -414,16 +496,14 @@ export default function LecturesPage() {
                     return (
                       <LectureCard
                         key={lecture.id}
+                        id={lecture.id}
                         title={transformedLecture.title}
                         date={transformedLecture.date}
                         views={transformedLecture.views}
                         imageUrl={transformedLecture.imageUrl}
                         category={transformedLecture.category}
                         isLiked={transformedLecture.isLiked}
-                        onLike={() => {
-                          // 좋아요 기능 구현
-                          console.log("Like clicked for lecture:", lecture.id);
-                        }}
+                        onLike={handleLectureLike}
                         onClick={() => {
                           window.location.href = `/lectures/${lecture.id}`;
                         }}
@@ -552,15 +632,14 @@ export default function LecturesPage() {
                     return (
                       <LectureCard
                         key={lecture.id}
+                        id={lecture.id}
                         title={transformedLecture.title}
                         date={transformedLecture.date}
                         views={transformedLecture.views}
                         imageUrl={transformedLecture.imageUrl}
                         category={transformedLecture.category}
                         isLiked={transformedLecture.isLiked}
-                        onLike={() => {
-                          console.log("Like clicked for lecture:", lecture.id);
-                        }}
+                        onLike={handleLectureLike}
                         onClick={() => {
                           window.location.href = `/lectures/${lecture.id}`;
                         }}

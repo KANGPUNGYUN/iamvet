@@ -29,6 +29,7 @@ import {
 import { useResumeDetail } from "@/hooks/useResumeDetail";
 import { useCurrentUser } from "@/hooks/api/useAuth";
 import { deleteResumeAction } from "@/actions/resumes";
+import { useLikeStore } from "@/stores/likeStore";
 
 // 관련 인재 정보 (임시 데이터)
 const relatedResumes = [
@@ -68,7 +69,6 @@ export default function ResumeDetailPage({
 }) {
   const router = useRouter();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
     subject: "",
@@ -113,6 +113,14 @@ export default function ResumeDetailPage({
   const { data: user } = useCurrentUser();
   const searchParams = useSearchParams();
 
+  // Zustand 스토어에서 좋아요 상태 관리
+  const {
+    setResumeLike,
+    toggleResumeLike,
+    isResumeLiked,
+    initializeResumeLikes
+  } = useLikeStore();
+
   // URL에서 applicationId 파라미터 가져오기
   const applicationId = searchParams.get("applicationId");
 
@@ -124,6 +132,25 @@ export default function ResumeDetailPage({
   };
 
   const veterinarianId = extractVeterinarianId(id);
+
+  // 초기 좋아요 상태 동기화 (배열 형태로 초기화)
+  useEffect(() => {
+    if (resumeData) {
+      console.log('[ResumeDetail] 서버에서 받은 이력서 데이터:', {
+        id,
+        isLiked: resumeData.isLiked
+      });
+      
+      if (resumeData.isLiked) {
+        console.log('[ResumeDetail] 좋아요된 이력서로 초기화:', id);
+        initializeResumeLikes([id]);
+      } else {
+        console.log('[ResumeDetail] 좋아요되지 않은 이력서');
+        // 좋아요가 아닌 경우도 명시적으로 설정
+        setResumeLike(id, false);
+      }
+    }
+  }, [resumeData, id, initializeResumeLikes, setResumeLike]);
 
   useEffect(() => {
     console.log("=== Debug info ===");
@@ -206,9 +233,71 @@ export default function ResumeDetailPage({
     );
   }
 
-  const handleBookmarkClick = (e: React.MouseEvent) => {
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsBookmarked(!isBookmarked);
+    
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      router.push("/login/veterinarian");
+      return;
+    }
+
+    const isCurrentlyLiked = isResumeLiked(id);
+    
+    console.log(`[ResumeDetail Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleResumeLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[ResumeDetail Like] API 요청: ${method} /api/resumes/${id}/like`);
+      
+      const response = await fetch(`/api/resumes/${id}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[ResumeDetail Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setResumeLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('이력서를 찾을 수 없습니다:', id);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[ResumeDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setResumeLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          alert("로그인이 필요합니다.");
+          router.push("/login/veterinarian");
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[ResumeDetail Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[ResumeDetail Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setResumeLike(id, isCurrentlyLiked);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+    }
   };
 
   // 한국어 라벨 변환 함수
@@ -756,11 +845,15 @@ export default function ResumeDetailPage({
                   className="lg:hidden cursor-pointer"
                   onClick={handleBookmarkClick}
                 >
-                  {isBookmarked ? (
-                    <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
-                  ) : (
-                    <BookmarkIcon currentColor="var(--Subtext2)" />
-                  )}
+                  {(() => {
+                    const liked = isResumeLiked(id);
+                    console.log(`[ResumeDetail UI Debug] Mobile bookmark - Resume ${id}: liked=${liked}`);
+                    return liked ? (
+                      <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
+                    ) : (
+                      <BookmarkIcon currentColor="var(--Subtext2)" />
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -804,11 +897,15 @@ export default function ResumeDetailPage({
                     className="hidden lg:flex items-center justify-center cursor-pointer"
                     onClick={handleBookmarkClick}
                   >
-                    {isBookmarked ? (
-                      <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
-                    ) : (
-                      <BookmarkIcon currentColor="var(--Subtext2)" />
-                    )}
+                    {(() => {
+                      const liked = isResumeLiked(id);
+                      console.log(`[ResumeDetail UI Debug] Desktop bookmark - Resume ${id}: liked=${liked}`);
+                      return liked ? (
+                        <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
+                      ) : (
+                        <BookmarkIcon currentColor="var(--Subtext2)" />
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -1118,12 +1215,36 @@ export default function ResumeDetailPage({
                   preferredLocation={resume.preferredLocation}
                   keywords={resume.keywords}
                   lastAccessDate={resume.lastAccessDate}
-                  isBookmarked={resume.isBookmarked}
+                  isBookmarked={isResumeLiked(resume.id)}
                   onClick={() => {
                     window.location.href = `/resumes/${resume.id}`;
                   }}
-                  onBookmarkClick={() => {
-                    console.log("북마크:", resume.id);
+                  onBookmarkClick={async () => {
+                    const resumeIdStr = resume.id.toString();
+                    const isCurrentlyLiked = isResumeLiked(resumeIdStr);
+                    
+                    // 낙관적 업데이트
+                    toggleResumeLike(resumeIdStr);
+
+                    try {
+                      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+                      const response = await fetch(`/api/resumes/${resume.id}/like`, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                      });
+
+                      if (!response.ok) {
+                        // 오류 시 롤백
+                        setResumeLike(resumeIdStr, isCurrentlyLiked);
+                        const result = await response.json();
+                        if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                          setResumeLike(resumeIdStr, true);
+                        }
+                      }
+                    } catch (error) {
+                      // 오류 시 롤백
+                      setResumeLike(resumeIdStr, isCurrentlyLiked);
+                    }
                   }}
                 />
               ))}
@@ -1143,12 +1264,36 @@ export default function ResumeDetailPage({
                       preferredLocation={resume.preferredLocation}
                       keywords={resume.keywords}
                       lastAccessDate={resume.lastAccessDate}
-                      isBookmarked={resume.isBookmarked}
+                      isBookmarked={isResumeLiked(resume.id)}
                       onClick={() => {
                         window.location.href = `/resumes/${resume.id}`;
                       }}
-                      onBookmarkClick={() => {
-                        console.log("북마크:", resume.id);
+                      onBookmarkClick={async () => {
+                        const resumeIdStr = resume.id.toString();
+                        const isCurrentlyLiked = isResumeLiked(resumeIdStr);
+                        
+                        // 낙관적 업데이트
+                        toggleResumeLike(resumeIdStr);
+
+                        try {
+                          const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+                          const response = await fetch(`/api/resumes/${resume.id}/like`, {
+                            method,
+                            headers: { 'Content-Type': 'application/json' },
+                          });
+
+                          if (!response.ok) {
+                            // 오류 시 롤백
+                            setResumeLike(resumeIdStr, isCurrentlyLiked);
+                            const result = await response.json();
+                            if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                              setResumeLike(resumeIdStr, true);
+                            }
+                          }
+                        } catch (error) {
+                          // 오류 시 롤백
+                          setResumeLike(resumeIdStr, isCurrentlyLiked);
+                        }
                       }}
                     />
                   </div>

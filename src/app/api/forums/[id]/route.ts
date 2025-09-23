@@ -13,6 +13,7 @@ import {
   getForumComments,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 interface RouteContext {
   params: Promise<{
@@ -53,6 +54,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
       console.warn("View count increment failed (table may not exist):", error);
     }
 
+    // 좋아요 여부 확인 (로그인한 경우에만)
+    let isLiked = false;
+    if (userId) {
+      const likeCheck = await (prisma as any).forumPostLike.findUnique({
+        where: {
+          userId_forumPostId: {
+            userId: userId,
+            forumPostId: forumId
+          }
+        }
+      });
+      isLiked = !!likeCheck;
+    }
+
     // 댓글 조회
     let comments = [];
     try {
@@ -65,6 +80,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const forumDetail = {
       ...forum,
       comments,
+      isLiked: isLiked,
     };
 
     return NextResponse.json(

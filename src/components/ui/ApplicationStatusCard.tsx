@@ -141,13 +141,60 @@ const DonutChart: React.FC<{ data: StatusData }> = ({ data }) => {
 };
 
 const ApplicationStatusCard: React.FC<ApplicationStatusCardProps> = ({
-  statusData = {
-    applying: 5,
-    documentPassed: 2,
-    finalPassed: 2,
-    rejected: 1,
-  },
+  statusData,
 }) => {
+  const [data, setData] = React.useState<StatusData>({
+    applying: 0,
+    documentPassed: 0,
+    finalPassed: 0,
+    rejected: 0,
+  });
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (statusData) {
+      setData(statusData);
+      setIsLoading(false);
+    } else {
+      fetchApplicationStatus();
+    }
+  }, [statusData]);
+
+  const fetchApplicationStatus = async () => {
+    try {
+      const response = await fetch('/api/veterinarians/application-status', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setData(result);
+      }
+    } catch (error) {
+      console.error('지원 현황 조회 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white w-full lg:max-w-[676px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[20px] font-bold text-primary">지원 현황</h2>
+          <Link
+            href="/dashboard/veterinarian/applications"
+            className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
+          >
+            전체보기
+          </Link>
+        </div>
+        <div className="flex items-center justify-center h-[200px]">
+          <div className="text-gray-400">로딩 중...</div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white w-full lg:max-w-[676px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
       <div className="flex items-center justify-between mb-6">
@@ -161,7 +208,7 @@ const ApplicationStatusCard: React.FC<ApplicationStatusCardProps> = ({
       </div>
 
       <div className="flex flex-col xl:flex-row items-center gap-[52px]">
-        <DonutChart data={statusData} />
+        <DonutChart data={data} />
 
         <div className="flex-1 space-y-4 w-full">
           <div className="flex w-full items-center justify-between">
@@ -170,7 +217,7 @@ const ApplicationStatusCard: React.FC<ApplicationStatusCardProps> = ({
                 지원중
               </span>
             </div>
-            <Tag variant={4}>{statusData.applying}건</Tag>
+            <Tag variant={4}>{data.applying}건</Tag>
           </div>
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
@@ -178,7 +225,7 @@ const ApplicationStatusCard: React.FC<ApplicationStatusCardProps> = ({
                 서류 합격
               </span>
             </div>
-            <Tag variant={1}>{statusData.documentPassed}건</Tag>
+            <Tag variant={1}>{data.documentPassed}건</Tag>
           </div>
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
@@ -186,7 +233,7 @@ const ApplicationStatusCard: React.FC<ApplicationStatusCardProps> = ({
                 최종 합격
               </span>
             </div>
-            <Tag variant={2}>{statusData.finalPassed}건</Tag>
+            <Tag variant={2}>{data.finalPassed}건</Tag>
           </div>
         </div>
       </div>

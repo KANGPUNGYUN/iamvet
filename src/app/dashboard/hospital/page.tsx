@@ -34,7 +34,7 @@ export default function HospitalDashboardPage() {
           />
 
           <div className="flex gap-[24px] lg:flex-row flex-col lg:justify-between">
-            {/* 긴급충원 채용 공고 */}
+            {/* 내 채용 공고 */}
             <UrgentJobsCard />
             {/* 신규 알림 */}
             <HospitalNotificationsCard />

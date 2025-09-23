@@ -26,9 +26,9 @@ export async function POST(request: NextRequest) {
     let isDuplicate = false;
     
     try {
-      // 아이디 중복 확인 - loginId 필드도 체크
+      // 아이디 중복 확인 - loginId 필드만 체크
       const existingUser = await sql`
-        SELECT id FROM users WHERE ("username" = ${username} OR "loginId" = ${username}) AND "isActive" = true
+        SELECT id FROM users WHERE "loginId" = ${username} AND "isActive" = true
       `;
       
       console.log('[API] 쿼리 결과:', existingUser);
