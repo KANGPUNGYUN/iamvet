@@ -3212,7 +3212,7 @@ export const getForumById = async (forumId: string) => {
 
 // 범용 조회수 증가 함수
 export const incrementViewCount = async (
-  contentType: 'forum' | 'job' | 'lecture' | 'resume' | 'transfer',
+  contentType: 'forum' | 'job' | 'lecture' | 'resume' | 'transfer' | 'detailed_resume',
   contentId: string,
   userIdentifier: string,
   userId?: string
@@ -3248,7 +3248,8 @@ export const incrementViewCount = async (
       job: 'jobs', 
       lecture: 'lectures',
       resume: 'users', // Changed from veterinarian_profiles to users
-      transfer: 'transfers'
+      transfer: 'transfers',
+      detailed_resume: 'detailed_resumes'
     };
 
     const tableName = tableMap[contentType];
@@ -3257,17 +3258,27 @@ export const incrementViewCount = async (
     let updateQuery: string;
     if (contentType === 'forum') {
       updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
+    } else if (contentType === 'detailed_resume') {
+      updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
+    } else if (contentType === 'transfer') {
+      updateQuery = `UPDATE ${tableName} SET views = views + 1 WHERE id = $1`;
+    } else if (contentType === 'job') {
+      updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
+    } else if (contentType === 'lecture') {
+      updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
     } else {
       updateQuery = `UPDATE ${tableName} SET view_count = view_count + 1 WHERE id = $1`;
     }
     await pool.query(updateQuery, [contentId]);
 
-    // 조회 기록 저장
+    // 조회 기록 저장 (ID는 Prisma의 cuid() 기본값을 사용)
+    const { createId } = await import('@paralleldrive/cuid2');
+    const logId = createId();
     const logQuery = `
-      INSERT INTO view_logs (content_type, content_id, user_id, user_identifier, ip_address, created_at)
-      VALUES ($1, $2, $3, $4, $5, NOW())
+      INSERT INTO view_logs (id, content_type, content_id, user_id, user_identifier, ip_address, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
     `;
-    await pool.query(logQuery, [contentType, contentId, userId || null, userIdentifier, userIdentifier]);
+    await pool.query(logQuery, [logId, contentType, contentId, userId || null, userIdentifier, userIdentifier]);
 
     await pool.query('COMMIT');
     return true;
@@ -3285,6 +3296,14 @@ export const incrementForumViewCount = async (
   userId?: string
 ) => {
   return incrementViewCount('forum', forumId, userIdentifier, userId);
+};
+
+export const incrementDetailedResumeViewCount = async (
+  resumeId: string,
+  userIdentifier: string,
+  userId?: string
+): Promise<boolean> => {
+  return incrementViewCount('detailed_resume', resumeId, userIdentifier, userId);
 };
 
 export const getForumComments = async (forumId: string) => {
@@ -3609,10 +3628,12 @@ export const removeTransferBookmark = async (userId: string, transferId: string)
   return (result.rowCount ?? 0) > 0;
 };
 
-export const incrementTransferViewCount = async (transferId: string) => {
-  const query = `UPDATE transfers SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
-  const result = await pool.query(query, [transferId]);
-  return (result.rowCount ?? 0) > 0;
+export const incrementTransferViewCount = async (
+  transferId: string,
+  userIdentifier: string,
+  userId?: string
+): Promise<boolean> => {
+  return incrementViewCount('transfer', transferId, userIdentifier, userId);
 };
 
 export const getRelatedTransfers = async (transferId: string, limit = 5) => {

@@ -121,6 +121,7 @@ model Job {
   workStartTime        String?
   salaryType           String
   workType             String[]          @default([])
+  viewCount            Int               @default(0)
   likes                JobLike[]
   jobNotifications     JobNotification[]
   hospital             User              @relation(fields: [hospitalId], references: [id], map: "jobs_hospitalid_fkey")
@@ -348,6 +349,7 @@ model DetailedResume {
   workEndTime         String?
   workTimeNegotiable  Boolean                   @default(false)
   selfIntroduction    String?
+  viewCount           Int                       @default(0)
   createdAt           DateTime                  @default(now())
   updatedAt           DateTime                  @updatedAt
   deletedAt           DateTime?
@@ -875,4 +877,20 @@ enum NotificationBatchStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+model ViewLog {
+  id             String   @id @default(cuid())
+  contentType    String   @map("content_type")
+  contentId      String   @map("content_id")
+  userId         String?  @map("user_id")
+  userIdentifier String   @map("user_identifier")
+  ipAddress      String   @map("ip_address")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([contentType, contentId])
+  @@index([userId])
+  @@index([userIdentifier])
+  @@index([createdAt])
+  @@map("view_logs")
 }

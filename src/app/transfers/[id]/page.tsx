@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/api/useAuth";
 import { useRouter } from "next/navigation";
 import { useLikeStore } from "@/stores/likeStore";
+import { useViewCountStore } from "@/stores/viewCountStore";
 import {
   ArrowLeftIcon,
   MoreVerticalIcon,
@@ -178,6 +179,15 @@ export default function TransferDetailPage({
     isTransferLiked
   } = useLikeStore();
 
+  // Zustand 스토어에서 조회수 상태 관리
+  const {
+    setTransferViewCount,
+    incrementTransferViewCount,
+    getTransferViewCount,
+    markAsViewed,
+    isAlreadyViewed,
+  } = useViewCountStore();
+
   useEffect(() => {
     const fetchTransferDetail = async () => {
       try {
@@ -202,6 +212,20 @@ export default function TransferDetailPage({
           if (data.data.isLiked) {
             console.log('[Transfer Like] 서버에서 받은 좋아요 양수양도:', [id]);
             initializeTransferLikes([id]);
+          }
+
+          // 조회수 초기화 및 실시간 증가 처리
+          if (data.data.views !== undefined) {
+            console.log('[TransferDetail] 서버에서 받은 조회수:', data.data.views);
+            // 서버에서 받은 조회수로 초기화
+            setTransferViewCount(id, data.data.views);
+            
+            // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
+            if (!isAlreadyViewed('transfer', id)) {
+              console.log('[TransferDetail] 조회수 실시간 증가:', id);
+              incrementTransferViewCount(id);
+              markAsViewed('transfer', id);
+            }
           }
 
           // 추천 양수양도 카드의 좋아요 상태도 초기화
@@ -563,7 +587,7 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-[33px]">
                   <div className="flex items-center gap-1">
                     <EyeIcon currentColor="currentColor" />
-                    <span className="text-sm">{transferData.viewCount || 0}</span>
+                    <span className="text-sm">{getTransferViewCount(id) || 0}</span>
                   </div>
                   <span className="text-sm">
                     {transferData.createdAt ? new Date(transferData.createdAt).toLocaleDateString() : ''}
@@ -629,7 +653,7 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <EyeIcon currentColor="currentColor" />
-                    <span className="text-[12px]">{transferData.viewCount || 0}</span>
+                    <span className="text-[12px]">{getTransferViewCount(id) || 0}</span>
                   </div>
                   <span className="text-[12px]">
                     {transferData.createdAt ? new Date(transferData.createdAt).toLocaleDateString() : ''}

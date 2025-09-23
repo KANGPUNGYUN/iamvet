@@ -13,23 +13,25 @@ import {
   BookmarkIcon,
   PhoneIcon,
   MailIcon,
+  // EyeIcon,
 } from "public/icons";
 import { Button } from "@/components/ui/Button";
 import ResumeCard from "@/components/ui/ResumeCard/ResumeCard";
 import { Tab } from "@/components/ui/Tab";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { Tag } from "@/components/ui/Tag";
-import { 
-  ApplicationStatus, 
-  APPLICATION_STATUS_LABELS, 
+import {
+  ApplicationStatus,
+  APPLICATION_STATUS_LABELS,
   APPLICATION_STATUS_OPTIONS,
   APPLICATION_STATUS_COLORS,
-  mapFromLegacyStatus 
+  mapFromLegacyStatus,
 } from "@/constants/applicationStatus";
 import { useResumeDetail } from "@/hooks/useResumeDetail";
 import { useCurrentUser } from "@/hooks/api/useAuth";
 import { deleteResumeAction } from "@/actions/resumes";
 import { useLikeStore } from "@/stores/likeStore";
+import { useViewCountStore } from "@/stores/viewCountStore";
 
 // 관련 인재 정보 (임시 데이터)
 const relatedResumes = [
@@ -77,7 +79,9 @@ export default function ResumeDetailPage({
   const [isOwner, setIsOwner] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [applicationInfo, setApplicationInfo] = useState<any>(null);
-  const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | "">("");
+  const [applicationStatus, setApplicationStatus] = useState<
+    ApplicationStatus | ""
+  >("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
 
@@ -118,8 +122,17 @@ export default function ResumeDetailPage({
     setResumeLike,
     toggleResumeLike,
     isResumeLiked,
-    initializeResumeLikes
+    initializeResumeLikes,
   } = useLikeStore();
+
+  // Zustand 스토어에서 조회수 상태 관리
+  const {
+    setResumeViewCount,
+    incrementResumeViewCount,
+    getResumeViewCount,
+    markAsViewed,
+    isAlreadyViewed,
+  } = useViewCountStore();
 
   // URL에서 applicationId 파라미터 가져오기
   const applicationId = searchParams.get("applicationId");
@@ -136,21 +149,45 @@ export default function ResumeDetailPage({
   // 초기 좋아요 상태 동기화 (배열 형태로 초기화)
   useEffect(() => {
     if (resumeData) {
-      console.log('[ResumeDetail] 서버에서 받은 이력서 데이터:', {
+      console.log("[ResumeDetail] 서버에서 받은 이력서 데이터:", {
         id,
-        isLiked: resumeData.isLiked
+        isLiked: resumeData.isLiked,
+        viewCount: resumeData.viewCount,
       });
-      
+
+      // 좋아요 상태 초기화
       if (resumeData.isLiked) {
-        console.log('[ResumeDetail] 좋아요된 이력서로 초기화:', id);
+        console.log("[ResumeDetail] 좋아요된 이력서로 초기화:", id);
         initializeResumeLikes([id]);
       } else {
-        console.log('[ResumeDetail] 좋아요되지 않은 이력서');
+        console.log("[ResumeDetail] 좋아요되지 않은 이력서");
         // 좋아요가 아닌 경우도 명시적으로 설정
         setResumeLike(id, false);
       }
+
+      // 조회수 초기화 및 실시간 증가 처리
+      if (resumeData.viewCount !== undefined) {
+        // 서버에서 받은 조회수로 초기화
+        setResumeViewCount(id, resumeData.viewCount);
+
+        // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
+        if (!isAlreadyViewed("resume", id)) {
+          console.log("[ResumeDetail] 조회수 실시간 증가:", id);
+          incrementResumeViewCount(id);
+          markAsViewed("resume", id);
+        }
+      }
     }
-  }, [resumeData, id, initializeResumeLikes, setResumeLike]);
+  }, [
+    resumeData,
+    id,
+    initializeResumeLikes,
+    setResumeLike,
+    setResumeViewCount,
+    incrementResumeViewCount,
+    markAsViewed,
+    isAlreadyViewed,
+  ]);
 
   useEffect(() => {
     console.log("=== Debug info ===");
@@ -235,7 +272,7 @@ export default function ResumeDetailPage({
 
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!user) {
       alert("로그인이 필요합니다.");
       router.push("/login/veterinarian");
@@ -243,22 +280,28 @@ export default function ResumeDetailPage({
     }
 
     const isCurrentlyLiked = isResumeLiked(id);
-    
-    console.log(`[ResumeDetail Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[ResumeDetail Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleResumeLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[ResumeDetail Like] API 요청: ${method} /api/resumes/${id}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[ResumeDetail Like] API 요청: ${method} /api/resumes/${id}/like`
+      );
+
       const response = await fetch(`/api/resumes/${id}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -266,23 +309,25 @@ export default function ResumeDetailPage({
 
       if (!response.ok) {
         console.error(`[ResumeDetail Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setResumeLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('이력서를 찾을 수 없습니다:', id);
+          console.warn("이력서를 찾을 수 없습니다:", id);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[ResumeDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[ResumeDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setResumeLike(id, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
           router.push("/login/veterinarian");
           return;
@@ -292,11 +337,16 @@ export default function ResumeDetailPage({
 
       console.log(`[ResumeDetail Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[ResumeDetail Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[ResumeDetail Like] ${
+          isCurrentlyLiked ? "좋아요 취소" : "좋아요"
+        } 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setResumeLike(id, isCurrentlyLiked);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
+      alert("좋아요 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -554,7 +604,9 @@ export default function ResumeDetailPage({
   };
 
   // 상태에 따른 Tag variant 반환
-  const getStatusVariant = (status: ApplicationStatus | ""): 1 | 2 | 3 | 4 | 5 | 6 => {
+  const getStatusVariant = (
+    status: ApplicationStatus | ""
+  ): 1 | 2 | 3 | 4 | 5 | 6 => {
     if (!status) return 4;
     return APPLICATION_STATUS_COLORS[status] || 4;
   };
@@ -587,12 +639,12 @@ export default function ResumeDetailPage({
             const legacyStatus = targetApplication.status;
             const newStatus = mapFromLegacyStatus(legacyStatus);
             console.log("🔄 Status conversion:", { legacyStatus, newStatus });
-            
+
             const updatedApplication = {
               ...targetApplication,
-              status: newStatus
+              status: newStatus,
             };
-            
+
             setApplicationInfo(updatedApplication);
             setApplicationStatus(newStatus);
             return updatedApplication;
@@ -648,10 +700,10 @@ export default function ResumeDetailPage({
           const legacyStatus = result.data.status;
           const newStatus = mapFromLegacyStatus(legacyStatus);
           console.log("🔄 Status conversion:", { legacyStatus, newStatus });
-          
+
           setApplicationInfo({
             ...result.data,
-            status: newStatus // 새 상태로 변환
+            status: newStatus, // 새 상태로 변환
           });
           setApplicationStatus(newStatus);
         } else {
@@ -772,7 +824,9 @@ export default function ResumeDetailPage({
                   <>
                     <SelectBox
                       value={applicationStatus}
-                      onChange={(value) => setApplicationStatus(value as ApplicationStatus)}
+                      onChange={(value) =>
+                        setApplicationStatus(value as ApplicationStatus)
+                      }
                       disabled={isUpdatingStatus}
                       placeholder="상태 선택"
                       options={APPLICATION_STATUS_OPTIONS}
@@ -805,7 +859,8 @@ export default function ResumeDetailPage({
                 ) : (
                   <>
                     <Tag variant={getStatusVariant(applicationStatus)}>
-                      {applicationStatus && APPLICATION_STATUS_LABELS[applicationStatus]}
+                      {applicationStatus &&
+                        APPLICATION_STATUS_LABELS[applicationStatus]}
                     </Tag>
                     <Button
                       variant="line"
@@ -847,7 +902,9 @@ export default function ResumeDetailPage({
                 >
                   {(() => {
                     const liked = isResumeLiked(id);
-                    console.log(`[ResumeDetail UI Debug] Mobile bookmark - Resume ${id}: liked=${liked}`);
+                    console.log(
+                      `[ResumeDetail UI Debug] Mobile bookmark - Resume ${id}: liked=${liked}`
+                    );
                     return liked ? (
                       <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
                     ) : (
@@ -867,6 +924,14 @@ export default function ResumeDetailPage({
                     <p className="font-text text-[16px] text-sub mb-4 lg:mr-[60px] mr-[30px]">
                       {resumeData.introduction || "소개가 작성되지 않았습니다."}
                     </p>
+
+                    {/* 조회수 */}
+                    {/* <div className="flex items-center gap-2 mb-4">
+                      <EyeIcon currentColor="#9098A4" />
+                      <span className="font-text text-[14px] text-[#9098A4]">
+                        조회 {getResumeViewCount(id).toLocaleString()}
+                      </span>
+                    </div> */}
 
                     {/* 연락처 및 이메일 */}
                     <div className="flex flex-col lg:flex-row lg:gap-[20px] gap-2 mb-6">
@@ -899,7 +964,9 @@ export default function ResumeDetailPage({
                   >
                     {(() => {
                       const liked = isResumeLiked(id);
-                      console.log(`[ResumeDetail UI Debug] Desktop bookmark - Resume ${id}: liked=${liked}`);
+                      console.log(
+                        `[ResumeDetail UI Debug] Desktop bookmark - Resume ${id}: liked=${liked}`
+                      );
                       return liked ? (
                         <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
                       ) : (
@@ -1222,22 +1289,28 @@ export default function ResumeDetailPage({
                   onBookmarkClick={async () => {
                     const resumeIdStr = resume.id.toString();
                     const isCurrentlyLiked = isResumeLiked(resumeIdStr);
-                    
+
                     // 낙관적 업데이트
                     toggleResumeLike(resumeIdStr);
 
                     try {
-                      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-                      const response = await fetch(`/api/resumes/${resume.id}/like`, {
-                        method,
-                        headers: { 'Content-Type': 'application/json' },
-                      });
+                      const method = isCurrentlyLiked ? "DELETE" : "POST";
+                      const response = await fetch(
+                        `/api/resumes/${resume.id}/like`,
+                        {
+                          method,
+                          headers: { "Content-Type": "application/json" },
+                        }
+                      );
 
                       if (!response.ok) {
                         // 오류 시 롤백
                         setResumeLike(resumeIdStr, isCurrentlyLiked);
                         const result = await response.json();
-                        if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                        if (
+                          response.status === 400 &&
+                          result.message?.includes("이미 좋아요한")
+                        ) {
                           setResumeLike(resumeIdStr, true);
                         }
                       }
@@ -1271,22 +1344,28 @@ export default function ResumeDetailPage({
                       onBookmarkClick={async () => {
                         const resumeIdStr = resume.id.toString();
                         const isCurrentlyLiked = isResumeLiked(resumeIdStr);
-                        
+
                         // 낙관적 업데이트
                         toggleResumeLike(resumeIdStr);
 
                         try {
-                          const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-                          const response = await fetch(`/api/resumes/${resume.id}/like`, {
-                            method,
-                            headers: { 'Content-Type': 'application/json' },
-                          });
+                          const method = isCurrentlyLiked ? "DELETE" : "POST";
+                          const response = await fetch(
+                            `/api/resumes/${resume.id}/like`,
+                            {
+                              method,
+                              headers: { "Content-Type": "application/json" },
+                            }
+                          );
 
                           if (!response.ok) {
                             // 오류 시 롤백
                             setResumeLike(resumeIdStr, isCurrentlyLiked);
                             const result = await response.json();
-                            if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                            if (
+                              response.status === 400 &&
+                              result.message?.includes("이미 좋아요한")
+                            ) {
                               setResumeLike(resumeIdStr, true);
                             }
                           }

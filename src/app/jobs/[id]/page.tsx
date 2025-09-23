@@ -23,6 +23,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/api/useAuth";
 import { useHasDetailedResume } from "@/hooks/api/useDetailedResume";
 import { useLikeStore } from "@/stores/likeStore";
+import { useViewCountStore } from "@/stores/viewCountStore";
 import axios from "axios";
 
 // 토큰 만료 시 localStorage 정리
@@ -56,13 +57,18 @@ export default function JobDetailPage({
 
   const authStore = useAuthStore();
   const { user, isAuthenticated } = useAuth();
-  
+
   // Zustand 스토어에서 좋아요 상태 관리
+  const { setJobLike, toggleJobLike, isJobLiked } = useLikeStore();
+
+  // Zustand 스토어에서 조회수 상태 관리
   const {
-    setJobLike,
-    toggleJobLike,
-    isJobLiked
-  } = useLikeStore();
+    setJobViewCount,
+    incrementJobViewCount,
+    getJobViewCount,
+    markAsViewed,
+    isAlreadyViewed,
+  } = useViewCountStore();
   const {
     hasResume,
     isLoading: isResumeLoading,
@@ -72,10 +78,40 @@ export default function JobDetailPage({
   // 초기 좋아요 상태 동기화
   useEffect(() => {
     if (jobData && jobData.isLiked) {
-      console.log('[JobDetail] 서버에서 받은 좋아요 채용공고:', id);
+      console.log("[JobDetail] 서버에서 받은 좋아요 채용공고:", id);
       setJobLike(id, true);
     }
   }, [jobData, id, setJobLike]);
+
+  // 조회수 초기화 및 실시간 증가 처리
+  useEffect(() => {
+    if (jobData) {
+      console.log("[JobDetail] 서버에서 받은 채용공고 데이터:", {
+        id,
+        viewCount: jobData.viewCount,
+      });
+
+      // 조회수 초기화 및 실시간 증가 처리
+      if (jobData.viewCount !== undefined) {
+        // 서버에서 받은 조회수로 초기화
+        setJobViewCount(id, jobData.viewCount);
+
+        // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
+        if (!isAlreadyViewed("job", id)) {
+          console.log("[JobDetail] 조회수 실시간 증가:", id);
+          incrementJobViewCount(id);
+          markAsViewed("job", id);
+        }
+      }
+    }
+  }, [
+    jobData,
+    id,
+    setJobViewCount,
+    incrementJobViewCount,
+    markAsViewed,
+    isAlreadyViewed,
+  ]);
 
   // API 응답의 isOwner 값을 사용하되, 클라이언트에서도 추가 체크
   const isOwner =
@@ -145,7 +181,7 @@ export default function JobDetailPage({
   // 채용공고 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
       router.push("/login/veterinarian");
@@ -153,22 +189,26 @@ export default function JobDetailPage({
     }
 
     const isCurrentlyLiked = isJobLiked(id);
-    
-    console.log(`[JobDetail Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[JobDetail Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleJobLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
       console.log(`[JobDetail Like] API 요청: ${method} /api/jobs/${id}/like`);
-      
+
       const response = await fetch(`/api/jobs/${id}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -176,23 +216,25 @@ export default function JobDetailPage({
 
       if (!response.ok) {
         console.error(`[JobDetail Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setJobLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('채용공고를 찾을 수 없습니다:', id);
+          console.warn("채용공고를 찾을 수 없습니다:", id);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[JobDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[JobDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setJobLike(id, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
           router.push("/login/veterinarian");
           return;
@@ -202,11 +244,14 @@ export default function JobDetailPage({
 
       console.log(`[JobDetail Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[JobDetail Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[JobDetail Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setJobLike(id, isCurrentlyLiked);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
+      alert("좋아요 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -476,6 +521,14 @@ export default function JobDetailPage({
                   </span>
                 </div>
               </div>
+
+              {/* 조회수
+              <div className="flex items-center gap-2 mt-4">
+                <EyeIcon currentColor="#9098A4" />
+                <span className="font-text text-[14px] text-[#9098A4]">
+                  조회 {getJobViewCount(id).toLocaleString()}
+                </span>
+              </div> */}
             </div>
 
             {/* 근무 조건 */}
@@ -683,22 +736,28 @@ export default function JobDetailPage({
                     onLike={async (jobId) => {
                       const jobIdStr = jobId.toString();
                       const isCurrentlyLiked = isJobLiked(jobIdStr);
-                      
+
                       // 낙관적 업데이트
                       toggleJobLike(jobIdStr);
 
                       try {
-                        const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-                        const response = await fetch(`/api/jobs/${jobId}/like`, {
-                          method,
-                          headers: { 'Content-Type': 'application/json' },
-                        });
+                        const method = isCurrentlyLiked ? "DELETE" : "POST";
+                        const response = await fetch(
+                          `/api/jobs/${jobId}/like`,
+                          {
+                            method,
+                            headers: { "Content-Type": "application/json" },
+                          }
+                        );
 
                         if (!response.ok) {
                           // 오류 시 롤백
                           setJobLike(jobIdStr, isCurrentlyLiked);
                           const result = await response.json();
-                          if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                          if (
+                            response.status === 400 &&
+                            result.message?.includes("이미 좋아요한")
+                          ) {
                             setJobLike(jobIdStr, true);
                           }
                         }
@@ -768,22 +827,28 @@ export default function JobDetailPage({
                         onLike={async (jobId) => {
                           const jobIdStr = jobId.toString();
                           const isCurrentlyLiked = isJobLiked(jobIdStr);
-                          
+
                           // 낙관적 업데이트
                           toggleJobLike(jobIdStr);
 
                           try {
-                            const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-                            const response = await fetch(`/api/jobs/${jobId}/like`, {
-                              method,
-                              headers: { 'Content-Type': 'application/json' },
-                            });
+                            const method = isCurrentlyLiked ? "DELETE" : "POST";
+                            const response = await fetch(
+                              `/api/jobs/${jobId}/like`,
+                              {
+                                method,
+                                headers: { "Content-Type": "application/json" },
+                              }
+                            );
 
                             if (!response.ok) {
                               // 오류 시 롤백
                               setJobLike(jobIdStr, isCurrentlyLiked);
                               const result = await response.json();
-                              if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                              if (
+                                response.status === 400 &&
+                                result.message?.includes("이미 좋아요한")
+                              ) {
                                 setJobLike(jobIdStr, true);
                               }
                             }

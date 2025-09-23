@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/api/useAuth";
 import { Toast } from "@/components/ui/Toast";
 import { useCommentStore, Comment } from "@/store/commentStore";
+import { useViewCountStore } from "@/stores/viewCountStore";
 
 const HTMLContent = dynamic(
   () =>
@@ -82,6 +83,15 @@ export default function ForumDetailPage({
   // useAuth 훅으로 현재 로그인한 사용자 정보 가져오기
   const { user: currentUser, isAuthenticated } = useAuth();
 
+  // 조회수 상태 관리 (Zustand 스토어)
+  const {
+    setForumViewCount,
+    incrementForumViewCount,
+    getForumViewCount,
+    markAsViewed,
+    isAlreadyViewed,
+  } = useViewCountStore();
+
   // 포럼 상세 데이터 가져오기
   useEffect(() => {
     const fetchForumDetail = async () => {
@@ -95,6 +105,21 @@ export default function ForumDetailPage({
             console.log("Forum userId:", data.data.userId);
             console.log("Current user id:", currentUser?.id);
             setCurrentForum(data.data);
+
+            // 조회수 초기화 및 실시간 증가 처리
+            if (data.data?.viewCount !== undefined) {
+              console.log('[ForumDetail] 서버에서 받은 조회수:', data.data.viewCount);
+              // 서버에서 받은 조회수로 초기화
+              setForumViewCount(id, data.data.viewCount);
+              
+              // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
+              if (!isAlreadyViewed('forum', id)) {
+                console.log('[ForumDetail] 조회수 실시간 증가:', id);
+                incrementForumViewCount(id);
+                markAsViewed('forum', id);
+              }
+            }
+
             // 댓글은 별도로 로드
             await fetchComments(id, 'forum');
           }
@@ -353,7 +378,7 @@ export default function ForumDetailPage({
               <div className="flex items-center gap-6 text-[14px] text-[#9098A4]">
                 <div className="flex items-center gap-1">
                   <EyeIcon currentColor="#9098A4" />
-                  <span>{currentForum.viewCount}</span>
+                  <span>{getForumViewCount(id).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <CommentIcon currentColor="#9098A4" />

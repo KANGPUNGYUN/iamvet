@@ -6,7 +6,7 @@ import {
   getTransferByIdForEdit,
   updateTransfer,
   deleteTransfer,
-  incrementViewCount,
+  incrementTransferViewCount,
   getRelatedTransfers,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // 조회수 증가 (회원/비회원 모두 처리, 24시간 중복 방지)
     const userIdentifier = generateUserIdentifier(request, userId);
-    await incrementViewCount('transfer', transferId, userIdentifier, userId);
+    await incrementTransferViewCount(transferId, userIdentifier, userId);
 
     // 좋아요 여부 확인 (로그인한 경우에만)
     let isLiked = false;

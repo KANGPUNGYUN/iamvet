@@ -7,6 +7,7 @@ import { useCommentStore, Comment } from "@/store/commentStore";
 import { useAuth } from "@/hooks/api/useAuth";
 import { useState, useEffect } from "react";
 import { useLikeStore } from "@/stores/likeStore";
+import { useViewCountStore } from "@/stores/viewCountStore";
 import { useRouter } from "next/navigation";
 import profileImg from "@/assets/images/profile.png";
 import {
@@ -88,6 +89,15 @@ export default function LectureDetailPage({
     setLectureLike,
   } = useLikeStore();
 
+  // 조회수 상태 관리 (Zustand 스토어)
+  const {
+    setLectureViewCount,
+    incrementLectureViewCount,
+    getLectureViewCount,
+    markAsViewed,
+    isAlreadyViewed,
+  } = useViewCountStore();
+
   // useAuth 훅으로 현재 로그인한 사용자 정보 가져오기
   const { user: currentUser, isAuthenticated } = useAuth();
 
@@ -108,6 +118,20 @@ export default function LectureDetailPage({
         if (result.data?.isLiked !== undefined) {
           console.log('[LectureDetail] 서버에서 받은 좋아요 상태:', result.data.isLiked);
           setLectureLike(id, result.data.isLiked);
+        }
+
+        // 조회수 초기화 및 실시간 증가 처리
+        if (result.data?.viewCount !== undefined) {
+          console.log('[LectureDetail] 서버에서 받은 조회수:', result.data.viewCount);
+          // 서버에서 받은 조회수로 초기화
+          setLectureViewCount(id, result.data.viewCount);
+          
+          // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
+          if (!isAlreadyViewed('lecture', id)) {
+            console.log('[LectureDetail] 조회수 실시간 증가:', id);
+            incrementLectureViewCount(id);
+            markAsViewed('lecture', id);
+          }
         }
         
         // 댓글은 별도로 로드
@@ -393,7 +417,7 @@ export default function LectureDetailPage({
                       )}
                     </span>
                     <span>|</span>
-                    <span>조회 {lectureDetail.viewCount.toLocaleString()}</span>
+                    <span>조회 {getLectureViewCount(id).toLocaleString()}</span>
                   </div>
                 </div>
               </div>

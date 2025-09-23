@@ -25,6 +25,7 @@ interface ResumeDetail {
   phonePublic: boolean;
   emailPublic: boolean;
   birthDate?: string;
+  viewCount?: number;
   createdAt: string;
   updatedAt: string;
   isLiked?: boolean;
