@@ -22,6 +22,7 @@ import { useJobDetail } from "@/hooks/api/useJobDetail";
 import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/api/useAuth";
 import { useHasDetailedResume } from "@/hooks/api/useDetailedResume";
+import { useLikeStore } from "@/stores/likeStore";
 import axios from "axios";
 
 // 토큰 만료 시 localStorage 정리
@@ -38,7 +39,6 @@ export default function JobDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [resumeRequiredModalOpen, setResumeRequiredModalOpen] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -56,11 +56,26 @@ export default function JobDetailPage({
 
   const authStore = useAuthStore();
   const { user, isAuthenticated } = useAuth();
+  
+  // Zustand 스토어에서 좋아요 상태 관리
+  const {
+    setJobLike,
+    toggleJobLike,
+    isJobLiked
+  } = useLikeStore();
   const {
     hasResume,
     isLoading: isResumeLoading,
     error: resumeError,
   } = useHasDetailedResume();
+
+  // 초기 좋아요 상태 동기화
+  useEffect(() => {
+    if (jobData && jobData.isLiked) {
+      console.log('[JobDetail] 서버에서 받은 좋아요 채용공고:', id);
+      setJobLike(id, true);
+    }
+  }, [jobData, id, setJobLike]);
 
   // API 응답의 isOwner 값을 사용하되, 클라이언트에서도 추가 체크
   const isOwner =
@@ -127,9 +142,72 @@ export default function JobDetailPage({
     );
   }
 
-  const handleBookmarkClick = (e: React.MouseEvent) => {
+  // 채용공고 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsBookmarked(!isBookmarked);
+    
+    if (!isAuthenticated) {
+      alert("로그인이 필요합니다.");
+      router.push("/login/veterinarian");
+      return;
+    }
+
+    const isCurrentlyLiked = isJobLiked(id);
+    
+    console.log(`[JobDetail Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
+    
+    // 낙관적 업데이트: UI를 먼저 변경
+    toggleJobLike(id);
+
+    try {
+      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
+      
+      console.log(`[JobDetail Like] API 요청: ${method} /api/jobs/${id}/like`);
+      
+      const response = await fetch(`/api/jobs/${id}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(`[JobDetail Like] ${actionText} 실패:`, result);
+        
+        // 오류 발생 시 상태 롤백
+        setJobLike(id, isCurrentlyLiked);
+
+        if (response.status === 404) {
+          console.warn('채용공고를 찾을 수 없습니다:', id);
+          return;
+        } else if (response.status === 400) {
+          if (result.message?.includes('이미 좋아요한')) {
+            console.log(`[JobDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+            setJobLike(id, true);
+            return;
+          }
+          console.warn(`${actionText} 실패:`, result.message);
+          return;
+        } else if (response.status === 401) {
+          console.warn('로그인이 필요합니다.');
+          alert("로그인이 필요합니다.");
+          router.push("/login/veterinarian");
+          return;
+        }
+        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+      }
+
+      console.log(`[JobDetail Like] ${actionText} 성공:`, result);
+    } catch (error) {
+      console.error(`[JobDetail Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
+      
+      // 오류 발생 시 상태 롤백
+      setJobLike(id, isCurrentlyLiked);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+    }
   };
 
   const handleContactClick = () => {
@@ -354,7 +432,7 @@ export default function JobDetailPage({
                   {jobData.title}
                 </h1>
                 <div className="cursor-pointer" onClick={handleBookmarkClick}>
-                  {isBookmarked ? (
+                  {isJobLiked(id) ? (
                     <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
                   ) : (
                     <BookmarkIcon currentColor="var(--Subtext2)" />
@@ -571,6 +649,7 @@ export default function JobDetailPage({
                 jobData.relatedJobs.map((job: any) => (
                   <JobInfoCard
                     key={job.id}
+                    id={job.id}
                     hospital={job.hospitalName || job.title}
                     dDay={
                       job.recruitEndDate
@@ -600,6 +679,34 @@ export default function JobDetailPage({
                         : [job.experience].filter(Boolean)),
                     ].filter(Boolean)}
                     isBookmarked={false}
+                    isLiked={isJobLiked(job.id)}
+                    onLike={async (jobId) => {
+                      const jobIdStr = jobId.toString();
+                      const isCurrentlyLiked = isJobLiked(jobIdStr);
+                      
+                      // 낙관적 업데이트
+                      toggleJobLike(jobIdStr);
+
+                      try {
+                        const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+                        const response = await fetch(`/api/jobs/${jobId}/like`, {
+                          method,
+                          headers: { 'Content-Type': 'application/json' },
+                        });
+
+                        if (!response.ok) {
+                          // 오류 시 롤백
+                          setJobLike(jobIdStr, isCurrentlyLiked);
+                          const result = await response.json();
+                          if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                            setJobLike(jobIdStr, true);
+                          }
+                        }
+                      } catch (error) {
+                        // 오류 시 롤백
+                        setJobLike(jobIdStr, isCurrentlyLiked);
+                      }
+                    }}
                     isNew={
                       new Date(job.createdAt) >
                       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -627,6 +734,7 @@ export default function JobDetailPage({
                   {jobData.relatedJobs.map((job: any) => (
                     <div key={job.id} className="flex-shrink-0 w-[294px]">
                       <JobInfoCard
+                        id={job.id}
                         hospital={job.hospitalName || job.title}
                         dDay={
                           job.recruitEndDate
@@ -656,6 +764,34 @@ export default function JobDetailPage({
                             : [job.experience].filter(Boolean)),
                         ].filter(Boolean)}
                         isBookmarked={false}
+                        isLiked={isJobLiked(job.id)}
+                        onLike={async (jobId) => {
+                          const jobIdStr = jobId.toString();
+                          const isCurrentlyLiked = isJobLiked(jobIdStr);
+                          
+                          // 낙관적 업데이트
+                          toggleJobLike(jobIdStr);
+
+                          try {
+                            const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+                            const response = await fetch(`/api/jobs/${jobId}/like`, {
+                              method,
+                              headers: { 'Content-Type': 'application/json' },
+                            });
+
+                            if (!response.ok) {
+                              // 오류 시 롤백
+                              setJobLike(jobIdStr, isCurrentlyLiked);
+                              const result = await response.json();
+                              if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                                setJobLike(jobIdStr, true);
+                              }
+                            }
+                          } catch (error) {
+                            // 오류 시 롤백
+                            setJobLike(jobIdStr, isCurrentlyLiked);
+                          }
+                        }}
                         isNew={
                           new Date(job.createdAt) >
                           new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
