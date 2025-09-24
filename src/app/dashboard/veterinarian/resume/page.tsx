@@ -15,6 +15,17 @@ import { PlusIcon, MinusIcon } from "public/icons";
 import { useVeterinarianResume, useSaveVeterinarianResume, type ResumeUpdateData, type VeterinarianResume } from "@/hooks/useResume";
 import { useAuthStore } from "@/stores/authStore";
 
+// ID 생성 유틸리티
+const generateResumeId = (type: 'exp' | 'lic' | 'edu' | 'cap', timestamp: number = Date.now()) => {
+  const typeMap = {
+    exp: 'experience',
+    lic: 'license', 
+    edu: 'education',
+    cap: 'capability'
+  };
+  return `resume_${typeMap[type]}_${timestamp}`;
+};
+
 // 타입 정의
 interface Experience {
   id: string;
@@ -232,7 +243,7 @@ export default function VeterinarianResumePage() {
     workTimeNegotiable: false,
     experiences: [
       {
-        id: "default-1",
+        id: generateResumeId('exp'),
         hospitalName: "",
         mainTasks: "",
         startDate: null,
@@ -241,7 +252,7 @@ export default function VeterinarianResumePage() {
     ],
     licenses: [
       {
-        id: "default-1",
+        id: generateResumeId('lic'),
         name: "",
         issuer: "",
         grade: "",
@@ -250,7 +261,7 @@ export default function VeterinarianResumePage() {
     ],
     educations: [
       {
-        id: "default-1",
+        id: generateResumeId('edu'),
         degree: "",
         graduationStatus: "",
         schoolName: "",
@@ -263,7 +274,7 @@ export default function VeterinarianResumePage() {
     ],
     medicalCapabilities: [
       {
-        id: "default-1",
+        id: generateResumeId('cap'),
         field: "",
         proficiency: "",
         description: "",
@@ -368,7 +379,7 @@ export default function VeterinarianResumePage() {
   // 경력사항 추가
   const addExperience = () => {
     const newExperience: Experience = {
-      id: Date.now().toString(),
+      id: generateResumeId('exp'),
       hospitalName: "",
       mainTasks: "",
       startDate: null,
@@ -393,7 +404,7 @@ export default function VeterinarianResumePage() {
   // 자격증 추가
   const addLicense = () => {
     const newLicense: License = {
-      id: Date.now().toString(),
+      id: generateResumeId('lic'),
       name: "",
       issuer: "",
       grade: "",
@@ -418,7 +429,7 @@ export default function VeterinarianResumePage() {
   // 학력 추가
   const addEducation = () => {
     const newEducation: Education = {
-      id: Date.now().toString(),
+      id: generateResumeId('edu'),
       degree: "",
       graduationStatus: "",
       schoolName: "",
@@ -447,7 +458,7 @@ export default function VeterinarianResumePage() {
   // 진료상세역량 추가
   const addMedicalCapability = () => {
     const newCapability: MedicalCapability = {
-      id: Date.now().toString(),
+      id: generateResumeId('cap'),
       field: "",
       proficiency: "",
       description: "",
