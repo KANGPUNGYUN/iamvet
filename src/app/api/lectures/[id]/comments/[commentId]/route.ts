@@ -95,29 +95,53 @@ export const PUT = withAuth(
 
 export const DELETE = withAuth(
   async (request: NextRequest, context: RouteContext) => {
+    console.log("=== DELETE Comment API Start ===");
     try {
       const user = (request as any).user;
       const params = await context.params;
       const { commentId } = params;
 
+      console.log("DELETE Comment API:", { 
+        user: user ? { userId: user.userId, userType: user.userType } : 'null', 
+        commentId 
+      });
+
       // 댓글 존재 및 권한 확인
       const comment = await getLectureCommentById(commentId);
+      console.log("Comment found:", comment ? { 
+        id: comment.id, 
+        userId: comment.userId || comment.user_id,
+        content: comment.content?.substring(0, 50) + '...' 
+      } : 'null');
+
       if (!comment) {
+        console.log("Comment not found");
         return NextResponse.json(
           createErrorResponse("댓글을 찾을 수 없습니다"),
           { status: 404 }
         );
       }
 
-      if (comment.userId !== user.userId) {
+      // 댓글의 userId 필드명 확인 (userId vs user_id)
+      const commentUserId = comment.userId || comment.user_id;
+      console.log("Permission check:", { 
+        commentUserId, 
+        requestUserId: user.userId,
+        match: commentUserId === user.userId 
+      });
+
+      if (commentUserId !== user.userId) {
+        console.log("Permission denied");
         return NextResponse.json(
           createErrorResponse("이 댓글을 삭제할 권한이 없습니다"),
           { status: 403 }
         );
       }
 
-      // 대댓글이 있는 경우 소프트 삭제, 없는 경우 하드 삭제
-      await deleteLectureComment(commentId);
+      // 댓글 삭제
+      console.log("Attempting to delete comment:", commentId);
+      const deleteResult = await deleteLectureComment(commentId);
+      console.log("Delete result:", deleteResult);
 
       return NextResponse.json(
         createApiResponse("success", "댓글이 삭제되었습니다")

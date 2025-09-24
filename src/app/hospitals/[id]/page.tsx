@@ -23,8 +23,15 @@ import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
 import { Tab } from "@/components/ui/Tab";
 import JobInfoCard from "@/components/ui/JobInfoCard";
-import { useHospitalDetail } from "@/hooks/api/useHospitals";
+import {
+  useHospitalDetail,
+  useCreateHospitalEvaluation,
+  useHospitalEvaluations,
+  useUpdateHospitalEvaluation,
+  useDeleteHospitalEvaluation,
+} from "@/hooks/api/useHospitals";
 import { convertDDayToNumber } from "@/utils/dDayConverter";
+import { useAuth } from "@/hooks/api/useAuth";
 
 // 별점 표시 컴포넌트 (소수점 지원)
 const StarRating = ({
@@ -50,7 +57,7 @@ const StarRating = ({
   return <div className="flex gap-1">{stars}</div>;
 };
 
-// 인터랙티브 별점 컴포넌트
+// 인터랙티브 별점 컴포넌트 (0.5점 단위)
 const InteractiveStarRating = ({
   rating,
   onRatingChange,
@@ -62,12 +69,30 @@ const InteractiveStarRating = ({
 }) => {
   const [hoveredRating, setHoveredRating] = useState(0);
 
-  const handleStarClick = (starRating: number) => {
-    onRatingChange(starRating);
+  const handleStarClick = (
+    star: number,
+    isHalf: boolean,
+    event: React.MouseEvent
+  ) => {
+    if (!event) return;
+    
+    event.preventDefault();
+    const newRating = isHalf ? star - 0.5 : star;
+    onRatingChange(newRating);
   };
 
-  const handleStarHover = (starRating: number) => {
-    setHoveredRating(starRating);
+  const handleMouseMove = (
+    star: number,
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
+    if (!event.currentTarget) return;
+    
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const width = rect.width;
+    const isHalf = x < width / 2;
+    const newHoverRating = isHalf ? star - 0.5 : star;
+    setHoveredRating(newHoverRating);
   };
 
   const handleStarLeave = () => {
@@ -76,23 +101,36 @@ const InteractiveStarRating = ({
 
   const displayRating = hoveredRating > 0 ? hoveredRating : rating;
 
+  const renderStar = (starNumber: number) => {
+    if (displayRating >= starNumber) {
+      return <StarFilledIcon size={size} />;
+    } else if (displayRating >= starNumber - 0.5) {
+      return <StarHalfIcon size={size} />;
+    } else {
+      return <StarEmptyIcon size={size} />;
+    }
+  };
+
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1" onMouseLeave={handleStarLeave}>
       {[1, 2, 3, 4, 5].map((starNumber) => (
-        <button
+        <div
           key={starNumber}
-          type="button"
-          className="cursor-pointer hover:scale-110 transition-transform"
-          onClick={() => handleStarClick(starNumber)}
-          onMouseEnter={() => handleStarHover(starNumber)}
-          onMouseLeave={handleStarLeave}
+          className="relative cursor-pointer hover:scale-110 transition-transform"
+          onMouseMove={(e) => handleMouseMove(starNumber, e)}
         >
-          {starNumber <= displayRating ? (
-            <StarFilledIcon size={size} />
-          ) : (
-            <StarEmptyIcon size={size} />
-          )}
-        </button>
+          <button
+            type="button"
+            className="absolute inset-y-0 left-0 w-1/2 z-10"
+            onClick={(e) => handleStarClick(starNumber, true, e)}
+          />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 w-1/2 z-10"
+            onClick={(e) => handleStarClick(starNumber, false, e)}
+          />
+          <div className="relative">{renderStar(starNumber)}</div>
+        </div>
       ))}
     </div>
   );
@@ -103,32 +141,50 @@ export default function HospitalDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
-  const [expandedEvaluations, setExpandedEvaluations] = useState<number[]>([]);
+  const [expandedEvaluations, setExpandedEvaluations] = useState<string[]>([]);
   const [showRatingModal, setShowRatingModal] = useState(false);
+  const [editingEvaluationId, setEditingEvaluationId] = useState<string | null>(
+    null
+  );
+  const [showMoreMenus, setShowMoreMenus] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [ratings, setRatings] = useState({
     facilities: 0,
     staff: 0,
     service: 0,
-    communication: 0,
-    workEnvironment: 0,
   });
   const [comments, setComments] = useState({
     facilities: "",
     staff: "",
     service: "",
-    communication: "",
-    workEnvironment: "",
   });
   const { id } = use(params);
   const { data: hospitalResponse, isLoading, error } = useHospitalDetail(id);
+  const { data: evaluationsResponse, isLoading: evaluationsLoading } =
+    useHospitalEvaluations(id);
+  const { user } = useAuth();
+  const createEvaluationMutation = useCreateHospitalEvaluation(id);
+
+  // For update and delete, we need dynamic evaluation ID, so we'll handle them differently
+  const [currentEvaluationIdForActions, setCurrentEvaluationIdForActions] =
+    useState<string>("");
+  const updateEvaluationMutation = useUpdateHospitalEvaluation(
+    id,
+    editingEvaluationId || ""
+  );
+  const deleteEvaluationMutation = useDeleteHospitalEvaluation(
+    id,
+    currentEvaluationIdForActions
+  );
 
   // 디버깅용 로그
   console.log("[Page] Hospital ID:", id);
   console.log("[Page] Loading:", isLoading);
   console.log("[Page] Error:", error);
   console.log("[Page] Response:", hospitalResponse);
+  console.log("[Page] Evaluations:", evaluationsResponse);
 
   if (isLoading) {
     return (
@@ -181,66 +237,38 @@ export default function HospitalDetailPage({
 
   const hospitalData = hospitalResponse.data;
 
-  // 모크 평가 데이터
-  const mockEvaluations = {
-    overallAverage: 4.2,
-    hospitals: [
-      {
-        id: 1,
-        evaluatorName: "김○○",
-        evaluationDate: "2024-03-15",
-        overallRating: 4.5,
-        ratings: {
-          facilities: 4.0,
-          staff: 5.0,
-          service: 4.5,
-        },
-        detailedEvaluations: [
-          {
-            category: "시설 및 장비",
-            comment:
-              "시설이 깨끗하고 현대적입니다. 장비도 최신식으로 잘 갖춰져 있어요.",
-          },
-          {
-            category: "직원 전문성",
-            comment:
-              "수의사선생님이 정말 친절하시고 전문적이세요. 설명도 자세히 해주십니다.",
-          },
-          {
-            category: "서비스 품질",
-            comment: "응급상황에서 빠르게 대응해주셔서 감사했습니다.",
-          },
-        ],
-      },
-      {
-        id: 2,
-        evaluatorName: "박○○",
-        evaluationDate: "2024-03-10",
-        overallRating: 4.0,
-        ratings: {
-          facilities: 4.2,
-          staff: 3.8,
-          service: 4.0,
-        },
-        detailedEvaluations: [
-          {
-            category: "시설 및 장비",
-            comment: "전체적으로 좋지만 대기 공간이 조금 좁아요.",
-          },
-          {
-            category: "직원 전문성",
-            comment: "실력은 좋으나 대기시간이 조금 긴 편입니다.",
-          },
-          {
-            category: "서비스 품질",
-            comment: "전반적으로 만족스럽습니다.",
-          },
-        ],
-      },
-    ],
-  };
+  // 실제 평가 데이터 처리 및 검증
+  const evaluationsData = (evaluationsResponse?.data || []).map((evaluation: any) => {
+    // 데이터 구조 검증 및 기본값 설정
+    const processedEvaluation = {
+      ...evaluation,
+      rating: parseFloat(evaluation.rating) || 0,
+      ratings: evaluation.ratings || { facilities: 0, staff: 0, service: 0 },
+      comments: evaluation.comments || { facilities: '', staff: '', service: '' },
+    };
 
-  const toggleEvaluation = (evaluationId: number) => {
+    // 개별 별점들이 유효한 숫자인지 확인
+    Object.keys(processedEvaluation.ratings).forEach(key => {
+      processedEvaluation.ratings[key] = parseFloat(processedEvaluation.ratings[key]) || 0;
+    });
+
+    // 개별 코멘트들이 문자열인지 확인
+    Object.keys(processedEvaluation.comments).forEach(key => {
+      processedEvaluation.comments[key] = processedEvaluation.comments[key] || '';
+    });
+
+    return processedEvaluation;
+  });
+
+  const overallAverage =
+    evaluationsData.length > 0
+      ? evaluationsData.reduce(
+          (sum: number, evaluation: any) => sum + (evaluation.rating || 0),
+          0
+        ) / evaluationsData.length
+      : 0;
+
+  const toggleEvaluation = (evaluationId: string) => {
     setExpandedEvaluations((prev) =>
       prev.includes(evaluationId)
         ? prev.filter((id) => id !== evaluationId)
@@ -250,7 +278,7 @@ export default function HospitalDetailPage({
 
   // 전체 평균 계산
   const calculateOverallAverage = () => {
-    return mockEvaluations.overallAverage.toFixed(1);
+    return overallAverage.toFixed(1);
   };
 
   // 평가 모달 관련 함수들
@@ -270,12 +298,78 @@ export default function HospitalDetailPage({
 
   const handleModalClose = () => {
     setShowRatingModal(false);
+    setEditingEvaluationId(null);
+    resetRatingForm();
   };
 
-  const handleRatingSubmit = () => {
-    // 평가 제출 로직 (나중에 구현)
-    console.log("병원 평가 제출:", { ratings, comments });
-    setShowRatingModal(false);
+  const handleRatingSubmit = async () => {
+    try {
+      // 평균 평점 계산 (0.5점 단위)
+      const averageRating =
+        (ratings.facilities + ratings.staff + ratings.service) / 3;
+      const roundedRating = Math.round(averageRating * 2) / 2; // 0.5점 단위로 반올림
+
+      // 평가 데이터 준비 (이력서 평가와 동일한 형식)
+      const evaluationData = {
+        rating: roundedRating,
+        ratings: ratings,
+        comments: comments,
+        comment: '', // 이제 JSON 형식으로 저장되므로 별도 comment는 불필요
+      };
+
+      if (editingEvaluationId) {
+        await updateEvaluationMutation.mutateAsync(evaluationData);
+      } else {
+        await createEvaluationMutation.mutateAsync(evaluationData);
+      }
+
+      setShowRatingModal(false);
+      setEditingEvaluationId(null);
+      resetRatingForm();
+    } catch (error) {
+      console.error("평가 제출 오류:", error);
+      // TODO: 에러 메시지 표시 구현
+    }
+  };
+
+  const handleEditEvaluation = (evaluation: any) => {
+    setEditingEvaluationId(evaluation.id);
+    
+    // Pre-populate existing ratings data with validation
+    const existingRatings = evaluation.ratings || { facilities: 0, staff: 0, service: 0 };
+    setRatings({
+      facilities: parseFloat(existingRatings.facilities) || 0,
+      staff: parseFloat(existingRatings.staff) || 0,
+      service: parseFloat(existingRatings.service) || 0
+    });
+    
+    // Pre-populate existing comments data with validation
+    const existingComments = evaluation.comments || { facilities: "", staff: "", service: "" };
+    setComments({
+      facilities: String(existingComments.facilities || ""),
+      staff: String(existingComments.staff || ""),
+      service: String(existingComments.service || "")
+    });
+    
+    setShowRatingModal(true);
+    setShowMoreMenus({});
+  };
+
+  const handleDeleteEvaluation = async (evaluationId: string) => {
+    try {
+      setCurrentEvaluationIdForActions(evaluationId);
+      await deleteEvaluationMutation.mutateAsync();
+      setShowMoreMenus({});
+    } catch (error) {
+      console.error("평가 삭제 오류:", error);
+    }
+  };
+
+  const toggleMoreMenu = (evaluationId: string) => {
+    setShowMoreMenus((prev) => ({
+      ...prev,
+      [evaluationId]: !prev[evaluationId],
+    }));
   };
 
   const resetRatingForm = () => {
@@ -283,16 +377,22 @@ export default function HospitalDetailPage({
       facilities: 0,
       staff: 0,
       service: 0,
-      communication: 0,
-      workEnvironment: 0,
     });
     setComments({
       facilities: "",
       staff: "",
       service: "",
-      communication: "",
-      workEnvironment: "",
     });
+  };
+
+  // 평가하기 버튼을 보여줄지 확인하는 함수
+  const canUserEvaluate = () => {
+    return user && ((user as any).type === "veterinarian" || (user as any).type === "veterinary_student");
+  };
+
+  // 사용자가 해당 평가를 수정/삭제할 권한이 있는지 확인하는 함수
+  const canUserEditEvaluation = (evaluation: any) => {
+    return user && evaluation.evaluatorId === user.id;
   };
 
   return (
@@ -382,13 +482,11 @@ export default function HospitalDetailPage({
                 {hospitalData.specialties &&
                   hospitalData.specialties.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {hospitalData.specialties.map(
-                        (keyword, index) => (
-                          <Tag key={index} variant={6}>
-                            {keyword}
-                          </Tag>
-                        )
-                      )}
+                      {hospitalData.specialties.map((keyword, index) => (
+                        <Tag key={index} variant={6}>
+                          {keyword}
+                        </Tag>
+                      ))}
                     </div>
                   )}
               </div>
@@ -717,15 +815,30 @@ export default function HospitalDetailPage({
                 </Tab.Content>
 
                 <Tab.Content value="hospital-evaluation">
-                  {mockEvaluations.hospitals.length === 0 ? (
+                  {evaluationsLoading ? (
+                    <div className="w-full flex items-center justify-center py-20">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF8796] mx-auto mb-4"></div>
+                        <p className="text-gray-600">
+                          평가 정보를 불러오는 중...
+                        </p>
+                      </div>
+                    </div>
+                  ) : evaluationsData.length === 0 ? (
                     <div className="w-full flex items-center justify-center py-20">
                       <div className="text-center">
                         <p className="font-text text-[16px] text-sub mb-4">
                           아직 평가된 기록이 없습니다.
                         </p>
-                        <Button variant="line" size="medium">
-                          평가 요청하기
-                        </Button>
+                        {canUserEvaluate() && (
+                          <Button 
+                            variant="line" 
+                            size="medium"
+                            onClick={() => setShowRatingModal(true)}
+                          >
+                            평가하기
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -745,20 +858,22 @@ export default function HospitalDetailPage({
                               size={20}
                             />
                           </div>
-                          <Button
-                            variant="keycolor"
-                            size="medium"
-                            className="bg-key1 text-white px-[16px] py-[8px] rounded-[8px]"
-                            onClick={() => setShowRatingModal(true)}
-                          >
-                            평가하기
-                          </Button>
+                          {canUserEvaluate() && (
+                            <Button
+                              variant="keycolor"
+                              size="medium"
+                              className="bg-key1 text-white px-[16px] py-[8px] rounded-[8px]"
+                              onClick={() => setShowRatingModal(true)}
+                            >
+                              평가하기
+                            </Button>
+                          )}
                         </div>
                       </div>
 
                       {/* 평가자별 평가 목록 */}
                       <div className="w-full flex flex-col">
-                        {mockEvaluations.hospitals.map((evaluation) => (
+                        {evaluationsData.map((evaluation: any) => (
                           <div
                             key={evaluation.id}
                             className="w-full bg-white overflow-hidden border-b border-[#EFEFF0]"
@@ -771,25 +886,67 @@ export default function HospitalDetailPage({
                               <div className="flex items-center gap-[12px] lg:gap-[16px] flex-1 min-w-0">
                                 <div className="w-[32px] h-[32px] lg:w-[40px] lg:h-[40px] rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                                   <span className="font-text text-[14px] lg:text-[16px] font-semibold text-sub">
-                                    {evaluation.evaluatorName.charAt(0)}
+                                    {evaluation.evaluatorName
+                                      ? evaluation.evaluatorName.charAt(0)
+                                      : "익"}
                                   </span>
                                 </div>
                                 <div className="flex flex-col min-w-0 flex-1">
                                   <span className="font-text text-[14px] lg:text-[18px] font-semibold text-primary truncate">
-                                    {evaluation.evaluatorName}
+                                    {evaluation.evaluatorName || "익명"}
                                   </span>
                                   <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
-                                    {evaluation.evaluationDate}
+                                    {new Date(
+                                      evaluation.createdAt ||
+                                        evaluation.evaluationDate
+                                    ).toLocaleDateString()}
                                   </span>
                                 </div>
                               </div>
                               <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
+                                {/* Edit/Delete Buttons for Own Evaluations */}
+                                {canUserEditEvaluation(evaluation) && (
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="line"
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditEvaluation(evaluation);
+                                      }}
+                                      className="text-sm px-3 py-1"
+                                    >
+                                      수정
+                                    </Button>
+                                    <Button
+                                      variant="line"
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('정말로 이 평가를 삭제하시겠습니까?')) {
+                                          handleDeleteEvaluation(evaluation.id);
+                                        }
+                                      }}
+                                      className="text-sm px-3 py-1 text-red-600 border-red-600 hover:bg-red-50"
+                                    >
+                                      삭제
+                                    </Button>
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-[6px] lg:gap-[8px]">
                                   <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
-                                    {evaluation.overallRating.toFixed(1)}
+                                    {(
+                                      evaluation.rating ||
+                                      evaluation.overallRating ||
+                                      0
+                                    ).toFixed(1)}
                                   </span>
                                   <StarRating
-                                    rating={evaluation.overallRating}
+                                    rating={
+                                      evaluation.rating ||
+                                      evaluation.overallRating ||
+                                      0
+                                    }
                                     size={14}
                                   />
                                 </div>
@@ -805,132 +962,37 @@ export default function HospitalDetailPage({
                             {expandedEvaluations.includes(evaluation.id) && (
                               <div className="pl-[55px] pb-[20px] border-t border-[#EFEFF0]">
                                 <div className="flex flex-col gap-[24px] pt-[20px]">
-                                  {/* 시설 및 장비 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        시설 및 장비
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.facilities.toFixed(
-                                            1
-                                          )}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.facilities}
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "시설 및 장비"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
+                                  {/* 평가 카테고리별 표시 */}
+                                  {[
+                                    { key: 'facilities', label: '시설 및 장비' },
+                                    { key: 'staff', label: '직원 전문성' },
+                                    { key: 'service', label: '서비스 품질' }
+                                  ].map(({ key, label }) => {
+                                    // 안전한 데이터 추출 및 검증
+                                    const rating = parseFloat(evaluation.ratings?.[key]) || 0;
+                                    const comment = String(evaluation.comments?.[key] || '').trim() || '-';
+                                    
+                                    return (
+                                      <div key={key}>
+                                        <div className="flex justify-between items-center mb-[12px]">
+                                          <span className="font-text text-[16px] font-semibold text-primary">
+                                            {label}
+                                          </span>
+                                          <div className="flex items-center gap-[8px]">
+                                            <span className="font-text text-[16px] font-bold text-primary">
+                                              {rating.toFixed(1)}
+                                            </span>
+                                            <StarRating rating={rating} size={14} />
+                                          </div>
+                                        </div>
+                                        <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
+                                          <p className="font-text text-[16px] text-sub">
+                                            {comment}
                                           </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "시설 및 장비"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 직원 전문성 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        직원 전문성
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.staff.toFixed(1)}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.staff}
-                                          size={14}
-                                        />
+                                        </div>
                                       </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "직원 전문성"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "직원 전문성"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 서비스 품질 */}
-                                  <div>
-                                    <div className="flex justify-between items-center mb-[12px]">
-                                      <span className="font-text text-[16px] font-semibold text-primary">
-                                        서비스 품질
-                                      </span>
-                                      <div className="flex items-center gap-[8px]">
-                                        <span className="font-text text-[16px] font-bold text-primary">
-                                          {evaluation.ratings.service.toFixed(
-                                            1
-                                          )}
-                                        </span>
-                                        <StarRating
-                                          rating={evaluation.ratings.service}
-                                          size={14}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
-                                      {evaluation.detailedEvaluations
-                                        .filter(
-                                          (detail) =>
-                                            detail.category === "서비스 품질"
-                                        )
-                                        .map((detail, index) => (
-                                          <p
-                                            key={index}
-                                            className="font-text text-[16px] text-sub"
-                                          >
-                                            {detail.comment || "-"}
-                                          </p>
-                                        ))}
-                                      {!evaluation.detailedEvaluations.some(
-                                        (detail) =>
-                                          detail.category === "서비스 품질"
-                                      ) && (
-                                        <p className="font-text text-[16px] text-sub">
-                                          -
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -954,7 +1016,7 @@ export default function HospitalDetailPage({
             {/* 모달 헤더 */}
             <div className="flex justify-between items-center p-[24px] border-b border-[#EFEFF0]">
               <h2 className="font-title text-[24px] font-light text-primary">
-                병원 평가하기
+                {editingEvaluationId ? "병원 평가 수정하기" : "병원 평가하기"}
               </h2>
               <button
                 onClick={handleModalClose}
@@ -1076,76 +1138,6 @@ export default function HospitalDetailPage({
                   </span>
                 </div>
               </div>
-
-              {/* 소통 및 상담 */}
-              <div>
-                <div className="mb-[12px]">
-                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
-                    소통 및 상담
-                  </h3>
-                  <p className="font-text text-[16px] text-subtext2">
-                    보호자와의 소통, 설명의 명확성, 친절도 및 상담 질
-                  </p>
-                </div>
-                <div className="mb-[16px]">
-                  <InteractiveStarRating
-                    rating={ratings.communication}
-                    onRatingChange={(rating) =>
-                      handleRatingChange("communication", rating)
-                    }
-                    size={24}
-                  />
-                </div>
-                <textarea
-                  value={comments.communication}
-                  onChange={(e) =>
-                    handleCommentChange("communication", e.target.value)
-                  }
-                  placeholder="소통 및 상담에 대한 평가를 자세히 작성해 주세요."
-                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
-                  maxLength={500}
-                />
-                <div className="text-right mt-[8px]">
-                  <span className="font-text text-[12px] text-guide">
-                    {comments.communication.length}/500
-                  </span>
-                </div>
-              </div>
-
-              {/* 근무 환경 */}
-              <div>
-                <div className="mb-[12px]">
-                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
-                    근무 환경
-                  </h3>
-                  <p className="font-text text-[16px] text-subtext2">
-                    직원들의 업무 분위기, 조직 문화, 워라벨, 복지 혜택 등
-                  </p>
-                </div>
-                <div className="mb-[16px]">
-                  <InteractiveStarRating
-                    rating={ratings.workEnvironment}
-                    onRatingChange={(rating) =>
-                      handleRatingChange("workEnvironment", rating)
-                    }
-                    size={24}
-                  />
-                </div>
-                <textarea
-                  value={comments.workEnvironment}
-                  onChange={(e) =>
-                    handleCommentChange("workEnvironment", e.target.value)
-                  }
-                  placeholder="근무 환경에 대한 평가를 자세히 작성해 주세요."
-                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
-                  maxLength={500}
-                />
-                <div className="text-right mt-[8px]">
-                  <span className="font-text text-[12px] text-guide">
-                    {comments.workEnvironment.length}/500
-                  </span>
-                </div>
-              </div>
             </div>
 
             {/* 모달 푸터 */}
@@ -1166,7 +1158,7 @@ export default function HospitalDetailPage({
                 onClick={handleRatingSubmit}
                 className="bg-[#4F5866] text-white"
               >
-                등록하기
+                {editingEvaluationId ? "수정하기" : "등록하기"}
               </Button>
             </div>
           </div>
@@ -1182,7 +1174,7 @@ export default function HospitalDetailPage({
                 <ArrowLeftIcon currentColor="currentColor" />
               </button>
               <h2 className="font-title text-[16px] font-light text-primary">
-                병원 평가하기
+                {editingEvaluationId ? "병원 평가 수정하기" : "병원 평가하기"}
               </h2>
               <div className="w-8 h-8"></div>
             </div>
@@ -1291,76 +1283,6 @@ export default function HospitalDetailPage({
                   </span>
                 </div>
               </div>
-
-              {/* 소통 및 상담 */}
-              <div>
-                <div className="mb-[12px]">
-                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
-                    소통 및 상담
-                  </h3>
-                  <p className="font-text text-[16px] text-subtext2">
-                    보호자와의 소통, 설명의 명확성, 친절도 및 상담 질
-                  </p>
-                </div>
-                <div className="mb-[16px]">
-                  <InteractiveStarRating
-                    rating={ratings.communication}
-                    onRatingChange={(rating) =>
-                      handleRatingChange("communication", rating)
-                    }
-                    size={20}
-                  />
-                </div>
-                <textarea
-                  value={comments.communication}
-                  onChange={(e) =>
-                    handleCommentChange("communication", e.target.value)
-                  }
-                  placeholder="소통 및 상담에 대한 평가를 자세히 작성해 주세요."
-                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
-                  maxLength={500}
-                />
-                <div className="text-right mt-[8px]">
-                  <span className="font-text text-[12px] text-guide">
-                    {comments.communication.length}/500
-                  </span>
-                </div>
-              </div>
-
-              {/* 근무 환경 */}
-              <div>
-                <div className="mb-[12px]">
-                  <h3 className="font-text text-[16px] font-semibold text-primary mb-[4px]">
-                    근무 환경
-                  </h3>
-                  <p className="font-text text-[16px] text-subtext2">
-                    직원들의 업무 분위기, 조직 문화, 워라벨, 복지 혜택 등
-                  </p>
-                </div>
-                <div className="mb-[16px]">
-                  <InteractiveStarRating
-                    rating={ratings.workEnvironment}
-                    onRatingChange={(rating) =>
-                      handleRatingChange("workEnvironment", rating)
-                    }
-                    size={20}
-                  />
-                </div>
-                <textarea
-                  value={comments.workEnvironment}
-                  onChange={(e) =>
-                    handleCommentChange("workEnvironment", e.target.value)
-                  }
-                  placeholder="근무 환경에 대한 평가를 자세히 작성해 주세요."
-                  className="w-full h-[80px] p-[12px] border border-[#EFEFF0] rounded-[8px] bg-[#FBFBFB] font-text text-[14px] text-primary resize-none focus:outline-none focus:border-key1"
-                  maxLength={500}
-                />
-                <div className="text-right mt-[8px]">
-                  <span className="font-text text-[12px] text-guide">
-                    {comments.workEnvironment.length}/500
-                  </span>
-                </div>
-              </div>
             </div>
 
             {/* 모바일 푸터 */}
@@ -1381,7 +1303,7 @@ export default function HospitalDetailPage({
                 size="medium"
                 onClick={handleRatingSubmit}
               >
-                등록하기
+                {editingEvaluationId ? "수정하기" : "등록하기"}
               </Button>
             </div>
           </div>

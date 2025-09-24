@@ -164,6 +164,7 @@ export default function ResumeDetailPage({
   const [evaluations, setEvaluations] = useState<any[]>([]);
   const [evaluationsLoading, setEvaluationsLoading] = useState(false);
   const [expandedEvaluations, setExpandedEvaluations] = useState<string[]>([]);
+  const [editingEvaluationId, setEditingEvaluationId] = useState<string | null>(null);
   const [ratings, setRatings] = useState({
     stressManagement: 0,
     growth: 0,
@@ -319,10 +320,16 @@ export default function ResumeDetailPage({
 
       setEvaluationsLoading(true);
       try {
-        const response = await fetch(`/api/resumes/${id}/evaluation`);
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch(`/api/resumes/${id}/evaluation`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const result = await response.json();
 
         if (result.status === "success") {
+          console.log("Evaluations loaded:", result.data);
           setEvaluations(result.data || []);
         }
       } catch (error) {
@@ -596,7 +603,6 @@ export default function ResumeDetailPage({
           subject: contactForm.subject,
           message: contactForm.message,
           recipientId: resumeData.userId,
-          resumeId: id,
           type: "resume",
         }),
       });
@@ -649,6 +655,7 @@ export default function ResumeDetailPage({
   // 평가하기 관련 핸들러
   const handleModalClose = () => {
     setShowRatingModal(false);
+    setEditingEvaluationId(null);
     resetRatingForm();
   };
 
@@ -687,8 +694,13 @@ export default function ResumeDetailPage({
       }
 
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`/api/resumes/${id}/evaluation`, {
-        method: "POST",
+      const method = editingEvaluationId ? "PUT" : "POST";
+      const url = editingEvaluationId 
+        ? `/api/resumes/${id}/evaluation/${editingEvaluationId}`
+        : `/api/resumes/${id}/evaluation`;
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -702,22 +714,95 @@ export default function ResumeDetailPage({
       const result = await response.json();
 
       if (result.status === "success") {
-        alert("평가가 성공적으로 등록되었습니다.");
+        alert(editingEvaluationId ? "평가가 성공적으로 수정되었습니다." : "평가가 성공적으로 등록되었습니다.");
         setShowRatingModal(false);
+        setEditingEvaluationId(null);
         resetRatingForm();
         // 평가 목록 새로고침
-        const refreshResponse = await fetch(`/api/resumes/${id}/evaluation`);
+        const refreshResponse = await fetch(`/api/resumes/${id}/evaluation`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const refreshResult = await refreshResponse.json();
         if (refreshResult.status === "success") {
           setEvaluations(refreshResult.data || []);
         }
       } else {
-        alert(result.message || "평가 등록에 실패했습니다.");
+        alert(result.message || "평가 처리에 실패했습니다.");
       }
     } catch (error) {
-      console.error("평가 등록 오류:", error);
-      alert("평가 등록 중 오류가 발생했습니다.");
+      console.error("평가 처리 오류:", error);
+      alert("평가 처리 중 오류가 발생했습니다.");
     }
+  };
+
+  const handleEditEvaluation = (evaluation: any) => {
+    setEditingEvaluationId(evaluation.id);
+    // 기존 평가 데이터로 폼 채우기
+    setRatings({
+      stressManagement: evaluation.detailedEvaluations?.find((d: any) => d.category === "스트레스 관리")?.rating || 0,
+      growth: evaluation.detailedEvaluations?.find((d: any) => d.category === "성장 잠재력")?.rating || 0,
+      care: evaluation.detailedEvaluations?.find((d: any) => d.category === "소통 능력")?.rating || 0,
+      documentation: evaluation.detailedEvaluations?.find((d: any) => d.category === "업무 역량")?.rating || 0,
+      contribution: evaluation.detailedEvaluations?.find((d: any) => d.category === "협업 능력")?.rating || 0,
+    });
+    setComments({
+      stressManagement: evaluation.detailedEvaluations?.find((d: any) => d.category === "스트레스 관리")?.comment || "",
+      growth: evaluation.detailedEvaluations?.find((d: any) => d.category === "성장 잠재력")?.comment || "",
+      care: evaluation.detailedEvaluations?.find((d: any) => d.category === "소통 능력")?.comment || "",
+      documentation: evaluation.detailedEvaluations?.find((d: any) => d.category === "업무 역량")?.comment || "",
+      contribution: evaluation.detailedEvaluations?.find((d: any) => d.category === "협업 능력")?.comment || "",
+    });
+    setShowRatingModal(true);
+  };
+
+  const handleDeleteEvaluation = async (evaluationId: string) => {
+    if (!window.confirm('정말로 이 평가를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(`/api/resumes/${id}/evaluation/${evaluationId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        alert("평가가 성공적으로 삭제되었습니다.");
+        // 평가 목록 새로고침
+        const refreshResponse = await fetch(`/api/resumes/${id}/evaluation`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const refreshResult = await refreshResponse.json();
+        if (refreshResult.status === "success") {
+          setEvaluations(refreshResult.data || []);
+        }
+      } else {
+        alert(result.message || "평가 삭제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("평가 삭제 오류:", error);
+      alert("평가 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 사용자가 해당 평가를 수정/삭제할 권한이 있는지 확인하는 함수
+  const canUserEditEvaluation = (evaluation: any) => {
+    console.log("Checking edit permission:", {
+      user: user,
+      userId: user?.id,
+      evaluatorId: evaluation.evaluatorId,
+      canEdit: user && evaluation.evaluatorId === user.id
+    });
+    return user && evaluation.evaluatorId === user.id;
   };
 
   const resetContactForm = () => {
@@ -1679,6 +1764,33 @@ export default function ResumeDetailPage({
                                 </div>
                               </div>
                               <div className="flex items-center gap-[12px] lg:gap-[16px] flex-shrink-0">
+                                {/* Edit/Delete Buttons for Own Evaluations */}
+                                {canUserEditEvaluation(evaluation) && (
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="line"
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditEvaluation(evaluation);
+                                      }}
+                                      className="text-sm px-3 py-1"
+                                    >
+                                      수정
+                                    </Button>
+                                    <Button
+                                      variant="line"
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteEvaluation(evaluation.id);
+                                      }}
+                                      className="text-sm px-3 py-1 text-red-600 border-red-600 hover:bg-red-50"
+                                    >
+                                      삭제
+                                    </Button>
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-[6px] lg:gap-[8px]">
                                   <span className="font-text text-[16px] lg:text-[20px] font-bold text-primary">
                                     {evaluation.overallRating.toFixed(1)}
@@ -1908,7 +2020,7 @@ export default function ResumeDetailPage({
             {/* 모달 헤더 */}
             <div className="flex justify-between items-center p-[24px] border-b border-[#EFEFF0]">
               <h2 className="font-title text-[24px] font-light text-primary">
-                수의사 평가하기
+                {editingEvaluationId ? "수의사 평가 수정하기" : "수의사 평가하기"}
               </h2>
               <button
                 onClick={handleModalClose}
@@ -2123,7 +2235,7 @@ export default function ResumeDetailPage({
                 onClick={handleRatingSubmit}
                 className="bg-[#4F5866] text-white"
               >
-                등록하기
+                {editingEvaluationId ? "수정하기" : "등록하기"}
               </Button>
             </div>
           </div>
@@ -2139,7 +2251,7 @@ export default function ResumeDetailPage({
                 <ArrowLeftIcon currentColor="currentColor" />
               </button>
               <h2 className="font-title text-[16px] font-light text-primary">
-                수의사 평가하기
+                {editingEvaluationId ? "수의사 평가 수정하기" : "수의사 평가하기"}
               </h2>
               <div className="w-8 h-8"></div>
             </div>
@@ -2341,7 +2453,7 @@ export default function ResumeDetailPage({
                 size="medium"
                 onClick={handleRatingSubmit}
               >
-                등록하기
+                {editingEvaluationId ? "수정하기" : "등록하기"}
               </Button>
             </div>
           </div>

@@ -40,19 +40,32 @@ export const POST = withAuth(
       const hospitalId = params.id;
       const evaluationData = await request.json();
 
-      // Only veterinarians can evaluate hospitals
-      if (user.userType !== "veterinarian") {
+      // Only veterinarians and veterinary students can evaluate hospitals
+      if (user.userType !== "VETERINARIAN" && user.userType !== "VETERINARY_STUDENT") {
         return NextResponse.json(
-          createErrorResponse("수의사만 병원을 평가할 수 있습니다"),
+          createErrorResponse("수의사 또는 수의학과 학생만 병원을 평가할 수 있습니다"),
           { status: 403 }
         );
       }
 
+      // Validate evaluation data
+      const { ratings, comments } = evaluationData;
+      
+      // Calculate overall rating as average (0.5 point precision)
+      if (ratings) {
+        const ratingValues = Object.values(ratings) as number[];
+        const overallRating = ratingValues.reduce((sum: number, rating: number) => sum + rating, 0) / ratingValues.length;
+        evaluationData.rating = Math.round(overallRating * 2) / 2; // Round to nearest 0.5
+      }
+
       // Create hospital evaluation
       const evaluation = await createHospitalEvaluation({
-        ...evaluationData,
         hospitalId,
         evaluatorId: user.userId,
+        rating: evaluationData.rating,
+        ratings: ratings || {},
+        comments: comments || {},
+        comment: evaluationData.comment || ''
       });
 
       return NextResponse.json(

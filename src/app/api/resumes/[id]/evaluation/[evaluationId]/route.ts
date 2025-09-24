@@ -31,7 +31,17 @@ export const PUT = withAuth(
         );
       }
 
-      if (evaluation.evaluatorId !== user.userId) {
+      console.log('[Resume Evaluation Update] Permission check:', {
+        evaluationUserId: evaluation.userId,
+        evaluationEvaluatorId: evaluation.evaluatorId,
+        currentUserId: user.userId,
+        userType: user.userType,
+        evaluation: evaluation
+      });
+
+      // evaluatorId가 없으면 userId를 사용
+      const evaluatorId = evaluation.evaluatorId || evaluation.userId;
+      if (evaluatorId !== user.userId) {
         return NextResponse.json(
           createErrorResponse("이 평가를 수정할 권한이 없습니다"),
           { status: 403 }
@@ -83,7 +93,16 @@ export const DELETE = withAuth(
         );
       }
 
-      if (evaluation.evaluatorId !== user.userId) {
+      console.log('[Resume Evaluation Delete] Permission check:', {
+        evaluationUserId: evaluation.userId,
+        evaluationEvaluatorId: evaluation.evaluatorId,
+        currentUserId: user.userId,
+        userType: user.userType
+      });
+
+      // evaluatorId가 없으면 userId를 사용
+      const evaluatorId = evaluation.evaluatorId || evaluation.userId;
+      if (evaluatorId !== user.userId) {
         return NextResponse.json(
           createErrorResponse("이 평가를 삭제할 권한이 없습니다"),
           { status: 403 }

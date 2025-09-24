@@ -84,3 +84,33 @@ export function useCreateHospitalEvaluation(hospitalId: string) {
     },
   });
 }
+
+export function useUpdateHospitalEvaluation(hospitalId: string, evaluationId: string) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (evaluationData: any) => {
+      const response = await axios.put(`/api/hospitals/${hospitalId}/evaluation/${evaluationId}`, evaluationData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hospital-evaluations', hospitalId] });
+      queryClient.invalidateQueries({ queryKey: ['hospital', hospitalId] });
+    },
+  });
+}
+
+export function useDeleteHospitalEvaluation(hospitalId: string, evaluationId: string) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async () => {
+      const response = await axios.delete(`/api/hospitals/${hospitalId}/evaluation/${evaluationId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hospital-evaluations', hospitalId] });
+      queryClient.invalidateQueries({ queryKey: ['hospital', hospitalId] });
+    },
+  });
+}

@@ -47,15 +47,42 @@ export const useCommentStore = create<CommentState>((set, get) => ({
   })),
   
   updateComment: (commentId, content) => set((state) => ({
-    comments: state.comments.map(comment =>
-      comment.id === commentId
-        ? { ...comment, content, updatedAt: new Date().toISOString() }
-        : comment
-    )
+    comments: state.comments.map(comment => {
+      if (comment.id === commentId) {
+        return { ...comment, content, updatedAt: new Date().toISOString() };
+      }
+      
+      // 대댓글도 확인하여 업데이트
+      if (comment.replies) {
+        const updatedReplies = comment.replies.map(reply => 
+          reply.id === commentId 
+            ? { ...reply, content, updatedAt: new Date().toISOString() }
+            : reply
+        );
+        
+        // 대댓글 중 수정된 것이 있으면 댓글 전체를 업데이트
+        if (updatedReplies.some((reply, idx) => reply !== comment.replies![idx])) {
+          return { ...comment, replies: updatedReplies };
+        }
+      }
+      
+      return comment;
+    })
   })),
   
   deleteComment: (commentId) => set((state) => ({
-    comments: state.comments.filter(comment => comment.id !== commentId)
+    comments: state.comments
+      .map(comment => {
+        // 대댓글 중에서 삭제할 댓글이 있는지 확인
+        if (comment.replies) {
+          const filteredReplies = comment.replies.filter(reply => reply.id !== commentId);
+          if (filteredReplies.length !== comment.replies.length) {
+            return { ...comment, replies: filteredReplies };
+          }
+        }
+        return comment;
+      })
+      .filter(comment => comment.id !== commentId) // 최상위 댓글 삭제
   })),
   
   setLoading: (loading) => set({ isLoading: loading }),
@@ -170,18 +197,25 @@ export const useCommentStore = create<CommentState>((set, get) => ({
 
   removeComment: async (contentId: string, contentType: 'forum' | 'lecture', commentId: string) => {
     try {
+      console.log('[CommentStore] removeComment 시작:', { contentId, contentType, commentId });
       set({ error: null });
       
       const apiPath = contentType === 'forum' ? 'forums' : 'lectures';
+      console.log('[CommentStore] API 요청:', `DELETE /api/${apiPath}/${contentId}/comments/${commentId}`);
+      
       const response = await fetch(`/api/${apiPath}/${contentId}/comments/${commentId}`, {
         method: 'DELETE'
       });
       
       const data = await response.json();
+      console.log('[CommentStore] API 응답:', { status: response.status, data });
       
       if (data.status === 'success') {
+        console.log('[CommentStore] deleteComment 호출 전 댓글 수:', get().comments.length);
         get().deleteComment(commentId);
+        console.log('[CommentStore] deleteComment 호출 후 댓글 수:', get().comments.length);
       } else {
+        console.error('[CommentStore] API 에러:', data.message);
         set({ error: data.message });
       }
     } catch (error) {
