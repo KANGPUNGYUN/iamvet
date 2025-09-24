@@ -8,37 +8,37 @@ datasource db {
 }
 
 model User {
-  id                      String                   @id @default(cuid())
-  email                   String                   @unique
-  phone                   String                   @unique
-  passwordHash            String?
-  profileImage            String?
-  userType                UserType
-  provider                Provider                 @default(NORMAL)
-  isActive                Boolean                  @default(true)
-  termsAgreedAt           DateTime
-  privacyAgreedAt         DateTime
-  marketingAgreedAt       DateTime?
-  deletedAt               DateTime?
-  withdrawReason          String?
-  restoredAt              DateTime?
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  realName                String
-  birthDate               DateTime?
-  businessNumber          String?                  @unique
-  establishedDate         DateTime?
-  hospitalAddress         String?
-  hospitalAddressDetail   String?
-  hospitalLogo            String?
-  hospitalName            String?
-  hospitalWebsite         String?
-  licenseImage            String?
-  loginId                 String?                  @unique @db.VarChar(100)
-  nickname                String?                  @db.VarChar(100)
-  seq                     Int                      @unique @default(autoincrement())
-  universityEmail         String?                  @unique
-  lastLoginAt             DateTime?                @db.Timestamp(6)
+  id                       String                    @id @default(cuid())
+  email                    String                    @unique
+  phone                    String                    @unique
+  passwordHash             String?
+  profileImage             String?
+  userType                 UserType
+  provider                 Provider                  @default(NORMAL)
+  isActive                 Boolean                   @default(true)
+  termsAgreedAt            DateTime
+  privacyAgreedAt          DateTime
+  marketingAgreedAt        DateTime?
+  deletedAt                DateTime?
+  withdrawReason           String?
+  restoredAt               DateTime?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  realName                 String
+  birthDate                DateTime?
+  businessNumber           String?                   @unique
+  establishedDate          DateTime?
+  hospitalAddress          String?
+  hospitalAddressDetail    String?
+  hospitalLogo             String?
+  hospitalName             String?
+  hospitalWebsite          String?
+  licenseImage             String?
+  loginId                  String?                   @unique @db.VarChar(100)
+  nickname                 String?                   @db.VarChar(100)
+  seq                      Int                       @unique @default(autoincrement())
+  universityEmail          String?                   @unique
+  lastLoginAt              DateTime?                 @db.Timestamp(6)
   announcementsCreated     Announcement[]
   applications             Application[]
   commentReplies           CommentReply[]
@@ -49,9 +49,12 @@ model User {
   forum_comments           forum_comments[]
   forumPostLikes           ForumPostLike[]
   forumPosts               ForumPost[]
+  hospitalAnimals          HospitalAnimal[]
+  hospitalBusinessLicenses HospitalBusinessLicense[]
   hospitalEvaluations      HospitalEvaluation[]      @relation("HospitalEvaluations")
   userHospitalEvaluations  HospitalEvaluation[]      @relation("UserHospitalEvaluations")
   hospital_profiles        hospital_profiles?
+  hospitalSpecialties      HospitalSpecialty[]
   jobLikes                 JobLike[]
   jobs                     Job[]
   lectureComments          LectureComment[]
@@ -68,9 +71,6 @@ model User {
   transferLikes            TransferLike[]
   transfers                Transfer[]
   veterinarian_profiles    veterinarian_profiles?
-  hospitalAnimals          HospitalAnimal[]
-  hospitalSpecialties      HospitalSpecialty[]
-  hospitalBusinessLicenses HospitalBusinessLicense[]
 
   @@index([loginId], map: "idx_users_loginid")
   @@index([nickname], map: "idx_users_nickname")
@@ -142,7 +142,7 @@ model Job {
 }
 
 model Resume {
-  id                String             @id @default(cuid())
+  id                String           @id @default(cuid())
   veterinarianId    String
   title             String
   introduction      String?
@@ -153,12 +153,11 @@ model Resume {
   preferredSalary   Int?
   preferredLocation String?
   availableFrom     DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
   inquiries         ContactInquiry[]
-  evaluations       ResumeEvaluation[]
-  veterinarian      User               @relation(fields: [veterinarianId], references: [id])
+  veterinarian      User             @relation(fields: [veterinarianId], references: [id])
 
   @@map("resumes")
 }
@@ -184,7 +183,7 @@ model Application {
 }
 
 model Lecture {
-  id          String            @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
   description String?
   videoUrl    String
@@ -192,9 +191,9 @@ model Lecture {
   duration    Int?
   category    String?
   tags        String[]
-  viewCount   Int               @default(0)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  viewCount   Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   deletedAt   DateTime?
   comments    LectureComment[]
   likes       LectureLike[]
@@ -237,7 +236,7 @@ model CommentReply {
 }
 
 model Transfer {
-  id            String             @id @default(cuid())
+  id            String         @id @default(cuid())
   userId        String
   title         String
   description   String
@@ -245,20 +244,20 @@ model Transfer {
   price         Int?
   category      String
   images        String[]
-  status        TransferStatus     @default(ACTIVE)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  status        TransferStatus @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   deletedAt     DateTime?
   area          Int?
-  baseAddress   String?            @map("base_address")
-  detailAddress String?            @map("detail_address")
+  baseAddress   String?        @map("base_address")
+  detailAddress String?        @map("detail_address")
   latitude      Float?
   longitude     Float?
   sido          String?
   sigungu       String?
-  views         Int                @default(0)
+  views         Int            @default(0)
   likes         TransferLike[]
-  user          User               @relation(fields: [userId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
 
   @@map("transfers")
 }
@@ -297,7 +296,6 @@ model Message {
   @@map("messages")
 }
 
-
 model HospitalEvaluation {
   id         String    @id @default(cuid())
   hospitalId String
@@ -315,16 +313,16 @@ model HospitalEvaluation {
 }
 
 model ResumeEvaluation {
-  id        String    @id @default(cuid())
+  id        String         @id @default(cuid())
   resumeId  String
   userId    String
   rating    Int
   comment   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
   deletedAt DateTime?
-  resume    Resume    @relation(fields: [resumeId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
+  resume    DetailedResume @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      User           @relation(fields: [userId], references: [id])
 
   @@unique([resumeId, userId])
   @@map("resume_evaluations")
@@ -353,16 +351,17 @@ model DetailedResume {
   workEndTime         String?
   workTimeNegotiable  Boolean                   @default(false)
   selfIntroduction    String?
-  viewCount           Int                       @default(0)
   createdAt           DateTime                  @default(now())
   updatedAt           DateTime                  @updatedAt
   deletedAt           DateTime?
+  viewCount           Int                       @default(0)
   user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   educations          ResumeEducation[]
+  evaluations         ResumeEvaluation[]
   experiences         ResumeExperience[]
   licenses            ResumeLicense[]
-  medicalCapabilities ResumeMedicalCapability[]
   likes               ResumeLike[]
+  medicalCapabilities ResumeMedicalCapability[]
 
   @@map("detailed_resumes")
 }
@@ -432,8 +431,8 @@ model ResumeMedicalCapability {
 }
 
 model DetailedHospitalProfile {
-  id                  String              @id @default(cuid())
-  userId              String              @unique
+  id                  String                  @id @default(cuid())
+  userId              String                  @unique
   hospitalName        String
   businessNumber      String
   address             String
@@ -448,26 +447,26 @@ model DetailedHospitalProfile {
   treatmentAnimals    String[]
   treatmentFields     String[]
   operatingHours      Json?
-  emergencyService    Boolean             @default(false)
-  parkingAvailable    Boolean             @default(false)
+  emergencyService    Boolean                 @default(false)
+  parkingAvailable    Boolean                 @default(false)
   publicTransportInfo String?
   totalBeds           Int?
   surgeryRooms        Int?
-  xrayRoom            Boolean             @default(false)
-  ctScan              Boolean             @default(false)
-  ultrasound          Boolean             @default(false)
-  grooming            Boolean             @default(false)
-  boarding            Boolean             @default(false)
-  petTaxi             Boolean             @default(false)
+  xrayRoom            Boolean                 @default(false)
+  ctScan              Boolean                 @default(false)
+  ultrasound          Boolean                 @default(false)
+  grooming            Boolean                 @default(false)
+  boarding            Boolean                 @default(false)
+  petTaxi             Boolean                 @default(false)
   certifications      String[]
   awards              String[]
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
   deletedAt           DateTime?
-  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   equipments          HospitalEquipment[]
-  staff               HospitalStaff[]
   facilityImages      HospitalFacilityImage[]
+  staff               HospitalStaff[]
 
   @@map("detailed_hospital_profiles")
 }
@@ -509,24 +508,24 @@ model HospitalEquipment {
 }
 
 model HospitalFacilityImage {
-  id                String                  @id @default(cuid())
-  userId            String
-  imageUrl          String
-  displayOrder      Int                     @default(0)
-  createdAt         DateTime                @default(now())
-  updatedAt         DateTime                @updatedAt
-  hospitalProfile   DetailedHospitalProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  id              String                  @id @default(cuid())
+  userId          String
+  imageUrl        String
+  displayOrder    Int                     @default(0)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  hospitalProfile DetailedHospitalProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@index([userId])
   @@map("hospital_facility_images")
 }
 
 model HospitalAnimal {
-  id          String   @id @default(cuid())
-  userId      String
-  animalType  String
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  userId     String
+  animalType String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("hospital_animals")
@@ -550,6 +549,7 @@ model HospitalBusinessLicense {
   fileUrl    String
   fileType   String
   uploadedAt DateTime @default(now())
+  fileSize   Int?
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -792,6 +792,48 @@ model ForumPostLike {
   @@map("forum_post_likes")
 }
 
+model ContactInquiry {
+  id          String   @id @default(cuid())
+  senderId    String   @map("sender_id")
+  recipientId String   @map("recipient_id")
+  jobId       String?  @map("job_id")
+  resumeId    String?  @map("resume_id")
+  subject     String
+  message     String
+  type        String   @default("general")
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  job         Job?     @relation(fields: [jobId], references: [id])
+  recipient   User     @relation("InquiryRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  resume      Resume?  @relation(fields: [resumeId], references: [id])
+  sender      User     @relation("InquirySender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([jobId])
+  @@index([resumeId])
+  @@index([createdAt])
+  @@index([isRead])
+  @@map("contact_inquiries")
+}
+
+model ViewLog {
+  id             String   @id @default(cuid())
+  contentType    String   @map("content_type")
+  contentId      String   @map("content_id")
+  userId         String?  @map("user_id")
+  userIdentifier String   @map("user_identifier")
+  ipAddress      String   @map("ip_address")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([contentType, contentId])
+  @@index([userId])
+  @@index([userIdentifier])
+  @@index([createdAt])
+  @@map("view_logs")
+}
+
 enum UserType {
   VETERINARIAN
   HOSPITAL
@@ -881,46 +923,4 @@ enum NotificationBatchStatus {
   PROCESSING
   COMPLETED
   FAILED
-}
-
-model ContactInquiry {
-  id          String   @id @default(cuid())
-  senderId    String   @map("sender_id")
-  recipientId String   @map("recipient_id")
-  jobId       String?  @map("job_id")
-  resumeId    String?  @map("resume_id")
-  subject     String
-  message     String
-  type        String   @default("general")
-  isRead      Boolean  @default(false) @map("is_read")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  job         Job?     @relation(fields: [jobId], references: [id])
-  recipient   User     @relation("InquiryRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
-  resume      Resume?  @relation(fields: [resumeId], references: [id])
-  sender      User     @relation("InquirySender", fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@index([senderId])
-  @@index([recipientId])
-  @@index([jobId])
-  @@index([resumeId])
-  @@index([createdAt])
-  @@index([isRead])
-  @@map("contact_inquiries")
-}
-
-model ViewLog {
-  id             String   @id @default(cuid())
-  contentType    String   @map("content_type")
-  contentId      String   @map("content_id")
-  userId         String?  @map("user_id")
-  userIdentifier String   @map("user_identifier")
-  ipAddress      String   @map("ip_address")
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  @@index([contentType, contentId])
-  @@index([userId])
-  @@index([userIdentifier])
-  @@index([createdAt])
-  @@map("view_logs")
 }
