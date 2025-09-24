@@ -4,15 +4,25 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
+    console.log("[Messages API] Request received");
+    
     // 토큰에서 사용자 정보 가져오기
     const authHeader = request.headers.get("authorization");
+    console.log("[Messages API] Auth header exists:", !!authHeader);
+    
     if (!authHeader?.startsWith("Bearer ")) {
+      console.log("[Messages API] Invalid auth header format");
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const token = authHeader.slice(7);
+    console.log("[Messages API] Token extracted, length:", token.length);
+    
     const payload = verifyToken(token);
+    console.log("[Messages API] Token verification result:", !!payload, payload?.userId);
+    
     if (!payload) {
+      console.log("[Messages API] Token verification failed");
       return Response.json({ error: "Invalid token" }, { status: 401 });
     }
 
@@ -22,8 +32,12 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort"); // "recent", "oldest"
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
+    
+    console.log("[Messages API] Query params:", { type, filter, sort, page, limit, userId: payload.userId });
 
     const results: any[] = [];
+    
+    console.log("[Messages API] Starting database queries");
 
     // 알림 조회
     if (type === "notifications" || type === "all" || !type) {
@@ -37,6 +51,8 @@ export async function GET(request: NextRequest) {
         notificationWhere.isRead = false;
       }
 
+      console.log("[Messages API] Querying notifications with:", notificationWhere);
+      
       const notifications = await prisma.notification.findMany({
         where: notificationWhere,
         include: {
@@ -48,6 +64,8 @@ export async function GET(request: NextRequest) {
           createdAt: sort === "oldest" ? "asc" : "desc"
         }
       });
+      
+      console.log("[Messages API] Found notifications:", notifications.length);
 
       notifications.forEach(notification => {
         results.push({
@@ -76,6 +94,8 @@ export async function GET(request: NextRequest) {
         inquiryWhere.isRead = false;
       }
 
+      console.log("[Messages API] Querying inquiries with:", inquiryWhere);
+      
       const inquiries = await prisma.contactInquiry.findMany({
         where: inquiryWhere,
         include: {
@@ -99,6 +119,8 @@ export async function GET(request: NextRequest) {
           createdAt: sort === "oldest" ? "asc" : "desc"
         }
       });
+      
+      console.log("[Messages API] Found inquiries:", inquiries.length);
 
       inquiries.forEach(inquiry => {
         results.push({
@@ -154,8 +176,17 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error in GET messages:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+    console.error("Error details:", {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error)
+    });
+    
     return Response.json(
-      { error: "Internal server error" },
+      { 
+        error: "Internal server error",
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      },
       { status: 500 }
     );
   }
