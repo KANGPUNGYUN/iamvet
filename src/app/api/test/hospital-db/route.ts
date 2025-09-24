@@ -38,15 +38,15 @@ export async function GET() {
     `;
     
     const result = {
-      hospitals: existingHospitals.rows,
-      licenses: licenses.rows,
+      hospitals: existingHospitals,
+      licenses: licenses,
       loginIdCheck: {
         loginId: testLoginId,
-        exists: duplicateCheck.rows.length > 0
+        exists: duplicateCheck.length > 0
       },
       businessNumberCheck: {
         businessNumber: testBusinessNumber,
-        exists: businessDuplicateCheck.rows.length > 0
+        exists: businessDuplicateCheck.length > 0
       }
     };
     
