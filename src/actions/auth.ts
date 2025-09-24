@@ -698,6 +698,84 @@ export async function checkEmailDuplicate(email: string) {
   }
 }
 
+// 연락처 중복확인
+export async function checkPhoneDuplicate(phone: string): Promise<{
+  success: boolean;
+  isDuplicate?: boolean;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    console.log("[SERVER] checkPhoneDuplicate called with:", phone);
+
+    if (!phone || phone.trim() === "") {
+      return { success: false, error: "연락처를 입력해주세요." };
+    }
+
+    // 연락처 형식 정규화 (하이픈 제거)
+    const normalizedPhone = phone.replace(/-/g, '');
+
+    const existingUser = await sql`
+      SELECT id FROM users WHERE REPLACE(phone, '-', '') = ${normalizedPhone} AND "isActive" = true
+    `;
+
+    const isDuplicate = existingUser.length > 0;
+
+    return {
+      success: true,
+      isDuplicate,
+      message: isDuplicate
+        ? "이미 사용 중인 연락처입니다."
+        : "사용 가능한 연락처입니다.",
+    };
+  } catch (error) {
+    console.error("[SERVER] checkPhoneDuplicate error:", error);
+    return {
+      success: false,
+      error: "연락처 중복확인 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// 사업자등록번호 중복확인
+export async function checkBusinessNumberDuplicate(businessNumber: string): Promise<{
+  success: boolean;
+  isDuplicate?: boolean;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    console.log("[SERVER] checkBusinessNumberDuplicate called with:", businessNumber);
+
+    if (!businessNumber || businessNumber.trim() === "") {
+      return { success: false, error: "사업자등록번호를 입력해주세요." };
+    }
+
+    // 사업자등록번호 형식 정규화 (하이픈 제거)
+    const normalizedBusinessNumber = businessNumber.replace(/-/g, '');
+
+    const existingUser = await sql`
+      SELECT id FROM users WHERE REPLACE("businessNumber", '-', '') = ${normalizedBusinessNumber} AND "isActive" = true
+    `;
+
+    const isDuplicate = existingUser.length > 0;
+
+    return {
+      success: true,
+      isDuplicate,
+      message: isDuplicate
+        ? "이미 등록된 사업자등록번호입니다."
+        : "사용 가능한 사업자등록번호입니다.",
+    };
+  } catch (error) {
+    console.error("[SERVER] checkBusinessNumberDuplicate error:", error);
+    return {
+      success: false,
+      error: "사업자등록번호 중복확인 중 오류가 발생했습니다.",
+    };
+  }
+}
+
 
 export interface VeterinarianRegisterData {
   userId: string;
@@ -744,6 +822,9 @@ export interface HospitalRegisterData {
   treatmentAnimals?: string[]; // 진료 가능 동물
   treatmentSpecialties?: string[]; // 진료 분야
   businessLicense?: string;
+  businessLicenseFileName?: string;
+  businessLicenseFileType?: string;
+  businessLicenseFileSize?: number;
   termsAgreed: boolean;
   privacyAgreed: boolean;
   marketingAgreed?: boolean;
@@ -932,6 +1013,9 @@ export async function registerHospital(data: HospitalRegisterData) {
       treatmentAnimals,
       treatmentSpecialties,
       businessLicense,
+      businessLicenseFileName,
+      businessLicenseFileType,
+      businessLicenseFileSize,
       termsAgreed,
       privacyAgreed,
       marketingAgreed,
@@ -1009,14 +1093,18 @@ export async function registerHospital(data: HospitalRegisterData) {
 
     // 사업자등록증 파일 저장
     if (businessLicense) {
+      const actualFileName = businessLicenseFileName || 'business_license';
+      const actualFileType = businessLicenseFileType || 'document';
+      const actualFileSize = businessLicenseFileSize || null;
+      
       await sql`
         INSERT INTO hospital_business_licenses (
-          id, "userId", "fileName", "fileUrl", "fileType", "uploadedAt"
+          id, "userId", "fileName", "fileUrl", "fileType", "fileSize", "uploadedAt"
         ) VALUES (
-          ${createId()}, ${user.id}, 'business_license', ${businessLicense}, 'image', ${currentDate}
+          ${createId()}, ${user.id}, ${actualFileName}, ${businessLicense}, ${actualFileType}, ${actualFileSize}, ${currentDate}
         )
       `;
-      console.log("SERVER: Hospital business license saved");
+      console.log("SERVER: Hospital business license saved with type:", actualFileType, "size:", actualFileSize);
     }
 
     return {

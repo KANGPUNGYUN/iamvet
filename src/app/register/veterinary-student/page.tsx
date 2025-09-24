@@ -29,13 +29,16 @@ interface VeterinaryStudentFormData {
 function VeterinaryStudentRegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Parse social login data from URL parameters
-  const socialData = searchParams.get('social') === 'true' ? {
-    email: searchParams.get('email') || '',
-    name: searchParams.get('name') || '',
-    profileImage: searchParams.get('profileImage') || undefined,
-  } : undefined;
+  const socialData =
+    searchParams.get("social") === "true"
+      ? {
+          email: searchParams.get("email") || "",
+          name: searchParams.get("name") || "",
+          profileImage: searchParams.get("profileImage") || undefined,
+        }
+      : undefined;
 
   const handleSubmit = async (formData: VeterinaryStudentFormData) => {
     try {
@@ -114,7 +117,7 @@ function VeterinaryStudentRegisterContent() {
   );
 }
 
-export default function VeterinaryStudentRegisterPage() {
+export default function () {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <VeterinaryStudentRegisterContent />

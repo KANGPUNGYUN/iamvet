@@ -3,12 +3,12 @@
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
-import { PhoneInput, BirthDateInput } from "@/components/ui/FormattedInput";
+import { BirthDateInput } from "@/components/ui/FormattedInput";
 import {
   ProfileImageUpload,
   LicenseImageUpload,
 } from "@/components/features/profile";
-import { checkEmailDuplicate } from "@/actions/auth";
+import { checkEmailDuplicate, checkPhoneDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
 import axios from "axios";
@@ -73,6 +73,10 @@ export const VeterinarianRegistrationForm: React.FC<
       isChecking: false,
       isValid: false,
     },
+    phone: {
+      isChecking: false,
+      isValid: false,
+    },
   });
 
   // 입력 에러 상태
@@ -97,6 +101,94 @@ export const VeterinarianRegistrationForm: React.FC<
 
   const handleInputChange =
     (field: keyof VeterinarianRegistrationData) => (value: string) => {
+      // 연락처 필드인 경우 자동 포맷팅
+      if (field === "phone") {
+        // 숫자만 추출
+        const numbers = value.replace(/\D/g, '');
+        
+        // 최대 11자리까지만 허용
+        const truncated = numbers.slice(0, 11);
+        
+        // 형식에 맞게 변환
+        let formattedValue = '';
+        if (truncated.length <= 3) {
+          formattedValue = truncated;
+        } else if (truncated.length <= 7) {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3)}`;
+        } else {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3, 7)}-${truncated.slice(7)}`;
+        }
+        
+        setFormData((prev) => ({ ...prev, [field]: formattedValue }));
+        
+        // 입력 시 해당 필드 에러 초기화
+        if (inputErrors[field]) {
+          setInputErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+        
+        // 실시간 검증
+        validateField(field, formattedValue);
+        return;
+      }
+
+      // 생년월일 필드인 경우 자동 포맷팅
+      if (field === "birthDate") {
+        // 숫자만 추출
+        const numbers = value.replace(/\D/g, '');
+        
+        // 최대 8자리까지만 허용 (YYYYMMDD)
+        const truncated = numbers.slice(0, 8);
+        
+        // 기본 검증을 하면서 형식에 맞게 변환
+        let formattedValue = '';
+        if (truncated.length <= 4) {
+          formattedValue = truncated;
+        } else if (truncated.length <= 6) {
+          const year = truncated.slice(0, 4);
+          const month = truncated.slice(4, 6);
+          
+          // 월 입력 시 기본 검증 (13 이상 입력 방지)
+          if (month.length === 2 && parseInt(month) > 12) {
+            formattedValue = `${year}-12`;
+          } else {
+            formattedValue = `${year}-${month}`;
+          }
+        } else {
+          const year = truncated.slice(0, 4);
+          const month = truncated.slice(4, 6);
+          const day = truncated.slice(6, 8);
+          
+          // 월 검증
+          let validMonth = month;
+          if (parseInt(month) > 12) {
+            validMonth = '12';
+          } else if (parseInt(month) === 0) {
+            validMonth = '01';
+          }
+          
+          // 일 검증 (기본적으로 31 이상 입력 방지)
+          let validDay = day;
+          if (day.length === 2 && parseInt(day) > 31) {
+            validDay = '31';
+          } else if (day.length === 2 && parseInt(day) === 0) {
+            validDay = '01';
+          }
+          
+          formattedValue = `${year}-${validMonth}-${validDay}`;
+        }
+        
+        setFormData((prev) => ({ ...prev, [field]: formattedValue }));
+        
+        // 입력 시 해당 필드 에러 초기화
+        if (inputErrors[field]) {
+          setInputErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+        
+        // 실시간 검증
+        validateField(field, formattedValue);
+        return;
+      }
+
       setFormData((prev) => ({ ...prev, [field]: value }));
 
       // 입력 시 해당 필드 에러 초기화
@@ -156,11 +248,11 @@ export const VeterinarianRegistrationForm: React.FC<
         break;
 
       case "phone":
-        const phoneRegex = /^[0-9-+\s()]{10,15}$/;
+        const phoneRegex = /^\d{3}-\d{4}-\d{4}$/;
         if (!value.trim()) {
           error = "연락처를 입력해주세요.";
-        } else if (!phoneRegex.test(value.replace(/\s/g, ""))) {
-          error = "올바른 연락처 형식을 입력해주세요.";
+        } else if (!phoneRegex.test(value)) {
+          error = "000-0000-0000 형식으로 입력해주세요.";
         }
         break;
 
@@ -179,6 +271,34 @@ export const VeterinarianRegistrationForm: React.FC<
           error = "생년월일을 입력해주세요.";
         } else if (!dateRegex.test(value)) {
           error = "YYYY-MM-DD 형식으로 입력해주세요.";
+        } else {
+          // 날짜 유효성 검증
+          const [year, month, day] = value.split('-').map(Number);
+          const inputDate = new Date(year, month - 1, day);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // 월 유효성 검증 (1-12)
+          if (month < 1 || month > 12) {
+            error = "월은 1월부터 12월까지만 입력 가능합니다.";
+          } 
+          // 일 유효성 검증
+          else if (day < 1 || day > 31) {
+            error = "일은 1일부터 31일까지만 입력 가능합니다.";
+          }
+          // 각 월의 일수 검증
+          else if (inputDate.getMonth() !== month - 1) {
+            // JavaScript Date 객체가 자동으로 날짜를 조정하면 잘못된 날짜
+            error = `${month}월은 ${day}일이 존재하지 않습니다.`;
+          }
+          // 미래 날짜 검증
+          else if (inputDate > today) {
+            error = "미래 날짜는 선택할 수 없습니다.";
+          }
+          // 너무 오래된 날짜 검증 (100년 이상)
+          else if (year < today.getFullYear() - 100) {
+            error = "올바른 생년월일을 입력해주세요.";
+          }
         }
         break;
     }
@@ -316,6 +436,53 @@ export const VeterinarianRegistrationForm: React.FC<
     }
   };
 
+  const handlePhoneDuplicateCheck = async () => {
+    if (!formData.phone.trim()) {
+      alert("연락처를 입력해주세요.");
+      return;
+    }
+
+    const phoneRegex = /^\d{3}-\d{4}-\d{4}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      alert("000-0000-0000 형식으로 입력해주세요.");
+      return;
+    }
+
+    setDuplicateCheck((prev) => ({
+      ...prev,
+      phone: { ...prev.phone, isChecking: true },
+    }));
+
+    try {
+      const result = await checkPhoneDuplicate(formData.phone);
+
+      if (result.success) {
+        const isValid = !result.isDuplicate;
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          phone: {
+            isChecking: false,
+            isValid,
+          },
+        }));
+        alert(result.message);
+      } else {
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          phone: { ...prev.phone, isChecking: false },
+        }));
+        alert(result.error || "연락처 중복 확인 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("CLIENT: 연락처 중복 확인 오류:", error);
+      setDuplicateCheck((prev) => ({
+        ...prev,
+        phone: { ...prev.phone, isChecking: false },
+      }));
+      alert("연락처 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleAgreementChange =
     (field: keyof typeof agreements) => (checked: boolean) => {
       setAgreements((prev) => {
@@ -401,6 +568,11 @@ export const VeterinarianRegistrationForm: React.FC<
       if (!duplicateCheck.email.isValid) {
         errors.push("이메일 중복확인을 완료해주세요.");
       }
+    }
+
+    // 연락처 중복확인 검증 (SNS 로그인 여부와 무관)
+    if (!duplicateCheck.phone.isValid) {
+      errors.push("연락처 중복확인을 완료해주세요.");
     }
 
     // 약관 동의 검증
@@ -579,15 +751,26 @@ export const VeterinarianRegistrationForm: React.FC<
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 연락처
               </label>
-              <PhoneInput
+              <InputBox
                 value={formData.phone}
                 onChange={handleInputChange("phone")}
-                placeholder="연락처를 입력해 주세요"
-                className={inputErrors.phone ? "border-red-500" : ""}
+                placeholder="000-0000-0000 형식으로 입력해주세요"
+                duplicateCheck={{
+                  buttonText: "중복 확인",
+                  onCheck: handlePhoneDuplicateCheck,
+                  isChecking: duplicateCheck.phone.isChecking,
+                  isValid: duplicateCheck.phone.isValid,
+                }}
+                success={duplicateCheck.phone.isValid}
+                error={!!inputErrors.phone}
+                guide={
+                  inputErrors.phone
+                    ? { text: inputErrors.phone, type: "error" }
+                    : duplicateCheck.phone.isValid
+                    ? { text: "사용 가능한 연락처입니다.", type: "success" }
+                    : undefined
+                }
               />
-              {inputErrors.phone && (
-                <p className="text-red-500 text-sm mt-2">{inputErrors.phone}</p>
-              )}
             </div>
 
             {/* 이메일 */}

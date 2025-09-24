@@ -28,13 +28,41 @@ export function FormattedInput({
     // 최대 8자리까지만 허용 (YYYYMMDD)
     const truncated = numbers.slice(0, 8);
     
-    // 형식에 맞게 변환
+    // 기본 검증을 하면서 형식에 맞게 변환
     if (truncated.length <= 4) {
       return truncated;
     } else if (truncated.length <= 6) {
-      return `${truncated.slice(0, 4)}-${truncated.slice(4)}`;
+      const year = truncated.slice(0, 4);
+      const month = truncated.slice(4, 6);
+      
+      // 월 입력 시 기본 검증 (13 이상 입력 방지)
+      if (month.length === 2 && parseInt(month) > 12) {
+        return `${year}-12`;
+      }
+      
+      return `${year}-${month}`;
     } else {
-      return `${truncated.slice(0, 4)}-${truncated.slice(4, 6)}-${truncated.slice(6)}`;
+      const year = truncated.slice(0, 4);
+      const month = truncated.slice(4, 6);
+      const day = truncated.slice(6, 8);
+      
+      // 월 검증
+      let validMonth = month;
+      if (parseInt(month) > 12) {
+        validMonth = '12';
+      } else if (parseInt(month) === 0) {
+        validMonth = '01';
+      }
+      
+      // 일 검증 (기본적으로 31 이상 입력 방지)
+      let validDay = day;
+      if (day.length === 2 && parseInt(day) > 31) {
+        validDay = '31';
+      } else if (day.length === 2 && parseInt(day) === 0) {
+        validDay = '01';
+      }
+      
+      return `${year}-${validMonth}-${validDay}`;
     }
   };
 

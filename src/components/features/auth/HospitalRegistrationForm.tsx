@@ -3,39 +3,21 @@
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
-import { PhoneInput, BirthDateInput } from "@/components/ui/FormattedInput";
+import { BirthDateInput } from "@/components/ui/FormattedInput";
 import {
   ProfileImageUpload,
   AddressSearch,
 } from "@/components/features/profile";
 import { FileUpload } from "@/components/ui/FileUpload";
-import { checkEmailDuplicate, checkLoginIdDuplicate } from "@/actions/auth";
+import {
+  checkEmailDuplicate,
+  checkLoginIdDuplicate,
+  checkPhoneDuplicate,
+  checkBusinessNumberDuplicate,
+} from "@/actions/auth";
+import { HospitalRegistrationData } from "@/types/hospital";
 import Link from "next/link";
 import { useState } from "react";
-
-interface HospitalRegistrationData {
-  loginId: string;
-  password: string;
-  passwordConfirm: string;
-  realName: string; // 대표자명 추가
-  hospitalName: string;
-  establishedDate: string; // 병원 설립일 추가
-  businessNumber: string;
-  phone: string;
-  email: string;
-  website: string;
-  address: string;
-  detailAddress: string;
-  hospitalLogo: string | null; // 병원 로고
-  treatmentAnimals: string[]; // 진료 가능 동물 추가
-  treatmentSpecialties: string[]; // 진료 분야 추가
-  businessLicenseFile: File | null; // 사업자등록증 파일 추가
-  agreements: {
-    terms: boolean;
-    privacy: boolean;
-    marketing: boolean;
-  };
-}
 
 interface HospitalRegistrationFormProps {
   onSubmit?: (data: HospitalRegistrationData) => void;
@@ -47,12 +29,15 @@ export const HospitalRegistrationForm: React.FC<
 > = ({ onSubmit, onCancel }) => {
   // 폼 상태 관리
   const [formData, setFormData] = useState<HospitalRegistrationData>({
+    // 계정 정보
     loginId: "",
     password: "",
     passwordConfirm: "",
-    realName: "", // 대표자명
+    
+    // 기본 정보
+    realName: "",
     hospitalName: "",
-    establishedDate: "", // 병원 설립일
+    establishedDate: "",
     businessNumber: "",
     phone: "",
     email: "",
@@ -60,9 +45,22 @@ export const HospitalRegistrationForm: React.FC<
     address: "",
     detailAddress: "",
     hospitalLogo: null,
-    treatmentAnimals: [], // 진료 가능 동물
-    treatmentSpecialties: [], // 진료 분야
-    businessLicenseFile: null, // 사업자등록증 파일
+    
+    // 진료 정보
+    treatmentAnimals: [],
+    treatmentSpecialties: [],
+    
+    // 사업자등록증
+    businessLicense: {
+      file: null,
+      url: null,
+      fileName: null,
+      fileType: null,
+      mimeType: null,
+      fileSize: null,
+    },
+    
+    // 약관 동의
     agreements: {
       terms: false,
       privacy: false,
@@ -77,6 +75,14 @@ export const HospitalRegistrationForm: React.FC<
       isValid: false,
     },
     email: {
+      isChecking: false,
+      isValid: false,
+    },
+    phone: {
+      isChecking: false,
+      isValid: false,
+    },
+    businessNumber: {
       isChecking: false,
       isValid: false,
     },
@@ -107,6 +113,127 @@ export const HospitalRegistrationForm: React.FC<
 
   const handleInputChange =
     (field: keyof HospitalRegistrationData) => (value: string) => {
+      // 연락처 필드인 경우 자동 포맷팅
+      if (field === "phone") {
+        // 숫자만 추출
+        const numbers = value.replace(/\D/g, "");
+
+        // 최대 11자리까지만 허용
+        const truncated = numbers.slice(0, 11);
+
+        // 형식에 맞게 변환
+        let formattedValue = "";
+        if (truncated.length <= 3) {
+          formattedValue = truncated;
+        } else if (truncated.length <= 7) {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3)}`;
+        } else {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(
+            3,
+            7
+          )}-${truncated.slice(7)}`;
+        }
+
+        setFormData((prev) => ({ ...prev, [field]: formattedValue }));
+
+        // 입력 시 해당 필드 에러 초기화
+        if (inputErrors[field]) {
+          setInputErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+
+        // 실시간 검증
+        validateField(field, formattedValue);
+        return;
+      }
+
+      // 사업자등록번호 필드인 경우 자동 포맷팅
+      if (field === "businessNumber") {
+        // 숫자만 추출
+        const numbers = value.replace(/\D/g, "");
+        
+        // 최대 10자리까지만 허용
+        const truncated = numbers.slice(0, 10);
+        
+        // 형식에 맞게 변환 (000-00-00000)
+        let formattedValue = "";
+        if (truncated.length <= 3) {
+          formattedValue = truncated;
+        } else if (truncated.length <= 5) {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3)}`;
+        } else {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3, 5)}-${truncated.slice(5)}`;
+        }
+        
+        setFormData((prev) => ({ ...prev, [field]: formattedValue }));
+        
+        // 입력 시 해당 필드 에러 초기화
+        if (inputErrors[field]) {
+          setInputErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+        
+        // 실시간 검증
+        validateField(field, formattedValue);
+        return;
+      }
+
+      // 병원 설립일 필드인 경우 자동 포맷팅
+      if (field === "establishedDate") {
+        // 숫자만 추출
+        const numbers = value.replace(/\D/g, "");
+        
+        // 최대 8자리까지만 허용 (YYYYMMDD)
+        const truncated = numbers.slice(0, 8);
+        
+        // 기본 검증을 하면서 형식에 맞게 변환
+        let formattedValue = "";
+        if (truncated.length <= 4) {
+          formattedValue = truncated;
+        } else if (truncated.length <= 6) {
+          const year = truncated.slice(0, 4);
+          const month = truncated.slice(4, 6);
+          
+          // 월 입력 시 기본 검증 (13 이상 입력 방지)
+          if (month.length === 2 && parseInt(month) > 12) {
+            formattedValue = `${year}-12`;
+          } else {
+            formattedValue = `${year}-${month}`;
+          }
+        } else {
+          const year = truncated.slice(0, 4);
+          const month = truncated.slice(4, 6);
+          const day = truncated.slice(6, 8);
+          
+          // 월 검증
+          let validMonth = month;
+          if (parseInt(month) > 12) {
+            validMonth = "12";
+          } else if (parseInt(month) === 0) {
+            validMonth = "01";
+          }
+          
+          // 일 검증 (기본적으로 31 이상 입력 방지)
+          let validDay = day;
+          if (day.length === 2 && parseInt(day) > 31) {
+            validDay = "31";
+          } else if (day.length === 2 && parseInt(day) === 0) {
+            validDay = "01";
+          }
+          
+          formattedValue = `${year}-${validMonth}-${validDay}`;
+        }
+        
+        setFormData((prev) => ({ ...prev, [field]: formattedValue }));
+        
+        // 입력 시 해당 필드 에러 초기화
+        if (inputErrors[field]) {
+          setInputErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+        
+        // 실시간 검증
+        validateField(field, formattedValue);
+        return;
+      }
+
       setFormData((prev) => ({ ...prev, [field]: value }));
 
       // 입력 시 해당 필드 에러 초기화
@@ -169,6 +296,34 @@ export const HospitalRegistrationForm: React.FC<
           error = "병원 설립일을 입력해주세요.";
         } else if (!dateRegex.test(value)) {
           error = "YYYY-MM-DD 형식으로 입력해주세요.";
+        } else {
+          // 날짜 유효성 검증
+          const [year, month, day] = value.split('-').map(Number);
+          const inputDate = new Date(year, month - 1, day);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // 월 유효성 검증 (1-12)
+          if (month < 1 || month > 12) {
+            error = "월은 1월부터 12월까지만 입력 가능합니다.";
+          } 
+          // 일 유효성 검증
+          else if (day < 1 || day > 31) {
+            error = "일은 1일부터 31일까지만 입력 가능합니다.";
+          }
+          // 각 월의 일수 검증
+          else if (inputDate.getMonth() !== month - 1) {
+            // JavaScript Date 객체가 자동으로 날짜를 조정하면 잘못된 날짜
+            error = `${month}월은 ${day}일이 존재하지 않습니다.`;
+          }
+          // 미래 날짜 검증
+          else if (inputDate > today) {
+            error = "미래 날짜는 선택할 수 없습니다.";
+          }
+          // 너무 오래된 날짜 검증 (200년 이상 - 병원은 생년월일보다 더 넓은 범위)
+          else if (year < today.getFullYear() - 200) {
+            error = "올바른 설립일을 입력해주세요.";
+          }
         }
         break;
 
@@ -182,11 +337,11 @@ export const HospitalRegistrationForm: React.FC<
         break;
 
       case "phone":
-        const phoneRegex = /^[0-9-+\s()]{10,15}$/;
+        const phoneRegex = /^\d{3}-\d{4}-\d{4}$/;
         if (!value.trim()) {
           error = "연락처를 입력해주세요.";
-        } else if (!phoneRegex.test(value.replace(/\s/g, ""))) {
-          error = "올바른 연락처 형식을 입력해주세요.";
+        } else if (!phoneRegex.test(value)) {
+          error = "000-0000-0000 형식으로 입력해주세요.";
         }
         break;
 
@@ -217,8 +372,91 @@ export const HospitalRegistrationForm: React.FC<
     setFormData((prev) => ({ ...prev, [field]: url }));
   };
 
-  const handleFileChange = (file: File | null) => {
-    setFormData((prev) => ({ ...prev, businessLicenseFile: file }));
+  const handleFileChange = async (file: File | null) => {
+    if (!file) {
+      setFormData((prev) => ({
+        ...prev,
+        businessLicense: {
+          file: null,
+          url: null,
+          fileName: null,
+          fileType: null,
+          mimeType: null,
+          fileSize: null,
+        }
+      }));
+      return;
+    }
+
+    // 일단 파일만 설정 (업로드 중 표시용)
+    setFormData((prev) => ({
+      ...prev,
+      businessLicense: {
+        file: file,
+        url: null,
+        fileName: null,
+        fileType: null,
+        mimeType: null,
+        fileSize: null,
+      }
+    }));
+
+    try {
+      // 파일 업로드
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const response = await fetch('/api/upload/business-license', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        setFormData((prev) => ({
+          ...prev,
+          businessLicense: {
+            file: file,
+            url: result.data.fileUrl,
+            fileName: result.data.fileName,
+            fileType: result.data.fileType,
+            mimeType: result.data.mimeType,
+            fileSize: result.data.fileSize || file.size,
+          }
+        }));
+      } else {
+        console.error('File upload failed:', result.message);
+        alert('파일 업로드에 실패했습니다: ' + result.message);
+        // 업로드 실패 시 파일만 유지
+        setFormData((prev) => ({
+          ...prev,
+          businessLicense: {
+            file: file,
+            url: null,
+            fileName: null,
+            fileType: null,
+            mimeType: null,
+            fileSize: null,
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('File upload error:', error);
+      alert('파일 업로드 중 오류가 발생했습니다.');
+      // 에러 시 파일만 유지
+      setFormData((prev) => ({
+        ...prev,
+        businessLicense: {
+          file: file,
+          url: null,
+          fileName: null,
+          fileType: null,
+          mimeType: null,
+          fileSize: null,
+        }
+      }));
+    }
   };
 
   const handleCheckboxChange =
@@ -332,6 +570,104 @@ export const HospitalRegistrationForm: React.FC<
     }
   };
 
+  const handlePhoneDuplicateCheck = async () => {
+    if (!formData.phone.trim()) {
+      alert("연락처를 입력해주세요.");
+      return;
+    }
+
+    const phoneRegex = /^\d{3}-\d{4}-\d{4}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      alert("000-0000-0000 형식으로 입력해주세요.");
+      return;
+    }
+
+    setDuplicateCheck((prev) => ({
+      ...prev,
+      phone: { ...prev.phone, isChecking: true },
+    }));
+
+    try {
+      const result = await checkPhoneDuplicate(formData.phone);
+
+      if (result.success) {
+        const isValid = !result.isDuplicate;
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          phone: {
+            isChecking: false,
+            isValid,
+          },
+        }));
+        alert(result.message);
+      } else {
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          phone: { ...prev.phone, isChecking: false },
+        }));
+        alert(result.error || "연락처 중복 확인 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("CLIENT: 연락처 중복 확인 오류:", error);
+      setDuplicateCheck((prev) => ({
+        ...prev,
+        phone: { ...prev.phone, isChecking: false },
+      }));
+      alert("연락처 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleBusinessNumberDuplicateCheck = async () => {
+    if (!formData.businessNumber.trim()) {
+      alert("사업자등록번호를 입력해주세요.");
+      return;
+    }
+
+    const businessRegex = /^\d{3}-\d{2}-\d{5}$/;
+    if (!businessRegex.test(formData.businessNumber)) {
+      alert("000-00-00000 형식으로 입력해주세요.");
+      return;
+    }
+
+    setDuplicateCheck((prev) => ({
+      ...prev,
+      businessNumber: { ...prev.businessNumber, isChecking: true },
+    }));
+
+    try {
+      const result = await checkBusinessNumberDuplicate(
+        formData.businessNumber
+      );
+
+      if (result.success) {
+        const isValid = !result.isDuplicate;
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          businessNumber: {
+            isChecking: false,
+            isValid,
+          },
+        }));
+        alert(result.message);
+      } else {
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          businessNumber: { ...prev.businessNumber, isChecking: false },
+        }));
+        alert(
+          result.error || "사업자등록번호 중복 확인 중 오류가 발생했습니다."
+        );
+      }
+    } catch (error) {
+      console.error("CLIENT: 사업자등록번호 중복 확인 오류:", error);
+      setDuplicateCheck((prev) => ({
+        ...prev,
+        businessNumber: { ...prev.businessNumber, isChecking: false },
+      }));
+      alert("사업자등록번호 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleAgreementChange =
     (field: keyof typeof agreements) => (checked: boolean) => {
       setAgreements((prev) => {
@@ -441,6 +777,14 @@ export const HospitalRegistrationForm: React.FC<
       errors.push("이메일 중복확인을 완료해주세요.");
     }
 
+    if (!duplicateCheck.phone.isValid) {
+      errors.push("연락처 중복확인을 완료해주세요.");
+    }
+
+    if (!duplicateCheck.businessNumber.isValid) {
+      errors.push("사업자등록번호 중복확인을 완료해주세요.");
+    }
+
     // 진료 가능 동물 및 진료 분야 검증
     if (formData.treatmentAnimals.length === 0) {
       errors.push("진료 가능한 동물을 선택해주세요.");
@@ -451,7 +795,7 @@ export const HospitalRegistrationForm: React.FC<
     }
 
     // 사업자등록증 파일 검증
-    if (!formData.businessLicenseFile) {
+    if (!formData.businessLicense.file || !formData.businessLicense.url) {
       errors.push("사업자등록증 파일을 업로드해주세요.");
     }
 
@@ -648,10 +992,22 @@ export const HospitalRegistrationForm: React.FC<
                 value={formData.businessNumber}
                 onChange={handleInputChange("businessNumber")}
                 placeholder="000-00-00000 형식으로 입력해주세요"
+                duplicateCheck={{
+                  buttonText: "중복 확인",
+                  onCheck: handleBusinessNumberDuplicateCheck,
+                  isChecking: duplicateCheck.businessNumber.isChecking,
+                  isValid: duplicateCheck.businessNumber.isValid,
+                }}
+                success={duplicateCheck.businessNumber.isValid}
                 error={!!inputErrors.businessNumber}
                 guide={
                   inputErrors.businessNumber
                     ? { text: inputErrors.businessNumber, type: "error" }
+                    : duplicateCheck.businessNumber.isValid
+                    ? {
+                        text: "사용 가능한 사업자등록번호입니다.",
+                        type: "success",
+                      }
                     : undefined
                 }
               />
@@ -662,15 +1018,26 @@ export const HospitalRegistrationForm: React.FC<
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                 연락처
               </label>
-              <PhoneInput
+              <InputBox
                 value={formData.phone}
                 onChange={handleInputChange("phone")}
-                placeholder="연락처를 입력해 주세요"
-                className={inputErrors.phone ? "border-red-500" : ""}
+                placeholder="000-0000-0000 형식으로 입력해주세요"
+                duplicateCheck={{
+                  buttonText: "중복 확인",
+                  onCheck: handlePhoneDuplicateCheck,
+                  isChecking: duplicateCheck.phone.isChecking,
+                  isValid: duplicateCheck.phone.isValid,
+                }}
+                success={duplicateCheck.phone.isValid}
+                error={!!inputErrors.phone}
+                guide={
+                  inputErrors.phone
+                    ? { text: inputErrors.phone, type: "error" }
+                    : duplicateCheck.phone.isValid
+                    ? { text: "사용 가능한 연락처입니다.", type: "success" }
+                    : undefined
+                }
               />
-              {inputErrors.phone && (
-                <p className="text-red-500 text-sm mt-2">{inputErrors.phone}</p>
-              )}
             </div>
 
             {/* 이메일 */}
@@ -788,9 +1155,18 @@ export const HospitalRegistrationForm: React.FC<
               maxSize={10 * 1024 * 1024}
               placeholder="사업자등록증 파일을 업로드해주세요 (이미지, PDF, Word 파일)"
             />
-            {formData.businessLicenseFile && (
-              <p className="text-sm text-green-600 mt-2">
-                업로드된 파일: {formData.businessLicenseFile.name}
+            {formData.businessLicense.file && formData.businessLicense.url && (
+              <div className="text-sm text-green-600 mt-2">
+                <p>✅ 업로드 완료: {formData.businessLicense.file.name}</p>
+                <p className="text-xs text-gray-500">
+                  파일 형식: {formData.businessLicense.fileType} | 
+                  크기: {Math.round(formData.businessLicense.file.size / 1024)}KB
+                </p>
+              </div>
+            )}
+            {formData.businessLicense.file && !formData.businessLicense.url && (
+              <p className="text-sm text-amber-600 mt-2">
+                📤 업로드 중...
               </p>
             )}
           </div>
