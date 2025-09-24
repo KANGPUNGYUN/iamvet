@@ -400,6 +400,74 @@ export function createErrorResponse(message: string, data?: any) {
   };
 }
 
+// 인재평가 관련 타입
+export interface EvaluationCategory {
+  stressManagement: number;
+  growth: number;
+  care: number;
+  documentation: number;
+  contribution: number;
+}
+
+export interface EvaluationComments {
+  stressManagement: string;
+  growth: string;
+  care: string;
+  documentation: string;
+  contribution: string;
+}
+
+export interface EvaluationCreateRequest {
+  veterinarianId: string;
+  ratings: EvaluationCategory;
+  comments: EvaluationComments;
+  overallRating: number;
+}
+
+export interface EvaluationUpdateRequest extends Partial<EvaluationCreateRequest> {}
+
+export interface EvaluationResponse {
+  id: string;
+  hospitalId: string;
+  hospitalName: string;
+  veterinarianId: string;
+  ratings: EvaluationCategory;
+  comments: EvaluationComments;
+  overallRating: number;
+  evaluationDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HospitalEvaluationSummary {
+  hospitalId: string;
+  hospitalName: string;
+  overallRating: number;
+  ratings: EvaluationCategory;
+  detailedEvaluations: {
+    category: string;
+    rating: number;
+    comment: string;
+  }[];
+  evaluationDate: string;
+}
+
+export interface EvaluationSummary {
+  veterinarianId: string;
+  totalEvaluations: number;
+  averageRating: number;
+  categoryAverages: EvaluationCategory;
+  hospitals: HospitalEvaluationSummary[];
+}
+
+// StarRating 컴포넌트용 타입
+export interface StarRatingProps {
+  rating: number;
+  size?: number;
+  readOnly?: boolean;
+  onRatingChange?: (rating: number) => void;
+}
+
 // 이메일 검증 함수
 export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

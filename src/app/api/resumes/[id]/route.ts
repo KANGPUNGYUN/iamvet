@@ -80,6 +80,74 @@ export async function GET(
       FROM detailed_resumes dr
       WHERE dr.id = ${veterinarianId}
     `;
+
+    // 관련 데이터 조회
+    const [experiencesResult, educationsResult, licensesResult, medicalCapabilitiesResult] = await Promise.all([
+      sql`
+        SELECT 
+          id,
+          "resumeId",
+          "hospitalName",
+          "mainTasks",
+          "startDate",
+          "endDate",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        FROM resume_experiences
+        WHERE "resumeId" = ${veterinarianId}
+        ORDER BY "sortOrder" ASC, "createdAt" DESC
+      `,
+      sql`
+        SELECT 
+          id,
+          "resumeId",
+          degree,
+          "graduationStatus",
+          "schoolName",
+          major,
+          gpa,
+          "totalGpa",
+          "startDate",
+          "endDate",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        FROM resume_educations
+        WHERE "resumeId" = ${veterinarianId}
+        ORDER BY "sortOrder" ASC, "createdAt" DESC
+      `,
+      sql`
+        SELECT 
+          id,
+          "resumeId",
+          name,
+          issuer,
+          grade,
+          "acquiredDate",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        FROM resume_licenses
+        WHERE "resumeId" = ${veterinarianId}
+        ORDER BY "sortOrder" ASC, "createdAt" DESC
+      `,
+      sql`
+        SELECT 
+          id,
+          "resumeId",
+          field,
+          proficiency,
+          description,
+          others,
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        FROM resume_medical_capabilities
+        WHERE "resumeId" = ${veterinarianId}
+        ORDER BY "sortOrder" ASC, "createdAt" DESC
+      `
+    ]);
     
     if (resumeResult.length === 0) {
       return NextResponse.json(
@@ -111,6 +179,10 @@ export async function GET(
     const resumeDetail = {
       ...resume,
       isLiked: isLiked,
+      experiences: experiencesResult,
+      educations: educationsResult,
+      licenses: licensesResult,
+      medicalCapabilities: medicalCapabilitiesResult,
     };
 
     return NextResponse.json(

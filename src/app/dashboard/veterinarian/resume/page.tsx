@@ -12,16 +12,24 @@ import { Button } from "@/components/ui/Button";
 import { ResumeImageUpload } from "@/components/features/resume/ResumeImageUpload";
 import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
 import { PlusIcon, MinusIcon } from "public/icons";
-import { useVeterinarianResume, useSaveVeterinarianResume, type ResumeUpdateData, type VeterinarianResume } from "@/hooks/useResume";
+import {
+  useVeterinarianResume,
+  useSaveVeterinarianResume,
+  type ResumeUpdateData,
+  type VeterinarianResume,
+} from "@/hooks/useResume";
 import { useAuthStore } from "@/stores/authStore";
 
 // ID 생성 유틸리티
-const generateResumeId = (type: 'exp' | 'lic' | 'edu' | 'cap', timestamp: number = Date.now()) => {
+const generateResumeId = (
+  type: "exp" | "lic" | "edu" | "cap",
+  timestamp: number = Date.now()
+) => {
   const typeMap = {
-    exp: 'experience',
-    lic: 'license', 
-    edu: 'education',
-    cap: 'capability'
+    exp: "experience",
+    lic: "license",
+    edu: "education",
+    cap: "capability",
   };
   return `resume_${typeMap[type]}_${timestamp}`;
 };
@@ -210,9 +218,13 @@ const proficiencyOptions = [
   { value: "expert", label: "전문가" },
 ];
 
-export default function VeterinarianResumePage() {
+export default function () {
   // 회원정보를 기본값으로 사용하지 않음
-  const { data: existingResume, isLoading: resumeLoading, error: resumeError } = useVeterinarianResume();
+  const {
+    data: existingResume,
+    isLoading: resumeLoading,
+    error: resumeError,
+  } = useVeterinarianResume();
   const saveResumeMutation = useSaveVeterinarianResume();
   const { isAuthenticated, checkAuth } = useAuthStore();
 
@@ -243,7 +255,7 @@ export default function VeterinarianResumePage() {
     workTimeNegotiable: false,
     experiences: [
       {
-        id: generateResumeId('exp'),
+        id: generateResumeId("exp"),
         hospitalName: "",
         mainTasks: "",
         startDate: null,
@@ -252,7 +264,7 @@ export default function VeterinarianResumePage() {
     ],
     licenses: [
       {
-        id: generateResumeId('lic'),
+        id: generateResumeId("lic"),
         name: "",
         issuer: "",
         grade: "",
@@ -261,7 +273,7 @@ export default function VeterinarianResumePage() {
     ],
     educations: [
       {
-        id: generateResumeId('edu'),
+        id: generateResumeId("edu"),
         degree: "",
         graduationStatus: "",
         schoolName: "",
@@ -274,7 +286,7 @@ export default function VeterinarianResumePage() {
     ],
     medicalCapabilities: [
       {
-        id: generateResumeId('cap'),
+        id: generateResumeId("cap"),
         field: "",
         proficiency: "",
         description: "",
@@ -288,7 +300,7 @@ export default function VeterinarianResumePage() {
   useEffect(() => {
     if (existingResume) {
       // 기존 이력서가 있는 경우 - 모든 필드 설정
-      setResumeData(prev => ({
+      setResumeData((prev) => ({
         ...prev,
         photo: existingResume.photo || null,
         name: existingResume.name || "",
@@ -309,46 +321,58 @@ export default function VeterinarianResumePage() {
         workStartTime: existingResume.workStartTime || "",
         workEndTime: existingResume.workEndTime || "",
         workTimeNegotiable: existingResume.workTimeNegotiable || false,
-        experiences: existingResume.experiences?.length > 0 ? existingResume.experiences : [
-          {
-            id: "default-1",
-            hospitalName: "",
-            mainTasks: "",
-            startDate: null,
-            endDate: null,
-          },
-        ],
-        licenses: existingResume.licenses?.length > 0 ? existingResume.licenses : [
-          {
-            id: "default-1",
-            name: "",
-            issuer: "",
-            grade: "",
-            acquiredDate: null,
-          },
-        ],
-        educations: existingResume.educations?.length > 0 ? existingResume.educations : [
-          {
-            id: "default-1",
-            degree: "",
-            graduationStatus: "",
-            schoolName: "",
-            major: "",
-            gpa: "",
-            totalGpa: "",
-            startDate: null,
-            endDate: null,
-          },
-        ],
-        medicalCapabilities: existingResume.medicalCapabilities?.length > 0 ? existingResume.medicalCapabilities : [
-          {
-            id: "default-1",
-            field: "",
-            proficiency: "",
-            description: "",
-            others: "",
-          },
-        ],
+        experiences:
+          existingResume.experiences?.length > 0
+            ? existingResume.experiences
+            : [
+                {
+                  id: "default-1",
+                  hospitalName: "",
+                  mainTasks: "",
+                  startDate: null,
+                  endDate: null,
+                },
+              ],
+        licenses:
+          existingResume.licenses?.length > 0
+            ? existingResume.licenses
+            : [
+                {
+                  id: "default-1",
+                  name: "",
+                  issuer: "",
+                  grade: "",
+                  acquiredDate: null,
+                },
+              ],
+        educations:
+          existingResume.educations?.length > 0
+            ? existingResume.educations
+            : [
+                {
+                  id: "default-1",
+                  degree: "",
+                  graduationStatus: "",
+                  schoolName: "",
+                  major: "",
+                  gpa: "",
+                  totalGpa: "",
+                  startDate: null,
+                  endDate: null,
+                },
+              ],
+        medicalCapabilities:
+          existingResume.medicalCapabilities?.length > 0
+            ? existingResume.medicalCapabilities
+            : [
+                {
+                  id: "default-1",
+                  field: "",
+                  proficiency: "",
+                  description: "",
+                  others: "",
+                },
+              ],
         selfIntroduction: existingResume.selfIntroduction || "",
       }));
     }
@@ -379,7 +403,7 @@ export default function VeterinarianResumePage() {
   // 경력사항 추가
   const addExperience = () => {
     const newExperience: Experience = {
-      id: generateResumeId('exp'),
+      id: generateResumeId("exp"),
       hospitalName: "",
       mainTasks: "",
       startDate: null,
@@ -404,7 +428,7 @@ export default function VeterinarianResumePage() {
   // 자격증 추가
   const addLicense = () => {
     const newLicense: License = {
-      id: generateResumeId('lic'),
+      id: generateResumeId("lic"),
       name: "",
       issuer: "",
       grade: "",
@@ -429,7 +453,7 @@ export default function VeterinarianResumePage() {
   // 학력 추가
   const addEducation = () => {
     const newEducation: Education = {
-      id: generateResumeId('edu'),
+      id: generateResumeId("edu"),
       degree: "",
       graduationStatus: "",
       schoolName: "",
@@ -458,7 +482,7 @@ export default function VeterinarianResumePage() {
   // 진료상세역량 추가
   const addMedicalCapability = () => {
     const newCapability: MedicalCapability = {
-      id: generateResumeId('cap'),
+      id: generateResumeId("cap"),
       field: "",
       proficiency: "",
       description: "",
@@ -486,7 +510,7 @@ export default function VeterinarianResumePage() {
     try {
       // 필수 필드 검증
       if (!resumeData.name.trim()) {
-        alert('이름을 입력해주세요.');
+        alert("이름을 입력해주세요.");
         return;
       }
 
@@ -502,7 +526,7 @@ export default function VeterinarianResumePage() {
         email: resumeData.email,
         phonePublic: resumeData.phonePublic,
         emailPublic: resumeData.emailPublic,
-        
+
         // 희망 근무 조건
         position: resumeData.position,
         specialties: resumeData.specialties,
@@ -515,18 +539,18 @@ export default function VeterinarianResumePage() {
         workStartTime: resumeData.workStartTime,
         workEndTime: resumeData.workEndTime,
         workTimeNegotiable: resumeData.workTimeNegotiable,
-        
+
         // 관계 데이터
-        experiences: resumeData.experiences.map(exp => ({
+        experiences: resumeData.experiences.map((exp) => ({
           ...exp,
           startDate: exp.startDate ? new Date(exp.startDate) : null,
           endDate: exp.endDate ? new Date(exp.endDate) : null,
         })),
-        licenses: resumeData.licenses.map(lic => ({
+        licenses: resumeData.licenses.map((lic) => ({
           ...lic,
           acquiredDate: lic.acquiredDate ? new Date(lic.acquiredDate) : null,
         })),
-        educations: resumeData.educations.map(edu => ({
+        educations: resumeData.educations.map((edu) => ({
           ...edu,
           startDate: edu.startDate ? new Date(edu.startDate) : null,
           endDate: edu.endDate ? new Date(edu.endDate) : null,
@@ -534,11 +558,13 @@ export default function VeterinarianResumePage() {
         medicalCapabilities: resumeData.medicalCapabilities,
       };
 
-      console.log('[VeterinarianResumePage] Saving resume data:', saveData);
+      console.log("[VeterinarianResumePage] Saving resume data:", saveData);
 
       await saveResumeMutation.mutateAsync(saveData);
-      
-      alert(existingResume ? "이력서가 수정되었습니다." : "이력서가 생성되었습니다.");
+
+      alert(
+        existingResume ? "이력서가 수정되었습니다." : "이력서가 생성되었습니다."
+      );
     } catch (error) {
       console.error("이력서 저장 실패:", error);
       alert("이력서 저장에 실패했습니다. 다시 시도해주세요.");
@@ -1447,13 +1473,17 @@ export default function VeterinarianResumePage() {
           <Button variant="line" size="medium" onClick={handleCancel}>
             취소
           </Button>
-          <Button 
-            variant="default" 
-            size="medium" 
+          <Button
+            variant="default"
+            size="medium"
             onClick={handleSave}
             disabled={saveResumeMutation.isPending}
           >
-            {saveResumeMutation.isPending ? "저장 중..." : existingResume ? "수정하기" : "저장하기"}
+            {saveResumeMutation.isPending
+              ? "저장 중..."
+              : existingResume
+              ? "수정하기"
+              : "저장하기"}
           </Button>
         </div>
       </div>

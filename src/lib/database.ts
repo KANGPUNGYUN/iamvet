@@ -3103,7 +3103,7 @@ export const getUserBookmarks = async (userId: string) => {
     WHERE jb.user_id = $1 AND jb.deleted_at IS NULL
     UNION
     SELECT 'resume' as type, r.* FROM resume_bookmarks rb
-    JOIN resumes r ON rb.resume_id = r.id
+    JOIN detailed_resumes r ON rb.resume_id = r.id
     WHERE rb.user_id = $1 AND rb.deleted_at IS NULL
   `;
   const result = await pool.query(query, [userId]);
@@ -3459,7 +3459,7 @@ export const getRecentLectures = async (limit = 5) => {
 };
 
 export const getRecentResumes = async (limit = 5) => {
-  const query = `SELECT * FROM resumes WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT $1`;
+  const query = `SELECT * FROM detailed_resumes WHERE "deletedAt" IS NULL ORDER BY "createdAt" DESC LIMIT $1`;
   const result = await pool.query(query, [limit]);
   return result.rows;
 };
@@ -3544,36 +3544,138 @@ export const deleteJobPosting = async (jobId: string) => {
 };
 
 export const getResumeEvaluationById = async (evaluationId: string) => {
-  const query = `SELECT * FROM resume_evaluations WHERE id = $1 AND deleted_at IS NULL`;
+  const query = `SELECT * FROM resume_evaluations WHERE id = $1 AND "deletedAt" IS NULL`;
   const result = await pool.query(query, [evaluationId]);
   return result.rows[0] || null;
 };
 
 export const updateResumeEvaluation = async (evaluationId: string, updateData: any) => {
-  const query = `UPDATE resume_evaluations SET rating = $1, comment = $2 WHERE id = $3`;
-  const result = await pool.query(query, [updateData.rating, updateData.comment, evaluationId]);
-  return (result.rowCount ?? 0) > 0;
+  // JSON 형태로 데이터 저장
+  const ratingsJson = JSON.stringify(updateData.ratings || {});
+  const commentsJson = JSON.stringify(updateData.comments || {});
+  const combinedComment = `평가: ${ratingsJson} | 코멘트: ${commentsJson}`;
+
+  const query = `
+    UPDATE resume_evaluations SET 
+      "rating" = $1,
+      "comment" = $2,
+      "updatedAt" = NOW()
+    WHERE id = $3 AND "deletedAt" IS NULL
+    RETURNING *
+  `;
+  
+  const values = [
+    Math.round(updateData.overallRating || 0),
+    combinedComment,
+    evaluationId
+  ];
+  
+  const result = await pool.query(query, values);
+  return result.rows[0];
 };
 
 export const deleteResumeEvaluation = async (evaluationId: string) => {
-  const query = `UPDATE resume_evaluations SET deleted_at = NOW() WHERE id = $1`;
+  const query = `UPDATE resume_evaluations SET "deletedAt" = NOW() WHERE id = $1`;
   const result = await pool.query(query, [evaluationId]);
   return (result.rowCount ?? 0) > 0;
 };
 
 export const getResumeEvaluations = async (resumeId: string) => {
-  const query = `SELECT * FROM resume_evaluations WHERE resume_id = $1 AND deleted_at IS NULL`;
+  const query = `
+    SELECT 
+      re.*,
+      h."hospitalName",
+      h.id as hospital_id
+    FROM resume_evaluations re
+    LEFT JOIN users h ON re."userId" = h.id
+    WHERE re."resumeId" = $1 AND re."deletedAt" IS NULL
+    ORDER BY re."createdAt" DESC
+  `;
   const result = await pool.query(query, [resumeId]);
-  return result.rows;
+  
+  // Transform the data to match the expected format
+  return result.rows.map(row => {
+    let ratings = { stressManagement: 0, growth: 0, care: 0, documentation: 0, contribution: 0 };
+    let comments = { stressManagement: '', growth: '', care: '', documentation: '', contribution: '' };
+    
+    // JSON에서 평가 데이터 파싱 시도
+    try {
+      if (row.comment && row.comment.includes('평가: ')) {
+        const parts = row.comment.split(' | 코멘트: ');
+        if (parts.length === 2) {
+          const ratingsStr = parts[0].replace('평가: ', '');
+          const commentsStr = parts[1];
+          ratings = JSON.parse(ratingsStr);
+          comments = JSON.parse(commentsStr);
+        }
+      }
+    } catch (error) {
+      console.log('평가 데이터 파싱 오류:', error);
+    }
+
+    // 평가 항목별 기본값 설정
+    const defaultRating = row.rating || 0;
+    ratings = {
+      stressManagement: ratings.stressManagement || defaultRating,
+      growth: ratings.growth || defaultRating,
+      care: ratings.care || defaultRating,
+      documentation: ratings.documentation || defaultRating,
+      contribution: ratings.contribution || defaultRating
+    };
+
+    return {
+      id: row.id,
+      hospitalId: row.hospital_id,
+      hospitalName: row.hospitalName,
+      veterinarianId: row.userId,
+      ratings,
+      comments,
+      overallRating: row.rating || 0,
+      evaluationDate: row.createdAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      detailedEvaluations: [
+        { category: '스트레스 관리', rating: ratings.stressManagement, comment: comments.stressManagement || '' },
+        { category: '성장 잠재력', rating: ratings.growth, comment: comments.growth || '' },
+        { category: '소통 능력', rating: ratings.care, comment: comments.care || '' },
+        { category: '업무 역량', rating: ratings.documentation, comment: comments.documentation || '' },
+        { category: '협업 능력', rating: ratings.contribution, comment: comments.contribution || '' }
+      ]
+    };
+  });
 };
 
 export const createResumeEvaluation = async (evaluationData: any) => {
+  // JSON 형태로 평가 데이터 저장
+  const ratingsJson = JSON.stringify(evaluationData.ratings || {});
+  const commentsJson = JSON.stringify(evaluationData.comments || {});
+  const combinedComment = `평가: ${ratingsJson} | 코멘트: ${commentsJson}`;
+
+  // Generate unique ID
+  const evaluationId = `eval_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+
   const query = `
-    INSERT INTO resume_evaluations (resume_id, user_id, rating, comment)
-    VALUES ($1, $2, $3, $4)
+    INSERT INTO resume_evaluations (
+      "id",
+      "resumeId",
+      "userId", 
+      "rating",
+      "comment",
+      "createdAt",
+      "updatedAt"
+    )
+    VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
     RETURNING *
   `;
-  const values = [evaluationData.resumeId, evaluationData.userId, evaluationData.rating, evaluationData.comment];
+  
+  const values = [
+    evaluationId,
+    evaluationData.resumeId,
+    evaluationData.evaluatorId,
+    Math.round(evaluationData.overallRating || 0),
+    combinedComment
+  ];
+  
   const result = await pool.query(query, values);
   return result.rows[0];
 };

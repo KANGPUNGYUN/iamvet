@@ -2,6 +2,58 @@
 
 import { useEffect, useState } from "react";
 
+interface ResumeExperience {
+  id: string;
+  resumeId: string;
+  hospitalName: string;
+  mainTasks: string;
+  startDate?: string;
+  endDate?: string;
+  sortOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ResumeEducation {
+  id: string;
+  resumeId: string;
+  degree: string;
+  graduationStatus: string;
+  schoolName: string;
+  major: string;
+  gpa?: string;
+  totalGpa?: string;
+  startDate?: string;
+  endDate?: string;
+  sortOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ResumeLicense {
+  id: string;
+  resumeId: string;
+  name: string;
+  issuer: string;
+  grade?: string;
+  acquiredDate?: string;
+  sortOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ResumeMedicalCapability {
+  id: string;
+  resumeId: string;
+  field: string;
+  proficiency: string;
+  description?: string;
+  others?: string;
+  sortOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface ResumeDetail {
   id: string;
   userId: string;
@@ -29,6 +81,10 @@ interface ResumeDetail {
   createdAt: string;
   updatedAt: string;
   isLiked?: boolean;
+  experiences: ResumeExperience[];
+  educations: ResumeEducation[];
+  licenses: ResumeLicense[];
+  medicalCapabilities: ResumeMedicalCapability[];
 }
 
 export function useResumeDetail(id: string) {

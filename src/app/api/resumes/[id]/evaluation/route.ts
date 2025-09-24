@@ -40,19 +40,41 @@ export const POST = withAuth(
       const resumeId = params.id;
       const evaluationData = await request.json();
 
+      console.log('[Evaluation API] User check:', {
+        userId: user.userId,
+        userType: user.userType,
+        isHospital: user.userType === "HOSPITAL"
+      });
+
       // Only hospitals can evaluate veterinarians
-      if (user.userType !== "hospital") {
+      if (user.userType !== "HOSPITAL") {
         return NextResponse.json(
           createErrorResponse("병원만 수의사를 평가할 수 있습니다"),
           { status: 403 }
         );
       }
 
+      // Validate evaluation data
+      const { ratings, comments } = evaluationData;
+      
+      if (!ratings || !comments) {
+        return NextResponse.json(
+          createErrorResponse("평가 항목과 코멘트가 필요합니다"),
+          { status: 400 }
+        );
+      }
+
+      // Calculate overall rating as average of all ratings
+      const ratingValues = Object.values(ratings) as number[];
+      const overallRating = ratingValues.reduce((sum, rating) => sum + rating, 0) / ratingValues.length;
+
       // Create resume evaluation
       const evaluation = await createResumeEvaluation({
-        ...evaluationData,
         resumeId,
         evaluatorId: user.userId,
+        ratings,
+        comments,
+        overallRating: Math.round(overallRating * 2) / 2, // Round to nearest 0.5
       });
 
       return NextResponse.json(

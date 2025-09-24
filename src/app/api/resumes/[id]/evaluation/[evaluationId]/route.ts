@@ -38,6 +38,12 @@ export const PUT = withAuth(
         );
       }
 
+      // Calculate overall rating as average of all ratings if ratings provided
+      if (updateData.ratings) {
+        const ratingValues = Object.values(updateData.ratings) as number[];
+        updateData.overallRating = Math.round((ratingValues.reduce((sum, rating) => sum + rating, 0) / ratingValues.length) * 2) / 2;
+      }
+
       // 평가 수정
       const updatedEvaluation = await updateResumeEvaluation(
         evaluationId,
