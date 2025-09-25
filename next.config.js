@@ -42,7 +42,14 @@ const nextConfig = {
     // devToolsButton은 더 이상 사용되지 않음
     // 필요한 경우에만 다른 experimental 옵션 추가
     serverActions: {
-      bodySizeLimit: '5mb',
+      bodySizeLimit: '10mb',
+    },
+  },
+  
+  // API Routes 파일 크기 제한 설정
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
     },
   },
 

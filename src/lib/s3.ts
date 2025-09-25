@@ -43,7 +43,7 @@ export async function extractS3Key(url: string): Promise<string | null> {
 // 이미지 업로드 (File 객체로부터)
 export async function uploadImage(
   file: File,
-  folder: 'profiles' | 'licenses' | 'hospitals' | 'resumes' | 'transfers' = 'profiles'
+  folder: 'profiles' | 'licenses' | 'hospitals' | 'resumes' | 'transfers' | 'advertisements' = 'profiles'
 ): Promise<UploadResult> {
   console.log('[S3] uploadImage 시작:', {
     fileName: file.name,
@@ -54,20 +54,20 @@ export async function uploadImage(
   
   try {
     // 파일 확장자 확인
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       return {
         success: false,
-        error: '지원되는 이미지 형식이 아닙니다. (JPEG, PNG, WebP만 지원)',
+        error: '지원되는 이미지 형식이 아닙니다. (JPEG, PNG, WebP, GIF만 지원)',
       };
     }
 
-    // 파일 크기 확인 (1.5MB 제한)
-    const maxSize = 1.5 * 1024 * 1024; // 1.5MB
+    // 파일 크기 확인 (10MB 제한)
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       return {
         success: false,
-        error: '파일 크기가 너무 큽니다. (1.5MB 이하만 지원)',
+        error: '파일 크기가 너무 큽니다. (10MB 이하만 지원)',
       };
     }
 

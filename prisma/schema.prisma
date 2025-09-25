@@ -762,6 +762,49 @@ model veterinarian_profiles {
   users        users     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model advertisements {
+  id               String                      @id
+  title            String
+  description      String
+  type             AdvertisementType
+  imageUrl         String?
+  linkUrl          String?
+  isActive         Boolean                     @default(true)
+  startDate        DateTime
+  endDate          DateTime
+  targetAudience   AdvertisementTargetAudience @default(ALL)
+  buttonText       String?
+  variant          String?
+  viewCount        Int                         @default(0)
+  clickCount       Int                         @default(0)
+  createdBy        String
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime
+  deletedAt        DateTime?
+  admin_users      admin_users                 @relation(fields: [createdBy], references: [id])
+
+  @@index([type])
+  @@index([isActive])
+  @@index([startDate, endDate])
+  @@index([createdBy])
+}
+
+model admin_users {
+  id             String          @id
+  email          String          @unique
+  passwordHash   String
+  name           String
+  role           AdminRole       @default(ADMIN)
+  isActive       Boolean         @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  advertisements advertisements[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
 model view_logs {
   id              String   @id
   content_type    String
@@ -859,6 +902,32 @@ enum UserType {
   VETERINARIAN
   HOSPITAL
   VETERINARY_STUDENT
+}
+
+enum AdvertisementType {
+  HERO_BANNER
+  GENERAL_BANNER
+  SIDE_AD
+  AD_CARD
+}
+
+enum AdvertisementStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  SCHEDULED
+}
+
+enum AdvertisementTargetAudience {
+  ALL
+  VETERINARIANS
+  HOSPITALS
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
 }
 
 enum WorkType {

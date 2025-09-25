@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Card,
@@ -47,9 +48,11 @@ import {
   Upload,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
+import { uploadImage, deleteImage } from "@/lib/s3";
+import { isS3Url } from "@/lib/s3-client";
 
 interface Advertisement {
-  id: number;
+  id: string;
   title: string;
   description: string;
   type: "HERO_BANNER" | "GENERAL_BANNER" | "SIDE_AD" | "AD_CARD";
@@ -61,75 +64,19 @@ interface Advertisement {
   targetAudience: "ALL" | "VETERINARIANS" | "HOSPITALS";
   // Type-specific fields
   buttonText?: string; // For HERO_BANNER
-  autoSlide?: boolean; // For HERO_BANNER
-  autoSlideInterval?: number; // For HERO_BANNER
   variant?: "default" | "blue"; // For AD_CARD
   createdAt: string;
   updatedAt: string;
+  viewCount?: number;
+  clickCount?: number;
 }
 
 export default function AdvertiseManagement() {
-  const [advertisements, setAdvertisements] = useState<Advertisement[]>([
-    {
-      id: 1,
-      title: "프리미엄 채용공고 광고",
-      description: "채용공고를 더 많은 수의사에게 노출시키세요",
-      type: "HERO_BANNER",
-      imageUrl: "/banner1.jpg",
-      linkUrl: "https://example.com/premium",
-      buttonText: "확인하러 가기",
-      autoSlide: true,
-      autoSlideInterval: 5000,
-      isActive: true,
-      startDate: "2024-01-15",
-      endDate: "2024-02-15",
-      targetAudience: "HOSPITALS",
-      createdAt: "2024-01-14",
-      updatedAt: "2024-01-20",
-    },
-    {
-      id: 2,
-      title: "수의사 교육 프로그램",
-      description: "최신 수의학 지식을 습득하세요",
-      type: "SIDE_AD",
-      imageUrl: "/sidebar1.jpg",
-      linkUrl: "https://example.com/education",
-      isActive: true,
-      startDate: "2024-01-10",
-      endDate: "2024-03-10",
-      targetAudience: "VETERINARIANS",
-      createdAt: "2024-01-09",
-      updatedAt: "2024-01-18",
-    },
-    {
-      id: 3,
-      title: "병원 장비 할인 이벤트",
-      description: "최대 30% 할인된 가격으로 장비를 구입하세요",
-      type: "GENERAL_BANNER",
-      imageUrl: "/popup1.jpg",
-      linkUrl: "https://example.com/equipment",
-      isActive: false,
-      startDate: "2024-01-20",
-      endDate: "2024-02-20",
-      targetAudience: "ALL",
-      createdAt: "2024-01-19",
-      updatedAt: "2024-01-19",
-    },
-    {
-      id: 4,
-      title: "가산점",
-      description: "어떤 과목 선택도 부담없이!\n강의 들어 가산점으로 환산받자!",
-      type: "AD_CARD",
-      linkUrl: "https://example.com/franchise",
-      variant: "default",
-      isActive: true,
-      startDate: "2024-01-05",
-      endDate: "2024-04-05",
-      targetAudience: "ALL",
-      createdAt: "2024-01-04",
-      updatedAt: "2024-01-16",
-    },
-  ]);
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [advertisements, setAdvertisements] = useState<Advertisement[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("ALL");
@@ -152,6 +99,38 @@ export default function AdvertiseManagement() {
   });
 
   const itemsPerPage = 10;
+
+  // 광고 목록 조회
+  useEffect(() => {
+    fetchAdvertisements();
+  }, [currentPage, filterType, filterStatus, searchTerm]);
+
+  const fetchAdvertisements = async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+      });
+      
+      if (filterType !== "ALL") params.append("type", filterType);
+      if (filterStatus !== "ALL") params.append("status", filterStatus);
+      if (searchTerm) params.append("search", searchTerm);
+
+      const response = await fetch(`/api/advertisements?${params}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setAdvertisements(data.data);
+        // 페이지네이션 정보 업데이트 필요 시 처리
+      }
+    } catch (error) {
+      console.error("Failed to fetch advertisements:", error);
+      alert("광고 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredAds = advertisements.filter((ad) => {
     const matchesSearch =
@@ -211,8 +190,6 @@ export default function AdvertiseManagement() {
         endDate: ad.endDate,
         targetAudience: ad.targetAudience,
         buttonText: ad.buttonText,
-        autoSlide: ad.autoSlide,
-        autoSlideInterval: ad.autoSlideInterval,
         variant: ad.variant,
       });
     } else if (action === "create") {
@@ -226,83 +203,120 @@ export default function AdvertiseManagement() {
         endDate: "",
         targetAudience: "ALL",
         buttonText: "",
-        autoSlide: true,
-        autoSlideInterval: 5000,
         variant: "default",
       });
     }
     setModalVisible(true);
   };
 
-  const handleSaveAd = () => {
-    if (actionType === "create") {
-      const newAd: Advertisement = {
-        id: Math.max(...advertisements.map((a) => a.id)) + 1,
-        title: formData.title!,
-        description: formData.description!,
-        type: formData.type!,
-        linkUrl: formData.linkUrl,
-        isActive: formData.isActive!,
-        startDate: formData.startDate!,
-        endDate: formData.endDate!,
-        targetAudience: formData.targetAudience!,
-        buttonText: formData.buttonText,
-        autoSlide: formData.autoSlide,
-        autoSlideInterval: formData.autoSlideInterval,
-        variant: formData.variant,
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: new Date().toISOString().split("T")[0],
-      };
-      setAdvertisements((prev) => [newAd, ...prev]);
-    } else if (actionType === "edit" && selectedAd) {
-      setAdvertisements((prev) =>
-        prev.map((ad) =>
-          ad.id === selectedAd.id
-            ? {
-                ...ad,
-                title: formData.title!,
-                description: formData.description!,
-                type: formData.type!,
-                linkUrl: formData.linkUrl,
-                isActive: formData.isActive!,
-                startDate: formData.startDate!,
-                endDate: formData.endDate!,
-                targetAudience: formData.targetAudience!,
-                buttonText: formData.buttonText,
-                autoSlide: formData.autoSlide,
-                autoSlideInterval: formData.autoSlideInterval,
-                variant: formData.variant,
-                updatedAt: new Date().toISOString().split("T")[0],
-              }
-            : ad
-        )
-      );
-    }
+  const handleSaveAd = async () => {
+    try {
+      if (actionType === "create") {
+        console.log("광고 생성 API 호출 시작");
+        const response = await fetch("/api/advertisements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: formData.title,
+            description: formData.description,
+            type: formData.type,
+            imageUrl: formData.imageUrl,
+            linkUrl: formData.linkUrl,
+            isActive: formData.isActive,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            targetAudience: formData.targetAudience,
+            buttonText: formData.buttonText,
+            variant: formData.variant,
+          }),
+        });
 
-    setModalVisible(false);
-    setSelectedAd(null);
+        console.log("API 응답:", response.status);
+        const data = await response.json();
+        console.log("API 응답 데이터:", data);
+
+        if (data.success) {
+          await fetchAdvertisements();
+          setModalVisible(false);
+          setSelectedAd(null);
+          alert("광고가 생성되었습니다.");
+        } else {
+          alert(data.message || "광고 생성에 실패했습니다.");
+        }
+      } else if (actionType === "edit" && selectedAd) {
+        const response = await fetch(`/api/advertisements/${selectedAd.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: formData.title,
+            description: formData.description,
+            type: formData.type,
+            imageUrl: formData.imageUrl,
+            linkUrl: formData.linkUrl,
+            isActive: formData.isActive,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            targetAudience: formData.targetAudience,
+            buttonText: formData.buttonText,
+            variant: formData.variant,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          await fetchAdvertisements();
+          setModalVisible(false);
+          setSelectedAd(null);
+          alert("광고가 수정되었습니다.");
+        } else {
+          alert(data.message || "광고 수정에 실패했습니다.");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to save advertisement:", error);
+      alert("광고 저장 중 오류가 발생했습니다.");
+    }
   };
 
-  const handleDeleteAd = () => {
-    if (selectedAd) {
-      setAdvertisements((prev) => prev.filter((ad) => ad.id !== selectedAd.id));
-      setModalVisible(false);
-      setSelectedAd(null);
+  const handleDeleteAd = async () => {
+    if (!selectedAd) return;
+
+    try {
+      const response = await fetch(`/api/advertisements/${selectedAd.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        await fetchAdvertisements();
+        setModalVisible(false);
+        setSelectedAd(null);
+        alert("광고가 삭제되었습니다.");
+      } else {
+        alert(data.message || "광고 삭제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Failed to delete advertisement:", error);
+      alert("광고 삭제 중 오류가 발생했습니다.");
     }
   };
 
-  const handleToggleActive = (adId: number) => {
-    setAdvertisements((prev) =>
-      prev.map((ad) =>
-        ad.id === adId
-          ? {
-              ...ad,
-              isActive: !ad.isActive,
-              updatedAt: new Date().toISOString().split("T")[0],
-            }
-          : ad
-      )
-    );
+  const handleToggleActive = async (adId: string) => {
+    try {
+      const response = await fetch(`/api/advertisements/${adId}`, {
+        method: "PATCH",
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        await fetchAdvertisements();
+      } else {
+        alert(data.message || "광고 상태 변경에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Failed to toggle advertisement:", error);
+      alert("광고 상태 변경 중 오류가 발생했습니다.");
+    }
   };
 
   const renderActionButtons = (ad: Advertisement) => (
@@ -947,12 +961,6 @@ export default function AdvertiseManagement() {
                       // Reset type-specific fields when type changes
                       buttonText:
                         newType === "HERO_BANNER" ? prev.buttonText : undefined,
-                      autoSlide:
-                        newType === "HERO_BANNER" ? prev.autoSlide : undefined,
-                      autoSlideInterval:
-                        newType === "HERO_BANNER"
-                          ? prev.autoSlideInterval
-                          : undefined,
                       variant: newType === "AD_CARD" ? prev.variant : undefined,
                     }));
                   }}
@@ -970,69 +978,28 @@ export default function AdvertiseManagement() {
 
               {/* Dynamic fields based on ad type */}
               {formData.type === "HERO_BANNER" && (
-                <>
-                  <TextField
-                    fullWidth
-                    label="버튼 텍스트"
-                    value={formData.buttonText || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        buttonText: e.target.value,
-                      }))
-                    }
-                    placeholder="예: '확인하러 가기'"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "var(--Keycolor1)",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "var(--Keycolor1)",
-                        },
+                <TextField
+                  fullWidth
+                  label="버튼 텍스트"
+                  value={formData.buttonText || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      buttonText: e.target.value,
+                    }))
+                  }
+                  placeholder="예: '확인하러 가기'"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "var(--Keycolor1)",
                       },
-                    }}
-                  />
-                  <Box sx={{ display: "flex", gap: 2 }}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={formData.autoSlide || false}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              autoSlide: e.target.checked,
-                            }))
-                          }
-                          sx={{
-                            "& .MuiSwitch-switchBase.Mui-checked": {
-                              color: "var(--Keycolor1)",
-                            },
-                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
-                              {
-                                backgroundColor: "var(--Keycolor1)",
-                              },
-                          }}
-                        />
-                      }
-                      label="자동 슬라이드"
-                    />
-                    {formData.autoSlide && (
-                      <TextField
-                        type="number"
-                        label="슬라이드 간격 (ms)"
-                        value={formData.autoSlideInterval || 5000}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            autoSlideInterval: Number(e.target.value),
-                          }))
-                        }
-                        sx={{ minWidth: 200 }}
-                      />
-                    )}
-                  </Box>
-                </>
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "var(--Keycolor1)",
+                      },
+                    },
+                  }}
+                />
               )}
 
               {formData.type === "AD_CARD" && (
@@ -1053,6 +1020,133 @@ export default function AdvertiseManagement() {
                   </Select>
                 </FormControl>
               )}
+
+              {/* Image Upload Section */}
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 1 }}
+                >
+                  광고 이미지
+                </Typography>
+                <Box
+                  sx={{
+                    border: "2px dashed var(--Line)",
+                    borderRadius: 2,
+                    p: 3,
+                    textAlign: "center",
+                    bgcolor: "var(--Box_Light)",
+                    cursor: "pointer",
+                    "&:hover": {
+                      borderColor: "var(--Keycolor1)",
+                      bgcolor: "rgba(255, 135, 150, 0.04)",
+                    },
+                  }}
+                  onClick={() => !isUploading && document.getElementById("image-upload-input")?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    id="image-upload-input"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        // 파일 크기 제한 (10MB)
+                        if (file.size > 10 * 1024 * 1024) {
+                          alert("파일 크기는 10MB 이하로 선택해주세요.");
+                          return;
+                        }
+                        
+                        // 파일 타입 제한
+                        if (!file.type.startsWith("image/")) {
+                          alert("이미지 파일만 선택 가능합니다.");
+                          return;
+                        }
+                        
+                        setIsUploading(true);
+                        
+                        try {
+                          // 기존 S3 이미지가 있다면 먼저 삭제
+                          if (formData.imageUrl && isS3Url(formData.imageUrl)) {
+                            await deleteImage(formData.imageUrl);
+                          }
+                          
+                          // S3에 업로드
+                          const result = await uploadImage(file, 'advertisements');
+                          
+                          if (result.success && result.url) {
+                            setFormData((prev) => ({
+                              ...prev,
+                              imageUrl: result.url,
+                            }));
+                          } else {
+                            alert(result.error || "이미지 업로드에 실패했습니다.");
+                          }
+                        } catch (error) {
+                          console.error('Upload error:', error);
+                          const errorMessage = error instanceof Error ? error.message : "이미지 업로드 중 오류가 발생했습니다.";
+                          alert(`업로드 오류: ${errorMessage}`);
+                        } finally {
+                          setIsUploading(false);
+                        }
+                      }
+                    }}
+                  />
+                  {formData.imageUrl ? (
+                    <Box>
+                      <Box
+                        component="img"
+                        src={formData.imageUrl}
+                        sx={{
+                          maxWidth: "100%",
+                          maxHeight: 200,
+                          objectFit: "contain",
+                          mb: 2,
+                          borderRadius: 1,
+                        }}
+                      />
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          
+                          try {
+                            // S3에서 이미지 삭제
+                            if (formData.imageUrl && isS3Url(formData.imageUrl)) {
+                              await deleteImage(formData.imageUrl);
+                            }
+                            
+                            setFormData((prev) => ({ ...prev, imageUrl: undefined }));
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
+                          } catch (error) {
+                            console.error('Delete error:', error);
+                            const errorMessage = error instanceof Error ? error.message : "이미지 삭제 중 오류가 발생했습니다.";
+                            alert(`삭제 오류: ${errorMessage}`);
+                          }
+                        }}
+                        sx={{ borderColor: "var(--Line)", color: "var(--Subtext)" }}
+                      >
+                        이미지 제거
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Box>
+                      <Upload sx={{ fontSize: 48, color: "var(--Guidetext)", mb: 1 }} />
+                      <Typography variant="body1" sx={{ color: "var(--Text)", mb: 0.5 }}>
+                        {isUploading ? "업로드 중..." : "클릭하여 이미지 업로드"}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "var(--Guidetext)" }}>
+                        JPG, PNG, GIF (최대 10MB)
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
 
               <TextField
                 fullWidth
@@ -1085,7 +1179,7 @@ export default function AdvertiseManagement() {
                       startDate: e.target.value,
                     }))
                   }
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
 
                 <TextField
@@ -1099,7 +1193,7 @@ export default function AdvertiseManagement() {
                       endDate: e.target.value,
                     }))
                   }
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
               </Box>
 

@@ -90,13 +90,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAdminLoggedIn");
-    localStorage.removeItem("adminEmail");
-    setIsLoggedIn(false);
-    setAdminEmail("");
-    handleProfileMenuClose();
-    router.push("/admin/login");
+  const handleLogout = async () => {
+    try {
+      // 서버에 로그아웃 요청
+      await fetch("/api/admin/auth/logout", {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // 클라이언트 사이드 정리
+      localStorage.removeItem("isAdminLoggedIn");
+      localStorage.removeItem("adminEmail");
+      localStorage.removeItem("adminName");
+      localStorage.removeItem("adminRole");
+      setIsLoggedIn(false);
+      setAdminEmail("");
+      handleProfileMenuClose();
+      router.push("/admin/login");
+    }
   };
 
   // 로그인 페이지일 경우 레이아웃 없이 children만 반환
