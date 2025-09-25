@@ -515,10 +515,10 @@ export default function AdvertiseManagement() {
                   }}
                 >
                   <MenuItem value="ALL">모든 유형</MenuItem>
-                  <MenuItem value="BANNER">배너</MenuItem>
-                  <MenuItem value="POPUP">팝업</MenuItem>
-                  <MenuItem value="SIDEBAR">사이드바</MenuItem>
-                  <MenuItem value="INLINE">인라인</MenuItem>
+                  <MenuItem value="HERO_BANNER">히어로 배너</MenuItem>
+                  <MenuItem value="GENERAL_BANNER">일반 배너</MenuItem>
+                  <MenuItem value="SIDE_AD">사이드 광고</MenuItem>
+                  <MenuItem value="AD_CARD">광고 카드</MenuItem>
                 </Select>
               </FormControl>
             </Box>
