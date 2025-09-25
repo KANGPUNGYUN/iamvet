@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 로그인한 사용자의 지원 내역을 최신순으로 조회
-    const applications = await prisma.application.findMany({
+    const applications = await prisma.applications.findMany({
       where: {
         veterinarianId: userId,
       },
