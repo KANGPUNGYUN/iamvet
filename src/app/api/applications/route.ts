@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Job과 Hospital 정보를 별도로 조회
-    const jobIds = applications.map(app => app.jobId);
-    const jobs = await prisma.job.findMany({
+    const jobIds = applications.map((app: { jobId: string }) => app.jobId);
+    const jobs = await prisma.jobs.findMany({
       where: {
         id: { in: jobIds }
       },
@@ -69,8 +69,8 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const hospitalIds = jobs.map(job => job.hospitalId);
-    const hospitals = await prisma.user.findMany({
+    const hospitalIds = jobs.map((job: { hospitalId: string }) => job.hospitalId);
+    const hospitals = await prisma.users.findMany({
       where: {
         id: { in: hospitalIds }
       },
@@ -82,9 +82,9 @@ export async function GET(request: NextRequest) {
     });
 
     // 프론트엔드에서 기대하는 형태로 데이터 변환
-    const formattedApplications = applications.map(app => {
-      const job = jobs.find(j => j.id === app.jobId);
-      const hospital = job ? hospitals.find(h => h.id === job.hospitalId) : null;
+    const formattedApplications = applications.map((app: { id: string; jobId: string; appliedAt: Date; status: string }) => {
+      const job = jobs.find((j: { id: string; hospitalId: string; title: string }) => j.id === app.jobId);
+      const hospital = job ? hospitals.find((h: { id: string; hospitalName?: string; profileImage?: string }) => h.id === job.hospitalId) : null;
       
       return {
         id: parseInt(app.jobId.slice(-8), 16), // jobId의 일부를 숫자로 변환

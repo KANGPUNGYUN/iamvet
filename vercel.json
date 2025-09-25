@@ -1,8 +1,7 @@
 {
   "functions": {
     "src/app/**/*.{js,ts,jsx,tsx}": {
-      "maxDuration": 30,
-      "maxRequestBodySize": "10mb"
+      "maxDuration": 30
     }
   },
   "headers": [
