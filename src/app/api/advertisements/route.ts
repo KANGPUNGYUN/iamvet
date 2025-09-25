@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
-    const type = searchParams.get("type") as AdvertisementType | null;
+    const type = searchParams.get("type");
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     };
 
     if (type && type !== "ALL") {
-      where.type = type;
+      where.type = type as AdvertisementType;
     }
 
     if (status) {
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 
     // 데이터 조회
     const [advertisements, total] = await Promise.all([
-      prisma.advertisements.findMany({
+      (prisma as any).advertisements.findMany({
         where,
         include: {
           admin_users: {
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
         skip,
         take: limit,
       }),
-      prisma.advertisements.count({ where }),
+      (prisma as any).advertisements.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const advertisement = await prisma.advertisements.create({
+    const advertisement = await (prisma as any).advertisements.create({
       data: {
         id: generateId("ad"),
         title,

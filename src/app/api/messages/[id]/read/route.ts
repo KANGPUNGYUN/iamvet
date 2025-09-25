@@ -28,7 +28,7 @@ export async function PUT(
 
     if (type === "notification") {
       // 알림 읽음 처리
-      const notification = await prisma.notification.findUnique({
+      const notification = await (prisma as any).notification.findUnique({
         where: { id },
         select: { recipientId: true }
       });
@@ -41,7 +41,7 @@ export async function PUT(
         return Response.json({ error: "Forbidden" }, { status: 403 });
       }
 
-      await prisma.notification.update({
+      await (prisma as any).notification.update({
         where: { id },
         data: { 
           isRead: true,
@@ -50,7 +50,7 @@ export async function PUT(
       });
     } else if (type === "inquiry") {
       // 문의 읽음 처리
-      const inquiry = await prisma.contactInquiry.findUnique({
+      const inquiry = await (prisma as any).contactInquiry.findUnique({
         where: { id },
         select: { recipientId: true }
       });
@@ -63,7 +63,7 @@ export async function PUT(
         return Response.json({ error: "Forbidden" }, { status: 403 });
       }
 
-      await prisma.contactInquiry.update({
+      await (prisma as any).contactInquiry.update({
         where: { id },
         data: { isRead: true }
       });

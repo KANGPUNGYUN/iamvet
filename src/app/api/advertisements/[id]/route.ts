@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticateAdmin } from "@/lib/admin-auth";
-import { deleteImage, isS3Url } from "@/lib/s3-client";
+import { deleteImage } from "@/lib/s3";
+import { isS3Url } from "@/lib/s3-client";
 
 // GET: 특정 광고 조회
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const advertisement = await prisma.advertisements.findUnique({
+    const advertisement = await (prisma as any).advertisements.findUnique({
       where: {
-        id: params.id,
+        id: id,
         deletedAt: null,
       },
       include: {
@@ -33,8 +35,8 @@ export async function GET(
     }
 
     // 조회수 증가
-    await prisma.advertisements.update({
-      where: { id: params.id },
+    await (prisma as any).advertisements.update({
+      where: { id: id },
       data: { viewCount: { increment: 1 } },
     });
 
@@ -54,8 +56,9 @@ export async function GET(
 // PUT: 광고 수정
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const admin = await authenticateAdmin(req);
     if (!admin) {
@@ -65,8 +68,8 @@ export async function PUT(
       );
     }
 
-    const advertisement = await prisma.advertisements.findUnique({
-      where: { id: params.id },
+    const advertisement = await (prisma as any).advertisements.findUnique({
+      where: { id: id },
     });
 
     if (!advertisement) {
@@ -102,8 +105,8 @@ export async function PUT(
       }
     }
 
-    const updatedAdvertisement = await prisma.advertisements.update({
-      where: { id: params.id },
+    const updatedAdvertisement = await (prisma as any).advertisements.update({
+      where: { id: id },
       data: {
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
@@ -145,8 +148,9 @@ export async function PUT(
 // DELETE: 광고 삭제
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const admin = await authenticateAdmin(req);
     if (!admin) {
@@ -156,8 +160,8 @@ export async function DELETE(
       );
     }
 
-    const advertisement = await prisma.advertisements.findUnique({
-      where: { id: params.id },
+    const advertisement = await (prisma as any).advertisements.findUnique({
+      where: { id: id },
     });
 
     if (!advertisement) {
@@ -179,8 +183,8 @@ export async function DELETE(
     }
 
     // Soft delete
-    await prisma.advertisements.update({
-      where: { id: params.id },
+    await (prisma as any).advertisements.update({
+      where: { id: id },
       data: {
         deletedAt: new Date(),
         updatedAt: new Date(),
@@ -203,8 +207,9 @@ export async function DELETE(
 // PATCH: 광고 상태 토글
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const admin = await authenticateAdmin(req);
     if (!admin) {
@@ -214,8 +219,8 @@ export async function PATCH(
       );
     }
 
-    const advertisement = await prisma.advertisements.findUnique({
-      where: { id: params.id },
+    const advertisement = await (prisma as any).advertisements.findUnique({
+      where: { id: id },
     });
 
     if (!advertisement) {
@@ -227,8 +232,8 @@ export async function PATCH(
 
     // 관리자는 모든 광고를 토글할 수 있음
 
-    const updatedAdvertisement = await prisma.advertisements.update({
-      where: { id: params.id },
+    const updatedAdvertisement = await (prisma as any).advertisements.update({
+      where: { id: id },
       data: {
         isActive: !advertisement.isActive,
         updatedAt: new Date(),

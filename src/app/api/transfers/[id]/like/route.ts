@@ -14,7 +14,7 @@ export const POST = withAuth(async (
 
     console.log('Transfer like POST - User:', user.userId, 'Transfer:', transferId);
 
-    const transfer = await prisma.transfer.findUnique({
+    const transfer = await (prisma as any).transfer.findUnique({
       where: { id: transferId }
     });
 
@@ -25,7 +25,7 @@ export const POST = withAuth(async (
 
     console.log('Transfer found:', transfer.id);
 
-    const existingLike = await prisma.transferLike.findUnique({
+    const existingLike = await (prisma as any).transferLike.findUnique({
       where: {
         userId_transferId: {
           userId: user.userId,
@@ -42,7 +42,7 @@ export const POST = withAuth(async (
     }
 
     console.log('Creating new like...');
-    await prisma.transferLike.create({
+    await (prisma as any).transferLike.create({
       data: {
         userId: user.userId,
         transferId: transferId
@@ -68,7 +68,7 @@ export const DELETE = withAuth(async (
 
     console.log('Transfer like DELETE - User:', user.userId, 'Transfer:', transferId);
 
-    const existingLike = await prisma.transferLike.findUnique({
+    const existingLike = await (prisma as any).transferLike.findUnique({
       where: {
         userId_transferId: {
           userId: user.userId,
@@ -85,7 +85,7 @@ export const DELETE = withAuth(async (
     }
 
     console.log('Deleting like...');
-    await prisma.transferLike.delete({
+    await (prisma as any).transferLike.delete({
       where: {
         userId_transferId: {
           userId: user.userId,

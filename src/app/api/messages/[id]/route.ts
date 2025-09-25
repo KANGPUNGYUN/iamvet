@@ -30,7 +30,7 @@ export async function GET(
 
     if (type === "notification") {
       // 알림 조회
-      const notification = await prisma.notification.findUnique({
+      const notification = await (prisma as any).notification.findUnique({
         where: { id },
         include: {
           sender: {
@@ -49,7 +49,7 @@ export async function GET(
 
       // 읽음 처리
       if (!notification.isRead) {
-        await prisma.notification.update({
+        await (prisma as any).notification.update({
           where: { id },
           data: { 
             isRead: true,
@@ -72,7 +72,7 @@ export async function GET(
       };
     } else if (type === "inquiry") {
       // 문의 조회
-      const inquiry = await prisma.contactInquiry.findUnique({
+      const inquiry = await (prisma as any).contactInquiry.findUnique({
         where: { id },
         include: {
           sender: {
@@ -103,7 +103,7 @@ export async function GET(
 
       // 읽음 처리
       if (!inquiry.isRead) {
-        await prisma.contactInquiry.update({
+        await (prisma as any).contactInquiry.update({
           where: { id },
           data: { isRead: true }
         });

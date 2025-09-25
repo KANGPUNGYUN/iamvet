@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const user = userResult.user;
 
     // 해당 사용자의 공지사항 타입 알림만 조회
-    const announcements = await prisma.notification.findMany({
+    const announcements = await (prisma as any).notification.findMany({
       where: {
         type: NotificationType.ANNOUNCEMENT,
         recipientId: user.id,
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // 관리자 계정 찾기 (임시로 첫 번째 사용자 사용)
-    const adminUser = await prisma.user.findFirst();
+    const adminUser = await (prisma as any).user.findFirst();
     
     if (!adminUser) {
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     ];
 
     // 모든 사용자 조회
-    const allUsers = await prisma.user.findMany({
+    const allUsers = await (prisma as any).user.findMany({
       select: {
         id: true,
         userType: true,
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     for (const announcement of announcements) {
       // 각 사용자에게 알림 생성
       for (const user of allUsers) {
-        const notification = await prisma.notification.create({
+        const notification = await (prisma as any).notification.create({
           data: {
             type: NotificationType.ANNOUNCEMENT,
             recipientId: user.id,

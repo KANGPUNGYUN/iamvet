@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // 좋아요 여부 확인 (로그인한 경우에만)
     let isLiked = false;
     if (userId) {
-      const likeCheck = await prisma.transferLike.findUnique({
+      const likeCheck = await (prisma as any).transferLike.findUnique({
         where: {
           userId_transferId: {
             userId: userId,

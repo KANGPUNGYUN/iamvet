@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
+import { generateId } from "@/lib/utils/id";
 
 const prisma = new PrismaClient();
 
@@ -19,14 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      subject,
-      message,
-      recipientId,
-      jobId,
-      resumeId,
-      type
-    } = body;
+    const { subject, message, recipientId, jobId, resumeId, type } = body;
 
     if (!subject || !message || !recipientId) {
       return Response.json(
@@ -40,45 +34,41 @@ export async function POST(request: NextRequest) {
 
     // Validate jobId if provided
     if (jobId) {
-      const jobExists = await prisma.job.findUnique({
-        where: { id: jobId }
+      const jobExists = await (prisma as any).jobs.findUnique({
+        where: { id: jobId },
       });
-      
+
       if (!jobExists) {
         console.error(`Job not found with ID: ${jobId}`);
-        return Response.json(
-          { error: "Job not found" },
-          { status: 404 }
-        );
+        return Response.json({ error: "Job not found" }, { status: 404 });
       }
     }
 
-    const inquiry = await prisma.contactInquiry.create({
+    const inquiry = await (prisma as any).contactInquiry.create({
       data: {
-        senderId: payload.userId,
-        recipientId: recipientId,
+        id: generateId(),
+        sender_id: payload.userId,
+        recipient_id: recipientId,
         subject,
         message,
-        jobId: jobId || null,
-        resumeId: resumeId || null,
+        job_id: jobId || null,
+        resume_id: resumeId || null,
         type: type || "general",
-        isRead: false
-      }
+        is_read: false,
+        updated_at: new Date(),
+      },
     });
 
     // Inquiry notifications are handled through ContactInquiry table
     // No need to create separate Notification records to avoid duplication
 
-    return Response.json({ 
+    return Response.json({
       success: true,
-      inquiry 
+      inquiry,
     });
   } catch (error) {
     console.error("Inquiry creation error:", error);
-    return Response.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -100,49 +90,43 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
 
     let whereCondition: any = {
-      OR: [
-        { senderId: payload.userId },
-        { recipientId: payload.userId }
-      ]
+      OR: [{ senderId: payload.userId }, { recipientId: payload.userId }],
     };
 
     if (type === "sent") {
-      whereCondition = { senderId: payload.userId };
+      whereCondition = { sender_id: payload.userId };
     } else if (type === "received") {
-      whereCondition = { recipientId: payload.userId };
+      whereCondition = { recipient_id: payload.userId };
     }
 
-    const inquiries = await prisma.contactInquiry.findMany({
+    const inquiries = await (prisma as any).contactInquiry.findMany({
       where: whereCondition,
       include: {
-        sender: {
-          select: { id: true, nickname: true, email: true, userType: true }
+        users_contact_inquiries_sender_idTousers: {
+          select: { id: true, nickname: true, email: true, userType: true },
         },
-        recipient: {
-          select: { id: true, nickname: true, email: true, userType: true }
+        users_contact_inquiries_recipient_idTousers: {
+          select: { id: true, nickname: true, email: true, userType: true },
         },
-        job: {
-          select: { 
-            id: true, 
+        jobs: {
+          select: {
+            id: true,
             title: true,
-            hospital: {
-              select: { hospitalName: true }
-            }
-          }
+            users: {
+              select: { hospitalName: true },
+            },
+          },
         },
-        resume: {
-          select: { id: true, title: true }
-        }
+        resumes: {
+          select: { id: true, title: true },
+        },
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { created_at: "desc" },
     });
 
     return Response.json({ inquiries });
   } catch (error) {
     console.error("Error in GET inquiries:", error);
-    return Response.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

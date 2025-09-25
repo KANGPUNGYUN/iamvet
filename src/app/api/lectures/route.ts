@@ -113,8 +113,8 @@ export async function GET(request: NextRequest) {
             orderBy = { createdAt: 'desc' };
         }
         
-        const total = await prisma.lecture.count({ where: whereClause });
-        const lectures = await prisma.lecture.findMany({
+        const total = await (prisma as any).lectures.count({ where: whereClause });
+        const lectures = await (prisma as any).lectures.findMany({
           where: whereClause,
           orderBy,
           skip: (params.page - 1) * params.limit,

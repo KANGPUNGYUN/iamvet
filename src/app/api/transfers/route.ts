@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     // 사용자 정보 확인 (선택적) - Bearer token과 쿠키 인증 모두 지원
     let userId: string | undefined;
-    
+
     // Authorization 헤더 확인
     const authHeader = request.headers.get("authorization");
     if (authHeader?.startsWith("Bearer ")) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         userId = payload.userId;
       }
     }
-    
+
     // Authorization 헤더가 없으면 쿠키에서 확인
     if (!userId) {
       const authTokenCookie = request.cookies.get("auth-token")?.value;
@@ -41,20 +41,24 @@ export async function GET(request: NextRequest) {
     // 북마크된 게시글만 조회하는 경우
     const bookmarked = searchParams.get("bookmarked") === "true";
 
-    console.log(`[Transfers API] GET request - page: ${page}, limit: ${limit}, bookmarked: ${bookmarked}`);
+    console.log(
+      `[Transfers API] GET request - page: ${page}, limit: ${limit}, bookmarked: ${bookmarked}`
+    );
 
     let transfers;
     let total = 0;
-    
+
     if (bookmarked && userId) {
       // 사용자가 좋아요한 양수양도 ID들을 먼저 조회
       const userLikedTransfers = await (prisma as any).transferLike.findMany({
         where: { userId },
-        select: { transferId: true }
+        select: { transferId: true },
       });
-      
-      const likedTransferIds = userLikedTransfers.map((like: any) => like.transferId);
-      
+
+      const likedTransferIds = userLikedTransfers.map(
+        (like: any) => like.transferId
+      );
+
       if (likedTransferIds.length === 0) {
         // 좋아요한 양수양도가 없는 경우
         transfers = [];
@@ -62,30 +66,30 @@ export async function GET(request: NextRequest) {
       } else {
         // 좋아요한 양수양도들만 조회
         const offset = (page - 1) * limit;
-        const whereClause: any = { 
+        const whereClause: any = {
           id: { in: likedTransferIds },
           deletedAt: null,
-          status: { not: 'DISABLED' }
+          status: { not: "DISABLED" },
         };
-        
+
         // 추가 필터 적용
         if (keyword) {
           whereClause.OR = [
-            { title: { contains: keyword, mode: 'insensitive' } },
-            { description: { contains: keyword, mode: 'insensitive' } },
-            { location: { contains: keyword, mode: 'insensitive' } }
+            { title: { contains: keyword, mode: "insensitive" } },
+            { description: { contains: keyword, mode: "insensitive" } },
+            { location: { contains: keyword, mode: "insensitive" } },
           ];
         }
         if (category) {
-          const categories = category.split(',');
+          const categories = category.split(",");
           whereClause.category = { in: categories };
         }
-        
-        total = await prisma.transfer.count({ where: whereClause });
-        
-        const result = await prisma.transfer.findMany({
+
+        total = await (prisma as any).transfer.count({ where: whereClause });
+
+        const result = await (prisma as any).transfer.findMany({
           where: whereClause,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           skip: offset,
           take: limit,
           include: {
@@ -93,17 +97,17 @@ export async function GET(request: NextRequest) {
               select: {
                 hospitalName: true,
                 profileImage: true,
-                hospitalAddress: true
-              }
-            }
-          }
+                hospitalAddress: true,
+              },
+            },
+          },
         });
-        
-        transfers = result.map(transfer => ({
+
+        transfers = result.map((transfer: any) => ({
           ...transfer,
           hospitalName: transfer.user?.hospitalName,
-          hospitalType: '병원', // 기본값 설정
-          categories: transfer.category
+          hospitalType: "병원", // 기본값 설정
+          categories: transfer.category,
         }));
       }
     } else {
@@ -111,31 +115,35 @@ export async function GET(request: NextRequest) {
       transfers = await getTransfersWithPagination(page, limit);
       total = transfers.length; // TODO: 실제로는 전체 카운트를 가져와야 함
     }
-    
+
     // 좋아요 정보 조회 (로그인한 경우에만)
     let userLikes: string[] = [];
     if (userId && transfers && transfers.length > 0) {
-      const transferIds = transfers.map((transfer: any) => transfer.id).filter(Boolean);
+      const transferIds = transfers
+        .map((transfer: any) => transfer.id)
+        .filter(Boolean);
       if (transferIds.length > 0) {
         const likes = await (prisma as any).transferLike.findMany({
-          where: { 
+          where: {
             userId,
-            transferId: { in: transferIds }
+            transferId: { in: transferIds },
           },
-          select: { transferId: true }
+          select: { transferId: true },
         });
         userLikes = likes.map((like: any) => like.transferId);
       }
     }
 
     // 좋아요 정보를 포함한 양수양도 데이터 변환
-    const transfersWithLikes = transfers ? transfers.map((transfer: any) => ({
-      ...transfer,
-      isLiked: userId ? userLikes.includes(transfer.id) : false
-    })) : [];
-    
+    const transfersWithLikes = transfers
+      ? transfers.map((transfer: any) => ({
+          ...transfer,
+          isLiked: userId ? userLikes.includes(transfer.id) : false,
+        }))
+      : [];
+
     const totalPages = Math.ceil(total / limit);
-    
+
     console.log(`[Transfers API] Retrieved ${transfers.length} transfers`);
 
     return NextResponse.json(
@@ -144,7 +152,7 @@ export async function GET(request: NextRequest) {
         total,
         totalPages,
         page,
-        limit
+        limit,
       })
     );
   } catch (error) {

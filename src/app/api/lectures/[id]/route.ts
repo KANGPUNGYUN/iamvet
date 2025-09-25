@@ -9,6 +9,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+// Admin auth function
+async function verifyAdminAuth(request: NextRequest) {
+  try {
+    // Check for admin session from cookie
+    const isAdminLoggedIn = request.cookies.get("isAdminLoggedIn")?.value === "true";
+    const adminEmail = request.cookies.get("adminEmail")?.value;
+    
+    if (!isAdminLoggedIn || !adminEmail) {
+      return { isValid: false, admin: null };
+    }
+    
+    // Additional verification can be added here if needed
+    return { isValid: true, admin: { email: adminEmail } };
+  } catch (error) {
+    console.error("Admin auth verification error:", error);
+    return { isValid: false, admin: null };
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -147,6 +166,118 @@ export async function GET(
     console.error("Lecture detail error:", error);
     return NextResponse.json(
       createErrorResponse("강의영상 조회 중 오류가 발생했습니다"),
+      { status: 500 }
+    );
+  }
+}
+
+// 강의 수정 (어드민만)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 어드민 인증 확인
+    const adminAuth = await verifyAdminAuth(request);
+    if (!adminAuth.isValid || !adminAuth.admin) {
+      return NextResponse.json(
+        createErrorResponse("관리자 권한이 필요합니다"),
+        { status: 401 }
+      );
+    }
+
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
+    const body = await request.json();
+
+    const { title, description, category, videoUrl, thumbnail, tags } = body;
+
+    // 기존 강의 확인
+    const existingLecture = await (prisma as any).lectures.findUnique({
+      where: { id }
+    });
+
+    if (!existingLecture) {
+      return NextResponse.json(
+        createErrorResponse("강의를 찾을 수 없습니다"),
+        { status: 404 }
+      );
+    }
+
+    // 강의 업데이트
+    const updatedLecture = await (prisma as any).lectures.update({
+      where: { id },
+      data: {
+        title: title || existingLecture.title,
+        description: description || existingLecture.description,
+        category: category || existingLecture.category,
+        videoUrl: videoUrl || existingLecture.videoUrl,
+        thumbnail: thumbnail || existingLecture.thumbnail,
+        tags: tags || existingLecture.tags,
+        updatedAt: new Date(),
+      }
+    });
+
+    return NextResponse.json(
+      createApiResponse("success", "강의가 성공적으로 수정되었습니다", {
+        lecture: updatedLecture
+      })
+    );
+  } catch (error) {
+    console.error("Lecture update error:", error);
+    return NextResponse.json(
+      createErrorResponse("강의 수정 중 오류가 발생했습니다"),
+      { status: 500 }
+    );
+  }
+}
+
+// 강의 삭제 (어드민만)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 어드민 인증 확인
+    const adminAuth = await verifyAdminAuth(request);
+    if (!adminAuth.isValid || !adminAuth.admin) {
+      return NextResponse.json(
+        createErrorResponse("관리자 권한이 필요합니다"),
+        { status: 401 }
+      );
+    }
+
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
+
+    // 기존 강의 확인
+    const existingLecture = await (prisma as any).lectures.findUnique({
+      where: { id }
+    });
+
+    if (!existingLecture) {
+      return NextResponse.json(
+        createErrorResponse("강의를 찾을 수 없습니다"),
+        { status: 404 }
+      );
+    }
+
+    // Soft delete 사용
+    await (prisma as any).lectures.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+
+    return NextResponse.json(
+      createApiResponse("success", "강의가 성공적으로 삭제되었습니다", null)
+    );
+  } catch (error) {
+    console.error("Lecture delete error:", error);
+    return NextResponse.json(
+      createErrorResponse("강의 삭제 중 오류가 발생했습니다"),
       { status: 500 }
     );
   }

@@ -22,25 +22,25 @@ export async function GET(
       return Response.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const inquiry = await prisma.contactInquiry.findUnique({
+    const inquiry = await (prisma as any).contactInquiry.findUnique({
       where: { id },
       include: {
-        sender: {
+        users_contact_inquiries_sender_idTousers: {
           select: { id: true, nickname: true, email: true, userType: true }
         },
-        recipient: {
+        users_contact_inquiries_recipient_idTousers: {
           select: { id: true, nickname: true, email: true, userType: true }
         },
-        job: {
+        jobs: {
           select: { 
             id: true, 
             title: true,
-            hospital: {
+            users: {
               select: { hospitalName: true }
             }
           }
         },
-        resume: {
+        resumes: {
           select: { id: true, title: true }
         }
       }
@@ -53,7 +53,7 @@ export async function GET(
       );
     }
 
-    if (inquiry.senderId !== payload.userId && inquiry.recipientId !== payload.userId) {
+    if (inquiry.sender_id !== payload.userId && inquiry.recipient_id !== payload.userId) {
       return Response.json(
         { error: "Forbidden" },
         { status: 403 }
@@ -92,9 +92,9 @@ export async function PUT(
     const { action } = body;
 
     if (action === "mark_read") {
-      const inquiry = await prisma.contactInquiry.findUnique({
+      const inquiry = await (prisma as any).contactInquiry.findUnique({
         where: { id },
-        select: { recipientId: true }
+        select: { recipient_id: true }
       });
 
       if (!inquiry) {
@@ -104,16 +104,16 @@ export async function PUT(
         );
       }
 
-      if (inquiry.recipientId !== payload.userId) {
+      if (inquiry.recipient_id !== payload.userId) {
         return Response.json(
           { error: "Forbidden" },
           { status: 403 }
         );
       }
 
-      await prisma.contactInquiry.update({
+      await (prisma as any).contactInquiry.update({
         where: { id },
-        data: { isRead: true }
+        data: { is_read: true }
       });
 
       return Response.json({ success: true });

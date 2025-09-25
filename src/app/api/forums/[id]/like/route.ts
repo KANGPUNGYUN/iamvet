@@ -12,7 +12,7 @@ export const POST = withAuth(async (
     const resolvedParams = await params;
     const forumPostId = resolvedParams.id;
 
-    const forumPost = await prisma.forumPost.findUnique({
+    const forumPost = await (prisma as any).forumPost.findUnique({
       where: { id: forumPostId }
     });
 

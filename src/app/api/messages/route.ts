@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         notificationWhere.isRead = false;
       }
 
-      const notifications = await prisma.notification.findMany({
+      const notifications = await (prisma as any).notification.findMany({
         where: notificationWhere,
         include: {
           sender: {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         }
       });
 
-      notifications.forEach(notification => {
+      notifications.forEach((notification: any) => {
         results.push({
           id: notification.id,
           type: "notification",
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         inquiryWhere.isRead = false;
       }
 
-      const inquiries = await prisma.contactInquiry.findMany({
+      const inquiries = await (prisma as any).contactInquiry.findMany({
         where: inquiryWhere,
         include: {
           sender: {
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
         }
       });
 
-      inquiries.forEach(inquiry => {
+      inquiries.forEach((inquiry: any) => {
         results.push({
           id: inquiry.id,
           type: "inquiry",

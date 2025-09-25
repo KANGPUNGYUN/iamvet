@@ -37,6 +37,7 @@ import {
   Cancel,
   Warning,
   PlayArrow,
+  Edit,
   Pause,
   CloudUpload,
   AttachFile,
@@ -45,6 +46,8 @@ import {
   TableChart,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
+import { uploadImage, deleteImage } from "@/lib/s3";
+import { isS3Url } from "@/lib/s3-client";
 
 interface Lecture {
   id: number | string;
@@ -151,7 +154,7 @@ export default function LecturesManagement() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
   const [actionType, setActionType] = useState<
-    "view" | "activate" | "deactivate"
+    "view" | "activate" | "deactivate" | "edit" | "delete"
   >("view");
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [newLecture, setNewLecture] = useState({
@@ -211,46 +214,85 @@ export default function LecturesManagement() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
-    const newFiles = Array.from(files)
-      .map((file) => {
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
         const fileType = getFileType(file.name);
         if (!fileType) {
           alert(`지원하지 않는 파일 형식입니다: ${file.name}`);
           return null;
         }
 
-        return {
-          id: `file_${Date.now()}_${Math.random()
-            .toString(36)
-            .substring(2, 11)}`,
-          name: file.name,
-          type: fileType,
-          size: file.size,
-          url: URL.createObjectURL(file), // 실제로는 서버 업로드 후 URL을 받아야 함
-        };
-      })
-      .filter(Boolean) as {
-      id: string;
-      name: string;
-      type: "PDF" | "PPT" | "WORD" | "EXCEL";
-      size: number;
-      url: string;
-    }[];
+        // 파일 크기 제한 (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`파일 크기는 10MB 이하로 선택해주세요: ${file.name}`);
+          return null;
+        }
 
-    setNewLecture((prev) => ({
-      ...prev,
-      referenceMaterials: [...prev.referenceMaterials, ...newFiles],
-    }));
+        try {
+          // S3에 파일 업로드
+          const result = await uploadImage(file, 'lecture-materials');
+          
+          if (result.success && result.url) {
+            return {
+              id: `file_${Date.now()}_${Math.random()
+                .toString(36)
+                .substring(2, 11)}`,
+              name: file.name,
+              type: fileType,
+              size: file.size,
+              url: result.url,
+            };
+          } else {
+            alert(`파일 업로드 실패: ${file.name} - ${result.error || '알 수 없는 오류'}`);
+            return null;
+          }
+        } catch (uploadError) {
+          console.error('File upload error:', uploadError);
+          alert(`파일 업로드 중 오류 발생: ${file.name}`);
+          return null;
+        }
+      });
+
+      const uploadedFiles = await Promise.all(uploadPromises);
+      const validFiles = uploadedFiles.filter(Boolean) as {
+        id: string;
+        name: string;
+        type: "PDF" | "PPT" | "WORD" | "EXCEL";
+        size: number;
+        url: string;
+      }[];
+
+      if (validFiles.length > 0) {
+        setNewLecture((prev) => ({
+          ...prev,
+          referenceMaterials: [...prev.referenceMaterials, ...validFiles],
+        }));
+      }
+    } catch (error) {
+      console.error('File upload process error:', error);
+      alert('파일 업로드 중 오류가 발생했습니다.');
+    }
 
     // Reset the file input
     event.target.value = "";
   };
 
-  const removeReferenceMaterial = (fileId: string) => {
+  const removeReferenceMaterial = async (fileId: string) => {
+    const fileToRemove = newLecture.referenceMaterials.find(file => file.id === fileId);
+    
+    if (fileToRemove && isS3Url(fileToRemove.url)) {
+      try {
+        await deleteImage(fileToRemove.url);
+      } catch (error) {
+        console.error('Failed to delete file from S3:', error);
+        // 에러가 발생해도 UI에서는 제거 (사용자 경험을 위해)
+      }
+    }
+    
     setNewLecture((prev) => ({
       ...prev,
       referenceMaterials: prev.referenceMaterials.filter(
@@ -340,10 +382,22 @@ export default function LecturesManagement() {
 
   const handleAction = (
     lecture: Lecture,
-    action: "view" | "activate" | "deactivate"
+    action: "view" | "activate" | "deactivate" | "edit" | "delete"
   ) => {
     setSelectedLecture(lecture);
     setActionType(action);
+    
+    if (action === "edit" && lecture) {
+      setNewLecture({
+        title: lecture.title,
+        instructor: lecture.instructor,
+        category: lecture.category,
+        youtubeUrl: lecture.youtubeUrl || "",
+        description: lecture.description,
+        referenceMaterials: lecture.referenceMaterials || [],
+      });
+    }
+    
     setModalVisible(true);
   };
 
@@ -359,30 +413,51 @@ export default function LecturesManagement() {
     setCreateModalVisible(false);
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     if (!selectedLecture) return;
 
-    setLectures((prev) =>
-      prev.map((lecture) => {
-        if (lecture.id === selectedLecture.id) {
-          switch (actionType) {
-            case "activate":
-              return { ...lecture, isActive: true };
-            case "deactivate":
-              return { ...lecture, isActive: false };
-            default:
+    try {
+      switch (actionType) {
+        case "activate":
+        case "deactivate":
+          // 로컬 상태 업데이트 (실제 API 구현 시 API 호출로 변경)
+          setLectures((prev) =>
+            prev.map((lecture) => {
+              if (lecture.id === selectedLecture.id) {
+                return { ...lecture, isActive: actionType === "activate" };
+              }
               return lecture;
+            })
+          );
+          break;
+
+        case "delete":
+          const response = await fetch(`/api/lectures/${selectedLecture.id}`, {
+            method: "DELETE",
+          });
+
+          const data = await response.json();
+          if (data.status === "success") {
+            setLectures((prev) => prev.filter(lecture => lecture.id !== selectedLecture.id));
+            alert("강의가 성공적으로 삭제되었습니다.");
+          } else {
+            alert(data.message || "강의 삭제에 실패했습니다.");
           }
-        }
-        return lecture;
-      })
-    );
+          break;
+
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error("Action error:", error);
+      alert("작업 중 오류가 발생했습니다.");
+    }
 
     setModalVisible(false);
     setSelectedLecture(null);
   };
 
-  const handleCreateLecture = async () => {
+  const handleSaveLecture = async () => {
     if (!newLecture.title || !newLecture.instructor || !newLecture.category) {
       alert("제목, 강사명, 카테고리는 필수 필드입니다.");
       return;
@@ -402,40 +477,69 @@ export default function LecturesManagement() {
         thumbnailUrl = getYouTubeThumbnail(videoId);
       }
 
-      const response = await fetch('/api/lectures', {
-        method: 'POST',
+      const isEdit = actionType === "edit" && selectedLecture;
+      const url = isEdit ? `/api/lectures/${selectedLecture.id}` : '/api/lectures';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           title: newLecture.title,
-          instructor: newLecture.instructor,
-          category: newLecture.category,
-          youtubeUrl: newLecture.youtubeUrl,
           description: newLecture.description || "강의 설명이 입력되지 않았습니다.",
+          category: newLecture.category,
+          videoUrl: newLecture.youtubeUrl,
           thumbnail: thumbnailUrl,
+          tags: [], // 필요에 따라 추가
         }),
       });
 
       const result = await response.json();
 
       if (response.ok && result.status === 'success') {
-        // API에서 반환된 데이터를 기존 형식에 맞게 변환
-        const newLectureData: Lecture = {
-          id: result.data.lecture.id, // 문자열 ID 그대로 사용
-          title: result.data.lecture.title,
-          instructor: newLecture.instructor, // API에 instructor 필드가 없어서 입력값 사용
-          category: result.data.lecture.category,
-          youtubeUrl: result.data.lecture.videoUrl,
-          isActive: false, // 새로 생성된 강의는 기본적으로 비활성화
-          viewCount: result.data.lecture.viewCount,
-          createdAt: new Date().toISOString().split("T")[0],
-          description: result.data.lecture.description,
-        };
+        if (isEdit) {
+          // 수정 모드
+          setLectures((prev) => 
+            prev.map((lecture) => {
+              if (lecture.id === selectedLecture.id) {
+                return {
+                  ...lecture,
+                  title: newLecture.title,
+                  instructor: newLecture.instructor,
+                  category: newLecture.category,
+                  youtubeUrl: newLecture.youtubeUrl,
+                  description: newLecture.description,
+                  referenceMaterials: newLecture.referenceMaterials,
+                };
+              }
+              return lecture;
+            })
+          );
+          alert("강의가 성공적으로 수정되었습니다.");
+          setModalVisible(false);
+        } else {
+          // 생성 모드
+          const newLectureData: Lecture = {
+            id: result.data.lecture.id,
+            title: result.data.lecture.title,
+            instructor: newLecture.instructor,
+            category: result.data.lecture.category,
+            youtubeUrl: result.data.lecture.videoUrl,
+            isActive: false,
+            viewCount: result.data.lecture.viewCount,
+            createdAt: new Date().toISOString().split("T")[0],
+            description: result.data.lecture.description,
+            referenceMaterials: newLecture.referenceMaterials,
+          };
 
-        setLectures((prev) => [newLectureData, ...prev]);
-        alert("강의가 성공적으로 생성되었습니다.");
-        setCreateModalVisible(false);
+          setLectures((prev) => [newLectureData, ...prev]);
+          alert("강의가 성공적으로 생성되었습니다.");
+          setCreateModalVisible(false);
+        }
+        
+        // 폼 초기화
         setNewLecture({
           title: "",
           instructor: "",
@@ -444,12 +548,13 @@ export default function LecturesManagement() {
           description: "",
           referenceMaterials: [],
         });
+        setSelectedLecture(null);
       } else {
-        alert(result.message || "강의 생성에 실패했습니다.");
+        alert(result.message || `강의 ${isEdit ? '수정' : '생성'}에 실패했습니다.`);
       }
     } catch (error) {
-      console.error("강의 생성 오류:", error);
-      alert("강의 생성 중 오류가 발생했습니다.");
+      console.error("강의 저장 오류:", error);
+      alert("강의 저장 중 오류가 발생했습니다.");
     }
   };
 
@@ -457,6 +562,13 @@ export default function LecturesManagement() {
     <ButtonGroup size="small">
       <Button variant="outlined" onClick={() => handleAction(lecture, "view")}>
         <Visibility />
+      </Button>
+      <Button
+        variant="outlined"
+        color="primary"
+        onClick={() => handleAction(lecture, "edit")}
+      >
+        <Edit />
       </Button>
       {lecture.isActive ? (
         <Button
@@ -475,6 +587,13 @@ export default function LecturesManagement() {
           <PlayArrow />
         </Button>
       )}
+      <Button
+        variant="outlined"
+        color="error"
+        onClick={() => handleAction(lecture, "delete")}
+      >
+        <Delete />
+      </Button>
     </ButtonGroup>
   );
 
@@ -1318,8 +1437,10 @@ export default function LecturesManagement() {
       >
         <DialogTitle>
           {actionType === "view" && "강의 상세정보"}
+          {actionType === "edit" && "강의 수정"}
           {actionType === "activate" && "강의 활성화"}
           {actionType === "deactivate" && "강의 비활성화"}
+          {actionType === "delete" && "강의 삭제"}
         </DialogTitle>
         <DialogContent>
           {selectedLecture && (
@@ -1551,6 +1672,77 @@ export default function LecturesManagement() {
                 </Alert>
               )}
 
+              {actionType === "edit" && (
+                <Stack spacing={3} sx={{ mt: 2 }}>
+                  <TextField
+                    label="강의 제목"
+                    fullWidth
+                    value={newLecture.title}
+                    onChange={(e) =>
+                      setNewLecture((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    required
+                  />
+                  <TextField
+                    label="강사명"
+                    fullWidth
+                    value={newLecture.instructor}
+                    onChange={(e) =>
+                      setNewLecture((prev) => ({
+                        ...prev,
+                        instructor: e.target.value,
+                      }))
+                    }
+                    required
+                  />
+                  <FormControl fullWidth required>
+                    <InputLabel>카테고리</InputLabel>
+                    <Select
+                      value={newLecture.category}
+                      label="카테고리"
+                      onChange={(e) =>
+                        setNewLecture((prev) => ({
+                          ...prev,
+                          category: e.target.value,
+                        }))
+                      }
+                    >
+                      <MenuItem value="영상진단">영상진단</MenuItem>
+                      <MenuItem value="내과">내과</MenuItem>
+                      <MenuItem value="외과">외과</MenuItem>
+                      <MenuItem value="응급의학">응급의학</MenuItem>
+                      <MenuItem value="기타">기타</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    label="유튜브 동영상 URL 또는 iframe 코드"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={newLecture.youtubeUrl}
+                    onChange={(e) =>
+                      setNewLecture((prev) => ({
+                        ...prev,
+                        youtubeUrl: e.target.value,
+                      }))
+                    }
+                  />
+                  <TextField
+                    label="강의 설명"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={newLecture.description}
+                    onChange={(e) =>
+                      setNewLecture((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                  />
+                </Stack>
+              )}
+
               {actionType === "deactivate" && (
                 <Alert severity="warning">
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -1565,6 +1757,21 @@ export default function LecturesManagement() {
                   </Typography>
                 </Alert>
               )}
+
+              {actionType === "delete" && (
+                <Alert severity="error">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Warning />
+                    <Typography>
+                      <strong>{selectedLecture.title}</strong> 강의를
+                      삭제하시겠습니까?
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    삭제된 강의는 복구할 수 없습니다.
+                  </Typography>
+                </Alert>
+              )}
             </Box>
           )}
         </DialogContent>
@@ -1572,14 +1779,29 @@ export default function LecturesManagement() {
           <Button onClick={() => setModalVisible(false)} color="inherit">
             취소
           </Button>
-          {actionType !== "view" && (
+          {actionType === "edit" && (
+            <Button
+              onClick={handleSaveLecture}
+              variant="contained"
+              sx={{
+                bgcolor: "#ff8796",
+                "&:hover": {
+                  bgcolor: "#ffb7b8",
+                },
+              }}
+            >
+              수정 완료
+            </Button>
+          )}
+          {(actionType === "activate" || actionType === "deactivate" || actionType === "delete") && (
             <Button
               onClick={confirmAction}
-              color={actionType === "activate" ? "success" : "warning"}
+              color={actionType === "activate" ? "success" : actionType === "delete" ? "error" : "warning"}
               variant="contained"
             >
               {actionType === "activate" && "활성화"}
               {actionType === "deactivate" && "비활성화"}
+              {actionType === "delete" && "삭제"}
             </Button>
           )}
         </DialogActions>
@@ -1827,7 +2049,7 @@ export default function LecturesManagement() {
             취소
           </Button>
           <Button
-            onClick={handleCreateLecture}
+            onClick={handleSaveLecture}
             variant="contained"
             sx={{
               bgcolor: "#ff8796",

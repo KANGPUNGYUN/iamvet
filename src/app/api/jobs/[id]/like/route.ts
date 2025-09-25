@@ -12,7 +12,7 @@ export const POST = withAuth(async (
     const resolvedParams = await params;
     const jobId = resolvedParams.id;
 
-    const job = await prisma.job.findUnique({
+    const job = await (prisma as any).jobs.findUnique({
       where: { id: jobId }
     });
 
@@ -20,7 +20,7 @@ export const POST = withAuth(async (
       return NextResponse.json(createErrorResponse('채용공고를 찾을 수 없습니다.'), { status: 404 });
     }
 
-    const existingLike = await (prisma as any).jobLike.findUnique({
+    const existingLike = await (prisma as any).job_likes.findUnique({
       where: {
         userId_jobId: {
           userId: user.userId,
@@ -33,7 +33,7 @@ export const POST = withAuth(async (
       return NextResponse.json(createErrorResponse('이미 좋아요한 채용공고입니다.'), { status: 400 });
     }
 
-    await (prisma as any).jobLike.create({
+    await (prisma as any).job_likes.create({
       data: {
         userId: user.userId,
         jobId: jobId
@@ -56,7 +56,7 @@ export const DELETE = withAuth(async (
     const resolvedParams = await params;
     const jobId = resolvedParams.id;
 
-    const existingLike = await (prisma as any).jobLike.findUnique({
+    const existingLike = await (prisma as any).job_likes.findUnique({
       where: {
         userId_jobId: {
           userId: user.userId,
@@ -69,7 +69,7 @@ export const DELETE = withAuth(async (
       return NextResponse.json(createErrorResponse('좋아요하지 않은 채용공고입니다.'), { status: 400 });
     }
 
-    await (prisma as any).jobLike.delete({
+    await (prisma as any).job_likes.delete({
       where: {
         userId_jobId: {
           userId: user.userId,

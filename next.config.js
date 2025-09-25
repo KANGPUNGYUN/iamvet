@@ -45,13 +45,6 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
-  
-  // API Routes 파일 크기 제한 설정
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
 
   webpack: (config, { isServer }) => {
     // Handle database modules for serverless deployment

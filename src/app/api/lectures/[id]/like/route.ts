@@ -12,7 +12,7 @@ export const POST = withAuth(async (
     const resolvedParams = await params;
     const lectureId = resolvedParams.id;
 
-    const lecture = await prisma.lecture.findUnique({
+    const lecture = await (prisma as any).lectures.findUnique({
       where: { id: lectureId }
     });
 
@@ -20,7 +20,7 @@ export const POST = withAuth(async (
       return NextResponse.json(createErrorResponse('강의를 찾을 수 없습니다.'), { status: 404 });
     }
 
-    const existingLike = await (prisma as any).lectureLike.findUnique({
+    const existingLike = await (prisma as any).lecture_likes.findUnique({
       where: {
         userId_lectureId: {
           userId: user.userId,
@@ -33,7 +33,7 @@ export const POST = withAuth(async (
       return NextResponse.json(createErrorResponse('이미 좋아요한 강의입니다.'), { status: 400 });
     }
 
-    await (prisma as any).lectureLike.create({
+    await (prisma as any).lecture_likes.create({
       data: {
         userId: user.userId,
         lectureId: lectureId
@@ -56,7 +56,7 @@ export const DELETE = withAuth(async (
     const resolvedParams = await params;
     const lectureId = resolvedParams.id;
 
-    const existingLike = await (prisma as any).lectureLike.findUnique({
+    const existingLike = await (prisma as any).lecture_likes.findUnique({
       where: {
         userId_lectureId: {
           userId: user.userId,
@@ -69,7 +69,7 @@ export const DELETE = withAuth(async (
       return NextResponse.json(createErrorResponse('좋아요하지 않은 강의입니다.'), { status: 400 });
     }
 
-    await (prisma as any).lectureLike.delete({
+    await (prisma as any).lecture_likes.delete({
       where: {
         userId_lectureId: {
           userId: user.userId,

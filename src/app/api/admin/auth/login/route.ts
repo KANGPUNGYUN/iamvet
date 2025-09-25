@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 관리자 계정 조회
-    const admin = await prisma.admin_users.findUnique({
+    const admin = await (prisma as any).admin_users.findUnique({
       where: { 
         email: email.toLowerCase(),
       },
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     );
 
     // 마지막 로그인 시간 업데이트
-    await prisma.admin_users.update({
+    await (prisma as any).admin_users.update({
       where: { id: admin.id },
       data: { 
         lastLoginAt: new Date(),

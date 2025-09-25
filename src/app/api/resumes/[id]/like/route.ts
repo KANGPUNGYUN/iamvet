@@ -12,7 +12,7 @@ export const POST = withAuth(async (
     const resolvedParams = await params;
     const resumeId = resolvedParams.id;
 
-    const resume = await prisma.detailedResume.findUnique({
+    const resume = await (prisma as any).detailedResume.findUnique({
       where: { id: resumeId }
     });
 
@@ -20,7 +20,7 @@ export const POST = withAuth(async (
       return NextResponse.json(createErrorResponse('이력서를 찾을 수 없습니다.'), { status: 404 });
     }
 
-    const existingLike = await (prisma as any).resumeLike.findUnique({
+    const existingLike = await (prisma as any).resume_likes.findUnique({
       where: {
         userId_resumeId: {
           userId: user.userId,
@@ -33,7 +33,7 @@ export const POST = withAuth(async (
       return NextResponse.json(createErrorResponse('이미 좋아요한 이력서입니다.'), { status: 400 });
     }
 
-    await (prisma as any).resumeLike.create({
+    await (prisma as any).resume_likes.create({
       data: {
         userId: user.userId,
         resumeId: resumeId
@@ -56,7 +56,7 @@ export const DELETE = withAuth(async (
     const resolvedParams = await params;
     const resumeId = resolvedParams.id;
 
-    const existingLike = await (prisma as any).resumeLike.findUnique({
+    const existingLike = await (prisma as any).resume_likes.findUnique({
       where: {
         userId_resumeId: {
           userId: user.userId,
@@ -69,7 +69,7 @@ export const DELETE = withAuth(async (
       return NextResponse.json(createErrorResponse('좋아요하지 않은 이력서입니다.'), { status: 400 });
     }
 
-    await (prisma as any).resumeLike.delete({
+    await (prisma as any).resume_likes.delete({
       where: {
         userId_resumeId: {
           userId: user.userId,
