@@ -36,7 +36,6 @@ interface LectureDetail {
   description: string;
   category: string;
   instructor: string;
-  instructorTitle: string;
   uploadDate: string;
   viewCount: number;
   youtubeUrl?: string;
@@ -83,11 +82,7 @@ export default function LectureDetailPage({
   } = useCommentStore();
 
   // 좋아요 상태 관리 (Zustand 스토어)
-  const {
-    isLectureLiked,
-    toggleLectureLike,
-    setLectureLike,
-  } = useLikeStore();
+  const { isLectureLiked, toggleLectureLike, setLectureLike } = useLikeStore();
 
   // 조회수 상태 관리 (Zustand 스토어)
   const {
@@ -112,31 +107,37 @@ export default function LectureDetailPage({
           throw new Error(result.message || "강의를 찾을 수 없습니다");
         }
 
-        console.log('[LectureDetail] 서버 응답 데이터:', result.data);
-        console.log('[LectureDetail] youtubeUrl:', result.data?.youtubeUrl);
-        
+        console.log("[LectureDetail] 서버 응답 데이터:", result.data);
+        console.log("[LectureDetail] youtubeUrl:", result.data?.youtubeUrl);
+
         setLectureDetail(result.data);
-        
+
         // 좋아요 상태 동기화 (Zustand 스토어 사용)
         if (result.data?.isLiked !== undefined) {
-          console.log('[LectureDetail] 서버에서 받은 좋아요 상태:', result.data.isLiked);
+          console.log(
+            "[LectureDetail] 서버에서 받은 좋아요 상태:",
+            result.data.isLiked
+          );
           setLectureLike(id, result.data.isLiked);
         }
 
         // 조회수 초기화 및 실시간 증가 처리
         if (result.data?.viewCount !== undefined) {
-          console.log('[LectureDetail] 서버에서 받은 조회수:', result.data.viewCount);
+          console.log(
+            "[LectureDetail] 서버에서 받은 조회수:",
+            result.data.viewCount
+          );
           // 서버에서 받은 조회수로 초기화
           setLectureViewCount(id, result.data.viewCount);
-          
+
           // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
-          if (!isAlreadyViewed('lecture', id)) {
-            console.log('[LectureDetail] 조회수 실시간 증가:', id);
+          if (!isAlreadyViewed("lecture", id)) {
+            console.log("[LectureDetail] 조회수 실시간 증가:", id);
             incrementLectureViewCount(id);
-            markAsViewed('lecture', id);
+            markAsViewed("lecture", id);
           }
         }
-        
+
         // 댓글은 별도로 로드
         await fetchComments(id, "lecture");
       } catch (err) {
@@ -153,45 +154,27 @@ export default function LectureDetailPage({
   }, [id, fetchComments]);
 
   const getYouTubeEmbedUrl = (url: string) => {
-    console.log('[getYouTubeEmbedUrl] 입력 URL:', url);
-    
-    if (!url || url.trim() === "") {
-      console.log('[getYouTubeEmbedUrl] URL이 비어있음');
-      return "";
-    }
+    if (!url) return "https://www.youtube.com/embed/dQw4w9WgXcQ";
 
     // iframe 태그가 포함된 경우 src에서 URL 추출
     if (url.includes("<iframe")) {
       const srcMatch = url.match(/src="([^"]+)"/);
       if (srcMatch) {
-        console.log('[getYouTubeEmbedUrl] iframe에서 추출된 URL:', srcMatch[1]);
         return srcMatch[1];
       }
     }
 
     // 이미 embed URL인 경우
     if (url.includes("youtube.com/embed/")) {
-      console.log('[getYouTubeEmbedUrl] 이미 embed URL:', url);
       return url;
     }
 
     // 일반 YouTube URL인 경우
-    let videoId = null;
-    
-    if (url.includes("youtube.com/watch")) {
-      videoId = url.split("v=")[1]?.split("&")[0];
-    } else if (url.includes("youtu.be/")) {
-      videoId = url.split("youtu.be/")[1]?.split("?")[0];
-    }
+    const videoId = url.includes("youtube.com")
+      ? url.split("v=")[1]?.split("&")[0]
+      : url.split("youtu.be/")[1]?.split("?")[0];
 
-    if (videoId) {
-      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-      console.log('[getYouTubeEmbedUrl] 생성된 embed URL:', embedUrl);
-      return embedUrl;
-    }
-
-    console.log('[getYouTubeEmbedUrl] 유효한 YouTube URL이 아님:', url);
-    return url; // fallback으로 원본 URL 반환
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
   };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
@@ -274,7 +257,7 @@ export default function LectureDetailPage({
   // 강의 좋아요/취소 토글 핸들러
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
       router.push("/login/veterinarian");
@@ -282,22 +265,28 @@ export default function LectureDetailPage({
     }
 
     const isCurrentlyLiked = isLectureLiked(id);
-    
-    console.log(`[LectureDetail Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[LectureDetail Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleLectureLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[LectureDetail Like] API 요청: ${method} /api/lectures/${id}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[LectureDetail Like] API 요청: ${method} /api/lectures/${id}/like`
+      );
+
       const response = await fetch(`/api/lectures/${id}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -305,23 +294,25 @@ export default function LectureDetailPage({
 
       if (!response.ok) {
         console.error(`[LectureDetail Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setLectureLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('강의를 찾을 수 없습니다:', id);
+          console.warn("강의를 찾을 수 없습니다:", id);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[LectureDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[LectureDetail Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setLectureLike(id, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
           router.push("/login/veterinarian");
           return;
@@ -331,11 +322,16 @@ export default function LectureDetailPage({
 
       console.log(`[LectureDetail Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[LectureDetail Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[LectureDetail Like] ${
+          isCurrentlyLiked ? "좋아요 취소" : "좋아요"
+        } 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setLectureLike(id, isCurrentlyLiked);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
+      alert("좋아요 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -414,7 +410,9 @@ export default function LectureDetailPage({
                   >
                     {(() => {
                       const liked = isLectureLiked(id);
-                      console.log(`[LectureDetail UI Debug] Bookmark - Lecture ${id}: liked=${liked}`);
+                      console.log(
+                        `[LectureDetail UI Debug] Bookmark - Lecture ${id}: liked=${liked}`
+                      );
                       return liked ? (
                         <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
                       ) : (
@@ -429,7 +427,6 @@ export default function LectureDetailPage({
                     <span className="font-medium">
                       {lectureDetail.instructor}
                     </span>
-                    <span> ({lectureDetail.instructorTitle})</span>
                   </div>
                   <div className="flex gap-[12px]">
                     <span>
@@ -446,24 +443,17 @@ export default function LectureDetailPage({
               {/* 동영상 */}
               <div className="mb-8">
                 <div className="relative aspect-video bg-black rounded-[12px] overflow-hidden">
-                  {lectureDetail.youtubeUrl && lectureDetail.youtubeUrl.trim() !== "" ? (
-                    <>
-                      <iframe
-                        src={getYouTubeEmbedUrl(lectureDetail.youtubeUrl)}
-                        title={lectureDetail.title}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        onError={() => console.error('iframe 로드 오류')}
-                      />
-                      <div className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded">
-                        URL: {getYouTubeEmbedUrl(lectureDetail.youtubeUrl)}
-                      </div>
-                    </>
+                  {lectureDetail.youtubeUrl ? (
+                    <iframe
+                      src={getYouTubeEmbedUrl(lectureDetail.youtubeUrl)}
+                      title={lectureDetail.title}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-white">
-                      <p className="mb-2">동영상을 불러올 수 없습니다</p>
-                      <p className="text-sm text-gray-300">YouTube URL: {lectureDetail.youtubeUrl || 'null'}</p>
+                    <div className="w-full h-full flex items-center justify-center text-white">
+                      <p>동영상을 불러올 수 없습니다</p>
                     </div>
                   )}
                 </div>
@@ -877,23 +867,34 @@ export default function LectureDetailPage({
                           isLiked={isLectureLiked(lecture.id)}
                           onLike={async (lectureId) => {
                             const lectureIdStr = lectureId.toString();
-                            const isCurrentlyLiked = isLectureLiked(lectureIdStr);
-                            
+                            const isCurrentlyLiked =
+                              isLectureLiked(lectureIdStr);
+
                             // 낙관적 업데이트
                             toggleLectureLike(lectureIdStr);
 
                             try {
-                              const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-                              const response = await fetch(`/api/lectures/${lectureId}/like`, {
-                                method,
-                                headers: { 'Content-Type': 'application/json' },
-                              });
+                              const method = isCurrentlyLiked
+                                ? "DELETE"
+                                : "POST";
+                              const response = await fetch(
+                                `/api/lectures/${lectureId}/like`,
+                                {
+                                  method,
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                }
+                              );
 
                               if (!response.ok) {
                                 // 오류 시 롤백
                                 setLectureLike(lectureIdStr, isCurrentlyLiked);
                                 const result = await response.json();
-                                if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                                if (
+                                  response.status === 400 &&
+                                  result.message?.includes("이미 좋아요한")
+                                ) {
                                   setLectureLike(lectureIdStr, true);
                                 }
                               }
@@ -935,22 +936,28 @@ export default function LectureDetailPage({
                       onLike={async (lectureId) => {
                         const lectureIdStr = lectureId.toString();
                         const isCurrentlyLiked = isLectureLiked(lectureIdStr);
-                        
+
                         // 낙관적 업데이트
                         toggleLectureLike(lectureIdStr);
 
                         try {
-                          const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-                          const response = await fetch(`/api/lectures/${lectureId}/like`, {
-                            method,
-                            headers: { 'Content-Type': 'application/json' },
-                          });
+                          const method = isCurrentlyLiked ? "DELETE" : "POST";
+                          const response = await fetch(
+                            `/api/lectures/${lectureId}/like`,
+                            {
+                              method,
+                              headers: { "Content-Type": "application/json" },
+                            }
+                          );
 
                           if (!response.ok) {
                             // 오류 시 롤백
                             setLectureLike(lectureIdStr, isCurrentlyLiked);
                             const result = await response.json();
-                            if (response.status === 400 && result.message?.includes('이미 좋아요한')) {
+                            if (
+                              response.status === 400 &&
+                              result.message?.includes("이미 좋아요한")
+                            ) {
                               setLectureLike(lectureIdStr, true);
                             }
                           }
