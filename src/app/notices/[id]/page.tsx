@@ -12,15 +12,15 @@ interface AnnouncementDetail {
   content: string;
   createdAt: string;
   isRead: boolean;
-  announcement: {
+  announcements?: {
     priority: string;
     targetUserTypes: string[];
     expiresAt: string | null;
-  };
-  sender: {
+  } | null;
+  users_notifications_senderIdTousers?: {
     nickname: string | null;
     realName: string;
-  };
+  } | null;
 }
 
 export default function NoticeDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,7 +30,10 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchAnnouncementDetail();
+    if (id) {
+      fetchAnnouncementDetail();
+      markAsRead(); // 읽음 처리
+    }
   }, [id]);
 
   const fetchAnnouncementDetail = async () => {
@@ -48,6 +51,14 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
       console.error("Failed to fetch announcement detail:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const markAsRead = async () => {
+    try {
+      await axios.patch(`/api/notices/${id}/read`);
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
     }
   };
 
@@ -123,15 +134,20 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
 
         {/* 컨텐츠 영역 */}
         <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[24px] xl:p-[32px]">
-          {/* 중요도 표시 */}
+          {/* 중요도 표시 및 읽음 상태 */}
           <div className="flex items-center gap-3 mb-4">
             <span
               className={`px-3 py-1 text-sm rounded-full ${getPriorityColor(
-                announcement.announcement.priority
+                announcement.announcements?.priority || "NORMAL"
               )}`}
             >
-              {getPriorityLabel(announcement.announcement.priority)}
+              {getPriorityLabel(announcement.announcements?.priority || "NORMAL")}
             </span>
+            {announcement.isRead && (
+              <span className="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-600">
+                읽음
+              </span>
+            )}
             <span className="text-sm text-gray-500">
               {formatDate(announcement.createdAt)}
             </span>
@@ -146,7 +162,8 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
           <div className="flex items-center gap-2 mb-8 pb-8 border-b border-gray-200">
             <span className="text-sm text-gray-600">작성자:</span>
             <span className="text-sm font-medium">
-              {announcement.sender.nickname || announcement.sender.realName || "시스템 관리자"}
+              {announcement.users_notifications_senderIdTousers?.nickname || 
+               announcement.users_notifications_senderIdTousers?.realName || "시스템 관리자"}
             </span>
           </div>
 
@@ -158,33 +175,40 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
           </div>
 
           {/* 대상 사용자 정보 */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">대상</h3>
-            <div className="flex gap-2">
-              {announcement.announcement.targetUserTypes.includes("VETERINARIAN") && (
-                <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full">
-                  수의사
-                </span>
-              )}
-              {announcement.announcement.targetUserTypes.includes("HOSPITAL") && (
-                <span className="px-3 py-1 bg-green-50 text-green-700 text-sm rounded-full">
-                  병원
-                </span>
-              )}
-              {announcement.announcement.targetUserTypes.includes("VETERINARY_STUDENT") && (
-                <span className="px-3 py-1 bg-purple-50 text-purple-700 text-sm rounded-full">
-                  수의대생
-                </span>
-              )}
+          {announcement.announcements?.targetUserTypes && (
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <h3 className="text-sm font-medium text-gray-600 mb-2">대상</h3>
+              <div className="flex gap-2">
+                {announcement.announcements.targetUserTypes.includes("ALL") && (
+                  <span className="px-3 py-1 bg-gray-50 text-gray-700 text-sm rounded-full">
+                    전체
+                  </span>
+                )}
+                {announcement.announcements.targetUserTypes.includes("VETERINARIAN") && (
+                  <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full">
+                    수의사
+                  </span>
+                )}
+                {announcement.announcements.targetUserTypes.includes("HOSPITAL") && (
+                  <span className="px-3 py-1 bg-green-50 text-green-700 text-sm rounded-full">
+                    병원
+                  </span>
+                )}
+                {announcement.announcements.targetUserTypes.includes("VETERINARY_STUDENT") && (
+                  <span className="px-3 py-1 bg-purple-50 text-purple-700 text-sm rounded-full">
+                    수의대생
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 만료일 정보 (있는 경우) */}
-          {announcement.announcement.expiresAt && (
+          {announcement.announcements?.expiresAt && (
             <div className="mt-4">
               <h3 className="text-sm font-medium text-gray-600 mb-2">만료일</h3>
               <p className="text-sm text-gray-700">
-                {formatDate(announcement.announcement.expiresAt)}
+                {formatDate(announcement.announcements.expiresAt)}
               </p>
             </div>
           )}

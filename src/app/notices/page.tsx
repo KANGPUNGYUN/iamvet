@@ -14,15 +14,15 @@ interface AnnouncementData {
   content: string;
   createdAt: string;
   isRead: boolean;
-  announcement: {
+  announcements?: {
     priority: string;
     targetUserTypes: string[];
     expiresAt: string | null;
-  };
-  sender: {
+  } | null;
+  users_notifications_senderIdTousers?: {
     nickname: string | null;
     realName: string;
-  };
+  } | null;
 }
 
 const sortOptions = [
@@ -62,6 +62,7 @@ export default function NoticesPage() {
       setIsLoading(true);
       const response = await axios.get("/api/notices");
       if (response.data.success) {
+        console.log("Raw API response:", response.data.data);
         setAnnouncements(response.data.data);
       }
     } catch (error: any) {
@@ -78,19 +79,21 @@ export default function NoticesPage() {
   // 알림 읽음 처리
   const handleMarkAsRead = async (notificationId: string) => {
     // Find announcement by string ID
-    const announcement = announcements.find(a => a.id === notificationId);
+    const announcement = announcements.find((a) => a.id === notificationId);
     if (!announcement) return;
 
     setAnnouncements((prev) =>
       prev.map((item) =>
-        item.id === notificationId.toString()
-          ? { ...item, isRead: true }
-          : item
+        item.id === notificationId.toString() ? { ...item, isRead: true } : item
       )
     );
 
-    // 실제 API 호출 (추후 구현 필요)
-    // await axios.patch(`/api/notices/${notificationId}/read`);
+    // 실제 API 호출
+    try {
+      await axios.patch(`/api/notices/${notificationId}/read`);
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
+    }
   };
 
   // 필터링 및 정렬 로직
@@ -111,9 +114,26 @@ export default function NoticesPage() {
 
     // 중요도 필터링
     if (priorityFilter !== "all") {
+      console.log("Priority filter selected:", priorityFilter);
+      console.log("Available announcements:", announcements.map(item => ({
+        id: item.id,
+        title: item.title,
+        priority: item.announcements?.priority || "NORMAL",
+        fullAnnouncement: item.announcements
+      })));
+      
       filtered = filtered.filter(
-        (item) => item.announcement.priority === priorityFilter
+        (item) => {
+          // announcements가 없는 경우 NORMAL로 기본값 설정
+          const priority = item.announcements?.priority || "NORMAL";
+          // Prisma enum 값을 문자열로 변환하여 비교
+          const priorityString = String(priority);
+          console.log(`Comparing: "${priorityString}" === "${priorityFilter}"`, priorityString === priorityFilter);
+          return priorityString === priorityFilter;
+        }
       );
+      
+      console.log("Filtered results:", filtered.length);
     }
 
     // 정렬 (읽음 상태 우선 정렬 후 날짜 정렬)
@@ -154,7 +174,6 @@ export default function NoticesPage() {
     startIndex,
     startIndex + itemsPerPage
   );
-
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -215,13 +234,18 @@ export default function NoticesPage() {
         <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
           {/* 헤더: 제목과 SelectBox들 */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-primary font-text text-[24px] font-bold">
-              공지사항
-            </h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-primary font-text text-[24px] font-bold">
+                공지사항
+              </h1>
+            </div>
             <div className="flex gap-3">
               <SelectBox
                 value={priorityFilter}
-                onChange={setPriorityFilter}
+                onChange={(value) => {
+                  console.log("Priority filter changed to:", value);
+                  setPriorityFilter(value);
+                }}
                 placeholder="전체 중요도"
                 options={priorityOptions}
               />
@@ -255,10 +279,14 @@ export default function NoticesPage() {
                 <div className="absolute -top-2 left-4 z-10">
                   <span
                     className={`px-2 py-1 text-xs rounded-full bg-white border ${getPriorityColor(
-                      announcement.announcement.priority
+                      String(announcement.announcements?.priority || "NORMAL")
                     )}`}
                   >
-                    [{getPriorityLabel(announcement.announcement.priority)}]
+                    [
+                    {getPriorityLabel(
+                      String(announcement.announcements?.priority || "NORMAL")
+                    )}
+                    ]
                   </span>
                 </div>
                 <NotificationCard

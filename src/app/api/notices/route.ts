@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { NotificationType } from "@prisma/client";
 import { getCurrentUser } from "@/actions/auth";
+import { nanoid } from "nanoid";
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,19 +18,19 @@ export async function GET(req: NextRequest) {
     const user = userResult.user;
 
     // 해당 사용자의 공지사항 타입 알림만 조회
-    const announcements = await (prisma as any).notification.findMany({
+    const announcements = await prisma.notifications.findMany({
       where: {
         type: NotificationType.ANNOUNCEMENT,
         recipientId: user.id,
       },
       include: {
-        sender: {
+        users_notifications_senderIdTousers: {
           select: {
             nickname: true,
             realName: true,
           },
         },
-        announcement: {
+        announcements: {
           select: {
             priority: true,
             targetUserTypes: true,
@@ -43,9 +44,21 @@ export async function GET(req: NextRequest) {
       ],
     });
 
+    // 중복 제거: 같은 제목과 내용을 가진 공지사항 중 최신 것만 유지
+    const uniqueAnnouncements = announcements.reduce((acc: any[], current) => {
+      const duplicate = acc.find(
+        item => item.title === current.title && item.content === current.content
+      );
+      if (!duplicate) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
+    // 데이터가 없는 경우 빈 배열 반환
     return NextResponse.json({
       success: true,
-      data: announcements,
+      data: uniqueAnnouncements || [],
     });
   } catch (error) {
     console.error("Failed to fetch announcements:", error);
@@ -60,7 +73,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // 관리자 계정 찾기 (임시로 첫 번째 사용자 사용)
-    const adminUser = await (prisma as any).user.findFirst();
+    const adminUser = await prisma.users.findFirst();
     
     if (!adminUser) {
       return NextResponse.json(
@@ -89,7 +102,7 @@ export async function POST(req: NextRequest) {
     ];
 
     // 모든 사용자 조회
-    const allUsers = await (prisma as any).user.findMany({
+    const allUsers = await prisma.users.findMany({
       select: {
         id: true,
         userType: true,
@@ -101,27 +114,35 @@ export async function POST(req: NextRequest) {
     for (const announcement of announcements) {
       // 각 사용자에게 알림 생성
       for (const user of allUsers) {
-        const notification = await (prisma as any).notification.create({
+        const notificationId = nanoid();
+        const announcementId = nanoid();
+        
+        // 먼저 notification 생성
+        const notification = await prisma.notifications.create({
           data: {
+            id: notificationId,
             type: NotificationType.ANNOUNCEMENT,
             recipientId: user.id,
             recipientType: user.userType,
             senderId: adminUser.id,
             title: announcement.title,
             content: announcement.content,
-            announcement: {
-              create: {
-                targetUserTypes: ["VETERINARIAN", "HOSPITAL", "VETERINARY_STUDENT"],
-                priority: announcement.priority,
-                createdBy: adminUser.id,
-              },
-            },
-          },
-          include: {
-            announcement: true,
+            updatedAt: new Date(),
           },
         });
-        createdAnnouncements.push(notification);
+
+        // 그 다음 announcement 생성
+        const announcementRecord = await prisma.announcements.create({
+          data: {
+            id: announcementId,
+            notificationId: notificationId,
+            targetUserTypes: ["VETERINARIAN", "HOSPITAL", "VETERINARY_STUDENT"],
+            priority: announcement.priority,
+            createdBy: adminUser.id,
+          },
+        });
+
+        createdAnnouncements.push({ notification, announcement: announcementRecord });
       }
     }
 
