@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
         users: {
           select: {
             realName: true,
-            nickname: true,
           },
         },
         notifications: {
@@ -62,7 +61,7 @@ export async function GET(req: NextRequest) {
       sendCount: announcement.notification_batches[0]?.sentCount || 0,
       totalRecipients: announcement.notification_batches[0]?.totalRecipients || 0,
       readCount: 0, // 추후 구현 필요
-      author: announcement.users.realName || announcement.users.nickname || '관리자',
+      author: announcement.users.realName || '관리자',
       createdAt: announcement.notifications.createdAt,
       updatedAt: announcement.notifications.updatedAt,
       sentAt: announcement.notification_batches[0]?.completedAt,
@@ -148,7 +147,7 @@ export async function POST(req: NextRequest) {
         sendCount: 0,
         totalRecipients: 0,
         readCount: 0,
-        author: userResult.user!.realName || userResult.user!.nickname || '관리자',
+        author: userResult.user!.realName || '관리자',
         createdAt: result.notification.createdAt,
         updatedAt: result.notification.updatedAt,
       },
