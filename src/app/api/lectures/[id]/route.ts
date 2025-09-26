@@ -118,17 +118,32 @@ export async function GET(
     // 댓글 조회
     const comments = await getLectureComments(lectureId);
 
+    console.log("=== 강의 상세 데이터 ===");
+    console.log("lecture.videoUrl:", lecture.videoUrl);
+    console.log("lecture.thumbnail:", lecture.thumbnail);
+    console.log("lecture.instructor:", lecture.instructor);
+    
+    // videoUrl이 비어있고 썸네일에서 YouTube ID를 추출할 수 있는 경우 복구
+    let youtubeUrl = lecture.videoUrl;
+    if ((!youtubeUrl || youtubeUrl === "") && lecture.thumbnail) {
+      const thumbnailMatch = lecture.thumbnail.match(/\/vi\/([^\/]+)\//);
+      if (thumbnailMatch && thumbnailMatch[1]) {
+        youtubeUrl = `https://www.youtube.com/watch?v=${thumbnailMatch[1]}`;
+        console.log("썸네일에서 복구한 YouTube URL:", youtubeUrl);
+      }
+    }
+    
     // 데이터베이스 필드를 프론트엔드 형태로 매핑
     const lectureDetail = {
       id: lecture.id,
       title: lecture.title,
       description: lecture.description,
       category: lecture.category,
-      instructor: "강사명", // TODO: 강사 정보 추가 필요
+      instructor: lecture.instructor || "강사명", // instructor 필드 사용
       instructorTitle: "강사직함", // TODO: 강사 정보 추가 필요
       uploadDate: lecture.createdAt,
       viewCount: lecture.viewCount || 0,
-      youtubeUrl: lecture.videoUrl,
+      youtubeUrl: youtubeUrl,
       thumbnailUrl: lecture.thumbnail,
       medicalField: lecture.category, // category를 medicalField로 사용
       referenceFiles: [], // TODO: 참고자료 테이블 연결 필요

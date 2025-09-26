@@ -112,6 +112,9 @@ export default function LectureDetailPage({
           throw new Error(result.message || "강의를 찾을 수 없습니다");
         }
 
+        console.log('[LectureDetail] 서버 응답 데이터:', result.data);
+        console.log('[LectureDetail] youtubeUrl:', result.data?.youtubeUrl);
+        
         setLectureDetail(result.data);
         
         // 좋아요 상태 동기화 (Zustand 스토어 사용)
@@ -150,27 +153,45 @@ export default function LectureDetailPage({
   }, [id, fetchComments]);
 
   const getYouTubeEmbedUrl = (url: string) => {
-    if (!url) return "https://www.youtube.com/embed/dQw4w9WgXcQ";
+    console.log('[getYouTubeEmbedUrl] 입력 URL:', url);
+    
+    if (!url || url.trim() === "") {
+      console.log('[getYouTubeEmbedUrl] URL이 비어있음');
+      return "";
+    }
 
     // iframe 태그가 포함된 경우 src에서 URL 추출
     if (url.includes("<iframe")) {
       const srcMatch = url.match(/src="([^"]+)"/);
       if (srcMatch) {
+        console.log('[getYouTubeEmbedUrl] iframe에서 추출된 URL:', srcMatch[1]);
         return srcMatch[1];
       }
     }
 
     // 이미 embed URL인 경우
     if (url.includes("youtube.com/embed/")) {
+      console.log('[getYouTubeEmbedUrl] 이미 embed URL:', url);
       return url;
     }
 
     // 일반 YouTube URL인 경우
-    const videoId = url.includes("youtube.com")
-      ? url.split("v=")[1]?.split("&")[0]
-      : url.split("youtu.be/")[1]?.split("?")[0];
+    let videoId = null;
+    
+    if (url.includes("youtube.com/watch")) {
+      videoId = url.split("v=")[1]?.split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    }
 
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+    if (videoId) {
+      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      console.log('[getYouTubeEmbedUrl] 생성된 embed URL:', embedUrl);
+      return embedUrl;
+    }
+
+    console.log('[getYouTubeEmbedUrl] 유효한 YouTube URL이 아님:', url);
+    return url; // fallback으로 원본 URL 반환
   };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
@@ -425,17 +446,24 @@ export default function LectureDetailPage({
               {/* 동영상 */}
               <div className="mb-8">
                 <div className="relative aspect-video bg-black rounded-[12px] overflow-hidden">
-                  {lectureDetail.youtubeUrl ? (
-                    <iframe
-                      src={getYouTubeEmbedUrl(lectureDetail.youtubeUrl)}
-                      title={lectureDetail.title}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                  {lectureDetail.youtubeUrl && lectureDetail.youtubeUrl.trim() !== "" ? (
+                    <>
+                      <iframe
+                        src={getYouTubeEmbedUrl(lectureDetail.youtubeUrl)}
+                        title={lectureDetail.title}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        onError={() => console.error('iframe 로드 오류')}
+                      />
+                      <div className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded">
+                        URL: {getYouTubeEmbedUrl(lectureDetail.youtubeUrl)}
+                      </div>
+                    </>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white">
-                      <p>동영상을 불러올 수 없습니다</p>
+                    <div className="w-full h-full flex flex-col items-center justify-center text-white">
+                      <p className="mb-2">동영상을 불러올 수 없습니다</p>
+                      <p className="text-sm text-gray-300">YouTube URL: {lectureDetail.youtubeUrl || 'null'}</p>
                     </div>
                   )}
                 </div>
