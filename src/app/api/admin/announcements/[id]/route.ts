@@ -192,7 +192,7 @@ export async function POST(
                 type: NotificationType.ANNOUNCEMENT,
                 recipientId: user.id,
                 recipientType: user.userType,
-                senderId: userResult.user.id,
+                senderId: userResult.user!.id,
                 title: announcement.notifications.title,
                 content: announcement.notifications.content,
                 updatedAt: new Date(),
