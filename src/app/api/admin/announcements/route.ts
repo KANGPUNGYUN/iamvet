@@ -112,9 +112,9 @@ export async function POST(req: NextRequest) {
         data: {
           id: draftNotificationId,
           type: NotificationType.ANNOUNCEMENT,
-          recipientId: userResult.user.id,
-          recipientType: userResult.user.userType as UserType,
-          senderId: userResult.user.id,
+          recipientId: userResult.user!.id,
+          recipientType: userResult.user!.userType as UserType,
+          senderId: userResult.user!.id,
           title,
           content,
           updatedAt: new Date(),
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
           notificationId: draftNotificationId,
           targetUserTypes: Array.isArray(targetUsers) ? targetUsers : [targetUsers],
           priority: priority as NotificationPriority,
-          createdBy: userResult.user.id,
+          createdBy: userResult.user!.id,
         },
       });
 
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
         sendCount: 0,
         totalRecipients: 0,
         readCount: 0,
-        author: userResult.user.realName || userResult.user.nickname || '관리자',
+        author: userResult.user!.realName || userResult.user!.nickname || '관리자',
         createdAt: result.notification.createdAt,
         updatedAt: result.notification.updatedAt,
       },
