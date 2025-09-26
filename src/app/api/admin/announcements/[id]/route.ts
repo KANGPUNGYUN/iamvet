@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userResult = await getCurrentUser();
@@ -19,7 +19,8 @@ export async function PUT(
 
     const body = await req.json();
     const { title, content, priority, targetUsers } = body;
-    const announcementId = params.id;
+    const resolvedParams = await params;
+    const announcementId = resolvedParams.id;
 
     // 공지사항 수정
     const result = await prisma.$transaction(async (tx) => {
@@ -77,7 +78,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userResult = await getCurrentUser();
@@ -88,7 +89,8 @@ export async function DELETE(
       );
     }
 
-    const announcementId = params.id;
+    const resolvedParams = await params;
+    const announcementId = resolvedParams.id;
 
     // 공지사항 삭제 (Cascade로 관련 데이터도 함께 삭제됨)
     await prisma.announcements.delete({
@@ -110,7 +112,7 @@ export async function DELETE(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userResult = await getCurrentUser();
@@ -123,7 +125,8 @@ export async function POST(
 
     const body = await req.json();
     const { action } = body; // 'publish' 또는 'send'
-    const announcementId = params.id;
+    const resolvedParams = await params;
+    const announcementId = resolvedParams.id;
 
     if (action === 'publish') {
       // 게시 상태로 변경 (실제 발송은 하지 않음)

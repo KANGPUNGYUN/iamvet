@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/actions/auth";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 인증 확인
@@ -16,7 +16,8 @@ export async function PATCH(
       );
     }
 
-    const notificationId = params.id;
+    const resolvedParams = await params;
+    const notificationId = resolvedParams.id;
     const user = userResult.user;
 
     // 해당 공지사항이 현재 사용자의 것인지 확인
