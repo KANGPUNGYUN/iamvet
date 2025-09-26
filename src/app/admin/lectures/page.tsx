@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -12,7 +12,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Button,
   ButtonGroup,
   TextField,
@@ -50,16 +49,21 @@ import { uploadImage, deleteImage } from "@/lib/s3";
 import { isS3Url } from "@/lib/s3-client";
 
 interface Lecture {
-  id: number | string;
+  id: string;
   title: string;
-  instructor: string;
+  description: string;
   category: string;
-  duration?: number; // minutes - optional, calculated from YouTube video
-  youtubeUrl?: string; // YouTube video URL or iframe embed code
-  isActive: boolean;
+  videoUrl?: string;
+  thumbnail?: string;
   viewCount: number;
   createdAt: string;
-  description: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  instructor?: string;
+  duration?: number;
+  youtubeUrl?: string;
+  isActive?: boolean;
+  tags?: string[];
   referenceMaterials?: {
     id: string;
     name: string;
@@ -70,81 +74,8 @@ interface Lecture {
 }
 
 export default function LecturesManagement() {
-  const [lectures, setLectures] = useState<Lecture[]>([
-    {
-      id: 1,
-      title: "반려동물 영상진단학 기초",
-      instructor: "김영상 교수",
-      category: "영상진단",
-      duration: 120,
-      youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      isActive: true,
-      viewCount: 1245,
-      createdAt: "2024-01-20",
-      description: "반려동물 영상진단의 기본 원리와 실습을 다룹니다.",
-      referenceMaterials: [
-        {
-          id: "ref_1",
-          name: "영상진단학_교재.pdf",
-          type: "PDF",
-          size: 2048576,
-          url: "/reference/radiology_textbook.pdf",
-        },
-        {
-          id: "ref_2",
-          name: "실습_가이드.pptx",
-          type: "PPT",
-          size: 1536000,
-          url: "/reference/practice_guide.pptx",
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "고양이 내과질환 진단과 치료",
-      instructor: "박내과 수의사",
-      category: "내과",
-      duration: 90,
-      isActive: true,
-      viewCount: 987,
-      createdAt: "2024-01-19",
-      description:
-        "고양이 특유의 내과 질환에 대한 체계적인 접근법을 소개합니다.",
-    },
-    {
-      id: 3,
-      title: "소동물 외과수술 실습",
-      instructor: "이외과 전문의",
-      category: "외과",
-      duration: 180,
-      isActive: false,
-      viewCount: 0,
-      createdAt: "2024-01-18",
-      description: "실제 수술 과정을 단계별로 상세히 설명합니다.",
-    },
-    {
-      id: 4,
-      title: "반려동물 응급처치 가이드",
-      instructor: "정응급 수의사",
-      category: "응급의학",
-      duration: 75,
-      isActive: true,
-      viewCount: 2156,
-      createdAt: "2024-01-17",
-      description: "응급 상황에서 필요한 처치법을 실습과 함께 배웁니다.",
-    },
-    {
-      id: 5,
-      title: "부적절한 강의 내용",
-      instructor: "스팸강사",
-      category: "기타",
-      duration: 30,
-      isActive: false,
-      viewCount: 45,
-      createdAt: "2024-01-15",
-      description: "신고된 부적절한 내용의 강의입니다.",
-    },
-  ]);
+  const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("ALL");
@@ -171,6 +102,40 @@ export default function LecturesManagement() {
       url: string;
     }[],
   });
+
+  // 강의 목록 조회 함수
+  const fetchLectures = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/lectures?limit=1000');
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        const lecturesData = data.data?.lectures?.data || [];
+        const mappedLectures = lecturesData.map((lecture: any) => ({
+          ...lecture,
+          instructor: lecture.instructor || "강사명",
+          youtubeUrl: lecture.videoUrl,
+          isActive: !lecture.deletedAt,
+          referenceMaterials: lecture.referenceMaterials || []
+        }));
+        setLectures(mappedLectures);
+      } else {
+        console.error('Failed to fetch lectures:', data.message);
+        alert('강의 목록을 불러오는데 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error fetching lectures:', error);
+      alert('강의 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 강의 목록 조회
+  useEffect(() => {
+    fetchLectures();
+  }, []);
 
   const getFileType = (
     fileName: string
@@ -331,7 +296,7 @@ export default function LecturesManagement() {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   };
 
-  const getStatusTag = (isActive: boolean) => {
+  const getStatusTag = (isActive: boolean | undefined) => {
     return (
       <Tag variant={isActive ? 2 : 1}>{isActive ? "활성화" : "비활성화"}</Tag>
     );
@@ -362,11 +327,11 @@ export default function LecturesManagement() {
   const filteredLectures = lectures.filter((lecture) => {
     const matchesSearch =
       lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lecture.instructor.toLowerCase().includes(searchTerm.toLowerCase());
+      (lecture.instructor || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       filterStatus === "ALL" ||
-      (filterStatus === "ACTIVE" && lecture.isActive) ||
-      (filterStatus === "INACTIVE" && !lecture.isActive);
+      (filterStatus === "ACTIVE" && lecture.isActive === true) ||
+      (filterStatus === "INACTIVE" && lecture.isActive !== true);
     const matchesCategory =
       filterCategory === "ALL" || lecture.category === filterCategory;
     return matchesSearch && matchesStatus && matchesCategory;
@@ -390,7 +355,7 @@ export default function LecturesManagement() {
     if (action === "edit" && lecture) {
       setNewLecture({
         title: lecture.title,
-        instructor: lecture.instructor,
+        instructor: lecture.instructor || "",
         category: lecture.category,
         youtubeUrl: lecture.youtubeUrl || "",
         description: lecture.description,
@@ -420,7 +385,7 @@ export default function LecturesManagement() {
       switch (actionType) {
         case "activate":
         case "deactivate":
-          // 로컬 상태 업데이트 (실제 API 구현 시 API 호출로 변경)
+          // 활성화/비활성화는 실제 API가 없으므로 로컬 상태만 업데이트
           setLectures((prev) =>
             prev.map((lecture) => {
               if (lecture.id === selectedLecture.id) {
@@ -429,6 +394,7 @@ export default function LecturesManagement() {
               return lecture;
             })
           );
+          alert(`강의가 ${actionType === "activate" ? "활성화" : "비활성화"}되었습니다.`);
           break;
 
         case "delete":
@@ -438,7 +404,8 @@ export default function LecturesManagement() {
 
           const data = await response.json();
           if (data.status === "success") {
-            setLectures((prev) => prev.filter(lecture => lecture.id !== selectedLecture.id));
+            // 강의 목록 다시 불러오기
+            await fetchLectures();
             alert("강의가 성공적으로 삭제되었습니다.");
           } else {
             alert(data.message || "강의 삭제에 실패했습니다.");
@@ -458,6 +425,11 @@ export default function LecturesManagement() {
   };
 
   const handleSaveLecture = async () => {
+    console.log("newLecture 상태:", newLecture);
+    console.log("제목:", newLecture.title);
+    console.log("강사명:", newLecture.instructor);
+    console.log("카테고리:", newLecture.category);
+    
     if (!newLecture.title || !newLecture.instructor || !newLecture.category) {
       alert("제목, 강사명, 카테고리는 필수 필드입니다.");
       return;
@@ -488,6 +460,7 @@ export default function LecturesManagement() {
         },
         body: JSON.stringify({
           title: newLecture.title,
+          instructor: newLecture.instructor,
           description: newLecture.description || "강의 설명이 입력되지 않았습니다.",
           category: newLecture.category,
           videoUrl: newLecture.youtubeUrl,
@@ -500,41 +473,13 @@ export default function LecturesManagement() {
 
       if (response.ok && result.status === 'success') {
         if (isEdit) {
-          // 수정 모드
-          setLectures((prev) => 
-            prev.map((lecture) => {
-              if (lecture.id === selectedLecture.id) {
-                return {
-                  ...lecture,
-                  title: newLecture.title,
-                  instructor: newLecture.instructor,
-                  category: newLecture.category,
-                  youtubeUrl: newLecture.youtubeUrl,
-                  description: newLecture.description,
-                  referenceMaterials: newLecture.referenceMaterials,
-                };
-              }
-              return lecture;
-            })
-          );
+          // 수정 모드 - 전체 목록 다시 불러오기
+          await fetchLectures();
           alert("강의가 성공적으로 수정되었습니다.");
           setModalVisible(false);
         } else {
-          // 생성 모드
-          const newLectureData: Lecture = {
-            id: result.data.lecture.id,
-            title: result.data.lecture.title,
-            instructor: newLecture.instructor,
-            category: result.data.lecture.category,
-            youtubeUrl: result.data.lecture.videoUrl,
-            isActive: false,
-            viewCount: result.data.lecture.viewCount,
-            createdAt: new Date().toISOString().split("T")[0],
-            description: result.data.lecture.description,
-            referenceMaterials: newLecture.referenceMaterials,
-          };
-
-          setLectures((prev) => [newLectureData, ...prev]);
+          // 생성 모드 - 전체 목록 다시 불러오기
+          await fetchLectures();
           alert("강의가 성공적으로 생성되었습니다.");
           setCreateModalVisible(false);
         }
@@ -1332,7 +1277,20 @@ export default function LecturesManagement() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {currentLectures.map((lecture) => (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
+                    <Typography>강의 목록을 불러오는 중...</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : currentLectures.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
+                    <Typography color="text.secondary">등록된 강의가 없습니다.</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                currentLectures.map((lecture) => (
                 <TableRow
                   key={lecture.id}
                   hover
@@ -1365,7 +1323,7 @@ export default function LecturesManagement() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {lecture.instructor}
+                      {lecture.instructor || "강사명"}
                     </Typography>
                   </TableCell>
                   <TableCell>{getCategoryTag(lecture.category)}</TableCell>
@@ -1386,7 +1344,8 @@ export default function LecturesManagement() {
                   </TableCell>
                   <TableCell>{renderActionButtons(lecture)}</TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -1460,7 +1419,7 @@ export default function LecturesManagement() {
                     >
                       <Stack spacing={1}>
                         <Typography>
-                          <strong>강사:</strong> {selectedLecture.instructor}
+                          <strong>강사:</strong> {selectedLecture.instructor || "강사명"}
                         </Typography>
                         <Typography>
                           <strong>카테고리:</strong> {selectedLecture.category}

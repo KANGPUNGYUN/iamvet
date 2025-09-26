@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     
     if (bookmarked && userId) {
       // 사용자가 좋아요한 강의 ID들을 먼저 조회
-      const userLikedLectures = await (prisma as any).lectureLike.findMany({
+      const userLikedLectures = await (prisma as any).lecture_likes.findMany({
         where: { userId },
         select: { lectureId: true }
       });
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
       console.log("[Lectures API] 조회할 lecture IDs:", lectureIds);
       
       if (lectureIds.length > 0) {
-        const likes = await (prisma as any).lectureLike.findMany({
+        const likes = await (prisma as any).lecture_likes.findMany({
           where: { 
             userId,
             lectureId: { in: lectureIds }
@@ -193,6 +193,7 @@ export async function POST(request: NextRequest) {
 
     const lectureData = {
       title,
+      instructor,
       description: description || "강의 설명이 입력되지 않았습니다.",
       videoUrl: youtubeUrl,
       category,

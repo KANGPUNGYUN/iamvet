@@ -8,25 +8,8 @@ import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authenticateAdmin } from "@/lib/admin-auth";
 
-// Admin auth function
-async function verifyAdminAuth(request: NextRequest) {
-  try {
-    // Check for admin session from cookie
-    const isAdminLoggedIn = request.cookies.get("isAdminLoggedIn")?.value === "true";
-    const adminEmail = request.cookies.get("adminEmail")?.value;
-    
-    if (!isAdminLoggedIn || !adminEmail) {
-      return { isValid: false, admin: null };
-    }
-    
-    // Additional verification can be added here if needed
-    return { isValid: true, admin: { email: adminEmail } };
-  } catch (error) {
-    console.error("Admin auth verification error:", error);
-    return { isValid: false, admin: null };
-  }
-}
 
 export async function GET(
   request: NextRequest,
@@ -91,12 +74,10 @@ export async function GET(
     // 좋아요 여부 확인 (로그인한 경우에만)
     let isLiked = false;
     if (userId) {
-      const likeCheck = await (prisma as any).lectureLike.findUnique({
+      const likeCheck = await (prisma as any).lecture_likes.findFirst({
         where: {
-          userId_lectureId: {
-            userId: userId,
-            lectureId: lectureId
-          }
+          userId: userId,
+          lectureId: lectureId
         }
       });
       isLiked = !!likeCheck;
@@ -113,7 +94,7 @@ export async function GET(
     let recommendedLikes: string[] = [];
     if (userId && rawRecommendedLectures.length > 0) {
       const recommendedIds = rawRecommendedLectures.map((rec: any) => rec.id);
-      const likes = await (prisma as any).lectureLike.findMany({
+      const likes = await (prisma as any).lecture_likes.findMany({
         where: {
           userId,
           lectureId: { in: recommendedIds }
@@ -178,8 +159,8 @@ export async function PUT(
 ) {
   try {
     // 어드민 인증 확인
-    const adminAuth = await verifyAdminAuth(request);
-    if (!adminAuth.isValid || !adminAuth.admin) {
+    const admin = await authenticateAdmin(request);
+    if (!admin) {
       return NextResponse.json(
         createErrorResponse("관리자 권한이 필요합니다"),
         { status: 401 }
@@ -239,8 +220,8 @@ export async function DELETE(
 ) {
   try {
     // 어드민 인증 확인
-    const adminAuth = await verifyAdminAuth(request);
-    if (!adminAuth.isValid || !adminAuth.admin) {
+    const admin = await authenticateAdmin(request);
+    if (!admin) {
       return NextResponse.json(
         createErrorResponse("관리자 권한이 필요합니다"),
         { status: 401 }

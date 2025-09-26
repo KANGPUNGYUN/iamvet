@@ -4092,20 +4092,21 @@ export const createLecture = async (lectureData: any) => {
   const lectureId = `lecture_${Date.now()}_${Math.random().toString(36).substring(2)}`;
   
   const query = `
-    INSERT INTO lectures (id, title, description, "videoUrl", thumbnail, duration, category, tags, "viewCount", "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+    INSERT INTO lectures (id, title, description, "videoUrl", thumbnail, duration, category, tags, "viewCount", instructor, "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
     RETURNING *
   `;
   const values = [
     lectureId,
     lectureData.title,
     lectureData.description,
-    lectureData.videoUrl,
+    lectureData.videoUrl || "", // 빈 문자열을 기본값으로 설정
     lectureData.thumbnail || null,
     lectureData.duration || null,
     lectureData.category,
     lectureData.tags || [],
-    0 // 초기 조회수
+    0, // 초기 조회수
+    lectureData.instructor || "강사명" // instructor 필드 추가
   ];
   const result = await pool.query(query, values);
   return result.rows[0];
