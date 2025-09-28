@@ -30,6 +30,7 @@ import {
   Stack,
   Avatar,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import {
   Search,
@@ -37,162 +38,60 @@ import {
   Block,
   CheckCircle,
   Cancel,
-  Warning,
   Star,
   Work,
-  School,
   LocationOn,
   Phone,
   Email,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
-
-interface Resume {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  title: string;
-  experience: number;
-  location: string;
-  education: string;
-  specialties: string[];
-  status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING";
-  verified: boolean;
-  rating: number;
-  reviewCount: number;
-  viewCount: number;
-  favoriteCount: number;
-  createdAt: string;
-  lastUpdated: string;
-  profileImage?: string;
-}
+import { 
+  useAdminResumes, 
+  useAdminResumeDetail, 
+  useAdminResumeAction,
+  type Resume 
+} from "@/hooks/api/useAdminResumes";
+import { mapStatus } from "@/lib/korean-mappings";
 
 export default function ResumesManagement() {
-  const [resumes, setResumes] = useState<Resume[]>([
-    {
-      id: 1,
-      name: "김수의",
-      email: "kim@example.com",
-      phone: "010-1234-5678",
-      title: "소동물 임상수의사",
-      experience: 5,
-      location: "서울특별시 강남구",
-      education: "서울대학교 수의과대학",
-      specialties: ["소동물내과", "응급처치", "수술"],
-      status: "ACTIVE",
-      verified: true,
-      rating: 4.8,
-      reviewCount: 24,
-      viewCount: 1250,
-      favoriteCount: 45,
-      createdAt: "2024-01-15",
-      lastUpdated: "2024-01-20",
-    },
-    {
-      id: 2,
-      name: "이진료",
-      email: "lee@example.com",
-      phone: "010-2345-6789",
-      title: "대동물 수의사",
-      experience: 8,
-      location: "경기도 용인시",
-      education: "건국대학교 수의과대학",
-      specialties: ["대동물내과", "번식학", "영양학"],
-      status: "ACTIVE",
-      verified: true,
-      rating: 4.9,
-      reviewCount: 18,
-      viewCount: 890,
-      favoriteCount: 32,
-      createdAt: "2024-01-10",
-      lastUpdated: "2024-01-18",
-    },
-    {
-      id: 3,
-      name: "박외과",
-      email: "park@example.com",
-      phone: "010-3456-7890",
-      title: "수의외과 전문의",
-      experience: 12,
-      location: "부산광역시 해운대구",
-      education: "전북대학교 수의과대학",
-      specialties: ["정형외과", "신경외과", "종양외과"],
-      status: "SUSPENDED",
-      verified: false,
-      rating: 4.6,
-      reviewCount: 41,
-      viewCount: 2100,
-      favoriteCount: 78,
-      createdAt: "2024-01-05",
-      lastUpdated: "2024-01-16",
-    },
-    {
-      id: 4,
-      name: "최영상",
-      email: "choi@example.com",
-      phone: "010-4567-8901",
-      title: "영상진단 전문의",
-      experience: 7,
-      location: "대구광역시 중구",
-      education: "경북대학교 수의과대학",
-      specialties: ["방사선학", "CT", "MRI", "초음파"],
-      status: "PENDING",
-      verified: false,
-      rating: 0,
-      reviewCount: 0,
-      viewCount: 0,
-      favoriteCount: 0,
-      createdAt: "2024-01-22",
-      lastUpdated: "2024-01-22",
-    },
-    {
-      id: 5,
-      name: "정병리",
-      email: "jung@example.com",
-      phone: "010-5678-9012",
-      title: "수의병리학 전문의",
-      experience: 15,
-      location: "광주광역시 북구",
-      education: "전남대학교 수의과대학",
-      specialties: ["조직병리", "세포병리", "부검"],
-      status: "INACTIVE",
-      verified: true,
-      rating: 4.7,
-      reviewCount: 33,
-      viewCount: 1680,
-      favoriteCount: 56,
-      createdAt: "2023-12-28",
-      lastUpdated: "2024-01-12",
-    },
-  ]);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("ALL");
-  const [filterSpecialty, setFilterSpecialty] = useState("ALL");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterSpecialty, setFilterSpecialty] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [actionType, setActionType] = useState<"view" | "approve" | "suspend" | "activate" | "delete">("view");
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailResumeId, setDetailResumeId] = useState<string | null>(null);
+  const [actionReason, setActionReason] = useState("");
 
-  const itemsPerPage = 10;
-  const specialties = ["ALL", "소동물내과", "대동물내과", "외과", "영상진단", "병리학", "응급처치"];
-
-  const filteredResumes = resumes.filter((resume) => {
-    const matchesSearch =
-      resume.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resume.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resume.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "ALL" || resume.status === filterStatus;
-    const matchesSpecialty = filterSpecialty === "ALL" || 
-      resume.specialties.some(spec => spec.includes(filterSpecialty));
-
-    return matchesSearch && matchesStatus && matchesSpecialty;
+  // API hooks
+  const {
+    data: resumesData,
+    isLoading,
+    error,
+    refetch,
+  } = useAdminResumes({
+    search: searchTerm,
+    status: filterStatus || undefined,
+    specialty: filterSpecialty || undefined,
+    page: currentPage,
+    limit: 10,
   });
 
-  const totalPages = Math.ceil(filteredResumes.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentResumes = filteredResumes.slice(startIndex, startIndex + itemsPerPage);
+  const {
+    data: resumeDetailData,
+    isLoading: detailLoading,
+    error: detailError,
+  } = useAdminResumeDetail(detailResumeId || "");
+
+  const resumeActionMutation = useAdminResumeAction();
+
+  const resumes = resumesData?.resumes || [];
+  const pagination = resumesData?.pagination;
+  const stats = resumesData?.stats;
+
+  const specialties = ["소동물내과", "대동물내과", "외과", "영상진단", "병리학", "응급처치"];
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -205,84 +104,73 @@ export default function ResumesManagement() {
   };
 
   const getStatusText = (status: string) => {
-    switch (status) {
-      case "ACTIVE": return "활성";
-      case "SUSPENDED": return "정지";
-      case "PENDING": return "승인대기";
-      case "INACTIVE": return "비활성";
-      default: return status;
-    }
+    return mapStatus(status) || status;
   };
 
   const handleAction = (resume: Resume, action: typeof actionType) => {
     setSelectedResume(resume);
     setActionType(action);
-    setModalVisible(true);
+    if (action === "view") {
+      setDetailResumeId(resume.id);
+      setDetailModalOpen(true);
+    } else {
+      setModalVisible(true);
+    }
   };
 
-  const handleConfirmAction = () => {
-    if (!selectedResume) return;
-
-    setResumes(prev =>
-      prev.map(resume =>
-        resume.id === selectedResume.id
-          ? {
-              ...resume,
-              status: actionType === "approve" ? "ACTIVE" :
-                      actionType === "suspend" ? "SUSPENDED" :
-                      actionType === "activate" ? "ACTIVE" :
-                      resume.status,
-              lastUpdated: new Date().toISOString().split('T')[0]
-            }
-          : resume
-      ).filter(resume => !(actionType === "delete" && resume.id === selectedResume.id))
-    );
-
-    setModalVisible(false);
-    setSelectedResume(null);
+  const handleResumeClick = (resumeId: string) => {
+    setDetailResumeId(resumeId);
+    setDetailModalOpen(true);
   };
 
-  const renderActionButtons = (resume: Resume) => (
-    <ButtonGroup size="small">
-      <Button variant="outlined" onClick={() => handleAction(resume, "view")}>
-        <Visibility />
-      </Button>
-      {resume.status === "PENDING" && (
-        <Button
-          variant="outlined"
-          color="success"
-          onClick={() => handleAction(resume, "approve")}
-        >
-          <CheckCircle />
-        </Button>
-      )}
-      {resume.status === "ACTIVE" && (
-        <Button
-          variant="outlined"
-          color="warning"
-          onClick={() => handleAction(resume, "suspend")}
-        >
-          <Block />
-        </Button>
-      )}
-      {(resume.status === "SUSPENDED" || resume.status === "INACTIVE") && (
-        <Button
-          variant="outlined"
-          color="success"
-          onClick={() => handleAction(resume, "activate")}
-        >
-          <CheckCircle />
-        </Button>
-      )}
-      <Button
-        variant="outlined"
-        color="error"
-        onClick={() => handleAction(resume, "delete")}
+  const handleConfirmAction = async () => {
+    if (!selectedResume || !actionType) return;
+
+    if (actionType === "view") return;
+
+    try {
+      await resumeActionMutation.mutateAsync({
+        resumeId: selectedResume.id,
+        action: actionType === "approve" ? "approve" :
+                actionType === "suspend" ? "suspend" :
+                actionType === "activate" ? "activate" :
+                actionType === "delete" ? "delete" : "verify",
+        reason: actionReason || undefined,
+      });
+
+      setModalVisible(false);
+      setSelectedResume(null);
+      setActionType("view");
+      setActionReason("");
+      refetch();
+    } catch (error) {
+      console.error("Action failed:", error);
+      alert(`작업 실패: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
       >
-        <Cancel />
-      </Button>
-    </ButtonGroup>
-  );
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Alert severity="error">
+          이력서 데이터를 불러오는데 실패했습니다: {error.message}
+        </Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -305,55 +193,57 @@ export default function ResumesManagement() {
       </Box>
 
       {/* Stats Summary */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
-        {[
-          { label: "전체", count: resumes.length, color: "var(--Keycolor1)" },
-          { label: "활성", count: resumes.filter(r => r.status === "ACTIVE").length, color: "var(--Keycolor2)" },
-          { label: "승인대기", count: resumes.filter(r => r.status === "PENDING").length, color: "var(--Keycolor3)" },
-          { label: "정지", count: resumes.filter(r => r.status === "SUSPENDED").length, color: "var(--Keycolor1)" },
-        ].map((stat, index) => (
-          <Card
-            key={index}
-            sx={{
-              flex: "1 1 200px",
-              borderRadius: 4,
-              border: "1px solid var(--Line)",
-              position: "relative",
-              overflow: "hidden",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                bgcolor: stat.color,
-              },
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              bgcolor: "white",
-            }}
-          >
-            <CardContent sx={{ p: 3, textAlign: "center" }}>
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: 700, color: "#3b394d", mb: 1 }}
-              >
-                {stat.count}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{ color: "var(--Subtext)", fontWeight: 500 }}
-              >
-                {stat.label}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+      {stats && (
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+          {[
+            { label: "전체", count: stats.total, color: "var(--Keycolor1)" },
+            { label: "활성", count: stats.active, color: "var(--Keycolor2)" },
+            { label: "승인대기", count: stats.pending, color: "var(--Keycolor3)" },
+            { label: "정지", count: stats.suspended, color: "var(--Keycolor1)" },
+          ].map((stat, index) => (
+            <Card
+              key={index}
+              sx={{
+                flex: "1 1 200px",
+                borderRadius: 4,
+                border: "1px solid var(--Line)",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "4px",
+                  bgcolor: stat.color,
+                },
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
+                },
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                bgcolor: "white",
+              }}
+            >
+              <CardContent sx={{ p: 3, textAlign: "center" }}>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, color: "#3b394d", mb: 1 }}
+                >
+                  {stat.count}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ color: "var(--Subtext)", fontWeight: 500 }}
+                >
+                  {stat.label}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
 
       {/* Modern Filter Section */}
       <Card
@@ -423,7 +313,7 @@ export default function ResumesManagement() {
                     },
                   }}
                 >
-                  <MenuItem value="ALL">모든 상태</MenuItem>
+                  <MenuItem value="">모든 상태</MenuItem>
                   <MenuItem value="ACTIVE">활성</MenuItem>
                   <MenuItem value="PENDING">승인대기</MenuItem>
                   <MenuItem value="SUSPENDED">정지</MenuItem>
@@ -452,9 +342,10 @@ export default function ResumesManagement() {
                     },
                   }}
                 >
+                  <MenuItem value="">모든 분야</MenuItem>
                   {specialties.map((specialty) => (
                     <MenuItem key={specialty} value={specialty}>
-                      {specialty === "ALL" ? "모든 분야" : specialty}
+                      {specialty}
                     </MenuItem>
                   ))}
                 </Select>
@@ -507,11 +398,15 @@ export default function ResumesManagement() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {currentResumes.map((resume) => (
+                {resumes.map((resume) => (
                   <TableRow
                     key={resume.id}
                     hover
-                    sx={{ "&:hover": { bgcolor: "rgba(0, 0, 0, 0.02)" } }}
+                    onClick={() => handleResumeClick(resume.id)}
+                    sx={{ 
+                      "&:hover": { bgcolor: "rgba(0, 0, 0, 0.02)" },
+                      cursor: "pointer"
+                    }}
                   >
                     <TableCell>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -636,10 +531,68 @@ export default function ResumesManagement() {
                         {getStatusText(resume.status)}
                       </Tag>
                     </TableCell>
-                    <TableCell>{renderActionButtons(resume)}</TableCell>
+                    <TableCell>
+                      <ButtonGroup size="small">
+                        <Button 
+                          variant="outlined" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAction(resume, "view");
+                          }}
+                        >
+                          <Visibility />
+                        </Button>
+                        {resume.status === "PENDING" && (
+                          <Button
+                            variant="outlined"
+                            color="success"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction(resume, "approve");
+                            }}
+                          >
+                            <CheckCircle />
+                          </Button>
+                        )}
+                        {resume.status === "ACTIVE" && (
+                          <Button
+                            variant="outlined"
+                            color="warning"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction(resume, "suspend");
+                            }}
+                          >
+                            <Block />
+                          </Button>
+                        )}
+                        {(resume.status === "SUSPENDED" || resume.status === "INACTIVE") && (
+                          <Button
+                            variant="outlined"
+                            color="success"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction(resume, "activate");
+                            }}
+                          >
+                            <CheckCircle />
+                          </Button>
+                        )}
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAction(resume, "delete");
+                          }}
+                        >
+                          <Cancel />
+                        </Button>
+                      </ButtonGroup>
+                    </TableCell>
                   </TableRow>
                 ))}
-                {currentResumes.length === 0 && (
+                {resumes.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} sx={{ textAlign: "center", py: 8 }}>
                       <Typography variant="body1" sx={{ color: "var(--Subtext2)" }}>
@@ -655,10 +608,10 @@ export default function ResumesManagement() {
       </Card>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {pagination && pagination.totalPages > 1 && (
         <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
           <Pagination
-            count={totalPages}
+            count={pagination.totalPages}
             page={currentPage}
             onChange={(_, page) => setCurrentPage(page)}
             size="large"
@@ -773,12 +726,32 @@ export default function ResumesManagement() {
             </Box>
           )}
           {actionType !== "view" && (
-            <Typography variant="body1" sx={{ color: "#3b394d" }}>
-              {actionType === "approve" && `${selectedResume?.name} 수의사의 인재정보를 승인하시겠습니까?`}
-              {actionType === "suspend" && `${selectedResume?.name} 수의사의 인재정보를 정지하시겠습니까?`}
-              {actionType === "activate" && `${selectedResume?.name} 수의사의 인재정보를 활성화하시겠습니까?`}
-              {actionType === "delete" && `${selectedResume?.name} 수의사의 인재정보를 영구삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
-            </Typography>
+            <Box>
+              <Typography variant="body1" sx={{ color: "#3b394d", mb: 2 }}>
+                {actionType === "approve" && `${selectedResume?.name} 수의사의 인재정보를 승인하시겠습니까?`}
+                {actionType === "suspend" && `${selectedResume?.name} 수의사의 인재정보를 정지하시겠습니까?`}
+                {actionType === "activate" && `${selectedResume?.name} 수의사의 인재정보를 활성화하시겠습니까?`}
+                {actionType === "delete" && `${selectedResume?.name} 수의사의 인재정보를 영구삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="사유 (선택사항)"
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder="작업 사유를 입력하세요..."
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    backgroundColor: '#f6f6f6',
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#4f5866',
+                  }
+                }}
+              />
+            </Box>
           )}
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
@@ -795,6 +768,7 @@ export default function ResumesManagement() {
             <Button
               onClick={handleConfirmAction}
               variant="contained"
+              disabled={resumeActionMutation.isPending}
               sx={{
                 bgcolor: actionType === "delete" ? "var(--Keycolor1)" : "#ff8796",
                 "&:hover": {
@@ -802,9 +776,207 @@ export default function ResumesManagement() {
                 },
               }}
             >
-              확인
+              {resumeActionMutation.isPending ? "처리중..." : "확인"}
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Resume Detail Modal */}
+      <Dialog
+        open={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '12px',
+            maxHeight: '90vh'
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          color: "#3b394d", 
+          fontSize: "20px", 
+          fontWeight: "bold",
+          pb: 2,
+          borderBottom: "1px solid #efeff0"
+        }}>
+          인재정보 상세보기
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          {detailLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={40} sx={{ color: "#ff8796" }} />
+            </Box>
+          ) : detailError ? (
+            <Alert severity="error">
+              상세 정보를 불러오는 중 오류가 발생했습니다.
+            </Alert>
+          ) : resumeDetailData?.resume ? (
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                <Avatar
+                  src={resumeDetailData.resume.profileImage}
+                  sx={{ width: 80, height: 80, bgcolor: "var(--Keycolor1)" }}
+                >
+                  {resumeDetailData.resume.name.charAt(0)}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#3b394d" }}>
+                    {resumeDetailData.resume.name}
+                    {resumeDetailData.resume.verified && (
+                      <CheckCircle
+                        sx={{ fontSize: 16, color: "var(--Keycolor2)", ml: 0.5 }}
+                      />
+                    )}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "var(--Subtext2)", mb: 1 }}>
+                    {resumeDetailData.resume.title}
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Phone sx={{ fontSize: 14, color: "var(--Guidetext)" }} />
+                    <Typography variant="body2" sx={{ color: "var(--Subtext2)" }}>
+                      {resumeDetailData.resume.phone}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Email sx={{ fontSize: 14, color: "var(--Guidetext)" }} />
+                    <Typography variant="body2" sx={{ color: "var(--Subtext2)" }}>
+                      {resumeDetailData.resume.email}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+              
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 1 }}>
+                    학력
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                    {resumeDetailData.resume.education}
+                  </Typography>
+                </Box>
+                
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 1 }}>
+                    전문분야
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {resumeDetailData.resume.specialties.map((specialty: string, index: number) => (
+                      <Chip
+                        key={index}
+                        label={specialty}
+                        size="small"
+                        sx={{
+                          bgcolor: "var(--Box_Light)",
+                          color: "var(--Text)",
+                          fontWeight: 500,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+                
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 1 }}>
+                    경력 및 지역
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 3 }}>
+                    <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                      경력: {resumeDetailData.resume.experience}년
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                      지역: {resumeDetailData.resume.location}
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 1 }}>
+                    통계
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 3 }}>
+                    <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                      조회수: {resumeDetailData.resume.viewCount.toLocaleString()}회
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                      관심: {resumeDetailData.resume.favoriteCount}개
+                    </Typography>
+                    {resumeDetailData.resume.rating > 0 && (
+                      <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                        평점: {resumeDetailData.resume.rating}/5.0 ({resumeDetailData.resume.reviewCount}개 리뷰)
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+                
+                {resumeDetailData.resume.description && (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 1 }}>
+                      소개
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#3b394d", lineHeight: 1.6 }}>
+                      {resumeDetailData.resume.description}
+                    </Typography>
+                  </Box>
+                )}
+                
+                {resumeDetailData.resume.careerHistory && resumeDetailData.resume.careerHistory.length > 0 && (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 2 }}>
+                      경력 사항
+                    </Typography>
+                    <Stack spacing={1}>
+                      {resumeDetailData.resume.careerHistory.map((career: any, index: number) => (
+                        <Box 
+                          key={index} 
+                          sx={{ 
+                            p: 2, 
+                            border: "1px solid var(--Line)", 
+                            borderRadius: 2,
+                            bgcolor: "var(--Box_Light)"
+                          }}
+                        >
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#3b394d" }}>
+                            {career.hospitalName} - {career.position}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "var(--Subtext)", mb: 1 }}>
+                            {career.startDate} ~ {career.endDate || "현재"}
+                          </Typography>
+                          {career.description && (
+                            <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                              {career.description}
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
+              </Stack>
+            </Box>
+          ) : (
+            <Typography>데이터를 찾을 수 없습니다.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 3, borderTop: "1px solid #efeff0" }}>
+          <Button
+            onClick={() => setDetailModalOpen(false)}
+            sx={{
+              color: "#9098a4",
+              backgroundColor: "#f6f6f6",
+              borderRadius: "8px",
+              px: 3,
+              py: 1,
+              '&:hover': {
+                backgroundColor: "#efeff0",
+              }
+            }}
+          >
+            닫기
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
