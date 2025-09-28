@@ -19,8 +19,5 @@
       ]
     }
   ],
-  "buildCommand": "npm run build",
-  "env": {
-    "PRISMA_GENERATE_DATAPROXY": "@prisma_generate_dataproxy"
-  }
+  "buildCommand": "npm run build"
 }

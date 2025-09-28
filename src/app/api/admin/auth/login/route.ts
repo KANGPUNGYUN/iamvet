@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 관리자 계정 조회
+    // 관리자 계정 조회  
     const admin = await (prisma as any).admin_users.findUnique({
       where: { 
         email: email.toLowerCase(),
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       success: true,
       message: "로그인되었습니다.",
+      token: token, // 토큰도 응답에 포함하여 클라이언트에서 저장할 수 있도록
       admin: {
         id: admin.id,
         email: admin.email,

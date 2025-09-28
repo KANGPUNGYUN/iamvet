@@ -40,6 +40,7 @@ export default function AdminLoginPage() {
         localStorage.setItem("adminEmail", data.admin.email);
         localStorage.setItem("adminName", data.admin.name);
         localStorage.setItem("adminRole", data.admin.role);
+        localStorage.setItem("admin-token", data.token); // 토큰도 저장
 
         router.push("/admin");
       } else {

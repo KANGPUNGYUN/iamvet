@@ -19,18 +19,21 @@ async function addSampleJobs() {
       {
         id: 'hospital-003',
         email: 'hospital3@example.com',
+        phone: '010-1111-0000',
         hospitalName: '서울 종합동물병원',
         hospitalAddress: '서울시 서초구 서초대로 789'
       },
       {
         id: 'hospital-004',
         email: 'hospital4@example.com',
+        phone: '010-2222-0000',
         hospitalName: '대구 24시 동물병원',
         hospitalAddress: '대구시 중구 동성로 321'
       },
       {
         id: 'hospital-005',
         email: 'hospital5@example.com',
+        phone: '010-3333-0000',
         hospitalName: '인천 펫클리닉',
         hospitalAddress: '인천시 남동구 구월로 456'
       }
@@ -39,17 +42,17 @@ async function addSampleJobs() {
     for (const hospital of hospitals) {
       // 먼저 users 테이블에 병원 사용자 생성
       await pool.query(`
-        INSERT INTO users (id, email, phone, "userType", "isActive", "createdAt", "updatedAt")
-        VALUES ($1, $2, '010-0000-0000', 'HOSPITAL', true, NOW(), NOW())
+        INSERT INTO users (id, email, phone, "userType", "isActive", "termsAgreedAt", "privacyAgreedAt", "createdAt", "updatedAt")
+        VALUES ($1, $2, $3, 'HOSPITAL', true, NOW(), NOW(), NOW(), NOW())
         ON CONFLICT (id) DO NOTHING
-      `, [hospital.id, hospital.email]);
+      `, [hospital.id, hospital.email, hospital.phone]);
       
       // hospitals 테이블에 병원 정보 생성
       await pool.query(`
-        INSERT INTO hospitals ("userId", "hospitalName", "hospitalAddress", "createdAt", "updatedAt")
-        VALUES ($1, $2, $3, NOW(), NOW())
+        INSERT INTO hospitals (id, "userId", "hospitalName", "representativeName", "hospitalAddress", "createdAt", "updatedAt")
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
         ON CONFLICT ("userId") DO NOTHING
-      `, [hospital.id, hospital.hospitalName, hospital.hospitalAddress]);
+      `, ['hosp-' + hospital.id, hospital.id, hospital.hospitalName, '대표원장', hospital.hospitalAddress]);
     }
     
     // Create more diverse job postings
@@ -138,7 +141,7 @@ async function addSampleJobs() {
     
     for (const job of sampleJobs) {
       await pool.query(`
-        INSERT INTO job_postings (
+        INSERT INTO jobs (
           id, "hospitalId", title, position, "workType", experience, major, 
           salary, "salaryType", "workDays", "managerName", "managerPhone", 
           "managerEmail", department, "isActive", "isDraft", "createdAt", "updatedAt"
@@ -156,14 +159,14 @@ async function addSampleJobs() {
     console.log('Sample job postings added!');
     
     // Check final count
-    const finalCount = await pool.query('SELECT COUNT(*) as count FROM job_postings WHERE "isActive" = true AND "isDraft" = false');
+    const finalCount = await pool.query('SELECT COUNT(*) as count FROM jobs WHERE "isActive" = true AND "isDraft" = false');
     console.log('Total active job postings:', finalCount.rows[0].count);
     
     // Test the query that the API uses
     console.log('\nTesting API query...');
     const testQuery = `
       SELECT j.*, h."hospitalName" as hospital_name, u."profileImage" as hospital_logo, h."hospitalAddress" as hospital_location
-      FROM job_postings j
+      FROM jobs j
       JOIN users u ON j."hospitalId" = u.id
       JOIN hospitals h ON u.id = h."userId"
       WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
