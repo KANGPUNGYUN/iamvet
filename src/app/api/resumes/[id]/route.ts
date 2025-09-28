@@ -123,7 +123,6 @@ export async function GET(
           "resumeId",
           name,
           issuer,
-          grade,
           "acquiredDate",
           "sortOrder",
           "createdAt",
@@ -166,7 +165,7 @@ export async function GET(
     let isLiked = false;
     if (userId && resume.id) {
       console.log(`[Resume Detail API] 좋아요 상태 확인 - userId: ${userId}, resumeId: ${resume.id}`);
-      const likeCheck = await (prisma as any).resumeLike.findFirst({
+      const likeCheck = await (prisma as any).resume_likes.findFirst({
         where: {
           userId: userId,
           resumeId: resume.id

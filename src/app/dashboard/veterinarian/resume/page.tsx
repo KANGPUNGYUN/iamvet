@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { SelectBox } from "@/components/ui/SelectBox";
@@ -12,6 +13,13 @@ import { Button } from "@/components/ui/Button";
 import { ResumeImageUpload } from "@/components/features/resume/ResumeImageUpload";
 import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
 import { PlusIcon, MinusIcon } from "public/icons";
+import {
+  formatPhoneNumber,
+  formatBirthDate,
+  validatePhoneNumber,
+  validateBirthDate,
+  validateEmail,
+} from "@/utils/validation";
 import {
   useVeterinarianResume,
   useSaveVeterinarianResume,
@@ -47,7 +55,6 @@ interface License {
   id: string;
   name: string;
   issuer: string;
-  grade: string;
   acquiredDate: Date | null;
 }
 
@@ -185,12 +192,6 @@ const timeOptions = [
   { value: "20:00", label: "20:00" },
 ];
 
-const gradeOptions = [
-  { value: "1", label: "1급" },
-  { value: "2", label: "2급" },
-  { value: "3", label: "3급" },
-  { value: "special", label: "특급" },
-];
 
 const degreeOptions = [
   { value: "bachelor", label: "학사" },
@@ -218,7 +219,9 @@ const proficiencyOptions = [
   { value: "expert", label: "전문가" },
 ];
 
-export default function () {
+export default function ResumePage() {
+  const router = useRouter();
+  
   // 회원정보를 기본값으로 사용하지 않음
   const {
     data: existingResume,
@@ -232,6 +235,12 @@ export default function () {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  const [validationErrors, setValidationErrors] = useState({
+    phone: '',
+    birthDate: '',
+    email: '',
+  });
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     photo: null,
@@ -267,7 +276,6 @@ export default function () {
         id: generateResumeId("lic"),
         name: "",
         issuer: "",
-        grade: "",
         acquiredDate: null,
       },
     ],
@@ -341,7 +349,6 @@ export default function () {
                   id: "default-1",
                   name: "",
                   issuer: "",
-                  grade: "",
                   acquiredDate: null,
                 },
               ],
@@ -431,7 +438,6 @@ export default function () {
       id: generateResumeId("lic"),
       name: "",
       issuer: "",
-      grade: "",
       acquiredDate: null,
     };
     setResumeData((prev) => ({
@@ -506,12 +512,72 @@ export default function () {
     }
   };
 
+  // Validation helper functions
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    setResumeData((prev) => ({ ...prev, phone: formatted }));
+    
+    const validation = validatePhoneNumber(formatted);
+    setValidationErrors((prev) => ({
+      ...prev,
+      phone: validation.isValid ? '' : validation.message || '',
+    }));
+  };
+
+  const handleBirthDateChange = (value: string) => {
+    const formatted = formatBirthDate(value);
+    setResumeData((prev) => ({ ...prev, birthDate: formatted }));
+    
+    const validation = validateBirthDate(formatted);
+    setValidationErrors((prev) => ({
+      ...prev,
+      birthDate: validation.isValid ? '' : validation.message || '',
+    }));
+  };
+
+  const handleEmailChange = (value: string) => {
+    setResumeData((prev) => ({ ...prev, email: value }));
+    
+    const validation = validateEmail(value);
+    setValidationErrors((prev) => ({
+      ...prev,
+      email: validation.isValid ? '' : validation.message || '',
+    }));
+  };
+
   const handleSave = async () => {
     try {
       // 필수 필드 검증
       if (!resumeData.name.trim()) {
         alert("이름을 입력해주세요.");
         return;
+      }
+
+      // 전화번호 검증
+      if (resumeData.phone) {
+        const phoneValidation = validatePhoneNumber(resumeData.phone);
+        if (!phoneValidation.isValid) {
+          alert(phoneValidation.message);
+          return;
+        }
+      }
+
+      // 생년월일 검증
+      if (resumeData.birthDate) {
+        const birthDateValidation = validateBirthDate(resumeData.birthDate);
+        if (!birthDateValidation.isValid) {
+          alert(birthDateValidation.message);
+          return;
+        }
+      }
+
+      // 이메일 검증
+      if (resumeData.email) {
+        const emailValidation = validateEmail(resumeData.email);
+        if (!emailValidation.isValid) {
+          alert(emailValidation.message);
+          return;
+        }
       }
 
       // ResumeData를 ResumeUpdateData 형식으로 변환
@@ -565,6 +631,9 @@ export default function () {
       alert(
         existingResume ? "이력서가 수정되었습니다." : "이력서가 생성되었습니다."
       );
+      
+      // 성공 후 대시보드로 이동
+      router.push("/dashboard/veterinarian");
     } catch (error) {
       console.error("이력서 저장 실패:", error);
       alert("이력서 저장에 실패했습니다. 다시 시도해주세요.");
@@ -574,8 +643,8 @@ export default function () {
   const handleCancel = () => {
     // 취소 로직 구현
     if (confirm("작성 중인 내용이 삭제됩니다. 정말 취소하시겠습니까?")) {
-      // 초기값으로 리셋하거나 이전 페이지로 이동
-      window.history.back();
+      // 수의사 대시보드로 이동
+      router.push("/dashboard/veterinarian");
     }
   };
 
@@ -640,26 +709,15 @@ export default function () {
                   </label>
                   <InputBox
                     value={resumeData.birthDate}
-                    onChange={(value) =>
-                      setResumeData((prev) => ({ ...prev, birthDate: value }))
-                    }
-                    placeholder="생년월일"
+                    onChange={handleBirthDateChange}
+                    placeholder="YYYY-MM-DD"
+                    maxLength={10}
                   />
-                </div>
-                <div>
-                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                    한 줄 소개
-                  </label>
-                  <InputBox
-                    value={resumeData.introduction}
-                    onChange={(value) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        introduction: value,
-                      }))
-                    }
-                    placeholder="한 줄 소개"
-                  />
+                  {validationErrors.birthDate && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.birthDate}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -670,12 +728,16 @@ export default function () {
                   </label>
                   <InputBox
                     value={resumeData.phone}
-                    onChange={(value) =>
-                      setResumeData((prev) => ({ ...prev, phone: value }))
-                    }
-                    placeholder="연락처"
+                    onChange={handlePhoneChange}
+                    placeholder="010-0000-0000"
                     type="tel"
+                    maxLength={13}
                   />
+                  {validationErrors.phone && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.phone}
+                    </p>
+                  )}
                   <div className="mt-1 text-xs">
                     <Checkbox
                       checked={resumeData.phonePublic}
@@ -696,12 +758,15 @@ export default function () {
                   </label>
                   <InputBox
                     value={resumeData.email}
-                    onChange={(value) =>
-                      setResumeData((prev) => ({ ...prev, email: value }))
-                    }
-                    placeholder="이메일"
+                    onChange={handleEmailChange}
+                    placeholder="example@example.com"
                     type="email"
                   />
+                  {validationErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {validationErrors.email}
+                    </p>
+                  )}
                   <div className="mt-1 text-xs">
                     <Checkbox
                       checked={resumeData.emailPublic}
@@ -716,6 +781,23 @@ export default function () {
                     </Checkbox>
                   </div>
                 </div>
+              </div>
+
+              {/* 한 줄 소개 - 연락처 이메일 아래로 이동 */}
+              <div className="mt-[30px]">
+                <label className="block text-[20px] font-text text-[primary] mb-[10px]">
+                  한 줄 소개
+                </label>
+                <InputBox
+                  value={resumeData.introduction}
+                  onChange={(value) =>
+                    setResumeData((prev) => ({
+                      ...prev,
+                      introduction: value,
+                    }))
+                  }
+                  placeholder="한 줄 소개"
+                />
               </div>
             </div>
           </div>
@@ -1063,24 +1145,6 @@ export default function () {
                 </div>
                 <div className="w-full">
                   <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                    등급
-                  </label>
-                  <SelectBox
-                    value={license.grade}
-                    onChange={(value) => {
-                      setResumeData((prev) => ({
-                        ...prev,
-                        licenses: prev.licenses.map((lic) =>
-                          lic.id === license.id ? { ...lic, grade: value } : lic
-                        ),
-                      }));
-                    }}
-                    placeholder="등급"
-                    options={gradeOptions}
-                  />
-                </div>
-                <div className="w-full">
-                  <label className="block text-[20px] font-text text-[primary] mb-[10px]">
                     발급기관
                   </label>
                   <InputBox
@@ -1277,6 +1341,7 @@ export default function () {
                     </label>
                     <DatePicker
                       value={education.startDate}
+                      className="min-w-[200px]"
                       onChange={(date) => {
                         setResumeData((prev) => ({
                           ...prev,
@@ -1296,6 +1361,7 @@ export default function () {
                     </label>
                     <DatePicker
                       value={education.endDate}
+                      className="min-w-[200px]"
                       onChange={(date) => {
                         setResumeData((prev) => ({
                           ...prev,

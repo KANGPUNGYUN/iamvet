@@ -22,7 +22,6 @@ export interface ResumeLicense {
   id: string;
   name: string;
   issuer: string;
-  grade: string;
   acquiredDate: Date | null;
 }
 
@@ -240,7 +239,7 @@ export async function getVeterinarianResumeAction(token: string): Promise<{
     // 관계 데이터 조회
     const [experiences, licenses, educations, medicalCapabilities] = await Promise.all([
       sql`SELECT id, "hospitalName", "mainTasks", "startDate", "endDate" FROM resume_experiences WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
-      sql`SELECT id, name, issuer, grade, "acquiredDate" FROM resume_licenses WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
+      sql`SELECT id, name, issuer, "acquiredDate" FROM resume_licenses WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
       sql`SELECT id, degree, "graduationStatus", "schoolName", major, gpa, "totalGpa", "startDate", "endDate" FROM resume_educations WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
       sql`SELECT id, field, proficiency, description, others FROM resume_medical_capabilities WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`
     ]);
@@ -280,7 +279,6 @@ export async function getVeterinarianResumeAction(token: string): Promise<{
         id: lic.id,
         name: lic.name || '',
         issuer: lic.issuer || '',
-        grade: lic.grade || '',
         acquiredDate: lic.acquiredDate ? new Date(lic.acquiredDate) : null,
       })),
       educations: educations.map(edu => ({
@@ -518,8 +516,8 @@ export async function saveVeterinarianResumeAction(
       if (lic.name.trim() || lic.issuer.trim()) {
         insertPromises.push(
           sql`INSERT INTO resume_licenses 
-              (id, "resumeId", name, issuer, grade, "acquiredDate", "sortOrder", "createdAt", "updatedAt")
-              VALUES (${lic.id}, ${resumeId}, ${lic.name}, ${lic.issuer}, ${lic.grade}, 
+              (id, "resumeId", name, issuer, "acquiredDate", "sortOrder", "createdAt", "updatedAt")
+              VALUES (${lic.id}, ${resumeId}, ${lic.name}, ${lic.issuer}, 
                       ${lic.acquiredDate}, ${index}, NOW(), NOW())`
         );
       }

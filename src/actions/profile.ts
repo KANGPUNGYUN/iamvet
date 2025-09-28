@@ -7,6 +7,12 @@
 
 import { sql } from '@/lib/db';
 import { getUserIdFromToken, isTokenValid } from '@/utils/auth';
+import { randomBytes } from 'crypto';
+
+// Simple ID generator (similar to cuid2)
+function createId() {
+  return randomBytes(12).toString("base64url");
+}
 
 // 프로필 데이터 타입 정의
 export interface VeterinarianProfile {
@@ -76,14 +82,15 @@ export async function getVeterinarianProfileAction(token: string): Promise<{
 
     console.log('[Server Action] Querying profile for userId:', userId);
 
-    // 1차: userId로 조회 시도
+    // 1차: userId로 조회 시도 - 정규화된 스키마 사용
     let result = await sql`
       SELECT 
-        u.id, u.email, u.phone, u."profileImage", u."loginId", 
-        u.nickname, u."realName", u."birthDate", u."licenseImage",
+        u.id, u.email, u.phone, u."profileImage", u."loginId",
         u."userType", u.provider, u."isActive", u."updatedAt", u."createdAt",
+        v."realName", v."birthDate", v.nickname, v."licenseImage",
         vp.experience, vp.specialty
       FROM users u
+      LEFT JOIN veterinarians v ON u.id = v."userId"
       LEFT JOIN veterinarian_profiles vp ON u.id = vp."userId"
       WHERE u.id = ${userId} AND u."isActive" = true
     `;
@@ -103,31 +110,33 @@ export async function getVeterinarianProfileAction(token: string): Promise<{
           userType: payload.userType
         });
 
-        // 이메일이 토큰에 있다면 이메일로 조회
+        // 이메일이 토큰에 있다면 이메일로 조회 - 정규화된 스키마 사용
         if (payload.email) {
           result = await sql`
             SELECT 
-              u.id, u.email, u.phone, u."profileImage", u."loginId", 
-              u.nickname, u."realName", u."birthDate", u."licenseImage",
+              u.id, u.email, u.phone, u."profileImage", u."loginId",
               u."userType", u.provider, u."isActive", u."updatedAt", u."createdAt",
+              v."realName", v."birthDate", v.nickname, v."licenseImage",
               vp.experience, vp.specialty
             FROM users u
+            LEFT JOIN veterinarians v ON u.id = v."userId"
             LEFT JOIN veterinarian_profiles vp ON u.id = vp."userId"
             WHERE u.email = ${payload.email} AND u."isActive" = true
           `;
           console.log('[Server Action] Email query result length:', result?.length || 0);
         }
 
-        // 3차: 여전히 못 찾았다면 test@snu.ac.kr 고정 이메일로 조회 (localStorage 기반)
+        // 3차: 여전히 못 찾았다면 test@snu.ac.kr 고정 이메일로 조회 (localStorage 기반) - 정규화된 스키마 사용
         if (!result || result.length === 0) {
           console.log('[Server Action] Trying fallback email: test@snu.ac.kr');
           result = await sql`
             SELECT 
-              u.id, u.email, u.phone, u."profileImage", u."loginId", 
-              u.nickname, u."realName", u."birthDate", u."licenseImage",
+              u.id, u.email, u.phone, u."profileImage", u."loginId",
               u."userType", u.provider, u."isActive", u."updatedAt", u."createdAt",
+              v."realName", v."birthDate", v.nickname, v."licenseImage",
               vp.experience, vp.specialty
             FROM users u
+            LEFT JOIN veterinarians v ON u.id = v."userId"
             LEFT JOIN veterinarian_profiles vp ON u.id = vp."userId"
             WHERE u.email = 'test@snu.ac.kr' AND u."isActive" = true
           `;
@@ -141,7 +150,7 @@ export async function getVeterinarianProfileAction(token: string): Promise<{
     // 여전히 찾지 못한 경우 디버깅 정보 출력
     if (!result || result.length === 0) {
       console.log('[Server Action] Final fallback - checking all users in DB');
-      const allUsers = await sql`SELECT id, seq, email, "realName", "userType", provider FROM users WHERE "isActive" = true LIMIT 5`;
+      const allUsers = await sql`SELECT u.id, u.seq, u.email, u."userType", u.provider, v."realName" FROM users u LEFT JOIN veterinarians v ON u.id = v."userId" WHERE u."isActive" = true LIMIT 5`;
       console.log('[Server Action] Active users in DB with seq:', allUsers);
       
       return { success: false, error: 'User not found after all lookup attempts' };
@@ -183,31 +192,60 @@ export async function updateVeterinarianProfileAction(
 
     console.log('[Server Action] Updating profile for userId:', userId);
 
-    // users 테이블 업데이트 - 각 필드별로 개별 업데이트
-    console.log('[Server Action] Updating users table for userId:', userId);
+    // 정규화된 스키마에 맞게 테이블별로 업데이트
+    console.log('[Server Action] Updating tables for userId:', userId);
 
-    if (updateData.nickname !== undefined) {
-      await sql`UPDATE users SET nickname = ${updateData.nickname}, "updatedAt" = NOW() WHERE id = ${userId}`;
-    }
+    // users 테이블 업데이트 (공통 정보)
     if (updateData.phone !== undefined) {
       await sql`UPDATE users SET phone = ${updateData.phone}, "updatedAt" = NOW() WHERE id = ${userId}`;
     }
     if (updateData.email !== undefined) {
       await sql`UPDATE users SET email = ${updateData.email}, "updatedAt" = NOW() WHERE id = ${userId}`;
     }
-    if (updateData.realName !== undefined) {
-      await sql`UPDATE users SET "realName" = ${updateData.realName}, "updatedAt" = NOW() WHERE id = ${userId}`;
-    }
-    if (updateData.birthDate !== undefined) {
-      await sql`UPDATE users SET "birthDate" = ${updateData.birthDate}, "updatedAt" = NOW() WHERE id = ${userId}`;
-    }
     if (updateData.profileImage !== undefined) {
       console.log('[Server Action] Updating profileImage:', updateData.profileImage);
       await sql`UPDATE users SET "profileImage" = ${updateData.profileImage}, "updatedAt" = NOW() WHERE id = ${userId}`;
     }
-    if (updateData.licenseImage !== undefined) {
-      console.log('[Server Action] Updating licenseImage:', updateData.licenseImage);
-      await sql`UPDATE users SET "licenseImage" = ${updateData.licenseImage}, "updatedAt" = NOW() WHERE id = ${userId}`;
+
+    // veterinarians 테이블 업데이트 (수의사 전용 정보)
+    if (updateData.nickname !== undefined || updateData.realName !== undefined || 
+        updateData.birthDate !== undefined || updateData.licenseImage !== undefined) {
+      
+      // veterinarians 레코드가 존재하는지 확인
+      const existingVet = await sql`SELECT id FROM veterinarians WHERE "userId" = ${userId}`;
+      
+      if (existingVet.length === 0) {
+        // veterinarians 레코드가 없으면 생성
+        const vetId = createId();
+        await sql`
+          INSERT INTO veterinarians (id, "userId", "realName", "birthDate", nickname, "licenseImage", "createdAt", "updatedAt")
+          VALUES (
+            ${vetId}, 
+            ${userId}, 
+            ${updateData.realName || ''}, 
+            ${updateData.birthDate ? new Date(updateData.birthDate) : null}, 
+            ${updateData.nickname || null}, 
+            ${updateData.licenseImage || null}, 
+            NOW(), 
+            NOW()
+          )
+        `;
+      } else {
+        // veterinarians 레코드가 있으면 업데이트
+        if (updateData.nickname !== undefined) {
+          await sql`UPDATE veterinarians SET nickname = ${updateData.nickname}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
+        }
+        if (updateData.realName !== undefined) {
+          await sql`UPDATE veterinarians SET "realName" = ${updateData.realName}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
+        }
+        if (updateData.birthDate !== undefined) {
+          await sql`UPDATE veterinarians SET "birthDate" = ${new Date(updateData.birthDate)}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
+        }
+        if (updateData.licenseImage !== undefined) {
+          console.log('[Server Action] Updating licenseImage:', updateData.licenseImage);
+          await sql`UPDATE veterinarians SET "licenseImage" = ${updateData.licenseImage}, "updatedAt" = NOW() WHERE "userId" = ${userId}`;
+        }
+      }
     }
 
     // veterinarian_profiles 테이블 업데이트 (experience, specialty 등이 있는 경우)

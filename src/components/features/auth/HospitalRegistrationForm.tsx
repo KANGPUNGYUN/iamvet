@@ -4,9 +4,11 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
 import { BirthDateInput } from "@/components/ui/FormattedInput";
+import { Textarea } from "@/components/ui/Input/Textarea";
 import {
   ProfileImageUpload,
   AddressSearch,
+  MultiImageUpload,
 } from "@/components/features/profile";
 import { FileUpload } from "@/components/ui/FileUpload";
 import {
@@ -44,11 +46,18 @@ export const HospitalRegistrationForm: React.FC<
     website: "",
     address: "",
     detailAddress: "",
+    postalCode: "",
+    latitude: null,
+    longitude: null,
     hospitalLogo: null,
+    description: "",
     
     // 진료 정보
     treatmentAnimals: [],
     treatmentSpecialties: [],
+    
+    // 병원 이미지 (최대 10장)
+    hospitalImages: [],
     
     // 사업자등록증
     businessLicense: {
@@ -101,6 +110,7 @@ export const HospitalRegistrationForm: React.FC<
     email: "",
     address: "",
     detailAddress: "",
+    description: "",
   });
 
   // 약관 동의 상태
@@ -1087,6 +1097,15 @@ export const HospitalRegistrationForm: React.FC<
               detailAddress={formData.detailAddress}
               onAddressChange={handleInputChange("address")}
               onDetailAddressChange={handleInputChange("detailAddress")}
+              onAddressDataChange={(data) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  address: data.address,
+                  postalCode: data.postalCode,
+                  latitude: data.latitude || null,
+                  longitude: data.longitude || null,
+                }));
+              }}
             />
             {/* 진료 가능 동물 */}
             <div>
@@ -1141,6 +1160,38 @@ export const HospitalRegistrationForm: React.FC<
                   </Checkbox>
                 ))}
               </div>
+            </div>
+
+            {/* 병원 소개 */}
+            <div>
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                병원 소개 <span className="text-[#C5CCD8]">(선택)</span>
+              </label>
+              <Textarea
+                value={formData.description}
+                onChange={handleInputChange("description")}
+                placeholder="병원을 간단하게 소개해 주세요"
+                rows={5}
+              />
+            </div>
+
+            {/* 병원 이미지 */}
+            <div>
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                병원 이미지 <span className="text-[#C5CCD8]">(선택, 최대 10장)</span>
+              </label>
+              <MultiImageUpload
+                value={formData.hospitalImages}
+                onChange={(urls) => {
+                  setFormData({ ...formData, hospitalImages: urls });
+                }}
+                folder="hospital-facilities"
+                maxImages={10}
+                className="w-full"
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                병원 시설, 진료실, 대기실 등의 사진을 업로드해주세요.
+              </p>
             </div>
           </div>
 

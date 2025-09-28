@@ -83,11 +83,18 @@ export interface HospitalRegistrationData {
   website: string;
   address: string;
   detailAddress: string;
+  postalCode: string; // 우편번호
+  latitude: number | null; // 위도
+  longitude: number | null; // 경도
   hospitalLogo: string | null;
+  description: string; // 병원 소개
   
   // 진료 정보
   treatmentAnimals: string[];
   treatmentSpecialties: string[];
+  
+  // 병원 시설 이미지
+  hospitalImages: string[];
   
   // 사업자등록증
   businessLicense: BusinessLicenseFile;

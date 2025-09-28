@@ -330,44 +330,67 @@ export async function getCurrentUser(): Promise<{
       user.userType === "VETERINARIAN" ||
       user.userType === "VETERINARY_STUDENT"
     ) {
-      const vetProfile = await sql`
-        SELECT nickname, experience, specialty FROM veterinarian_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
+      // 먼저 veterinarians 테이블에서 nickname을 시도
+      const vetResult = await sql`
+        SELECT nickname FROM veterinarians WHERE "userId" = ${user.id}
       `;
-      console.log(
-        "[getCurrentUser] Veterinarian profile query result:",
-        vetProfile
-      );
-
-      if (vetProfile.length > 0) {
-        profileName = vetProfile[0].nickname;
-
-        // Check if this is actually a veterinary student based on experience field
-        if (
-          vetProfile[0].experience &&
-          vetProfile[0].experience.includes("Student at")
-        ) {
-          actualUserType = "VETERINARY_STUDENT";
-          console.log(
-            "[getCurrentUser] Detected as VETERINARY_STUDENT based on experience field"
-          );
-        }
+      
+      if (vetResult.length > 0 && vetResult[0].nickname) {
+        profileName = vetResult[0].nickname;
+        console.log("[getCurrentUser] Using nickname from veterinarians table:", profileName);
       } else {
-        console.log(
-          "[getCurrentUser] No veterinarian profile found for user:",
-          user.id
-        );
+        // veterinarians 테이블에 없으면 veterinary_students 테이블 확인
+        const studentResult = await sql`
+          SELECT nickname FROM veterinary_students WHERE "userId" = ${user.id}
+        `;
+        
+        if (studentResult.length > 0 && studentResult[0].nickname) {
+          profileName = studentResult[0].nickname;
+          actualUserType = "VETERINARY_STUDENT";
+          console.log("[getCurrentUser] Using nickname from veterinary_students table:", profileName);
+        } else {
+          // 둘 다 없으면 veterinarian_profiles에서 시도 (기존 로직)
+          const vetProfile = await sql`
+            SELECT nickname, experience, specialty FROM veterinarian_profiles WHERE "userId" = ${user.id} AND "deletedAt" IS NULL
+          `;
+          console.log("[getCurrentUser] Veterinarian profile query result:", vetProfile);
+
+          if (vetProfile.length > 0 && vetProfile[0].nickname) {
+            profileName = vetProfile[0].nickname;
+
+            // Check if this is actually a veterinary student based on experience field
+            if (
+              vetProfile[0].experience &&
+              vetProfile[0].experience.includes("Student at")
+            ) {
+              actualUserType = "VETERINARY_STUDENT";
+              console.log("[getCurrentUser] Detected as VETERINARY_STUDENT based on experience field");
+            }
+          } else {
+            console.log("[getCurrentUser] No nickname found in any table for user:", user.id);
+            profileName = user.username; // fallback to username
+          }
+        }
       }
     } else if (user.userType === "HOSPITAL") {
-      // 병원 사용자의 경우 users 테이블의 병원 정보를 사용 (최신 구조)
-      profileName = user.hospitalName || user.username;
-      hospitalLogo = user.hospitalLogo;
+      // 병원 사용자의 경우 hospitals 테이블에서 정보를 가져옴 (정규화된 구조)
+      const hospitalProfile = await sql`
+        SELECT "hospitalName", "hospitalLogo" FROM hospitals WHERE "userId" = ${user.id}
+      `;
+      
+      if (hospitalProfile.length > 0) {
+        profileName = hospitalProfile[0].hospitalName;
+        hospitalLogo = hospitalProfile[0].hospitalLogo;
+      } else {
+        profileName = "병원"; // fallback if no hospital profile found
+      }
       
       console.log("[getCurrentUser] Hospital profile data:", {
         userId: user.id,
         profileName,
         hospitalLogo,
-        userHospitalName: user.hospitalName,
-        userHospitalLogo: user.hospitalLogo,
+        userHospitalName: hospitalProfile.length > 0 ? hospitalProfile[0].hospitalName : null,
+        userHospitalLogo: hospitalProfile.length > 0 ? hospitalProfile[0].hospitalLogo : null,
         userPhone: user.phone,
         userEmail: user.email
       });
@@ -754,11 +777,13 @@ export async function checkBusinessNumberDuplicate(businessNumber: string): Prom
     // 사업자등록번호 형식 정규화 (하이픈 제거)
     const normalizedBusinessNumber = businessNumber.replace(/-/g, '');
 
-    const existingUser = await sql`
-      SELECT id FROM users WHERE REPLACE("businessNumber", '-', '') = ${normalizedBusinessNumber} AND "isActive" = true
+    const existingHospital = await sql`
+      SELECT h.id FROM hospitals h
+      JOIN users u ON h."userId" = u.id
+      WHERE REPLACE(h."businessNumber", '-', '') = ${normalizedBusinessNumber} AND u."isActive" = true
     `;
 
-    const isDuplicate = existingUser.length > 0;
+    const isDuplicate = existingHospital.length > 0;
 
     return {
       success: true,
@@ -818,7 +843,12 @@ export interface HospitalRegisterData {
   website?: string;
   address: string;
   detailAddress?: string; // 상세주소
+  postalCode?: string; // 우편번호
+  latitude?: number; // 위도
+  longitude?: number; // 경도
   profileImage?: string;
+  description?: string; // 병원 소개 추가
+  hospitalImages?: string[]; // 병원 시설 이미지 추가
   treatmentAnimals?: string[]; // 진료 가능 동물
   treatmentSpecialties?: string[]; // 진료 분야
   businessLicense?: string;
@@ -1009,7 +1039,12 @@ export async function registerHospital(data: HospitalRegisterData) {
       website,
       address,
       detailAddress,
+      postalCode,
+      latitude,
+      longitude,
       profileImage,
+      description,
+      hospitalImages,
       treatmentAnimals,
       treatmentSpecialties,
       businessLicense,
@@ -1025,14 +1060,27 @@ export async function registerHospital(data: HospitalRegisterData) {
     // Check if user already exists
     const existingUser = await sql`
       SELECT id FROM users 
-      WHERE ("loginId" = ${userId} OR email = ${email} OR phone = ${phone} OR "businessNumber" = ${businessNumber}) 
+      WHERE ("loginId" = ${userId} OR email = ${email} OR phone = ${phone}) 
       AND "isActive" = true
+    `;
+
+    const existingHospital = await sql`
+      SELECT h.id FROM hospitals h
+      JOIN users u ON h."userId" = u.id
+      WHERE h."businessNumber" = ${businessNumber} AND u."isActive" = true
     `;
 
     if (existingUser.length > 0) {
       return {
         success: false,
-        error: "이미 가입된 아이디, 이메일, 전화번호 또는 사업자등록번호입니다.",
+        error: "이미 가입된 아이디, 이메일 또는 전화번호입니다.",
+      };
+    }
+
+    if (existingHospital.length > 0) {
+      return {
+        success: false,
+        error: "이미 등록된 사업자등록번호입니다.",
       };
     }
 
@@ -1041,19 +1089,16 @@ export async function registerHospital(data: HospitalRegisterData) {
     const generatedId = createId();
     const currentDate = new Date();
 
-    // 통합 users 테이블에 직접 저장
+    // users 테이블에 기본 사용자 정보만 저장
     const userResult = await sql`
       INSERT INTO users (
-        id, "loginId", email, phone, "realName", "passwordHash", "userType", 
-        "hospitalName", "businessNumber", "hospitalWebsite", "hospitalAddress", "hospitalAddressDetail",
-        "hospitalLogo", "establishedDate", provider, "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
+        id, "loginId", email, phone, "passwordHash", "userType", 
+        "profileImage", provider, "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
         "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${generatedId}, ${userId}, ${email}, ${phone}, ${realName}, ${passwordHash}, 'HOSPITAL',
-        ${hospitalName}, ${businessNumber}, ${website}, ${address}, ${detailAddress},
-        ${profileImage}, ${establishedDate ? new Date(establishedDate) : null}, 'NORMAL',
-        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        ${generatedId}, ${userId}, ${email}, ${phone}, ${passwordHash}, 'HOSPITAL',
+        ${profileImage}, 'NORMAL', ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
         true, ${currentDate}, ${currentDate}
       )
       RETURNING *
@@ -1062,6 +1107,41 @@ export async function registerHospital(data: HospitalRegisterData) {
     const user = userResult[0];
     console.log("SERVER: Hospital user created successfully:", user.id);
 
+    // hospitals 테이블에 병원 상세 정보 저장
+    const hospitalId = createId();
+    await sql`
+      INSERT INTO hospitals (
+        id, "userId", "hospitalName", "representativeName", "businessNumber", 
+        "businessLicenseFile", "establishedDate", "hospitalAddress", "hospitalAddressDetail",
+        "postalCode", "latitude", "longitude", "hospitalLogo", "hospitalWebsite", 
+        "hospitalDescription", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${hospitalId}, ${user.id}, ${hospitalName}, ${realName}, ${businessNumber},
+        ${businessLicense}, ${establishedDate ? new Date(establishedDate) : null}, ${address}, ${detailAddress},
+        ${postalCode}, ${latitude}, ${longitude}, ${profileImage}, ${website}, 
+        ${description}, ${currentDate}, ${currentDate}
+      )
+    `;
+
+    console.log("SERVER: Hospital details saved to hospitals table");
+
+    // 병원 시설 이미지 저장 (hospital_images 테이블 사용)
+    if (hospitalImages && hospitalImages.length > 0) {
+      for (let i = 0; i < hospitalImages.length; i++) {
+        const imageUrl = hospitalImages[i];
+        if (imageUrl) {
+          await sql`
+            INSERT INTO hospital_images (
+              id, "hospitalId", "userId", "imageUrl", "imageOrder", "createdAt", "updatedAt"
+            ) VALUES (
+              ${createId()}, ${hospitalId}, ${user.id}, ${imageUrl}, ${i + 1}, ${currentDate}, ${currentDate}
+            )
+          `;
+        }
+      }
+      console.log("SERVER: Hospital facility images saved:", hospitalImages.length);
+    }
 
     // 진료 가능 동물 저장
     if (treatmentAnimals && treatmentAnimals.length > 0) {
@@ -1174,25 +1254,26 @@ export async function getHospitalProfile(): Promise<{
       treatmentSpecialties
     });
 
-    // 우선 users 테이블의 병원 정보를 사용 (primary source)
+    // hospitals 테이블에서 병원 정보를 조회 (integrated schema)
     const userDataResult = await sql`
       SELECT 
-        id as userId,
-        "hospitalName",
-        "businessNumber", 
-        "hospitalAddress" as address,
-        "hospitalAddressDetail" as detailAddress,
-        phone,
-        email,
-        "hospitalWebsite" as website,
-        "hospitalLogo",
-        "establishedDate",
-        "createdAt",
-        "updatedAt"
-      FROM users 
-      WHERE id = ${userResult.user.id} 
-      AND "userType" = 'HOSPITAL'
-      AND "isActive" = true
+        u.id as userId,
+        h."hospitalName",
+        h."businessNumber", 
+        h."hospitalAddress" as address,
+        h."hospitalAddressDetail" as detailAddress,
+        u.phone,
+        u.email,
+        h."hospitalWebsite" as website,
+        h."hospitalLogo",
+        h."establishedDate",
+        h."createdAt",
+        h."updatedAt"
+      FROM users u
+      JOIN hospitals h ON u.id = h."userId"
+      WHERE u.id = ${userResult.user.id} 
+      AND u."userType" = 'HOSPITAL'
+      AND u."isActive" = true
     `;
 
     if (userDataResult.length > 0) {
@@ -1743,6 +1824,7 @@ export interface DetailedHospitalProfileData {
   // 기본 정보
   hospitalLogo?: string;
   hospitalName: string;
+  realName?: string;
   businessNumber: string;
   address: string;
   phone: string;
@@ -1753,9 +1835,13 @@ export interface DetailedHospitalProfileData {
   // 추가 상세 정보
   establishedDate?: string;
   detailAddress?: string;
+  postalCode?: string;
+  latitude?: number;
+  longitude?: number;
   email?: string;
   treatmentAnimals: string[];
   treatmentFields: string[];
+  facilityImages?: string[];
 
   // 운영 정보
   operatingHours?: any; // JSON 데이터
@@ -1805,6 +1891,7 @@ export interface DetailedHospitalProfile {
   userId: string;
   hospitalLogo?: string;
   hospitalName: string;
+  realName?: string;
   businessNumber: string;
   address: string;
   phone: string;
@@ -1813,9 +1900,13 @@ export interface DetailedHospitalProfile {
   businessLicense?: string;
   establishedDate?: string;
   detailAddress?: string;
+  postalCode?: string;
+  latitude?: number;
+  longitude?: number;
   email?: string;
   treatmentAnimals: string[];
   treatmentFields: string[];
+  facilityImages?: string[];
   operatingHours?: any;
   emergencyService: boolean;
   parkingAvailable: boolean;
@@ -1884,148 +1975,77 @@ export async function getDetailedHospitalProfile(): Promise<{
       treatmentSpecialties
     });
 
-    // 메인 프로필 정보 조회
-    const profileResult = await sql`
-      SELECT * FROM detailed_hospital_profiles 
-      WHERE "userId" = ${userResult.user.id} 
-      AND "deletedAt" IS NULL
-    `;
+    // hospitals 테이블에서 병원 정보 조회 (hospital_images 포함)
+    const [hospitalResult, facilityImagesResult] = await Promise.all([
+      sql`
+        SELECT h.*, u.email, u.phone
+        FROM hospitals h
+        JOIN users u ON h."userId" = u.id
+        WHERE h."userId" = ${userResult.user.id}
+      `,
+      sql`
+        SELECT "imageUrl", "imageOrder"
+        FROM hospital_images
+        WHERE "userId" = ${userResult.user.id}
+        ORDER BY "imageOrder"
+      `
+    ]);
 
-    // 상세 프로필이 없으면 users 테이블의 기본 정보로 대체
-    if (profileResult.length === 0) {
-      const userDataResult = await sql`
-        SELECT 
-          id,
-          email,
-          "hospitalName",
-          "businessNumber", 
-          "hospitalAddress",
-          "hospitalAddressDetail",
-          phone,
-          "hospitalWebsite",
-          "hospitalLogo",
-          "establishedDate",
-          "createdAt",
-          "updatedAt"
-        FROM users 
-        WHERE id = ${userResult.user.id} 
-        AND "userType" = 'HOSPITAL'
-        AND "isActive" = true
-      `;
-
-      if (userDataResult.length === 0) {
-        return { success: false, error: "병원 정보를 찾을 수 없습니다." };
-      }
-
-      const userData = userDataResult[0];
-      
-      console.log("[getDetailedHospitalProfile] Returning users table data with animals/specialties:", {
-        treatmentAnimals,
-        treatmentSpecialties
-      });
-
-      return {
-        success: true,
-        profile: {
-          id: userData.id,
-          userId: userData.id,
-          hospitalLogo: userData.hospitalLogo,
-          hospitalName: userData.hospitalName || "",
-          businessNumber: userData.businessNumber || "",
-          address: userData.hospitalAddress || "",
-          phone: userData.phone || "",
-          website: userData.hospitalWebsite || "",
-          description: "",
-          businessLicense: "",
-          establishedDate: userData.establishedDate ? userData.establishedDate.toISOString().split('T')[0] : "",
-          detailAddress: userData.hospitalAddressDetail || "",
-          email: userData.email,
-          treatmentAnimals: treatmentAnimals,
-          treatmentFields: treatmentSpecialties,
-          operatingHours: undefined,
-          emergencyService: false,
-          parkingAvailable: false,
-          publicTransportInfo: undefined,
-          totalBeds: undefined,
-          surgeryRooms: undefined,
-          xrayRoom: false,
-          ctScan: false,
-          ultrasound: false,
-          grooming: false,
-          boarding: false,
-          petTaxi: false,
-          certifications: [],
-          awards: [],
-          createdAt: userData.createdAt,
-          updatedAt: userData.updatedAt,
-          staff: [],
-          equipments: [],
-        },
-      };
+    if (hospitalResult.length === 0) {
+      return { success: false, error: "병원 정보를 찾을 수 없습니다." };
     }
 
-    const profile = profileResult[0];
-
-    // 관련 데이터들 조회
-    const [staff, equipments] = await Promise.all([
-      sql`SELECT * FROM hospital_staff WHERE "hospitalProfileId" = ${profile.id} ORDER BY "sortOrder", "createdAt"`,
-      sql`SELECT * FROM hospital_equipments WHERE "hospitalProfileId" = ${profile.id} ORDER BY "sortOrder", "createdAt"`,
-    ]);
+    const hospital = hospitalResult[0];
+    const facilityImages = facilityImagesResult.map(img => img.imageUrl);
+    
+    console.log("[getDetailedHospitalProfile] Retrieved hospital data:", {
+      hospitalId: hospital.id,
+      treatmentAnimals,
+      treatmentSpecialties,
+      facilityImages: facilityImages.length
+    });
 
     return {
       success: true,
       profile: {
-        id: profile.id,
-        userId: profile.userId,
-        hospitalLogo: profile.hospitalLogo,
-        hospitalName: profile.hospitalName,
-        businessNumber: profile.businessNumber,
-        address: profile.address,
-        phone: profile.phone,
-        website: profile.website,
-        description: profile.description,
-        businessLicense: profile.businessLicense,
-        establishedDate: profile.establishedDate,
-        detailAddress: profile.detailAddress,
-        email: profile.email,
-        treatmentAnimals: profile.treatmentAnimals,
-        treatmentFields: profile.treatmentFields,
-        operatingHours: profile.operatingHours,
-        emergencyService: profile.emergencyService,
-        parkingAvailable: profile.parkingAvailable,
-        publicTransportInfo: profile.publicTransportInfo,
-        totalBeds: profile.totalBeds,
-        surgeryRooms: profile.surgeryRooms,
-        xrayRoom: profile.xrayRoom,
-        ctScan: profile.ctScan,
-        ultrasound: profile.ultrasound,
-        grooming: profile.grooming,
-        boarding: profile.boarding,
-        petTaxi: profile.petTaxi,
-        certifications: profile.certifications,
-        awards: profile.awards,
-        createdAt: profile.createdAt,
-        updatedAt: profile.updatedAt,
-        staff: staff.map((s) => ({
-          id: s.id,
-          name: s.name,
-          position: s.position,
-          specialization: s.specialization,
-          experience: s.experience,
-          education: s.education,
-          profileImage: s.profileImage,
-          introduction: s.introduction,
-        })),
-        equipments: equipments.map((e) => ({
-          id: e.id,
-          name: e.name,
-          category: e.category,
-          manufacturer: e.manufacturer,
-          model: e.model,
-          purchaseDate: e.purchaseDate,
-          description: e.description,
-          image: e.image,
-        })),
+        id: hospital.id,
+        userId: hospital.userId,
+        hospitalLogo: hospital.hospitalLogo,
+        hospitalName: hospital.hospitalName || "",
+        realName: hospital.representativeName || "",
+        businessNumber: hospital.businessNumber || "",
+        address: hospital.hospitalAddress || "",
+        phone: hospital.phone || "",
+        website: hospital.hospitalWebsite || "",
+        description: hospital.hospitalDescription || "",
+        businessLicense: hospital.businessLicenseFile || "",
+        establishedDate: hospital.establishedDate ? hospital.establishedDate.toISOString().split('T')[0] : "",
+        detailAddress: hospital.hospitalAddressDetail || "",
+        postalCode: hospital.postalCode || "",
+        latitude: hospital.latitude ? Number(hospital.latitude) : undefined,
+        longitude: hospital.longitude ? Number(hospital.longitude) : undefined,
+        email: hospital.email || "",
+        treatmentAnimals: treatmentAnimals,
+        treatmentFields: treatmentSpecialties,
+        facilityImages: facilityImages,
+        operatingHours: undefined,
+        emergencyService: false,
+        parkingAvailable: false,
+        publicTransportInfo: undefined,
+        totalBeds: undefined,
+        surgeryRooms: undefined,
+        xrayRoom: false,
+        ctScan: false,
+        ultrasound: false,
+        grooming: false,
+        boarding: false,
+        petTaxi: false,
+        certifications: [],
+        awards: [],
+        createdAt: hospital.createdAt,
+        updatedAt: hospital.updatedAt,
+        staff: [],
+        equipments: [],
       },
     };
   } catch (error) {
@@ -2060,94 +2080,100 @@ export async function saveDetailedHospitalProfile(
     console.log("[saveDetailedHospitalProfile] Starting save for userId:", userId);
     console.log("[saveDetailedHospitalProfile] Data to save:", JSON.stringify(data, null, 2));
 
-    // 기존 프로필이 있는지 확인
-    const existingProfile = await sql`
-      SELECT id FROM detailed_hospital_profiles 
-      WHERE "userId" = ${userId} 
-      AND "deletedAt" IS NULL
+    // 기존 hospitals 테이블 레코드 확인
+    const existingHospital = await sql`
+      SELECT id FROM hospitals WHERE "userId" = ${userId}
     `;
 
-    let profileId: string;
+    let hospitalId: string;
 
-    if (existingProfile.length > 0) {
+    if (existingHospital.length > 0) {
       // 업데이트
-      profileId = existingProfile[0].id;
-      console.log("[saveDetailedHospitalProfile] Updating existing profile:", profileId);
+      hospitalId = existingHospital[0].id;
+      console.log("[saveDetailedHospitalProfile] Updating existing hospital:", hospitalId);
 
       await sql`
-        UPDATE detailed_hospital_profiles SET
+        UPDATE hospitals SET
           "hospitalLogo" = ${data.hospitalLogo || null},
           "hospitalName" = ${data.hospitalName},
+          "representativeName" = ${data.realName || null},
           "businessNumber" = ${data.businessNumber},
-          address = ${data.address},
-          phone = ${data.phone},
-          website = ${data.website || null},
-          description = ${data.description || null},
-          "businessLicense" = ${data.businessLicense || null},
-          "establishedDate" = ${data.establishedDate || null},
-          "detailAddress" = ${data.detailAddress || null},
-          email = ${data.email || null},
-          "treatmentAnimals" = ${data.treatmentAnimals},
-          "treatmentFields" = ${data.treatmentFields},
-          "operatingHours" = ${data.operatingHours || null},
-          "emergencyService" = ${data.emergencyService},
-          "parkingAvailable" = ${data.parkingAvailable},
-          "publicTransportInfo" = ${data.publicTransportInfo || null},
-          "totalBeds" = ${data.totalBeds || null},
-          "surgeryRooms" = ${data.surgeryRooms || null},
-          "xrayRoom" = ${data.xrayRoom},
-          "ctScan" = ${data.ctScan},
-          ultrasound = ${data.ultrasound},
-          grooming = ${data.grooming},
-          boarding = ${data.boarding},
-          "petTaxi" = ${data.petTaxi},
-          certifications = ${data.certifications},
-          awards = ${data.awards},
+          "hospitalAddress" = ${data.address},
+          "hospitalAddressDetail" = ${data.detailAddress || null},
+          "postalCode" = ${data.postalCode || null},
+          "latitude" = ${data.latitude || null},
+          "longitude" = ${data.longitude || null},
+          "hospitalWebsite" = ${data.website || null},
+          "hospitalDescription" = ${data.description || null},
+          "businessLicenseFile" = ${data.businessLicense || null},
+          "establishedDate" = ${data.establishedDate ? new Date(data.establishedDate) : null},
           "updatedAt" = NOW()
-        WHERE id = ${profileId}
+        WHERE id = ${hospitalId}
+      `;
+
+      // users 테이블도 동기화 (정규화된 스키마에서는 기본 정보만)
+      await sql`
+        UPDATE users SET
+          phone = ${data.phone},
+          email = ${data.email || null},
+          "profileImage" = ${data.hospitalLogo || null},
+          "updatedAt" = NOW()
+        WHERE id = ${userId}
       `;
     } else {
       // 생성
-      profileId = createId();
-      console.log("[saveDetailedHospitalProfile] Creating new profile:", profileId);
+      hospitalId = createId();
+      console.log("[saveDetailedHospitalProfile] Creating new hospital:", hospitalId);
 
       await sql`
-        INSERT INTO detailed_hospital_profiles (
-          id, "userId", "hospitalLogo", "hospitalName", "businessNumber", address, phone,
-          website, description, "businessLicense", "establishedDate", "detailAddress",
-          email, "treatmentAnimals", "treatmentFields", "operatingHours", "emergencyService",
-          "parkingAvailable", "publicTransportInfo", "totalBeds", "surgeryRooms", "xrayRoom",
-          "ctScan", ultrasound, grooming, boarding, "petTaxi", certifications, awards,
-          "createdAt", "updatedAt"
-        ) VALUES (
-          ${profileId}, ${userId}, ${data.hospitalLogo || null}, ${data.hospitalName},
-          ${data.businessNumber}, ${data.address}, ${data.phone}, ${data.website || null},
-          ${data.description || null}, ${data.businessLicense || null}, ${data.establishedDate || null},
-          ${data.detailAddress || null}, ${data.email || null}, ${data.treatmentAnimals},
-          ${data.treatmentFields}, ${data.operatingHours || null}, ${data.emergencyService},
-          ${data.parkingAvailable}, ${data.publicTransportInfo || null}, ${data.totalBeds || null},
-          ${data.surgeryRooms || null}, ${data.xrayRoom}, ${data.ctScan}, ${data.ultrasound},
-          ${data.grooming}, ${data.boarding}, ${data.petTaxi}, ${data.certifications},
-          ${data.awards}, NOW(), NOW()
+        INSERT INTO hospitals (
+          id, "userId", "hospitalName", "representativeName", "businessNumber", 
+          "businessLicenseFile", "establishedDate", "hospitalAddress", "hospitalAddressDetail",
+          "postalCode", "latitude", "longitude", "hospitalLogo", "hospitalWebsite", 
+          "hospitalDescription", "createdAt", "updatedAt"
         )
+        VALUES (
+          ${hospitalId}, ${userId}, ${data.hospitalName}, ${data.realName || null}, ${data.businessNumber},
+          ${data.businessLicense || null}, ${data.establishedDate ? new Date(data.establishedDate) : null}, 
+          ${data.address}, ${data.detailAddress || null}, ${data.postalCode || null},
+          ${data.latitude || null}, ${data.longitude || null}, ${data.hospitalLogo || null}, 
+          ${data.website || null}, ${data.description || null}, NOW(), NOW()
+        )
+      `;
+
+      // users 테이블도 동기화 (정규화된 스키마에서는 기본 정보만)
+      await sql`
+        UPDATE users SET
+          phone = ${data.phone},
+          email = ${data.email || null},
+          "profileImage" = ${data.hospitalLogo || null},
+          "updatedAt" = NOW()
+        WHERE id = ${userId}
       `;
     }
 
-    // users 테이블의 병원 정보도 동기화
-    await sql`
-      UPDATE users SET
-        "hospitalName" = ${data.hospitalName},
-        "businessNumber" = ${data.businessNumber},
-        "hospitalAddress" = ${data.address},
-        "hospitalAddressDetail" = ${data.detailAddress || null},
-        phone = ${data.phone},
-        email = ${data.email || null},
-        "hospitalWebsite" = ${data.website || null},
-        "hospitalLogo" = ${data.hospitalLogo || null},
-        "establishedDate" = ${data.establishedDate ? new Date(data.establishedDate) : null},
-        "updatedAt" = NOW()
-      WHERE id = ${userId}
-    `;
+    // 병원 시설 이미지 처리 (facilityImages가 있는 경우)
+    if (data.facilityImages !== undefined) {
+      // 기존 이미지 삭제
+      await sql`DELETE FROM hospital_images WHERE "userId" = ${userId}`;
+      
+      // 새로운 이미지 저장
+      if (data.facilityImages && data.facilityImages.length > 0) {
+        for (let i = 0; i < data.facilityImages.length; i++) {
+          const imageUrl = data.facilityImages[i];
+          if (imageUrl) {
+            await sql`
+              INSERT INTO hospital_images (
+                id, "hospitalId", "userId", "imageUrl", "imageOrder", "createdAt", "updatedAt"
+              ) VALUES (
+                ${createId()}, ${hospitalId}, ${userId}, ${imageUrl}, ${i + 1}, NOW(), NOW()
+              )
+            `;
+          }
+        }
+        console.log("[saveDetailedHospitalProfile] Saved facility images:", data.facilityImages.length);
+      }
+    }
 
     // 기존 진료 동물 및 분야 데이터 삭제 후 새로 저장
     await Promise.all([
@@ -2189,7 +2215,7 @@ export async function saveDetailedHospitalProfile(
 
     return {
       success: true,
-      profileId: profileId,
+      profileId: hospitalId,
     };
   } catch (error) {
     console.error("[saveDetailedHospitalProfile] Error saving hospital profile:", error);

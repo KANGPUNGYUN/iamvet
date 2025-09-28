@@ -6,8 +6,10 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { FilterBox } from "@/components/ui/FilterBox";
-import { ProfileImageUpload } from "@/components/features/profile/ProfileImageUpload";
+import { ProfileImageUpload, MultiImageUpload } from "@/components/features/profile";
 import { Textarea } from "@/components/ui/Input/Textarea";
+import { FileUpload } from "@/components/ui/FileUpload";
+import { BirthDateInput } from "@/components/ui/FormattedInput";
 import {
   useDetailedHospitalProfile,
   useSaveDetailedHospitalProfile,
@@ -20,9 +22,13 @@ import hospitalImage from "@/assets/images/hospital.png";
 interface HospitalProfileData {
   hospitalLogo?: string;
   hospitalName: string;
+  realName: string;
   establishedDate: string;
   address: string;
   detailAddress: string;
+  postalCode: string;
+  latitude: number | null;
+  longitude: number | null;
   website: string;
   phone: string;
   businessNumber: string;
@@ -30,6 +36,15 @@ interface HospitalProfileData {
   treatmentAnimals: string[];
   treatmentFields: string[];
   description: string;
+  hospitalImages: string[];
+  businessLicense: {
+    file: File | null;
+    url: string | null;
+    fileName: string | null;
+    fileType: string | null;
+    mimeType: string | null;
+    fileSize: number | null;
+  };
 }
 
 export default function HospitalProfileEditPage() {
@@ -52,9 +67,13 @@ export default function HospitalProfileEditPage() {
   const [formData, setFormData] = useState<HospitalProfileData>({
     hospitalLogo: hospitalImage.src,
     hospitalName: "",
+    realName: "",
     establishedDate: "2024-01-01",
     address: "",
     detailAddress: "",
+    postalCode: "",
+    latitude: null,
+    longitude: null,
     website: "",
     phone: "",
     businessNumber: "",
@@ -62,6 +81,15 @@ export default function HospitalProfileEditPage() {
     treatmentAnimals: [],
     treatmentFields: [],
     description: "",
+    hospitalImages: [],
+    businessLicense: {
+      file: null,
+      url: null,
+      fileName: null,
+      fileType: null,
+      mimeType: null,
+      fileSize: null,
+    },
   });
 
   // 프로필 데이터가 로드되면 폼에 반영
@@ -85,9 +113,13 @@ export default function HospitalProfileEditPage() {
       setFormData({
         hospitalLogo: detailedProfile.hospitalLogo || hospitalImage.src,
         hospitalName: detailedProfile.hospitalName,
+        realName: detailedProfile.realName || "",
         establishedDate: detailedProfile.establishedDate || "2024-01-01",
         address: detailedProfile.address,
         detailAddress: detailedProfile.detailAddress || "",
+        postalCode: detailedProfile.postalCode || "",
+        latitude: detailedProfile.latitude || null,
+        longitude: detailedProfile.longitude || null,
         website: detailedProfile.website || "",
         phone: detailedProfile.phone,
         businessNumber: detailedProfile.businessNumber,
@@ -95,6 +127,15 @@ export default function HospitalProfileEditPage() {
         treatmentAnimals: mappedAnimals,
         treatmentFields: mappedFields,
         description: detailedProfile.description || "",
+        hospitalImages: detailedProfile.facilityImages || [],
+        businessLicense: {
+          file: null,
+          url: detailedProfile.businessLicense || null,
+          fileName: null,
+          fileType: null,
+          mimeType: null,
+          fileSize: null,
+        },
       });
     } else if (basicProfile || currentUser) {
       // 상세 프로필이 없으면 기본 프로필 또는 유저 정보로 초기화
@@ -115,9 +156,13 @@ export default function HospitalProfileEditPage() {
       setFormData({
         hospitalLogo: hospitalImage.src,
         hospitalName: basicProfile?.hospitalName || (currentUser as any)?.hospitalName || "",
+        realName: "",
         establishedDate: "",
         address: basicProfile?.address || "",
         detailAddress: "",
+        postalCode: "",
+        latitude: null,
+        longitude: null,
         website: basicProfile?.website || "",
         phone: basicProfile?.phone || currentUser?.phone || "",
         businessNumber: basicProfile?.businessNumber || "",
@@ -125,12 +170,106 @@ export default function HospitalProfileEditPage() {
         treatmentAnimals: mappedAnimals,
         treatmentFields: mappedFields,
         description: basicProfile?.description || "",
+        hospitalImages: [],
+        businessLicense: {
+          file: null,
+          url: null,
+          fileName: null,
+          fileType: null,
+          mimeType: null,
+          fileSize: null,
+        },
       });
     }
   }, [detailedProfile, basicProfile, currentUser]);
 
   const handleCancel = () => {
     window.location.href = "/dashboard/hospital/profile";
+  };
+
+  const handleFileChange = async (file: File | null) => {
+    if (!file) {
+      setFormData((prev) => ({
+        ...prev,
+        businessLicense: {
+          file: null,
+          url: null,
+          fileName: null,
+          fileType: null,
+          mimeType: null,
+          fileSize: null,
+        }
+      }));
+      return;
+    }
+
+    // 파일만 설정 (업로드 중 표시용)
+    setFormData((prev) => ({
+      ...prev,
+      businessLicense: {
+        file: file,
+        url: null,
+        fileName: null,
+        fileType: null,
+        mimeType: null,
+        fileSize: null,
+      }
+    }));
+
+    try {
+      // 파일 업로드
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const response = await fetch('/api/upload/business-license', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        setFormData((prev) => ({
+          ...prev,
+          businessLicense: {
+            file: file,
+            url: result.data.fileUrl,
+            fileName: result.data.fileName,
+            fileType: result.data.fileType,
+            mimeType: result.data.mimeType,
+            fileSize: result.data.fileSize || file.size,
+          }
+        }));
+      } else {
+        console.error('File upload failed:', result.message);
+        alert('파일 업로드에 실패했습니다: ' + result.message);
+        setFormData((prev) => ({
+          ...prev,
+          businessLicense: {
+            file: file,
+            url: null,
+            fileName: null,
+            fileType: null,
+            mimeType: null,
+            fileSize: null,
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('File upload error:', error);
+      alert('파일 업로드 중 오류가 발생했습니다.');
+      setFormData((prev) => ({
+        ...prev,
+        businessLicense: {
+          file: file,
+          url: null,
+          fileName: null,
+          fileType: null,
+          mimeType: null,
+          fileSize: null,
+        }
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -157,17 +296,22 @@ export default function HospitalProfileEditPage() {
             ? undefined
             : formData.hospitalLogo,
         hospitalName: formData.hospitalName,
+        realName: formData.realName || undefined,
         businessNumber: formData.businessNumber,
         address: formData.address,
         phone: formData.phone,
         website: formData.website || undefined,
         description: formData.description || undefined,
-        businessLicense: undefined, // TODO: 실제 비즈니스 라이센스 처리
+        businessLicense: formData.businessLicense.url || undefined,
         establishedDate: formData.establishedDate || undefined,
         detailAddress: formData.detailAddress || undefined,
+        postalCode: formData.postalCode || undefined,
+        latitude: formData.latitude || undefined,
+        longitude: formData.longitude || undefined,
         email: formData.email || undefined,
         treatmentAnimals: treatmentAnimalsEnum,
         treatmentFields: treatmentFieldsEnum,
+        facilityImages: formData.hospitalImages,
 
         // 운영 정보 (기본값)
         operatingHours: undefined,
@@ -323,7 +467,7 @@ export default function HospitalProfileEditPage() {
           </h1>
 
           <div className="flex flex-col gap-[40px]">
-            {/* 병원명 */}
+            {/* 병원명과 대표자명 */}
             <div className="flex flex-col lg:flex-row gap-[16px]">
               <div className="w-full">
                 <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
@@ -338,22 +482,32 @@ export default function HospitalProfileEditPage() {
                 />
               </div>
 
-              {/* 설립일 */}
-              <div className="w-full max-w-[300px]">
+              <div className="w-full">
                 <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-                  설립일
+                  대표자명
                 </label>
-                <DatePicker
-                  value={new Date(formData.establishedDate)}
-                  onChange={(date) =>
-                    setFormData({
-                      ...formData,
-                      establishedDate: date.toISOString().split("T")[0],
-                    })
+                <InputBox
+                  value={formData.realName}
+                  onChange={(value) =>
+                    setFormData({ ...formData, realName: value })
                   }
-                  placeholder="설립일을 선택해주세요"
+                  placeholder="대표자명을 입력해 주세요"
                 />
               </div>
+            </div>
+
+            {/* 설립일 */}
+            <div className="w-full max-w-[300px]">
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                설립일
+              </label>
+              <BirthDateInput
+                value={formData.establishedDate}
+                onChange={(value) =>
+                  setFormData({ ...formData, establishedDate: value })
+                }
+                placeholder="YYYY-MM-DD"
+              />
             </div>
 
             {/* 주소 */}
@@ -366,6 +520,15 @@ export default function HospitalProfileEditPage() {
               onDetailAddressChange={(detailAddress) =>
                 setFormData({ ...formData, detailAddress })
               }
+              onAddressDataChange={(data) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  address: data.address,
+                  postalCode: data.postalCode,
+                  latitude: data.latitude || null,
+                  longitude: data.longitude || null,
+                }));
+              }}
             />
 
             <div className="flex flex-col lg:flex-row gap-[16px]">
@@ -497,6 +660,65 @@ export default function HospitalProfileEditPage() {
                 placeholder="병원을 간단하게 소개해 주세요"
                 rows={5}
               />
+            </div>
+
+            {/* 병원 이미지 */}
+            <div>
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                병원 이미지 <span className="text-[#C5CCD8]">(선택, 최대 10장)</span>
+              </label>
+              <MultiImageUpload
+                value={formData.hospitalImages}
+                onChange={(urls) => {
+                  setFormData({ ...formData, hospitalImages: urls });
+                }}
+                folder="hospital-facilities"
+                maxImages={10}
+                className="w-full"
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                병원 시설, 진료실, 대기실 등의 사진을 업로드해주세요.
+              </p>
+            </div>
+
+            {/* 사업자등록증 */}
+            <div>
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                사업자등록증 <span className="text-[#FF4A4A]">(필수)</span>
+              </label>
+              <FileUpload
+                onFileSelect={handleFileChange}
+                accept="image/*,.pdf,.doc,.docx"
+                maxSize={10 * 1024 * 1024}
+                placeholder="사업자등록증 파일을 업로드해주세요 (이미지, PDF, Word 파일)"
+              />
+              {formData.businessLicense.file && formData.businessLicense.url && (
+                <div className="text-sm text-green-600 mt-2">
+                  <p>✅ 업로드 완료: {formData.businessLicense.file.name}</p>
+                  <p className="text-xs text-gray-500">
+                    파일 형식: {formData.businessLicense.fileType} | 
+                    크기: {Math.round(formData.businessLicense.file.size / 1024)}KB
+                  </p>
+                </div>
+              )}
+              {formData.businessLicense.file && !formData.businessLicense.url && (
+                <p className="text-sm text-amber-600 mt-2">
+                  📤 업로드 중...
+                </p>
+              )}
+              {!formData.businessLicense.file && formData.businessLicense.url && (
+                <div className="text-sm text-blue-600 mt-2">
+                  <p>📄 기존 파일: {formData.businessLicense.fileName || '사업자등록증'}</p>
+                  <a 
+                    href={formData.businessLicense.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    파일 보기
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* 취소/저장 버튼 */}

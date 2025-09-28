@@ -268,7 +268,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
 
       if (response.data.status === "success") {
         alert("채용공고가 수정되었습니다.");
-        router.push(`/jobs/${id}`);
+        router.push("/dashboard/hospital/my-jobs");
       }
     } catch (error) {
       console.error("Update error:", error);

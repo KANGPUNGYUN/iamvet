@@ -144,23 +144,31 @@ export const useCommentStore = create<CommentState>((set, get) => ({
 
   createComment: async (contentId: string, contentType: 'forum' | 'lecture', content: string, parentId?: string) => {
     try {
+      console.log('[CommentStore] createComment 시작:', { contentId, contentType, content: content.substring(0, 50), parentId });
       set({ error: null });
       
       const apiPath = contentType === 'forum' ? 'forums' : 'lectures';
+      console.log('[CommentStore] API 요청:', `POST /api/${apiPath}/${contentId}/comments`);
+      
       const response = await fetch(`/api/${apiPath}/${contentId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // 쿠키 포함
         body: JSON.stringify({ content, parentId })
       });
       
       const data = await response.json();
+      console.log('[CommentStore] API 응답:', { status: response.status, data });
       
       if (data.status === 'success') {
+        console.log('[CommentStore] 댓글 생성 성공, 댓글 목록 새로고침 중...');
         // 댓글 목록을 다시 불러와서 최신 상태 유지
         await get().fetchComments(contentId, contentType);
+        console.log('[CommentStore] 댓글 목록 새로고침 완료');
       } else {
+        console.error('[CommentStore] 댓글 생성 실패:', data.message);
         set({ error: data.message });
       }
     } catch (error) {

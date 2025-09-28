@@ -37,11 +37,19 @@ async function addSampleJobs() {
     ];
     
     for (const hospital of hospitals) {
+      // 먼저 users 테이블에 병원 사용자 생성
       await pool.query(`
-        INSERT INTO users (id, email, phone, "userType", "hospitalName", "hospitalAddress", "isActive", "createdAt", "updatedAt")
-        VALUES ($1, $2, '010-0000-0000', 'HOSPITAL', $3, $4, true, NOW(), NOW())
+        INSERT INTO users (id, email, phone, "userType", "isActive", "createdAt", "updatedAt")
+        VALUES ($1, $2, '010-0000-0000', 'HOSPITAL', true, NOW(), NOW())
         ON CONFLICT (id) DO NOTHING
-      `, [hospital.id, hospital.email, hospital.hospitalName, hospital.hospitalAddress]);
+      `, [hospital.id, hospital.email]);
+      
+      // hospitals 테이블에 병원 정보 생성
+      await pool.query(`
+        INSERT INTO hospitals ("userId", "hospitalName", "hospitalAddress", "createdAt", "updatedAt")
+        VALUES ($1, $2, $3, NOW(), NOW())
+        ON CONFLICT ("userId") DO NOTHING
+      `, [hospital.id, hospital.hospitalName, hospital.hospitalAddress]);
     }
     
     // Create more diverse job postings
@@ -154,9 +162,10 @@ async function addSampleJobs() {
     // Test the query that the API uses
     console.log('\nTesting API query...');
     const testQuery = `
-      SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
+      SELECT j.*, h."hospitalName" as hospital_name, u."profileImage" as hospital_logo, h."hospitalAddress" as hospital_location
       FROM job_postings j
       JOIN users u ON j."hospitalId" = u.id
+      JOIN hospitals h ON u.id = h."userId"
       WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
       ORDER BY j."createdAt" DESC
       LIMIT 5

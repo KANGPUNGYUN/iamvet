@@ -14,6 +14,12 @@ interface AddressSearchProps {
   detailAddress?: string;
   onAddressChange?: (address: string) => void;
   onDetailAddressChange?: (detailAddress: string) => void;
+  onAddressDataChange?: (data: {
+    address: string;
+    postalCode: string;
+    latitude?: number;
+    longitude?: number;
+  }) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -23,6 +29,7 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
   detailAddress = "",
   onAddressChange,
   onDetailAddressChange,
+  onAddressDataChange,
   disabled = false,
   className = "",
 }) => {
@@ -48,17 +55,50 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
     });
   };
 
+  // Naver Geocoding API를 사용하여 주소로 좌표 찾기
+  const getCoordinatesFromAddress = async (address: string): Promise<{ latitude: number; longitude: number } | null> => {
+    try {
+      // Naver Geocoding API 키가 없으면 스킵
+      if (!process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID || !process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_SECRET) {
+        console.warn("Naver Geocoding API 키가 설정되지 않았습니다.");
+        return null;
+      }
+
+      const response = await fetch(`/api/geocode?address=${encodeURIComponent(address)}`);
+      
+      if (!response.ok) {
+        console.warn("Geocoding API 호출 실패:", response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      
+      if (data.addresses && data.addresses.length > 0) {
+        const result = data.addresses[0];
+        return {
+          latitude: parseFloat(result.y),
+          longitude: parseFloat(result.x)
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.warn("좌표 검색 실패:", error);
+      return null;
+    }
+  };
+
   const handleAddressSearch = async () => {
     if (disabled) return;
 
-    const scriptLoaded = await loadDaumPostcodeScript();
-    if (!scriptLoaded) {
+    const postcodeLoaded = await loadDaumPostcodeScript();
+    if (!postcodeLoaded) {
       alert("주소 검색 서비스를 불러올 수 없습니다.");
       return;
     }
 
     new window.daum.Postcode({
-      oncomplete: function (data: any) {
+      oncomplete: async function (data: any) {
         // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
 
         // 각 주소의 노출 규칙에 따라 주소를 조합한다.
@@ -95,7 +135,28 @@ export const AddressSearch: React.FC<AddressSearchProps> = ({
 
         // 우편번호와 주소 정보를 해당 필드에 넣는다.
         const fullAddress = addr + extraAddr;
+        const postalCode = data.zonecode; // 우편번호
+
+        // 기존 콜백 호출 (하위호환성)
         onAddressChange?.(fullAddress);
+
+        // 좌표 검색 (Naver Geocoding API 사용)
+        let coordinates: { latitude: number; longitude: number } | null = null;
+        try {
+          coordinates = await getCoordinatesFromAddress(addr);
+        } catch (error) {
+          console.warn("좌표 검색 중 오류:", error);
+        }
+
+        // 새로운 콜백으로 모든 데이터 전달
+        if (onAddressDataChange) {
+          onAddressDataChange({
+            address: fullAddress,
+            postalCode: postalCode,
+            latitude: coordinates?.latitude,
+            longitude: coordinates?.longitude,
+          });
+        }
       },
       width: "100%",
       height: "100%",

@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     
     if (bookmarked && userId) {
       // 사용자가 좋아요한 이력서 ID들을 먼저 조회
-      const userLikedResumes = await (prisma as any).resumeLike.findMany({
+      const userLikedResumes = await (prisma as any).resume_likes.findMany({
         where: { userId },
         select: { resumeId: true }
       });
@@ -87,30 +87,32 @@ export async function GET(request: NextRequest) {
             orderBy = { createdAt: 'asc' };
             break;
           case 'popular':
-            orderBy = { user: { veterinarian_profiles: { viewCount: 'desc' } } };
+            orderBy = { users: { veterinarian_profiles: { viewCount: 'desc' } } };
             break;
           default:
             orderBy = { createdAt: 'desc' };
         }
         
-        const total = await (prisma as any).detailedResume.count({ 
+        const total = await (prisma as any).detailed_resumes.count({ 
           where: { 
             id: { in: likedResumeIds },
-            user: { deletedAt: null, userType: 'VETERINARIAN' }
+            users: { deletedAt: null, userType: 'VETERINARIAN' }
           } 
         });
         
-        const resumes = await (prisma as any).detailedResume.findMany({
+        const resumes = await (prisma as any).detailed_resumes.findMany({
           where: { 
             id: { in: likedResumeIds },
-            user: { deletedAt: null, userType: 'VETERINARIAN' }
+            users: { deletedAt: null, userType: 'VETERINARIAN' }
           },
           orderBy,
           skip: offset,
           take: params.limit,
           include: {
-            user: {
+            users: {
               include: {
+                veterinarians: true,
+                veterinary_students: true,
                 veterinarian_profiles: true
               }
             }
@@ -120,16 +122,16 @@ export async function GET(request: NextRequest) {
         // getResumesWithPagination과 동일한 형태로 데이터 변환
         const resumeData = resumes.map((resume: any) => ({
           id: resume.id, // Resume ID를 반환 (상세 페이지 URL용)
-          userId: resume.user.id, // User ID도 포함 (좋아요 체크용)
-          name: resume.user.realName || '익명',
-          profileImage: resume.user.profileImage || null,
-          experience: resume.user.veterinarian_profiles?.experienceType || '신규',
-          preferredLocation: resume.user.veterinarian_profiles?.preferredLocation || '전국',
-          keywords: [resume.user.veterinarian_profiles?.specialty || '일반진료'],
+          userId: resume.users.id, // User ID도 포함 (좋아요 체크용)
+          name: resume.users.veterinarians?.realName || resume.users.veterinary_students?.realName || '익명',
+          profileImage: resume.users.profileImage || null,
+          experience: resume.users.veterinarian_profiles?.experienceType || '신규',
+          preferredLocation: resume.users.veterinarian_profiles?.preferredLocation || '전국',
+          keywords: [resume.users.veterinarian_profiles?.specialty || '일반진료'],
           lastAccessDate: resume.updatedAt?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
           isNew: false,
           isBookmarked: true, // 북마크된 항목이므로 true
-          viewCount: resume.user.veterinarian_profiles?.viewCount || 0,
+          viewCount: resume.users.veterinarian_profiles?.viewCount || 0,
           createdAt: resume.createdAt,
           updatedAt: resume.updatedAt
         }));
@@ -160,7 +162,7 @@ export async function GET(request: NextRequest) {
         console.log("[Resumes API] 조회할 user IDs:", userIds);
         
         if (userIds.length > 0) {
-          const detailedResumes = await (prisma as any).detailedResume.findMany({
+          const detailedResumes = await (prisma as any).detailed_resumes.findMany({
             where: { userId: { in: userIds } },
             select: { id: true, userId: true }
           });
@@ -174,7 +176,7 @@ export async function GET(request: NextRequest) {
           console.log("[Resumes API] 조회할 detailed resume IDs:", detailedResumeIds);
           
           if (detailedResumeIds.length > 0) {
-            const likes = await (prisma as any).resumeLike.findMany({
+            const likes = await (prisma as any).resume_likes.findMany({
               where: { 
                 userId,
                 resumeId: { in: detailedResumeIds }

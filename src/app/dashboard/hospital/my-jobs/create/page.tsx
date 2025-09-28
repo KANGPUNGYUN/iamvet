@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { FilterBox } from "@/components/ui/FilterBox";
@@ -41,6 +42,7 @@ interface JobFormData {
 }
 
 export default function CreateJobPage() {
+  const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const createJobMutation = useCreateJob();
   const saveDraftJobMutation = useSaveDraftJob();
@@ -173,6 +175,8 @@ export default function CreateJobPage() {
       const result = await createJobMutation.mutateAsync(transformFormData(formData));
       console.log("등록 성공:", result);
       alert("채용공고가 등록되었습니다.");
+      // 성공 시 HospitalMyJobsPage로 이동
+      router.push("/dashboard/hospital/my-jobs");
     } catch (error) {
       console.error("등록 실패:", error);
       alert("채용공고 등록에 실패했습니다.");

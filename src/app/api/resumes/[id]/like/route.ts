@@ -12,7 +12,7 @@ export const POST = withAuth(async (
     const resolvedParams = await params;
     const resumeId = resolvedParams.id;
 
-    const resume = await (prisma as any).detailedResume.findUnique({
+    const resume = await (prisma as any).detailed_resumes.findUnique({
       where: { id: resumeId }
     });
 
@@ -35,6 +35,7 @@ export const POST = withAuth(async (
 
     await (prisma as any).resume_likes.create({
       data: {
+        id: `like_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         userId: user.userId,
         resumeId: resumeId
       }

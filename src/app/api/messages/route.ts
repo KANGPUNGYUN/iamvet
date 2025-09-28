@@ -37,11 +37,11 @@ export async function GET(request: NextRequest) {
         notificationWhere.isRead = false;
       }
 
-      const notifications = await (prisma as any).notification.findMany({
+      const notifications = await (prisma as any).notifications.findMany({
         where: notificationWhere,
         include: {
-          sender: {
-            select: { id: true, nickname: true, userType: true }
+          users_notifications_senderIdTousers: {
+            select: { id: true, userType: true }
           }
         },
         orderBy: {
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
           createdAt: notification.createdAt,
           isRead: notification.isRead,
           senderId: notification.senderId,
-          sender: notification.sender,
+          sender: notification.users_notifications_senderIdTousers,
           notificationType: notification.type
         });
       });
@@ -67,36 +67,33 @@ export async function GET(request: NextRequest) {
     // 문의 조회
     if (type === "inquiries" || type === "all" || !type) {
       let inquiryWhere: any = {
-        recipientId: payload.userId
+        recipient_id: payload.userId
       };
 
       if (filter === "read") {
-        inquiryWhere.isRead = true;
+        inquiryWhere.is_read = true;
       } else if (filter === "unread") {
-        inquiryWhere.isRead = false;
+        inquiryWhere.is_read = false;
       }
 
-      const inquiries = await (prisma as any).contactInquiry.findMany({
+      const inquiries = await (prisma as any).contact_inquiries.findMany({
         where: inquiryWhere,
         include: {
-          sender: {
-            select: { id: true, nickname: true, userType: true }
+          users_contact_inquiries_sender_idTousers: {
+            select: { id: true, userType: true }
           },
-          job: {
+          jobs: {
             select: { 
               id: true, 
-              title: true,
-              hospital: {
-                select: { hospitalName: true }
-              }
+              title: true
             }
           },
-          resume: {
+          resumes: {
             select: { id: true, title: true }
           }
         },
         orderBy: {
-          createdAt: sort === "oldest" ? "asc" : "desc"
+          created_at: sort === "oldest" ? "asc" : "desc"
         }
       });
 
@@ -104,19 +101,19 @@ export async function GET(request: NextRequest) {
         results.push({
           id: inquiry.id,
           type: "inquiry",
-          title: `${inquiry.sender?.nickname || "사용자"}님으로부터 문의: ${inquiry.subject}`,
+          title: `사용자님으로부터 문의: ${inquiry.subject}`,
           content: inquiry.message,
-          createdAt: inquiry.createdAt,
-          isRead: inquiry.isRead,
-          senderId: inquiry.senderId,
-          sender: inquiry.sender,
+          createdAt: inquiry.created_at,
+          isRead: inquiry.is_read,
+          senderId: inquiry.sender_id,
+          sender: inquiry.users_contact_inquiries_sender_idTousers,
           subject: inquiry.subject,
-          job: inquiry.job ? {
-            id: inquiry.job.id,
-            title: inquiry.job.title,
-            hospitalName: inquiry.job.hospital?.hospitalName || null
+          job: inquiry.jobs ? {
+            id: inquiry.jobs.id,
+            title: inquiry.jobs.title,
+            hospitalName: null
           } : null,
-          resume: inquiry.resume,
+          resume: inquiry.resumes,
           inquiryType: inquiry.type
         });
       });

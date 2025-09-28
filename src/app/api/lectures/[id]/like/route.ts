@@ -35,6 +35,7 @@ export const POST = withAuth(async (
 
     await (prisma as any).lecture_likes.create({
       data: {
+        id: `like_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         userId: user.userId,
         lectureId: lectureId
       }

@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     if (bookmarked && userId) {
       // 사용자가 좋아요한 양수양도 ID들을 먼저 조회
-      const userLikedTransfers = await (prisma as any).transferLike.findMany({
+      const userLikedTransfers = await (prisma as any).transfer_likes.findMany({
         where: { userId },
         select: { transferId: true },
       });
@@ -85,19 +85,17 @@ export async function GET(request: NextRequest) {
           whereClause.category = { in: categories };
         }
 
-        total = await (prisma as any).transfer.count({ where: whereClause });
+        total = await (prisma as any).transfers.count({ where: whereClause });
 
-        const result = await (prisma as any).transfer.findMany({
+        const result = await (prisma as any).transfers.findMany({
           where: whereClause,
           orderBy: { createdAt: "desc" },
           skip: offset,
           take: limit,
           include: {
-            user: {
+            users: {
               select: {
-                hospitalName: true,
                 profileImage: true,
-                hospitalAddress: true,
               },
             },
           },
@@ -105,7 +103,7 @@ export async function GET(request: NextRequest) {
 
         transfers = result.map((transfer: any) => ({
           ...transfer,
-          hospitalName: transfer.user?.hospitalName,
+          hospitalName: "병원", // 기본값 설정 (hospital 정보는 별도 조회 필요)
           hospitalType: "병원", // 기본값 설정
           categories: transfer.category,
         }));
@@ -123,7 +121,7 @@ export async function GET(request: NextRequest) {
         .map((transfer: any) => transfer.id)
         .filter(Boolean);
       if (transferIds.length > 0) {
-        const likes = await (prisma as any).transferLike.findMany({
+        const likes = await (prisma as any).transfer_likes.findMany({
           where: {
             userId,
             transferId: { in: transferIds },

@@ -179,27 +179,65 @@ export default function LectureDetailPage({
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || !isAuthenticated) return;
+    console.log('[LectureDetail] handleCommentSubmit 시작:', {
+      newComment: newComment.substring(0, 50),
+      isAuthenticated,
+      currentUser: !!currentUser,
+      userId: currentUser?.id
+    });
+    
+    if (!newComment.trim()) {
+      console.log('[LectureDetail] 댓글 내용이 비어있음');
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      console.log('[LectureDetail] 인증되지 않은 사용자');
+      alert('로그인이 필요합니다.');
+      return;
+    }
 
     try {
+      console.log('[LectureDetail] createComment 호출 중...');
       await createComment(id, "lecture", newComment);
+      console.log('[LectureDetail] createComment 성공, 입력창 초기화');
       setNewComment("");
     } catch (error) {
       console.error("Failed to create comment:", error);
+      alert('댓글 작성에 실패했습니다.');
     }
   };
 
   const handleReplySubmit = async (parentId: string) => {
     const replyContent = replyInputs[parentId];
-    if (!replyContent?.trim() || !isAuthenticated) return;
+    console.log('[LectureDetail] handleReplySubmit 시작:', {
+      parentId,
+      replyContent: replyContent?.substring(0, 50),
+      isAuthenticated,
+      currentUser: !!currentUser
+    });
+    
+    if (!replyContent?.trim()) {
+      console.log('[LectureDetail] 답글 내용이 비어있음');
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      console.log('[LectureDetail] 인증되지 않은 사용자');
+      alert('로그인이 필요합니다.');
+      return;
+    }
 
     try {
+      console.log('[LectureDetail] createComment (reply) 호출 중...');
       await createComment(id, "lecture", replyContent, parentId);
+      console.log('[LectureDetail] createComment (reply) 성공');
       setReplyInputs((prev) => ({ ...prev, [parentId]: "" }));
       // 답글을 추가한 후 자동으로 답글 목록을 펼침
       setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
     } catch (error) {
       console.error("Failed to create reply:", error);
+      alert('답글 작성에 실패했습니다.');
     }
   };
 
@@ -572,11 +610,7 @@ export default function LectureDetailPage({
                       <div className="flex gap-3">
                         <Image
                           src={comment.author_profile_image || profileImg}
-                          alt={
-                            comment.author_display_name ||
-                            comment.author_name ||
-                            "사용자"
-                          }
+                          alt={comment.author_name || "사용자"}
                           width={45}
                           height={45}
                           className="w-[45px] h-[45px] rounded-full object-cover"
@@ -585,9 +619,7 @@ export default function LectureDetailPage({
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
                               <span className="text-[14px] font-semibold text-[#3B394D]">
-                                {comment.author_display_name ||
-                                  comment.author_name ||
-                                  "익명 사용자"}
+                                {comment.author_name || "익명 사용자"}
                               </span>
                               <span className="text-[12px] text-[#9098A4]">
                                 {new Date(comment.createdAt).toLocaleDateString(
@@ -696,11 +728,7 @@ export default function LectureDetailPage({
                               <div key={reply.id} className="flex gap-3">
                                 <Image
                                   src={reply.author_profile_image || profileImg}
-                                  alt={
-                                    reply.author_display_name ||
-                                    reply.author_name ||
-                                    "사용자"
-                                  }
+                                  alt={reply.author_name || "사용자"}
                                   width={36}
                                   height={36}
                                   className="w-[36px] h-[36px] rounded-full object-cover"
@@ -709,9 +737,7 @@ export default function LectureDetailPage({
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex items-center gap-2">
                                       <span className="text-[14px] font-semibold text-[#3B394D]">
-                                        {reply.author_display_name ||
-                                          reply.author_name ||
-                                          "익명 사용자"}
+                                        {reply.author_name || "익명 사용자"}
                                       </span>
                                       <span className="text-[12px] text-[#9098A4]">
                                         {new Date(

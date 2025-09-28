@@ -81,6 +81,14 @@ export async function createJob(data: CreateJobRequest): Promise<{
     const job = jobResult[0];
     console.log("Job created successfully:", job.id);
 
+    // hospitals 테이블에서 hospitalName 조회
+    const hospitalResult = await sql`
+      SELECT h."hospitalName" 
+      FROM hospitals h 
+      WHERE h."userId" = ${hospitalId}
+    `;
+    const hospitalName = hospitalResult[0]?.hospitalName || null;
+
     return {
       success: true,
       job: {
@@ -109,7 +117,7 @@ export async function createJob(data: CreateJobRequest): Promise<{
         managerEmail: job.managerEmail,
         department: job.department,
         hospitalId: job.hospitalId,
-        hospitalName: userResult.user?.hospitalName,
+        hospitalName: hospitalName,
         createdAt: job.createdAt,
         updatedAt: job.updatedAt,
         isActive: job.isActive,
@@ -194,6 +202,14 @@ export async function saveDraftJob(data: CreateJobRequest): Promise<{
     const job = jobResult[0];
     console.log("Draft job saved successfully:", job.id);
 
+    // hospitals 테이블에서 hospitalName 조회
+    const hospitalResult = await sql`
+      SELECT h."hospitalName" 
+      FROM hospitals h 
+      WHERE h."userId" = ${hospitalId}
+    `;
+    const hospitalName = hospitalResult[0]?.hospitalName || null;
+
     return {
       success: true,
       job: {
@@ -222,7 +238,7 @@ export async function saveDraftJob(data: CreateJobRequest): Promise<{
         managerEmail: job.managerEmail,
         department: job.department,
         hospitalId: job.hospitalId,
-        hospitalName: userResult.user?.hospitalName,
+        hospitalName: hospitalName,
         createdAt: job.createdAt,
         updatedAt: job.updatedAt,
         isActive: job.isActive,
@@ -255,9 +271,11 @@ export async function getJobsByHospital(): Promise<{
     const hospitalId = userResult.user.id;
 
     const jobResults = await sql`
-      SELECT * FROM jobs 
-      WHERE "hospitalId" = ${hospitalId} 
-      ORDER BY "createdAt" DESC
+      SELECT j.*, h."hospitalName" 
+      FROM jobs j
+      JOIN hospitals h ON j."hospitalId" = h."userId"
+      WHERE j."hospitalId" = ${hospitalId} 
+      ORDER BY j."createdAt" DESC
     `;
 
     const jobs: Job[] = jobResults.map((job) => ({
@@ -286,7 +304,7 @@ export async function getJobsByHospital(): Promise<{
       managerEmail: job.managerEmail,
       department: job.department,
       hospitalId: job.hospitalId,
-      hospitalName: userResult.user?.hospitalName,
+      hospitalName: job.hospitalName,
       createdAt: job.createdAt,
       updatedAt: job.updatedAt,
       isActive: job.isActive,

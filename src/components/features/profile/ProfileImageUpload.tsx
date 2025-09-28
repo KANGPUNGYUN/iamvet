@@ -10,7 +10,7 @@ interface ProfileImageUploadProps {
   onChange?: (url: string | null) => void;
   disabled?: boolean;
   className?: string;
-  folder?: 'profiles' | 'licenses' | 'hospitals' | 'resumes';
+  folder?: 'profiles' | 'licenses' | 'hospitals' | 'resumes' | 'hospital-facilities';
 }
 
 export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({

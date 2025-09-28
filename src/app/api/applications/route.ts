@@ -70,21 +70,17 @@ export async function GET(request: NextRequest) {
     });
 
     const hospitalIds = jobs.map((job: { hospitalId: string }) => job.hospitalId);
-    const hospitals = await (prisma as any).users.findMany({
-      where: {
-        id: { in: hospitalIds }
-      },
-      select: {
-        id: true,
-        hospitalName: true,
-        profileImage: true,
-      }
-    });
+    const hospitals = await prisma.$queryRaw<Array<{ id: string; hospitalName: string | null; profileImage: string | null }>>`
+      SELECT u.id, h."hospitalName", u."profileImage"
+      FROM users u
+      JOIN hospitals h ON u.id = h."userId"
+      WHERE u.id = ANY(${hospitalIds}::text[])
+    `;
 
     // 프론트엔드에서 기대하는 형태로 데이터 변환
     const formattedApplications = applications.map((app: { id: string; jobId: string; appliedAt: Date; status: string }) => {
       const job = jobs.find((j: { id: string; hospitalId: string; title: string }) => j.id === app.jobId);
-      const hospital = job ? hospitals.find((h: { id: string; hospitalName: string | null; profileImage: string | null }) => h.id === job.hospitalId) : null;
+      const hospital = job ? hospitals.find((h) => h.id === job.hospitalId) : null;
       
       return {
         id: parseInt(app.jobId.slice(-8), 16), // jobId의 일부를 숫자로 변환

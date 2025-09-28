@@ -190,7 +190,7 @@ export class AuthService {
         });
         return !!profile;
       } else if (userType === 'HOSPITAL' || userType === 'hospital') {
-        const profile = await prisma.hospital_profiles.findUnique({
+        const profile = await prisma.hospitals.findUnique({
           where: { userId },
         });
         return !!profile;

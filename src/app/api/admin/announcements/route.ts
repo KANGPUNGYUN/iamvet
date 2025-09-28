@@ -19,8 +19,23 @@ export async function GET(req: NextRequest) {
     const announcements = await prisma.announcements.findMany({
       include: {
         users: {
-          select: {
-            realName: true,
+          include: {
+            veterinarians: {
+              select: {
+                realName: true,
+              },
+            },
+            veterinary_students: {
+              select: {
+                realName: true,
+              },
+            },
+            hospitals: {
+              select: {
+                representativeName: true,
+                hospitalName: true,
+              },
+            },
           },
         },
         notifications: {
@@ -61,7 +76,10 @@ export async function GET(req: NextRequest) {
       sendCount: announcement.notification_batches[0]?.sentCount || 0,
       totalRecipients: announcement.notification_batches[0]?.totalRecipients || 0,
       readCount: 0, // 추후 구현 필요
-      author: announcement.users.realName || '관리자',
+      author: announcement.users.veterinarians?.realName || 
+              announcement.users.veterinary_students?.realName || 
+              announcement.users.hospitals?.representativeName || 
+              announcement.users.hospitals?.hospitalName || '관리자',
       createdAt: announcement.notifications.createdAt,
       updatedAt: announcement.notifications.updatedAt,
       sentAt: announcement.notification_batches[0]?.completedAt,
@@ -147,7 +165,7 @@ export async function POST(req: NextRequest) {
         sendCount: 0,
         totalRecipients: 0,
         readCount: 0,
-        author: userResult.user!.realName || '관리자',
+        author: '관리자',
         createdAt: result.notification.createdAt,
         updatedAt: result.notification.updatedAt,
       },

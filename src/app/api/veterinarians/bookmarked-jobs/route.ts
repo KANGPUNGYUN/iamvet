@@ -64,11 +64,12 @@ export async function GET(request: NextRequest) {
         j."recruitEndDate" as "applicationDeadline",
         j."createdAt",
         j."workType",
-        u."hospitalName" as hospital,
+        h."hospitalName" as hospital,
         jl."createdAt" as "likeCreatedAt"
       FROM jobs j
       INNER JOIN job_likes jl ON j.id = jl."jobId"
       INNER JOIN users u ON j."hospitalId" = u.id
+      INNER JOIN hospitals h ON u.id = h."userId"
       WHERE jl."userId" = ${userId}
       AND j."deletedAt" IS NULL
       AND j."isActive" = true

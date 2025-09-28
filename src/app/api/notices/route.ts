@@ -25,9 +25,25 @@ export async function GET(req: NextRequest) {
       },
       include: {
         users_notifications_senderIdTousers: {
-          select: {
-            nickname: true,
-            realName: true,
+          include: {
+            veterinarians: {
+              select: {
+                realName: true,
+                nickname: true,
+              },
+            },
+            veterinary_students: {
+              select: {
+                realName: true,
+                nickname: true,
+              },
+            },
+            hospitals: {
+              select: {
+                representativeName: true,
+                hospitalName: true,
+              },
+            },
           },
         },
         announcements: {
@@ -117,7 +133,7 @@ export async function POST(req: NextRequest) {
         const notificationId = nanoid();
         const announcementId = nanoid();
         
-        // 먼저 notification 생성
+        // 먼저 notification 생성  
         const notification = await prisma.notifications.create({
           data: {
             id: notificationId,

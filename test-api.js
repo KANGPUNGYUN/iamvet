@@ -32,9 +32,10 @@ async function testAPI() {
     
     // Test 4: Test the exact query used in API
     const apiQuery = `
-      SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
+      SELECT j.*, h."hospitalName" as hospital_name, u."profileImage" as hospital_logo, h."hospitalAddress" as hospital_location
       FROM job_postings j
       JOIN users u ON j."hospitalId" = u.id
+      JOIN hospitals h ON u.id = h."userId"
       WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
       ORDER BY j."createdAt" DESC
       LIMIT 5
@@ -62,14 +63,19 @@ async function testAPI() {
       console.log('Sample job_postings:', allJobs.rows);
       
       // Check if there are hospital users
-      const hospitals = await pool.query('SELECT id, "hospitalName", "userType" FROM users WHERE "userType" = \'HOSPITAL\' LIMIT 3');
-      console.log('Sample hospital users:', hospitals.rows);
+      const hospitalUsers = await pool.query('SELECT id, "userType" FROM users WHERE "userType" = \'HOSPITAL\' LIMIT 3');
+      console.log('Sample hospital users:', hospitalUsers.rows);
+      
+      // Check hospitals table
+      const hospitals = await pool.query('SELECT "userId", "hospitalName", "hospitalAddress" FROM hospitals LIMIT 3');
+      console.log('Sample hospitals:', hospitals.rows);
       
       // Check JOIN compatibility
       const joinTest = await pool.query(`
-        SELECT j.id as job_id, j."hospitalId", u.id as user_id, u."hospitalName"
+        SELECT j.id as job_id, j."hospitalId", u.id as user_id, h."hospitalName"
         FROM job_postings j
         LEFT JOIN users u ON j."hospitalId" = u.id
+        LEFT JOIN hospitals h ON u.id = h."userId"
         LIMIT 3
       `);
       console.log('JOIN test results:', joinTest.rows);

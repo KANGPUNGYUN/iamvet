@@ -38,9 +38,14 @@ export default function HospitalRegisterPage() {
         website: formData.website,
         address: formData.address, // 주소 분리
         detailAddress: formData.detailAddress, // 상세주소 분리
+        postalCode: formData.postalCode, // 우편번호 추가
+        latitude: formData.latitude || undefined, // 위도 추가
+        longitude: formData.longitude || undefined, // 경도 추가
         profileImage: profileImageUrl || undefined,
+        description: formData.description || undefined, // 병원 소개 추가
         treatmentAnimals: formData.treatmentAnimals, // 진료 가능 동물 추가
         treatmentSpecialties: formData.treatmentSpecialties, // 진료 분야 추가
+        hospitalImages: formData.hospitalImages, // 병원 시설 이미지 추가
         businessLicense: businessLicenseUrl || undefined,
         businessLicenseFileName: businessLicenseFileName || undefined,
         businessLicenseFileType: businessLicenseFileType || undefined,

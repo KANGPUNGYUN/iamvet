@@ -62,9 +62,20 @@ export const getUserByEmailOrLoginId = async (identifier: string, userType?: str
   // userType을 대문자로 변환 (hospital -> HOSPITAL, veterinarian -> VETERINARIAN)
   const normalizedUserType = userType ? userType.toUpperCase() : undefined;
   
-  const query = userType
-    ? 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1) AND "userType" = $2'
-    : 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1)';
+  let query: string;
+  if (normalizedUserType === 'HOSPITAL') {
+    // 병원 계정인 경우 hospitals 테이블을 조인하여 hospitalName을 가져옴
+    query = `
+      SELECT u.*, h."hospitalName", u."profileImage" as "logoImage"
+      FROM users u
+      LEFT JOIN hospitals h ON u.id = h."userId"
+      WHERE (u.email = $1 OR u."loginId" = $1) AND u."userType" = $2
+    `;
+  } else if (userType) {
+    query = 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1) AND "userType" = $2';
+  } else {
+    query = 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1)';
+  }
 
   const params = userType ? [identifier, normalizedUserType] : [identifier];
   const result = await pool.query(query, params);
@@ -207,9 +218,10 @@ export const getJobsWithPagination = async (params: any) => {
   }
   
   let query = `
-    SELECT j.*, u."hospitalName" as hospital_name, u."hospitalLogo" as hospital_logo, u."hospitalAddress" as hospital_location
+    SELECT j.*, h."hospitalName" as hospital_name, h."hospitalLogo" as hospital_logo, h."hospitalAddress" as hospital_location
     FROM jobs j
     JOIN users u ON j."hospitalId" = u.id
+    JOIN hospitals h ON u.id = h."userId"
     WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
   `;
 
@@ -219,7 +231,7 @@ export const getJobsWithPagination = async (params: any) => {
   // 키워드 검색
   if (params.keyword) {
     paramCount++;
-    query += ` AND (j.title ILIKE $${paramCount} OR j.position ILIKE $${paramCount} OR u."hospitalName" ILIKE $${paramCount})`;
+    query += ` AND (j.title ILIKE $${paramCount} OR j.position ILIKE $${paramCount} OR h."hospitalName" ILIKE $${paramCount})`;
     queryParams.push(`%${params.keyword}%`);
   }
 
@@ -242,7 +254,7 @@ export const getJobsWithPagination = async (params: any) => {
   // 지역 필터
   if (params.region) {
     paramCount++;
-    query += ` AND u."hospitalAddress" ILIKE $${paramCount}`;
+    query += ` AND h."hospitalAddress" ILIKE $${paramCount}`;
     queryParams.push(`%${params.region}%`);
   }
 
@@ -314,7 +326,7 @@ export const getJobsWithPagination = async (params: any) => {
 
   if (params.keyword) {
     countParamCount++;
-    countQuery += ` AND (j.title ILIKE $${countParamCount} OR j.position ILIKE $${countParamCount} OR u."hospitalName" ILIKE $${countParamCount})`;
+    countQuery += ` AND (j.title ILIKE $${countParamCount} OR j.position ILIKE $${countParamCount} OR h."hospitalName" ILIKE $${countParamCount})`;
     countParams.push(`%${params.keyword}%`);
   }
 
@@ -389,15 +401,16 @@ export const getJobById = async (jobId: string) => {
     try {
       const hospitalQuery = `
         SELECT 
-          id as userId,
-          email as hospital_email,
-          phone as hospital_phone,
-          "hospitalName" as hospital_name,
-          "hospitalAddress" as hospital_address,
-          "hospitalWebsite" as hospital_website,
-          "hospitalLogo" as hospital_logo
-        FROM users 
-        WHERE id = $1 AND "userType" = 'HOSPITAL'
+          u.id as userId,
+          u.email as hospital_email,
+          u.phone as hospital_phone,
+          h."hospitalName" as hospital_name,
+          h."hospitalAddress" as hospital_address,
+          h."hospitalWebsite" as hospital_website,
+          h."hospitalLogo" as hospital_logo
+        FROM users u
+        JOIN hospitals h ON u.id = h."userId"
+        WHERE u.id = $1 AND u."userType" = 'HOSPITAL'
       `;
       
       const hospitalResult = await pool.query(hospitalQuery, [job.hospitalId]);
@@ -738,18 +751,19 @@ export const getRelatedJobs = async (
   let query = `
     SELECT 
       jp.*,
-      u."hospitalName" as hospital_name,
-      u."hospitalLogo" as hospital_logo,
-      u."hospitalAddress" as hospital_location
+      h."hospitalName" as hospital_name,
+      h."hospitalLogo" as hospital_logo,
+      h."hospitalAddress" as hospital_location
     FROM jobs jp
     LEFT JOIN users u ON jp."hospitalId" = u.id AND u."userType" = 'HOSPITAL'
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE jp.id != $1 AND jp."isActive" = true
   `;
 
   const params = [jobId];
 
   if (medicalField) {
-    query += ` AND jp."medicalField" && ARRAY[$2]`;
+    query += ` AND jp."medicalField" && ARRAY[$2]::text[]`;
     params.push(medicalField);
     query += ` ORDER BY jp."createdAt" DESC LIMIT $3`;
     params.push(limit.toString());
@@ -1211,15 +1225,16 @@ export const getHospitalProfile = async (userId: string) => {
 export const getHospitalByUserId = async (userId: string) => {
   const query = `
     SELECT 
-      id,
-      "hospitalName",
-      "businessNumber",
-      "hospitalAddress",
-      "hospitalLogo",
-      email,
-      phone
-    FROM users 
-    WHERE id = $1 AND "userType" = 'HOSPITAL'
+      u.id,
+      h."hospitalName",
+      h."businessNumber",
+      h."hospitalAddress",
+      h."hospitalLogo",
+      u.email,
+      u.phone
+    FROM users u
+    JOIN hospitals h ON u.id = h."userId"
+    WHERE u.id = $1 AND u."userType" = 'HOSPITAL'
   `;
   const result = await pool.query(query, [userId]);
   return result.rows[0] || null;
@@ -1408,13 +1423,14 @@ export const getVeterinarianApplications = async (
       j.title as job_title, 
       j.position, 
       j.salary,
-      h."hospitalName" as hospital_name, 
-      h.phone as contact_phone, 
-      h.email as contact_email,
-      h."profileImage" as hospital_logo
+      hosp."hospitalName" as hospital_name, 
+      u.phone as contact_phone, 
+      u.email as contact_email,
+      u."profileImage" as hospital_logo
     FROM applications a
     JOIN jobs j ON a."jobId" = j.id
-    JOIN users h ON j."hospitalId" = h.id
+    JOIN users u ON j."hospitalId" = u.id
+    JOIN hospitals hosp ON u.id = hosp."userId"
     WHERE a."veterinarianId" = $1
     ORDER BY ${orderBy}
   `;
@@ -1815,18 +1831,29 @@ export const getRecommendedLectures = async (
 
 export const getLectureComments = async (lectureId: string) => {
   try {
-    // 강의 댓글 조회 - 사용자 정보와 조인
+    // 강의 댓글 조회 - 사용자 정보와 병원 정보를 조인
     const query = `
       SELECT 
         lc.*,
-        u."realName" as author_name,
-        u."profileImage" as author_profile_image
+        u."profileImage" as author_profile_image,
+        u."userType",
+        v."realName" as vet_real_name,
+        vs."realName" as vs_real_name,
+        h."hospitalName",
+        h."hospitalLogo",
+        h."representativeName"
       FROM lecture_comments lc
       LEFT JOIN users u ON lc."userId" = u.id
+      LEFT JOIN veterinarians v ON u.id = v."userId"
+      LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+      LEFT JOIN hospitals h ON u.id = h."userId"
       WHERE lc."lectureId" = $1 AND lc."deletedAt" IS NULL
       ORDER BY lc."createdAt" DESC
     `;
     const result = await pool.query(query, [lectureId]);
+    
+    // 디버깅을 위한 로그 출력
+    console.log(`getLectureComments: Found ${result.rows.length} comments`);
     
     // 댓글을 계층구조로 정리
     const commentMap = new Map();
@@ -1834,6 +1861,24 @@ export const getLectureComments = async (lectureId: string) => {
     
     // 모든 댓글을 맵에 저장
     result.rows.forEach((comment: any) => {
+      // 사용자 타입에 따라 적절한 이름 사용
+      let displayName;
+      if (comment.userType === 'HOSPITAL') {
+        // 병원 계정: hospitalName을 무조건 우선적으로 사용 
+        displayName = comment.hospitalName || "병원명 미설정";
+        console.log(`Successfully using hospitalName: ${displayName} - this will be set as author_display_name`);
+      } else if (comment.userType === 'VETERINARIAN') {
+        displayName = comment.vet_real_name || "익명 사용자";
+      } else if (comment.userType === 'VETERINARY_STUDENT') {
+        displayName = comment.vs_real_name || "익명 사용자";
+      } else {
+        displayName = "익명 사용자";
+      }
+      
+      const profileImage = comment.userType === 'HOSPITAL' && comment.hospitalLogo
+        ? comment.hospitalLogo
+        : comment.author_profile_image || null;
+
       const mappedComment = {
         id: comment.id,
         lecture_id: comment.lectureId,
@@ -1842,9 +1887,9 @@ export const getLectureComments = async (lectureId: string) => {
         content: comment.content,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
-        author_name: comment.author_name || "익명 사용자",
-        author_profile_image: comment.author_profile_image || null,
-        author_display_name: comment.author_name || "익명 사용자",
+        author_name: displayName,
+        author_profile_image: profileImage,
+        author_display_name: displayName, // 병원 계정의 경우 hospitalName이 여기에 설정됨
         replies: []
       };
       commentMap.set(comment.id, mappedComment);
@@ -3007,16 +3052,18 @@ export const getApplicationById = async (applicationId: string) => {
       j.title as job_title,
       j.position as job_position,
       j."hospitalId",
-      h.name as hospital_name,
-      u.nickname as veterinarian_nickname,
+      h."hospitalName" as hospital_name,
+      v.nickname as veterinarian_nickname,
       u.email as veterinarian_email,
       u.phone as veterinarian_phone,
-      u."realName" as veterinarian_realName,
+      v."realName" as veterinarian_realName,
       dr.id as resume_id
     FROM applications a
     JOIN jobs j ON a."jobId" = j.id
-    JOIN hospitals h ON j."hospitalId" = h.id
+    JOIN users hu ON j."hospitalId" = hu.id
+    JOIN hospitals h ON hu.id = h."userId"
     JOIN users u ON a."veterinarianId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
     LEFT JOIN detailed_resumes dr ON dr."userId" = u.id
     WHERE a.id = $1
   `;
@@ -3060,16 +3107,17 @@ export const getHospitalApplicants = async (hospitalId: string) => {
   const query = `
     SELECT 
       a.*,
-      u.nickname,
+      v.nickname,
       u.email,
       u.phone,
       u."profileImage",
-      u."realName",
+      v."realName",
       j.title as job_title,
       j.position as job_position,
       dr.id as resume_id
     FROM applications a
     JOIN users u ON a."veterinarianId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
     JOIN jobs j ON a."jobId" = j.id
     LEFT JOIN detailed_resumes dr ON dr."userId" = u.id
     WHERE j."hospitalId" = $1
@@ -3144,11 +3192,14 @@ export const getLectureCommentById = async (commentId: string) => {
   const query = `
     SELECT 
       lc.*,
-      u.nickname as author_name,
+      COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       u."profileImage" as author_profile_image,
-      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+      COALESCE(v."realName", vs."realName", h."representativeName", h."hospitalName") as author_display_name
     FROM lecture_comments lc
     LEFT JOIN users u ON lc."userId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE lc.id = $1 AND lc."deletedAt" IS NULL
   `;
   const result = await pool.query(query, [commentId]);
@@ -3159,16 +3210,48 @@ export const getLectureCommentReplies = async (commentId: string) => {
   const query = `
     SELECT 
       lc.*,
-      u.nickname as author_name,
       u."profileImage" as author_profile_image,
-      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+      u."userType",
+      v."realName" as vet_real_name,
+      vs."realName" as vs_real_name,
+      h."hospitalName",
+      h."hospitalLogo",
+      h."representativeName"
     FROM lecture_comments lc
     LEFT JOIN users u ON lc."userId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE lc."parentId" = $1 AND lc."deletedAt" IS NULL
     ORDER BY lc."createdAt" ASC
   `;
   const result = await pool.query(query, [commentId]);
-  return result.rows;
+  
+  // 답글도 병원명 우선 표시 로직 적용
+  return result.rows.map((reply: any) => {
+    let displayName;
+    if (reply.userType === 'HOSPITAL') {
+      displayName = reply.hospitalName || "병원명 미설정";
+      console.log(`Reply - Using hospitalName: ${displayName}`);
+    } else if (reply.userType === 'VETERINARIAN') {
+      displayName = reply.vet_real_name || "익명 사용자";
+    } else if (reply.userType === 'VETERINARY_STUDENT') {
+      displayName = reply.vs_real_name || "익명 사용자";
+    } else {
+      displayName = "익명 사용자";
+    }
+
+    const profileImage = reply.userType === 'HOSPITAL' && reply.hospitalLogo
+      ? reply.hospitalLogo
+      : reply.author_profile_image || null;
+
+    return {
+      ...reply,
+      author_name: displayName,
+      author_display_name: displayName,
+      author_profile_image: profileImage
+    };
+  });
 };
 
 export const createLectureComment = async (commentData: {
@@ -3215,15 +3298,47 @@ export const getForumById = async (forumId: string) => {
   const query = `
     SELECT 
       fp.*,
-      u.nickname as author_name,
+      COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       u."profileImage" as author_profile_image,
-      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+      u."userType",
+      v."realName" as vet_real_name,
+      vs."realName" as vs_real_name,
+      h."hospitalName",
+      h."representativeName",
+      h."hospitalLogo"
     FROM forum_posts fp
     LEFT JOIN users u ON fp."userId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE fp.id = $1 AND fp."deletedAt" IS NULL
   `;
   const result = await pool.query(query, [forumId]);
-  return result.rows[0] || null;
+  
+  if (!result.rows[0]) return null;
+  
+  const post = result.rows[0];
+  let displayName;
+  let profileImage = post.author_profile_image;
+  
+  if (post.userType === 'HOSPITAL') {
+    // 병원 계정: hospitalName을 무조건 우선 사용
+    displayName = post.hospitalName || "병원명 미설정";
+    profileImage = post.hospitalLogo || post.author_profile_image;
+    console.log(`Forum post - Using hospitalName: ${displayName}`);
+  } else if (post.userType === 'VETERINARIAN') {
+    displayName = post.vet_real_name || "익명 사용자";
+  } else if (post.userType === 'VETERINARY_STUDENT') {
+    displayName = post.vs_real_name || "익명 사용자";
+  } else {
+    displayName = "익명 사용자";
+  }
+
+  return {
+    ...post,
+    author_display_name: displayName,
+    author_profile_image: profileImage
+  };
 };
 
 // 범용 조회수 증가 함수
@@ -3326,16 +3441,48 @@ export const getForumComments = async (forumId: string) => {
   const query = `
     SELECT 
       fc.*,
-      u.nickname as author_name,
+      COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       u."profileImage" as author_profile_image,
-      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+      u."userType",
+      v."realName" as vet_real_name,
+      vs."realName" as vs_real_name,
+      h."hospitalName",
+      h."representativeName",
+      h."hospitalLogo"
     FROM forum_comments fc
     LEFT JOIN users u ON fc.user_id = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE fc.forum_id = $1 AND fc."deletedAt" IS NULL
     ORDER BY fc."createdAt" ASC
   `;
   const result = await pool.query(query, [forumId]);
-  return result.rows;
+  
+  // 병원명 우선 표시 로직 적용
+  return result.rows.map((comment: any) => {
+    let displayName;
+    let profileImage = comment.author_profile_image;
+    
+    if (comment.userType === 'HOSPITAL') {
+      // 병원 계정: hospitalName을 무조건 우선 사용
+      displayName = comment.hospitalName || "병원명 미설정";
+      profileImage = comment.hospitalLogo || comment.author_profile_image;
+      console.log(`Forum comment - Using hospitalName: ${displayName}`);
+    } else if (comment.userType === 'VETERINARIAN') {
+      displayName = comment.vet_real_name || "익명 사용자";
+    } else if (comment.userType === 'VETERINARY_STUDENT') {
+      displayName = comment.vs_real_name || "익명 사용자";
+    } else {
+      displayName = "익명 사용자";
+    }
+
+    return {
+      ...comment,
+      author_display_name: displayName,
+      author_profile_image: profileImage
+    };
+  });
 };
 
 // 댓글 생성
@@ -3396,11 +3543,14 @@ export const getForumCommentById = async (commentId: string) => {
   const query = `
     SELECT 
       fc.*,
-      u.nickname as author_name,
+      COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       u."profileImage" as author_profile_image,
-      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+      COALESCE(v."realName", vs."realName", h."representativeName", h."hospitalName") as author_display_name
     FROM forum_comments fc
     LEFT JOIN users u ON fc.user_id = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE fc.id = $1 AND fc."deletedAt" IS NULL
   `;
   
@@ -3435,11 +3585,14 @@ export const getForumsWithPagination = async (page = 1, limit = 10) => {
   const query = `
     SELECT 
       fp.*,
-      u.nickname as author_name,
+      COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       u."profileImage" as author_profile_image,
-      COALESCE(u."realName", u.nickname, u."hospitalName") as author_display_name
+      COALESCE(v."realName", vs."realName", h."representativeName") as author_display_name
     FROM forum_posts fp
     LEFT JOIN users u ON fp."userId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE fp."deletedAt" IS NULL 
     ORDER BY fp."createdAt" DESC 
     LIMIT $1 OFFSET $2
@@ -3542,10 +3695,12 @@ export const getHospitalEvaluations = async (hospitalId: string) => {
   const query = `
     SELECT 
       he.*,
-      COALESCE(u.nickname, u."realName") as "evaluatorName",
+      COALESCE(v.nickname, vs.nickname, v."realName", vs."realName") as "evaluatorName",
       u.id as "evaluatorId"
     FROM hospital_evaluations he
     LEFT JOIN users u ON he."userId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
     WHERE he."hospitalId" = $1 AND he."deletedAt" IS NULL
     ORDER BY he."createdAt" DESC
   `;
@@ -3807,9 +3962,10 @@ export const getResumeEvaluations = async (resumeId: string) => {
     SELECT 
       re.*,
       h."hospitalName",
-      h.id as hospital_id
+      u.id as hospital_id
     FROM resume_evaluations re
-    LEFT JOIN users h ON re."userId" = h.id
+    LEFT JOIN users u ON re."userId" = u.id
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE re."resumeId" = $1 AND re."deletedAt" IS NULL
     ORDER BY re."createdAt" DESC
   `;
@@ -3938,11 +4094,12 @@ export const getTransferById = async (transferId: string) => {
     SELECT 
       t.*,
       u.id as "userId",
-      u."hospitalName",
+      h."hospitalName",
       u."profileImage",
-      u."hospitalAddress"
+      h."hospitalAddress"
     FROM transfers t
     LEFT JOIN users u ON t."userId" = u.id
+    LEFT JOIN hospitals h ON u.id = h."userId" AND u."userType" = 'HOSPITAL'
     WHERE t.id = $1 AND t."deletedAt" IS NULL
   `;
   const result = await pool.query(query, [transferId]);
@@ -4145,9 +4302,10 @@ export const createTransfer = async (transferData: any) => {
 // 편집을 위한 양수양도 조회 (disabled 포함)
 export const getTransferByIdForEdit = async (transferId: string) => {
   const query = `
-    SELECT t.*, u."hospitalName", u."profileImage", u."hospitalAddress"
+    SELECT t.*, h."hospitalName", u."profileImage", h."hospitalAddress"
     FROM transfers t
     LEFT JOIN users u ON t."userId" = u.id
+    LEFT JOIN hospitals h ON u.id = h."userId" AND u."userType" = 'HOSPITAL'
     WHERE t.id = $1 AND t."deletedAt" IS NULL
   `;
   const result = await pool.query(query, [transferId]);

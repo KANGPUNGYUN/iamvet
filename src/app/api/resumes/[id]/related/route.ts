@@ -149,7 +149,7 @@ export async function GET(
     let likedResumeIds: string[] = [];
     
     if (userId && resumeIds.length > 0) {
-      const likes = await (prisma as any).resumeLike.findMany({
+      const likes = await (prisma as any).resume_likes.findMany({
         where: {
           userId: userId,
           resumeId: {
