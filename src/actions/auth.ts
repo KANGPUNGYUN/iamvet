@@ -900,18 +900,16 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
     const generatedId = createId();
     const currentDate = new Date();
 
-    // 통합 users 테이블에 직접 저장
+    // users 테이블에 기본 정보만 저장 (정규화된 스키마)
     const userResult = await sql`
       INSERT INTO users (
-        id, "loginId", email, phone, "realName", "passwordHash", "userType", 
-        nickname, "birthDate", "profileImage", "licenseImage", provider,
-        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
+        id, "loginId", email, phone, "passwordHash", "userType", 
+        "profileImage", provider, "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
         "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${generatedId}, ${userId}, ${email}, ${phone}, ${realName}, ${passwordHash}, 'VETERINARIAN',
-        ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${profileImage}, ${licenseImage}, 'NORMAL',
-        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        ${generatedId}, ${userId}, ${email}, ${phone}, ${passwordHash}, 'VETERINARIAN',
+        ${profileImage}, 'NORMAL', ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
         true, ${currentDate}, ${currentDate}
       )
       RETURNING *
@@ -919,6 +917,19 @@ export async function registerVeterinarian(data: VeterinarianRegisterData) {
 
     const user = userResult[0];
     console.log("SERVER: User created successfully:", user.id);
+
+    // veterinarians 테이블에 수의사 전용 정보 저장 (정규화된 스키마)
+    const veterinarianId = createId();
+    await sql`
+      INSERT INTO veterinarians (
+        id, "userId", "realName", "birthDate", nickname, "licenseImage", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${veterinarianId}, ${user.id}, ${realName}, ${birthDate ? new Date(birthDate) : null}, ${nickname}, ${licenseImage}, ${currentDate}, ${currentDate}
+      )
+    `;
+
+    console.log("SERVER: Veterinarian profile created successfully");
 
     return {
       success: true,
@@ -982,32 +993,44 @@ export async function registerVeterinaryStudent(
     const userId_generated = createId();
     const currentDate = new Date();
 
-    // 통합 users 테이블에 직접 저장
-    const user = await sql`
+    // users 테이블에 기본 정보만 저장 (정규화된 스키마)
+    const userResult = await sql`
       INSERT INTO users (
-        id, "loginId", email, phone, "realName", "passwordHash", "userType", 
-        nickname, "birthDate", "profileImage", "universityEmail", provider,
-        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
+        id, "loginId", email, phone, "passwordHash", "userType", 
+        "profileImage", provider, "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
         "isActive", "createdAt", "updatedAt"
       ) VALUES (
-        ${userId_generated}, ${userId}, ${universityEmail}, ${phone}, ${realName}, ${hashedPassword}, 'VETERINARY_STUDENT',
-        ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${profileImage}, ${universityEmail}, 'NORMAL',
-        ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+        ${userId_generated}, ${userId}, ${universityEmail}, ${phone}, ${hashedPassword}, 'VETERINARY_STUDENT',
+        ${profileImage}, 'NORMAL', ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
         true, ${currentDate}, ${currentDate}
       )
-      RETURNING id, "loginId", email, phone, "userType", nickname
+      RETURNING *
     `;
 
-    console.log("SERVER: Veterinary student created successfully:", user[0].id);
+    const user = userResult[0];
+    console.log("SERVER: User created successfully:", user.id);
+
+    // veterinary_students 테이블에 수의학생 전용 정보 저장 (정규화된 스키마)
+    const studentId = createId();
+    await sql`
+      INSERT INTO veterinary_students (
+        id, "userId", "realName", "birthDate", nickname, "universityEmail", "createdAt", "updatedAt"
+      )
+      VALUES (
+        ${studentId}, ${user.id}, ${realName}, ${birthDate ? new Date(birthDate) : null}, ${nickname}, ${universityEmail}, ${currentDate}, ${currentDate}
+      )
+    `;
+
+    console.log("SERVER: Veterinary student profile created successfully");
 
     return {
       success: true,
       user: {
-        id: user[0].id,
-        loginId: user[0].loginId,
-        email: user[0].email,
-        userType: user[0].userType,
-        nickname: user[0].nickname,
+        id: user.id,
+        loginId: user.loginId,
+        email: user.email,
+        userType: user.userType,
+        nickname: nickname,
       },
       message: "수의학과 학생 회원가입이 완료되었습니다.",
     };
@@ -1089,7 +1112,7 @@ export async function registerHospital(data: HospitalRegisterData) {
     const generatedId = createId();
     const currentDate = new Date();
 
-    // users 테이블에 기본 사용자 정보만 저장 (정규화된 스키마)
+    // users 테이블에 기본 사용자 정보만 저장 (정규화된 스키마 - realName 제외)
     const userResult = await sql`
       INSERT INTO users (
         id, "loginId", email, phone, "passwordHash", "userType", 
@@ -1143,7 +1166,7 @@ export async function registerHospital(data: HospitalRegisterData) {
       console.log("SERVER: Hospital facility images saved:", hospitalImages.length);
     }
 
-    // 진료 가능 동물 저장
+    // 진료 가능 동물 저장 (정규화된 스키마)
     if (treatmentAnimals && treatmentAnimals.length > 0) {
       for (const animalType of treatmentAnimals) {
         await sql`
@@ -1157,7 +1180,7 @@ export async function registerHospital(data: HospitalRegisterData) {
       console.log("SERVER: Hospital treatment animals saved:", treatmentAnimals.length);
     }
 
-    // 진료 분야 저장
+    // 진료 분야 저장 (정규화된 스키마)
     if (treatmentSpecialties && treatmentSpecialties.length > 0) {
       for (const specialty of treatmentSpecialties) {
         await sql`
