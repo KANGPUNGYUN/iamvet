@@ -14,7 +14,7 @@ import {
   query,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { sql } from "@/lib/db";
 
 // src/app/api/jobs/[id]/route.ts - 채용공고 상세
 export async function GET(
@@ -63,15 +63,12 @@ export async function GET(
       hasApplied = applicationCheck.length > 0;
 
       // 좋아요 여부 확인
-      const likeCheck = await (prisma as any).jobLike.findUnique({
-        where: {
-          userId_jobId: {
-            userId: userId,
-            jobId: jobId
-          }
-        }
-      });
-      isLiked = !!likeCheck;
+      const likeResult = await sql`
+        SELECT id FROM job_likes 
+        WHERE "userId" = ${userId} 
+        AND "jobId" = ${jobId}
+      `;
+      isLiked = likeResult.length > 0;
     }
 
     // 병원의 userId를 포함하여 응답
