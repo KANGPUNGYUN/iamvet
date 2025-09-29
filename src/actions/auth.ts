@@ -1984,10 +1984,10 @@ export async function getDetailedHospitalProfile(): Promise<{
         WHERE h."userId" = ${userResult.user.id}
       `,
       sql`
-        SELECT "imageUrl", "imageOrder"
+        SELECT "imageUrl", "displayOrder"
         FROM hospital_images
         WHERE "userId" = ${userResult.user.id}
-        ORDER BY "imageOrder"
+        ORDER BY "displayOrder"
       `
     ]);
 

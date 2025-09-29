@@ -318,6 +318,7 @@ export const getJobsWithPagination = async (params: any) => {
     SELECT COUNT(*) as total
     FROM jobs j
     JOIN users u ON j."hospitalId" = u.id
+    JOIN hospitals h ON u.id = h."userId"
     WHERE j."isActive" = true AND j."isDraft" = false AND j."deletedAt" IS NULL
   `;
 
@@ -346,7 +347,7 @@ export const getJobsWithPagination = async (params: any) => {
 
   if (params.region) {
     countParamCount++;
-    countQuery += ` AND u."hospitalAddress" ILIKE $${countParamCount}`;
+    countQuery += ` AND h."hospitalAddress" ILIKE $${countParamCount}`;
     countParams.push(`%${params.region}%`);
   }
 

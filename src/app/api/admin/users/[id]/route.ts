@@ -157,15 +157,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         // 병원 이미지
         const imagesResult = await sql`
-          SELECT "imageUrl", "imageOrder", "imageDescription"
+          SELECT "imageUrl", "displayOrder", description
           FROM hospital_images 
           WHERE "userId" = ${id}
-          ORDER BY "imageOrder"
+          ORDER BY "displayOrder"
         `;
         userData.hospitalImages = imagesResult.map((img: any) => ({
           url: img.imageUrl,
-          order: img.imageOrder,
-          description: img.imageDescription,
+          order: img.displayOrder,
+          description: img.description,
         }));
 
       } catch (error) {
