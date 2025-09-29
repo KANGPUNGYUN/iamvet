@@ -45,7 +45,7 @@ import {
 import { Tag } from "@/components/ui/Tag";
 
 interface ForumPost {
-  id: number;
+  id: string;
   title: string;
   content: string;
   author: {
@@ -116,7 +116,6 @@ export default function ForumsManagement() {
       const result = await response.json();
 
       if (result.status === 'success') {
-        console.log('Forum API response:', result.data); // 디버깅용 로그
         setForumPosts(result.data.forums);
         setStats(result.data.stats);
         setTotalPages(result.data.pagination.totalPages);
@@ -132,10 +131,9 @@ export default function ForumsManagement() {
   };
 
   // 상세 정보 조회 함수
-  const fetchForumDetail = async (forumId: number) => {
+  const fetchForumDetail = async (forumId: string) => {
     try {
       setModalLoading(true);
-      console.log('Fetching forum detail for ID:', forumId); // 디버깅용 로그
       const response = await fetch(`/api/admin/forums/${forumId}`);
       const result = await response.json();
 
@@ -198,7 +196,7 @@ export default function ForumsManagement() {
   const currentPosts = forumPosts;
 
   // 액션 API 호출 함수
-  const executeAction = async (postId: number, action: "activate" | "deactivate") => {
+  const executeAction = async (postId: string, action: "activate" | "deactivate") => {
     try {
       const response = await fetch(`/api/admin/forums/${postId}`, {
         method: 'PATCH',
@@ -649,10 +647,31 @@ export default function ForumsManagement() {
                             </Typography>
                           </Box>
                         </Box>
-                        <Typography variant="body1" sx={{ color: "#3b394d", mb: 2, lineHeight: 1.7 }}>
-                          {selectedPostDetail.content}
-                        </Typography>
-                        <Box sx={{ display: "flex", gap: 4 }}>
+                        <Box sx={{ mb: 3 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}>
+                            포럼 내용
+                          </Typography>
+                          <Box 
+                            sx={{ 
+                              bgcolor: "#f8f9fa", 
+                              border: "1px solid #e9ecef",
+                              borderRadius: 2, 
+                              p: 2,
+                              maxHeight: 300,
+                              overflow: "auto"
+                            }}
+                          >
+                            <div 
+                              dangerouslySetInnerHTML={{ __html: selectedPostDetail.content }}
+                              style={{ 
+                                color: "#3b394d", 
+                                lineHeight: 1.7,
+                                fontSize: "14px"
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                        <Box sx={{ display: "flex", gap: 4, mb: 3 }}>
                           <Box sx={{ flex: 1 }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}>
                               참여 통계
@@ -664,6 +683,40 @@ export default function ForumsManagement() {
                             </Stack>
                           </Box>
                         </Box>
+                        
+                        {selectedPostDetail.recentComments && selectedPostDetail.recentComments.length > 0 && (
+                          <Box>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}>
+                              최근 댓글 ({selectedPostDetail.recentComments.length}개)
+                            </Typography>
+                            <Box sx={{ maxHeight: 200, overflow: "auto" }}>
+                              {selectedPostDetail.recentComments.map((comment: any, index: number) => (
+                                <Box 
+                                  key={index}
+                                  sx={{ 
+                                    bgcolor: "#f8f9fa", 
+                                    border: "1px solid #e9ecef",
+                                    borderRadius: 1, 
+                                    p: 1.5,
+                                    mb: 1,
+                                    fontSize: "13px"
+                                  }}
+                                >
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                                    <Avatar sx={{ bgcolor: comment.author.type === "VETERINARIAN" ? "#ff8796" : "#ffb7b8", width: 20, height: 20 }}>
+                                      {comment.author.type === "VETERINARIAN" ? <Person sx={{ fontSize: 12 }} /> : <Business sx={{ fontSize: 12 }} />}
+                                    </Avatar>
+                                    <Typography variant="caption" fontWeight="600">{comment.author.name}</Typography>
+                                    <Typography variant="caption" color="text.secondary">• {comment.createdAt}</Typography>
+                                  </Box>
+                                  <Typography variant="body2" sx={{ color: "#3b394d", fontSize: "12px" }}>
+                                    {comment.content}
+                                  </Typography>
+                                </Box>
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
                       </Box>
                     </Stack>
                   ) : (

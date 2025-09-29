@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -19,19 +19,19 @@ import {
   ListItemText,
   ListItemAvatar,
   Divider,
+  Skeleton,
+  Chip,
 } from "@mui/material";
 import {
   People,
   Work,
-  CheckCircle,
-  TrendingUp,
+  Description,
+  Forum,
   Person,
   Business,
-  ReportProblem,
-  Computer,
-  Speed,
-  Assessment,
-  CloudDone,
+  School,
+  Visibility,
+  Comment,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
 import {
@@ -61,99 +61,106 @@ ChartJS.register(
   ArcElement
 );
 
+interface DashboardStats {
+  users: {
+    total: number;
+    veterinarians: number;
+    students: number;
+    hospitals: number;
+    pendingVerification: number;
+    newThisMonth: number;
+    newThisWeek: number;
+    growthRate: number;
+  };
+  jobs: {
+    active: number;
+    pending: number;
+    closed: number;
+    newThisMonth: number;
+    growthRate: number;
+  };
+  resumes: {
+    active: number;
+    hidden: number;
+    newThisMonth: number;
+  };
+  transfers: {
+    active: number;
+    pending: number;
+    completed: number;
+    newThisMonth: number;
+  };
+  forums: {
+    totalPosts: number;
+    totalViews: number;
+    newThisMonth: number;
+  };
+}
+
+interface RecentUser {
+  id: string;
+  name: string;
+  email: string;
+  type: string;
+  status: string;
+  joinDate: string;
+}
+
+interface RecentJob {
+  id: string;
+  title: string;
+  hospitalName: string;
+  employmentType: string;
+  status: string;
+  createdAt: string;
+}
+
+interface RecentForum {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  viewCount: number;
+  commentCount: number;
+  createdAt: string;
+}
+
+interface UserTrend {
+  month: string;
+  count: number;
+}
+
 export default function AdminDashboard() {
-  const statsData = [
-    {
-      title: "전체 회원",
-      count: "1,247",
-      percentage: "+12%",
-      icon: People,
-      color: "primary",
-    },
-    {
-      title: "채용 공고",
-      count: "328",
-      percentage: "+5%",
-      icon: Work,
-      color: "success",
-    },
-    {
-      title: "매칭 성공",
-      count: "89",
-      percentage: "+23%",
-      icon: CheckCircle,
-      color: "warning",
-    },
-    {
-      title: "월간 활성 사용자",
-      count: "756",
-      percentage: "+18%",
-      icon: Assessment,
-      color: "info",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+  const [recentJobs, setRecentJobs] = useState<RecentJob[]>([]);
+  const [recentForums, setRecentForums] = useState<RecentForum[]>([]);
+  const [userTrend, setUserTrend] = useState<UserTrend[]>([]);
 
-  const recentUsers = [
-    {
-      id: 1,
-      name: "김수의",
-      email: "kim@example.com",
-      type: "VETERINARIAN",
-      status: "ACTIVE",
-      joinDate: "2024-01-15",
-    },
-    {
-      id: 2,
-      name: "서울동물병원",
-      email: "seoul@hospital.com",
-      type: "HOSPITAL",
-      status: "PENDING",
-      joinDate: "2024-01-14",
-    },
-    {
-      id: 3,
-      name: "박수의",
-      email: "park@example.com",
-      type: "VETERINARIAN",
-      status: "ACTIVE",
-      joinDate: "2024-01-13",
-    },
-    {
-      id: 4,
-      name: "강남동물병원",
-      email: "gangnam@hospital.com",
-      type: "HOSPITAL",
-      status: "SUSPENDED",
-      joinDate: "2024-01-12",
-    },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const pendingReports = [
-    {
-      id: 1,
-      title: "부적절한 채용 공고",
-      reporter: "김수의",
-      type: "채용공고",
-      date: "2024-01-15",
-      status: "PENDING",
-    },
-    {
-      id: 2,
-      title: "스팸 게시물",
-      reporter: "이수의",
-      type: "교육콘텐츠",
-      date: "2024-01-14",
-      status: "INVESTIGATING",
-    },
-    {
-      id: 3,
-      title: "허위 정보",
-      reporter: "박수의",
-      type: "양도양수",
-      date: "2024-01-13",
-      status: "PENDING",
-    },
-  ];
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/dashboard');
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        setStats(result.data.stats);
+        setRecentUsers(result.data.recentUsers);
+        setRecentJobs(result.data.recentJobs);
+        setRecentForums(result.data.recentForums);
+        setUserTrend(result.data.userTrend);
+      }
+    } catch (error) {
+      console.error('대시보드 데이터 조회 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusTag = (status: string) => {
     const statusMap: {
@@ -162,7 +169,8 @@ export default function AdminDashboard() {
       ACTIVE: { variant: 2, text: "활성" },
       PENDING: { variant: 3, text: "대기" },
       SUSPENDED: { variant: 1, text: "정지" },
-      INVESTIGATING: { variant: 4, text: "조사중" },
+      CLOSED: { variant: 6, text: "마감" },
+      HIDDEN: { variant: 6, text: "비공개" },
     };
     const statusInfo = statusMap[status] || {
       variant: 6 as const,
@@ -172,18 +180,122 @@ export default function AdminDashboard() {
   };
 
   const getTypeTag = (type: string) => {
-    const typeMap: { [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6 } } = {
-      VETERINARIAN: { variant: 4 },
-      HOSPITAL: { variant: 5 },
+    const typeMap: { [key: string]: { variant: 1 | 2 | 3 | 4 | 5 | 6; icon: any } } = {
+      VETERINARIAN: { variant: 4, icon: Person },
+      VETERINARY_STUDENT: { variant: 5, icon: School },
+      HOSPITAL: { variant: 5, icon: Business },
     };
-    const typeInfo = typeMap[type] || { variant: 6 as const };
-    const typeText =
-      {
-        VETERINARIAN: "수의사",
-        HOSPITAL: "병원",
-      }[type] || type;
-    return <Tag variant={typeInfo.variant}>{typeText}</Tag>;
+    const typeInfo = typeMap[type] || { variant: 6 as const, icon: Person };
+    const typeText = {
+      VETERINARIAN: "수의사",
+      VETERINARY_STUDENT: "수의대생",
+      HOSPITAL: "병원",
+    }[type] || type;
+    
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <typeInfo.icon sx={{ fontSize: 14 }} />
+        <Tag variant={typeInfo.variant}>{typeText}</Tag>
+      </Box>
+    );
   };
+
+  const getEmploymentTypeTag = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      FULL_TIME: "정규직",
+      PART_TIME: "파트타임",
+      CONTRACT: "계약직",
+      INTERN: "인턴",
+    };
+    return <Chip label={typeMap[type] || type} size="small" />;
+  };
+
+  const statsData = stats ? [
+    {
+      title: "전체 회원",
+      count: stats.users.total.toLocaleString(),
+      percentage: `+${stats.users.growthRate}%`,
+      icon: People,
+      color: "primary",
+      subText: `신규 ${stats.users.newThisMonth}명`,
+    },
+    {
+      title: "활성 채용공고",
+      count: stats.jobs.active.toLocaleString(),
+      percentage: `+${stats.jobs.growthRate}%`,
+      icon: Work,
+      color: "success",
+      subText: `대기중 ${stats.jobs.pending}건`,
+    },
+    {
+      title: "활성 이력서",
+      count: stats.resumes.active.toLocaleString(),
+      percentage: `+${Math.round((stats.resumes.newThisMonth / (stats.resumes.active || 1)) * 100)}%`,
+      icon: Description,
+      color: "warning",
+      subText: `신규 ${stats.resumes.newThisMonth}건`,
+    },
+    {
+      title: "포럼 게시물",
+      count: stats.forums.totalPosts.toLocaleString(),
+      percentage: `${stats.forums.totalViews.toLocaleString()} 조회`,
+      icon: Forum,
+      color: "info",
+      subText: `신규 ${stats.forums.newThisMonth}건`,
+    },
+  ] : [];
+
+  // 사용자 유형별 차트 데이터
+  const userTypeChartData = stats ? {
+    labels: ['수의사', '수의대생', '병원'],
+    datasets: [{
+      data: [
+        stats.users.veterinarians,
+        stats.users.students,
+        stats.users.hospitals
+      ],
+      backgroundColor: [
+        '#ff8796',
+        '#ffb7b8',
+        '#ffd3d3',
+      ],
+      borderWidth: 0,
+    }]
+  } : null;
+
+  // 월별 가입자 추이 차트 데이터
+  const userTrendChartData = userTrend.length > 0 ? {
+    labels: userTrend.map(item => {
+      const month = item.month.split('-')[1];
+      return `${month}월`;
+    }),
+    datasets: [{
+      label: '신규 가입자',
+      data: userTrend.map(item => item.count),
+      borderColor: '#ff8796',
+      backgroundColor: 'rgba(255, 135, 150, 0.1)',
+      tension: 0.3,
+      fill: true,
+    }]
+  } : null;
+
+  if (loading) {
+    return (
+      <Box>
+        <Box sx={{ mb: 4 }}>
+          <Skeleton variant="text" width={200} height={40} />
+          <Skeleton variant="text" width={300} height={24} />
+        </Box>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+          {[1, 2, 3, 4].map((index) => (
+            <Box key={index} sx={{ flex: "1 1 300px", minWidth: "250px" }}>
+              <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 4 }} />
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -205,7 +317,7 @@ export default function AdminDashboard() {
         </Typography>
       </Box>
 
-      {/* Ultra Modern Stats Cards */}
+      {/* Stats Cards */}
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
         {statsData.map((stat, index) => (
           <Box key={index} sx={{ flex: "1 1 300px", minWidth: "250px" }}>
@@ -230,14 +342,7 @@ export default function AdminDashboard() {
                   left: 0,
                   right: 0,
                   height: "4px",
-                  background:
-                    stat.color === "primary"
-                      ? "linear-gradient(90deg, #ff8796, #ffd3d3)"
-                      : stat.color === "success"
-                      ? "linear-gradient(90deg, #ffb7b8, #ffe5e5)"
-                      : stat.color === "warning"
-                      ? "linear-gradient(90deg, #ff8796, #ffd3d3)"
-                      : "linear-gradient(90deg, #ffb7b8, #ffe5e5)",
+                  background: "linear-gradient(90deg, #ff8796, #ffd3d3)",
                   opacity: 0,
                   transition: "opacity 0.3s ease",
                 },
@@ -269,22 +374,32 @@ export default function AdminDashboard() {
                       sx={{
                         color: "#4f5866",
                         fontWeight: 600,
-                        mb: 2,
+                        mb: 1,
                       }}
                     >
                       {stat.title}
                     </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        color: "#ff8796",
-                        fontSize: "0.875rem",
-                        fontWeight: 500,
-                      }}
-                    >
-                      <TrendingUp sx={{ fontSize: 16, mr: 0.5 }} />
-                      {stat.percentage} 이번 달
+                    <Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#ff8796",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {stat.percentage}
+                      </Typography>
+                      {stat.subText && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#9098a4",
+                            ml: 1,
+                          }}
+                        >
+                          {stat.subText}
+                        </Typography>
+                      )}
                     </Box>
                   </Box>
                   <Box
@@ -292,14 +407,7 @@ export default function AdminDashboard() {
                       width: 60,
                       height: 60,
                       borderRadius: 3,
-                      background:
-                        stat.color === "primary"
-                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)"
-                          : stat.color === "success"
-                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)"
-                          : stat.color === "warning"
-                          ? "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)"
-                          : "linear-gradient(135deg, #ffe5e5 0%, #ffb7b8 100%)",
+                      background: "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -347,6 +455,14 @@ export default function AdminDashboard() {
               >
                 최근 가입 회원
               </Typography>
+              {stats && stats.users.pendingVerification > 0 && (
+                <Chip 
+                  label={`${stats.users.pendingVerification}명 인증 대기중`}
+                  size="small"
+                  color="warning"
+                  sx={{ mt: 1 }}
+                />
+              )}
             </Box>
             <TableContainer>
               <Table
@@ -364,7 +480,6 @@ export default function AdminDashboard() {
                         fontWeight: 700,
                         color: "#3b394d",
                         fontSize: "0.875rem",
-                        letterSpacing: "0.025em",
                       }}
                     >
                       이름/병원명
@@ -374,7 +489,6 @@ export default function AdminDashboard() {
                         fontWeight: 700,
                         color: "#3b394d",
                         fontSize: "0.875rem",
-                        letterSpacing: "0.025em",
                       }}
                     >
                       이메일
@@ -384,7 +498,6 @@ export default function AdminDashboard() {
                         fontWeight: 700,
                         color: "#3b394d",
                         fontSize: "0.875rem",
-                        letterSpacing: "0.025em",
                       }}
                     >
                       타입
@@ -394,7 +507,6 @@ export default function AdminDashboard() {
                         fontWeight: 700,
                         color: "#3b394d",
                         fontSize: "0.875rem",
-                        letterSpacing: "0.025em",
                       }}
                     >
                       상태
@@ -404,7 +516,6 @@ export default function AdminDashboard() {
                         fontWeight: 700,
                         color: "#3b394d",
                         fontSize: "0.875rem",
-                        letterSpacing: "0.025em",
                       }}
                     >
                       가입일
@@ -423,33 +534,12 @@ export default function AdminDashboard() {
                       }}
                     >
                       <TableCell>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="600"
                         >
-                          <Avatar
-                            sx={{
-                              bgcolor:
-                                user.type === "VETERINARIAN"
-                                  ? "#ff8796"
-                                  : "#ffb7b8",
-                              width: 36,
-                              height: 36,
-                            }}
-                          >
-                            {user.type === "VETERINARIAN" ? (
-                              <Person sx={{ fontSize: 20 }} />
-                            ) : (
-                              <Business sx={{ fontSize: 20 }} />
-                            )}
-                          </Avatar>
-                          <Typography
-                            variant="subtitle2"
-                            fontWeight="600"
-                            sx={{ color: "text.primary" }}
-                          >
-                            {user.name}
-                          </Typography>
-                        </Box>
+                          {user.name}
+                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography
@@ -476,6 +566,253 @@ export default function AdminDashboard() {
                 </TableBody>
               </Table>
             </TableContainer>
+          </Card>
+        </Box>
+
+        {/* Charts */}
+        <Box sx={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: 3 }}>
+          {/* User Type Chart */}
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              p: 3,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: "#3b394d",
+                mb: 2,
+                fontSize: "1rem",
+              }}
+            >
+              회원 유형 분포
+            </Typography>
+            {userTypeChartData && (
+              <Box sx={{ height: 200 }}>
+                <Doughnut 
+                  data={userTypeChartData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: 'bottom',
+                        labels: {
+                          padding: 15,
+                          font: {
+                            size: 12
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            )}
+          </Card>
+
+          {/* User Trend Chart */}
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              p: 3,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: "#3b394d",
+                mb: 2,
+                fontSize: "1rem",
+              }}
+            >
+              월별 가입자 추이
+            </Typography>
+            {userTrendChartData && (
+              <Box sx={{ height: 200 }}>
+                <Line 
+                  data={userTrendChartData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false
+                      }
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        grid: {
+                          display: false
+                        }
+                      },
+                      x: {
+                        grid: {
+                          display: false
+                        }
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            )}
+          </Card>
+        </Box>
+      </Box>
+
+      {/* Recent Activities */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+        {/* Recent Jobs */}
+        <Box sx={{ flex: "1 1 400px" }}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                최근 채용공고
+              </Typography>
+            </Box>
+            <List sx={{ p: 0 }}>
+              {recentJobs.map((job, index) => (
+                <React.Fragment key={job.id}>
+                  <ListItem sx={{ px: 3, py: 2 }}>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: "#ffe5e5" }}>
+                        <Work sx={{ color: "#ff8796", fontSize: 20 }} />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle2" fontWeight="600">
+                          {job.title}
+                        </Typography>
+                      }
+                      secondary={
+                        <React.Fragment>
+                          <Typography variant="caption" color="text.secondary" component="span" display="block">
+                            {job.hospitalName}
+                          </Typography>
+                          <Box component="span" sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                            {getEmploymentTypeTag(job.employmentType)}
+                            {getStatusTag(job.status)}
+                          </Box>
+                        </React.Fragment>
+                      }
+                      secondaryTypographyProps={{
+                        component: 'div'
+                      }}
+                    />
+                    <Typography variant="caption" color="#9098a4">
+                      {job.createdAt}
+                    </Typography>
+                  </ListItem>
+                  {index < recentJobs.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
+          </Card>
+        </Box>
+
+        {/* Recent Forums */}
+        <Box sx={{ flex: "1 1 400px" }}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #efeff0",
+              boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "white",
+                borderBottom: "1px solid #efeff0",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#3b394d",
+                  fontSize: "1.25rem",
+                }}
+              >
+                최근 포럼 활동
+              </Typography>
+            </Box>
+            <List sx={{ p: 0 }}>
+              {recentForums.map((forum, index) => (
+                <React.Fragment key={forum.id}>
+                  <ListItem sx={{ px: 3, py: 2 }}>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: "#ffe5e5" }}>
+                        <Forum sx={{ color: "#ff8796", fontSize: 20 }} />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle2" fontWeight="600">
+                          {forum.title}
+                        </Typography>
+                      }
+                      secondary={
+                        <React.Fragment>
+                          <Typography variant="caption" color="text.secondary" component="span" display="block">
+                            {forum.author} · {forum.category}
+                          </Typography>
+                          <Box component="span" sx={{ display: 'flex', gap: 2, mt: 0.5, alignItems: 'center' }}>
+                            <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Visibility sx={{ fontSize: 14, color: "#9098a4" }} />
+                              <Typography variant="caption" color="#9098a4" component="span">
+                                {forum.viewCount}
+                              </Typography>
+                            </Box>
+                            <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Comment sx={{ fontSize: 14, color: "#9098a4" }} />
+                              <Typography variant="caption" color="#9098a4" component="span">
+                                {forum.commentCount}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </React.Fragment>
+                      }
+                      secondaryTypographyProps={{
+                        component: 'div'
+                      }}
+                    />
+                    <Typography variant="caption" color="#9098a4">
+                      {forum.createdAt}
+                    </Typography>
+                  </ListItem>
+                  {index < recentForums.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
           </Card>
         </Box>
       </Box>

@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     //   );
     // }
     
-    console.log('Admin forums API called'); // 디버깅용 로그
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -169,13 +168,20 @@ export async function GET(request: NextRequest) {
         return userType === 'HOSPITAL' ? 'HOSPITAL' : 'VETERINARIAN';
       };
 
+      // ID는 문자열이므로 그대로 사용
+      const safeId = row.id || '';
+      const authorId = row.author_email ? Math.abs(row.author_email.split('').reduce((a: number, b: string) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+      }, 0)) || 1 : 1;
+
       return {
-        id: parseInt(row.id),
-        title: row.title,
+        id: safeId,
+        title: row.title || '',
         content: row.content?.substring(0, 200) + (row.content?.length > 200 ? '...' : ''), // 미리보기용 요약
         author: {
-          id: parseInt(row.author_email), // 임시로 이메일 해시 사용
-          name: row.author_name || row.author_email,
+          id: authorId,
+          name: row.author_name || row.author_email || 'Unknown',
           type: getAuthorType(row.author_type),
           avatar: undefined,
         },

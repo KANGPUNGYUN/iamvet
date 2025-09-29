@@ -210,8 +210,6 @@ model hospital_evaluations {
   @@unique([hospitalId, userId])
 }
 
-// Removed: hospital_facility_images - replaced by hospital_images table
-
 model hospital_specialties {
   id        String   @id
   userId    String
@@ -607,7 +605,6 @@ model users {
   comment_replies                                             comment_replies[]
   contact_inquiries_contact_inquiries_recipient_idTousers     contact_inquiries[]              @relation("contact_inquiries_recipient_idTousers")
   contact_inquiries_contact_inquiries_sender_idTousers        contact_inquiries[]              @relation("contact_inquiries_sender_idTousers")
-  // detailed_hospital_profiles removed - integrated into hospitals table
   detailed_resumes                                            detailed_resumes?
   forum_comments                                              forum_comments[]
   forum_post_likes                                            forum_post_likes[]
@@ -617,7 +614,6 @@ model users {
   hospital_evaluations_hospital_evaluations_hospitalIdTousers hospital_evaluations[]           @relation("hospital_evaluations_hospitalIdTousers")
   hospital_evaluations_hospital_evaluations_userIdTousers     hospital_evaluations[]           @relation("hospital_evaluations_userIdTousers")
   hospital_images                                             hospital_images[]
-  // hospital_profiles removed - replaced by hospitals table
   hospital_specialties                                        hospital_specialties[]
   hospital_treatment_animals                                  hospital_treatment_animals[]
   hospital_treatment_specialties                              hospital_treatment_specialties[]
@@ -837,14 +833,6 @@ model hospital_specialties_backup {
 
   @@ignore
 }
-
-// Removed: detailed_hospital_profiles - integrated into hospitals table
-
-// Removed: hospital_equipments - not needed per user requirements
-
-// Removed: hospital_profiles - replaced by hospitals table
-
-// Removed: hospital_staff - not needed per user requirements
 
 enum AnimalType {
   DOG

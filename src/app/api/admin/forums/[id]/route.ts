@@ -109,7 +109,7 @@ export async function GET(
 
     // 데이터 변환
     const forumData = {
-      id: parseInt(forum.id),
+      id: forum.id,
       title: forum.title,
       content: forum.content || '',
       author: {
