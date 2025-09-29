@@ -418,424 +418,79 @@ export default function ForumsManagement() {
 
       {/* Ultra Modern Stats Cards */}
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px #ffe5e5",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffe5e5)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
+        <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 12px)", md: "1 1 calc(25% - 18px)" } }}>
+          <Card sx={{ position: "relative", bgcolor: "white", border: "1px solid #efeff0", borderRadius: 4, overflow: "hidden" }}>
             <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
+                  <Typography variant="h3" sx={{ fontWeight: 800, color: "#3b394d", mb: 0.5, fontSize: "2rem" }}>
                     {stats.active}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
+                  <Typography variant="body2" sx={{ color: "#4f5866", fontWeight: 600, mb: 2 }}>
                     활성화된 포스트
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    활발한 활동
-                  </Box>
                 </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <Box sx={{ width: 60, height: 60, borderRadius: 3, background: "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Forum sx={{ fontSize: 28, color: "#ff8796" }} />
                 </Box>
               </Box>
             </CardContent>
           </Card>
         </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(255, 139, 150, 0.15)",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffb7b8)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
+        
+        <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 12px)", md: "1 1 calc(25% - 18px)" } }}>
+          <Card sx={{ position: "relative", bgcolor: "white", border: "1px solid #efeff0", borderRadius: 4, overflow: "hidden" }}>
             <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
+                  <Typography variant="h3" sx={{ fontWeight: 800, color: "#3b394d", mb: 0.5, fontSize: "2rem" }}>
                     {stats.inactive}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
+                  <Typography variant="body2" sx={{ color: "#4f5866", fontWeight: 600, mb: 2 }}>
                     비활성화된 포스트
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    비활성 상태
-                  </Box>
                 </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <Box sx={{ width: 60, height: 60, borderRadius: 3, background: "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Warning sx={{ fontSize: 28, color: "#ff8796" }} />
                 </Box>
               </Box>
             </CardContent>
           </Card>
         </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(255, 135, 150, 0.2)",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ff8796)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
+        
+        <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 12px)", md: "1 1 calc(25% - 18px)" } }}>
+          <Card sx={{ position: "relative", bgcolor: "white", border: "1px solid #efeff0", borderRadius: 4, overflow: "hidden" }}>
             <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
+                  <Typography variant="h3" sx={{ fontWeight: 800, color: "#3b394d", mb: 0.5, fontSize: "2rem" }}>
                     {stats.totalComments}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
+                  <Typography variant="body2" sx={{ color: "#4f5866", fontWeight: 600, mb: 2 }}>
                     총 댓글수
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    활발한 소통
-                  </Box>
                 </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <Box sx={{ width: 60, height: 60, borderRadius: 3, background: "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Comment sx={{ fontSize: 28, color: "#ff8796" }} />
                 </Box>
               </Box>
             </CardContent>
           </Card>
         </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px #ffe5e5",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffe5e5)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
+        
+        <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 12px)", md: "1 1 calc(25% - 18px)" } }}>
+          <Card sx={{ position: "relative", bgcolor: "white", border: "1px solid #efeff0", borderRadius: 4, overflow: "hidden" }}>
             <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
+                  <Typography variant="h3" sx={{ fontWeight: 800, color: "#3b394d", mb: 0.5, fontSize: "2rem" }}>
                     {stats.totalViews.toLocaleString()}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
+                  <Typography variant="body2" sx={{ color: "#4f5866", fontWeight: 600, mb: 2 }}>
                     총 조회수
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    높은 관심도
-                  </Box>
                 </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <Box sx={{ width: 60, height: 60, borderRadius: 3, background: "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <TrendingUp sx={{ fontSize: 28, color: "#ff8796" }} />
                 </Box>
               </Box>
@@ -845,158 +500,31 @@ export default function ForumsManagement() {
       </Box>
 
       {/* Ultra Modern Data Table */}
-      <Card
-        sx={{
-          borderRadius: 4,
-          border: "1px solid #efeff0",
-          boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            p: 3,
-            bgcolor: "white",
-            borderBottom: "1px solid #efeff0",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
+      <Card sx={{ borderRadius: 4, border: "1px solid #efeff0", boxShadow: "0 4px 24px rgba(105, 140, 252, 0.08)", overflow: "hidden" }}>
+        <Box sx={{ p: 3, bgcolor: "white", borderBottom: "1px solid #efeff0" }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  color: "#3b394d",
-                  fontSize: "1.25rem",
-                }}
-              >
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#3b394d", fontSize: "1.25rem" }}>
                 포럼 게시물 목록
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#4f5866",
-                  mt: 0.5,
-                }}
-              >
+              <Typography variant="body2" sx={{ color: "#4f5866", mt: 0.5 }}>
                 총 {totalItems}개의 게시물
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                size="small"
-                sx={{
-                  color: "#4f5866",
-                  border: "1px solid #efeff0",
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 500,
-                }}
-              >
-                필터
-              </Button>
-              <Button
-                size="small"
-                sx={{
-                  color: "#4f5866",
-                  border: "1px solid #efeff0",
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 500,
-                }}
-              >
-                정렬
-              </Button>
-            </Box>
           </Box>
         </Box>
+        
         <TableContainer>
-          <Table
-            sx={{
-              "& .MuiTableCell-root": {
-                borderBottom: "1px solid #efeff0",
-                py: 2,
-              },
-            }}
-          >
+          <Table sx={{ "& .MuiTableCell-root": { borderBottom: "1px solid #efeff0", py: 2 } }}>
             <TableHead sx={{ bgcolor: "#fafafa" }}>
               <TableRow>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  게시물 정보
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  작성자
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  카테고리
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  상태
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  통계
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  작성일
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    color: "#3b394d",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.025em",
-                  }}
-                >
-                  액션
-                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#3b394d", fontSize: "0.875rem" }}>게시물 정보</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#3b394d", fontSize: "0.875rem" }}>작성자</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#3b394d", fontSize: "0.875rem" }}>카테고리</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#3b394d", fontSize: "0.875rem" }}>상태</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#3b394d", fontSize: "0.875rem" }}>통계</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#3b394d", fontSize: "0.875rem" }}>작성일</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#3b394d", fontSize: "0.875rem" }}>액션</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -1014,158 +542,51 @@ export default function ForumsManagement() {
                 </TableRow>
               ) : (
                 currentPosts.map((post) => (
-                <TableRow
-                  key={post.id}
-                  hover
-                  sx={{
-                    "&:hover": {
-                      bgcolor: "rgba(0, 0, 0, 0.02)",
-                    },
-                    "& .MuiTableCell-root": {
-                      py: 2,
-                    },
-                  }}
-                >
-                  <TableCell>
-                    <Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          mb: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight="600"
-                          sx={{
-                            color: post.isActive
-                              ? "text.primary"
-                              : "text.secondary",
-                            opacity: post.isActive ? 1 : 0.6,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 1,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
+                  <TableRow key={post.id} hover>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight="600" sx={{ color: post.isActive ? "text.primary" : "text.secondary", opacity: post.isActive ? 1 : 0.6 }}>
                           {post.title}
                         </Typography>
-                        {!post.isActive && (
-                          <Chip
-                            label="비활성"
-                            size="small"
-                            sx={{
-                              bgcolor: "#f5f5f5",
-                              color: "#666",
-                              fontSize: "0.75rem",
-                              height: 20,
-                            }}
-                          />
-                        )}
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 1 }}>
+                          {post.tags.slice(0, 3).map((tag: string, index: number) => (
+                            <Chip key={index} label={tag} size="small" sx={{ bgcolor: "#f5f5f5", color: "#666", fontSize: "0.75rem", height: 20 }} />
+                          ))}
+                        </Box>
                       </Box>
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                        {post.tags.slice(0, 3).map((tag, index) => (
-                          <Chip
-                            key={index}
-                            label={tag}
-                            size="small"
-                            sx={{
-                              bgcolor: "#f5f5f5",
-                              color: "#666",
-                              fontSize: "0.75rem",
-                              height: 20,
-                            }}
-                          />
-                        ))}
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Avatar sx={{ bgcolor: post.author.type === "VETERINARIAN" ? "#ff8796" : "#ffb7b8", width: 32, height: 32 }}>
+                          {post.author.type === "VETERINARIAN" ? <Person sx={{ fontSize: 18 }} /> : <Business sx={{ fontSize: 18 }} />}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" fontWeight="600">{post.author.name}</Typography>
+                          <Typography variant="caption" color="text.secondary">{post.author.type === "VETERINARIAN" ? "수의사" : "병원"}</Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Avatar
-                        sx={{
-                          bgcolor:
-                            post.author.type === "VETERINARIAN"
-                              ? "#ff8796"
-                              : "#ffb7b8",
-                          width: 32,
-                          height: 32,
-                        }}
-                      >
-                        {post.author.type === "VETERINARIAN" ? (
-                          <Person sx={{ fontSize: 18 }} />
-                        ) : (
-                          <Business sx={{ fontSize: 18 }} />
-                        )}
-                      </Avatar>
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "text.primary" }}
-                        >
-                          {post.author.name}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ fontSize: "0.75rem" }}
-                        >
-                          {post.author.type === "VETERINARIAN"
-                            ? "수의사"
-                            : "병원"}
-                        </Typography>
+                    </TableCell>
+                    <TableCell>{getCategoryTag(post.category)}</TableCell>
+                    <TableCell>{getStatusTag(post.isActive)}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Visibility sx={{ fontSize: 14, color: "#9098a4" }} />
+                          <Typography variant="caption">{post.viewCount.toLocaleString()}</Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <ThumbUp sx={{ fontSize: 14, color: "#9098a4" }} />
+                          <Typography variant="caption">{post.likeCount}</Typography>
+                          <Comment sx={{ fontSize: 14, color: "#9098a4", ml: 1 }} />
+                          <Typography variant="caption">{post.commentCount}</Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{getCategoryTag(post.category)}</TableCell>
-                  <TableCell>{getStatusTag(post.isActive)}</TableCell>
-                  <TableCell>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 0.5,
-                      }}
-                    >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Visibility sx={{ fontSize: 14, color: "#9098a4" }} />
-                        <Typography variant="caption" color="text.secondary">
-                          {post.viewCount.toLocaleString()}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <ThumbUp sx={{ fontSize: 14, color: "#9098a4" }} />
-                        <Typography variant="caption" color="text.secondary">
-                          {post.likeCount}
-                        </Typography>
-                        <Comment
-                          sx={{ fontSize: 14, color: "#9098a4", ml: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                          {post.commentCount}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      color="#9098a4"
-                      sx={{ fontSize: "0.875rem" }}
-                    >
-                      {post.createdAt}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{renderActionButtons(post)}</TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="#9098a4">{post.createdAt}</Typography>
+                    </TableCell>
+                    <TableCell>{renderActionButtons(post)}</TableCell>
+                  </TableRow>
                 ))
               )}
             </TableBody>
@@ -1174,15 +595,7 @@ export default function ForumsManagement() {
 
         {/* Modern Pagination */}
         {totalPagesState > 1 && (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              p: 3,
-              bgcolor: "#fafafa",
-              borderTop: "1px solid #efeff0",
-            }}
-          >
+          <Box sx={{ display: "flex", justifyContent: "center", p: 3, bgcolor: "#fafafa", borderTop: "1px solid #efeff0" }}>
             <Pagination
               count={totalPagesState}
               page={currentPage}
@@ -1195,16 +608,8 @@ export default function ForumsManagement() {
                   borderRadius: 2,
                   fontWeight: 500,
                   color: "#4f5866",
-                  "&.Mui-selected": {
-                    bgcolor: "#ff8796",
-                    color: "white",
-                    "&:hover": {
-                      bgcolor: "#ffb7b8",
-                    },
-                  },
-                  "&:hover": {
-                    bgcolor: "#ffe5e5",
-                  },
+                  "&.Mui-selected": { bgcolor: "#ff8796", color: "white" },
+                  "&:hover": { bgcolor: "#ffe5e5" },
                 },
               }}
             />
@@ -1213,16 +618,10 @@ export default function ForumsManagement() {
       </Card>
 
       {/* Action Modal */}
-      <Dialog
-        open={modalVisible}
-        onClose={() => setModalVisible(false)}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={modalVisible} onClose={() => setModalVisible(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           {actionType === "view" && "게시물 상세보기"}
-          {actionType === "toggle" &&
-            (selectedPost?.isActive ? "게시물 비활성화" : "게시물 활성화")}
+          {actionType === "toggle" && (selectedPost?.isActive ? "게시물 비활성화" : "게시물 활성화")}
         </DialogTitle>
         <DialogContent>
           {selectedPost && (
@@ -1234,108 +633,47 @@ export default function ForumsManagement() {
                   ) : selectedPostDetail ? (
                     <Stack spacing={3} sx={{ mt: 2 }}>
                       <Box>
-                        <Typography
-                          variant="h6"
-                          sx={{ fontWeight: 600, color: "#3b394d", mb: 1 }}
-                        >
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: "#3b394d", mb: 1 }}>
                           {selectedPostDetail.title}
                         </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                            mb: 2,
-                          }}
-                        >
-                          <Avatar
-                            sx={{
-                              bgcolor:
-                                selectedPostDetail.author.type === "VETERINARIAN"
-                                  ? "#ff8796"
-                                  : "#ffb7b8",
-                              width: 32,
-                              height: 32,
-                            }}
-                          >
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                          <Avatar sx={{ bgcolor: selectedPostDetail.author.type === "VETERINARIAN" ? "#ff8796" : "#ffb7b8", width: 32, height: 32 }}>
                             <Person />
                           </Avatar>
                           <Box>
-                            <Typography variant="body2" fontWeight="600">
-                              {selectedPostDetail.author.name}
-                            </Typography>
+                            <Typography variant="body2" fontWeight="600">{selectedPostDetail.author.name}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              {selectedPostDetail.author.type === "VETERINARIAN"
-                                ? "수의사"
-                                : "병원"}{" "}
-                              • {selectedPostDetail.createdAt}
+                              {selectedPostDetail.author.type === "VETERINARIAN" ? "수의사" : "병원"} • {selectedPostDetail.createdAt}
                             </Typography>
                           </Box>
                         </Box>
-                        <Box
-                          sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}
-                        >
-                          {getCategoryTag(selectedPostDetail.category)}
-                          {getStatusTag(selectedPostDetail.isActive)}
-                        </Box>
-                        <Typography
-                          variant="body1"
-                          sx={{ color: "#3b394d", mb: 2, lineHeight: 1.7 }}
-                        >
+                        <Typography variant="body1" sx={{ color: "#3b394d", mb: 2, lineHeight: 1.7 }}>
                           {selectedPostDetail.content}
                         </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 0.5,
-                            mb: 3,
-                          }}
-                        >
-                          {selectedPostDetail.tags.map((tag, index) => (
-                            <Chip
-                              key={index}
-                              label={`#${tag}`}
-                              size="small"
-                              variant="outlined"
-                              sx={{ color: "#ff8796", borderColor: "#ff8796" }}
-                            />
-                          ))}
-                        </Box>
-                      </Box>
-
-                      <Box sx={{ display: "flex", gap: 4 }}>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}
-                          >
-                            참여 통계
-                          </Typography>
-                          <Stack spacing={1}>
-                            <Typography variant="body2" sx={{ color: "#3b394d" }}>
-                              조회수: {selectedPostDetail.viewCount.toLocaleString()}회
+                        <Box sx={{ display: "flex", gap: 4 }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}>
+                              참여 통계
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#3b394d" }}>
-                              좋아요: {selectedPostDetail.likeCount}개
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: "#3b394d" }}>
-                              댓글: {selectedPostDetail.commentCount}개
-                            </Typography>
-                          </Stack>
+                            <Stack spacing={1}>
+                              <Typography variant="body2">조회수: {selectedPostDetail.viewCount.toLocaleString()}회</Typography>
+                              <Typography variant="body2">좋아요: {selectedPostDetail.likeCount}개</Typography>
+                              <Typography variant="body2">댓글: {selectedPostDetail.commentCount}개</Typography>
+                            </Stack>
+                          </Box>
                         </Box>
                       </Box>
                     </Stack>
                   ) : (
                     <Typography>상세 정보를 불러올 수 없습니다.</Typography>
                   )}
+                </Box>
               )}
 
               {actionType === "toggle" && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body1" sx={{ color: "#3b394d" }}>
-                    '{selectedPost.title}' 게시물을{" "}
-                    {selectedPost.isActive ? "비활성화" : "활성화"}하시겠습니까?
+                    '{selectedPost.title}' 게시물을 {selectedPost.isActive ? "비활성화" : "활성화"}하시겠습니까?
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#4f5866", mt: 1 }}>
                     {selectedPost.isActive
@@ -1360,17 +698,10 @@ export default function ForumsManagement() {
           {actionType !== "view" && (
             <Button
               onClick={confirmAction}
-              color={
-                actionType === "toggle"
-                  ? selectedPost?.isActive
-                    ? "warning"
-                    : "success"
-                  : "primary"
-              }
+              color={actionType === "toggle" ? (selectedPost?.isActive ? "warning" : "success") : "primary"}
               variant="contained"
             >
-              {actionType === "toggle" &&
-                (selectedPost?.isActive ? "비활성화" : "활성화")}
+              {actionType === "toggle" && (selectedPost?.isActive ? "비활성화" : "활성화")}
             </Button>
           )}
         </DialogActions>
