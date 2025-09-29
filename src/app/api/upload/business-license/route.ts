@@ -22,10 +22,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 파일 크기 검증 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // 파일 크기 검증 (50MB)
+    if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json(
-        createErrorResponse("파일 크기는 10MB를 초과할 수 없습니다"),
+        createErrorResponse("파일 크기는 50MB를 초과할 수 없습니다"),
         { status: 400 }
       );
     }

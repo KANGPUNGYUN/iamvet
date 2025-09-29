@@ -16,7 +16,8 @@ const MIGRATIONS = [
   "002_ensure_jobs_table_structure.sql",
   "004_add_instructor_to_lectures.sql",
   "005_create_hospitals_table.sql",
-  "006_debug_jobs_table.sql"
+  "006_debug_jobs_table.sql",
+  "007_fix_hospital_users.sql"
 ];
 
 export async function POST(request: NextRequest) {
