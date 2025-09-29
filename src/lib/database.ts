@@ -1528,11 +1528,11 @@ export const getRecentApplicants = async (
 export const createJobPosting = async (jobData: any) => {
   const query = `
     INSERT INTO jobs (
-      hospital_id, title, description, position, medical_field, work_type, required_experience,
-      salary, salary_type, work_days, is_days_negotiable, work_start_time, work_end_time, 
-      is_time_negotiable, benefits, education_requirements, license_requirements, 
-      experience_details, preferences, contact_name, contact_phone, contact_email, 
-      contact_department, recruit_count, deadline, is_deadline_unlimited, is_draft, is_public
+      "hospitalId", title, description, position, "medicalField", "workType", "requiredExperience",
+      salary, "salaryType", "workDays", "isDaysNegotiable", "workStartTime", "workEndTime", 
+      "isTimeNegotiable", benefits, "educationRequirements", "licenseRequirements", 
+      "experienceDetails", preferences, "contactName", "contactPhone", "contactEmail", 
+      "contactDepartment", "recruitCount", deadline, "isDeadlineUnlimited", "isDraft", "isPublic"
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)
     RETURNING *
   `;
