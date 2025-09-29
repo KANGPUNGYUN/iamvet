@@ -41,15 +41,23 @@ export async function GET(
         t.latitude,
         t.longitude,
         u.id as user_id,
-        u.name as user_name,
+        CASE 
+          WHEN u."userType" = 'VETERINARIAN' THEN COALESCE(v.nickname, v."realName")
+          WHEN u."userType" = 'VETERINARY_STUDENT' THEN COALESCE(vs.nickname, vs."realName")
+          WHEN u."userType" = 'HOSPITAL' THEN h."hospitalName"
+          ELSE u.email
+        END as user_name,
         u.email as user_email,
         u.phone as user_phone,
         COUNT(DISTINCT tl.id) as like_count
       FROM transfers t
       LEFT JOIN users u ON t."userId" = u.id
+      LEFT JOIN veterinarians v ON u.id = v."userId" AND u."userType" = 'VETERINARIAN'
+      LEFT JOIN veterinary_students vs ON u.id = vs."userId" AND u."userType" = 'VETERINARY_STUDENT'
+      LEFT JOIN hospitals h ON u.id = h."userId" AND u."userType" = 'HOSPITAL'
       LEFT JOIN transfer_likes tl ON t.id = tl."transferId"
       WHERE t.id = ${id} AND t."deletedAt" IS NULL
-      GROUP BY t.id, u.id, u.name, u.email, u.phone
+      GROUP BY t.id, u.id, u.email, u.phone, u."userType", v.nickname, v."realName", vs.nickname, vs."realName", h."hospitalName"
     `;
 
     if (transferResult.length === 0) {
