@@ -5,7 +5,7 @@ import { sql } from '@/lib/db';
 // 포럼 상세 조회 (관리자용)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 관리자 인증 확인
@@ -17,7 +17,14 @@ export async function GET(
     //   );
     // }
 
-    const { id } = params;
+    const { id } = await params;
+    
+    if (!id || id === 'null' || id === 'undefined') {
+      return NextResponse.json(
+        { status: 'error', message: '유효하지 않은 포럼 ID입니다.' },
+        { status: 400 }
+      );
+    }
 
     // 포럼 상세 조회
     const forumResult = await sql`
@@ -154,7 +161,7 @@ export async function GET(
 // 포럼 상태 변경 (관리자용)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 관리자 인증 확인
@@ -166,7 +173,14 @@ export async function PATCH(
     //   );
     // }
 
-    const { id } = params;
+    const { id } = await params;
+    
+    if (!id || id === 'null' || id === 'undefined') {
+      return NextResponse.json(
+        { status: 'error', message: '유효하지 않은 포럼 ID입니다.' },
+        { status: 400 }
+      );
+    }
     const { action, reason } = await request.json();
 
     // 유효한 액션인지 확인
@@ -246,7 +260,7 @@ export async function PATCH(
 // 포럼 삭제 (관리자용) - 완전 삭제는 위험하므로 비활성화로 대체
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 관리자 인증 확인
@@ -258,7 +272,14 @@ export async function DELETE(
     //   );
     // }
 
-    const { id } = params;
+    const { id } = await params;
+    
+    if (!id || id === 'null' || id === 'undefined') {
+      return NextResponse.json(
+        { status: 'error', message: '유효하지 않은 포럼 ID입니다.' },
+        { status: 400 }
+      );
+    }
     const { reason } = await request.json();
 
     // 포럼 게시물 존재 확인

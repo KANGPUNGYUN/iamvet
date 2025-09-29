@@ -116,6 +116,7 @@ export default function ForumsManagement() {
       const result = await response.json();
 
       if (result.status === 'success') {
+        console.log('Forum API response:', result.data); // 디버깅용 로그
         setForumPosts(result.data.forums);
         setStats(result.data.stats);
         setTotalPages(result.data.pagination.totalPages);
@@ -134,6 +135,7 @@ export default function ForumsManagement() {
   const fetchForumDetail = async (forumId: number) => {
     try {
       setModalLoading(true);
+      console.log('Fetching forum detail for ID:', forumId); // 디버깅용 로그
       const response = await fetch(`/api/admin/forums/${forumId}`);
       const result = await response.json();
 
