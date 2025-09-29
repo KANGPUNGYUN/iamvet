@@ -109,7 +109,8 @@ export default function TransfersManagement() {
     "view" | "suspend" | "delete" | "approve"
   >("view");
   const [modalLoading, setModalLoading] = useState(false);
-  const [selectedTransferDetail, setSelectedTransferDetail] = useState<any>(null);
+  const [selectedTransferDetail, setSelectedTransferDetail] =
+    useState<any>(null);
 
   // API 호출 함수
   const fetchTransfers = async (
@@ -125,23 +126,23 @@ export default function TransfersManagement() {
         limit: itemsPerPage.toString(),
       });
 
-      if (search) params.append('search', search);
-      if (status !== 'ALL') params.append('status', status);
-      if (type !== 'ALL') params.append('transferType', type);
+      if (search) params.append("search", search);
+      if (status !== "ALL") params.append("status", status);
+      if (type !== "ALL") params.append("transferType", type);
 
       const response = await fetch(`/api/admin/transfers?${params}`);
       const result = await response.json();
 
-      if (result.status === 'success') {
+      if (result.status === "success") {
         setTransfers(result.data.transfers);
         setStats(result.data.stats);
         setTotalPages(result.data.pagination.totalPages);
         setTotalItems(result.data.pagination.total);
       } else {
-        console.error('데이터 조회 실패:', result.message);
+        console.error("데이터 조회 실패:", result.message);
       }
     } catch (error) {
-      console.error('API 호출 실패:', error);
+      console.error("API 호출 실패:", error);
     } finally {
       setLoading(false);
     }
@@ -161,7 +162,6 @@ export default function TransfersManagement() {
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm, filterStatus, filterType]);
-
 
   const getStatusTag = (status: string) => {
     const statusMap: {
@@ -198,14 +198,14 @@ export default function TransfersManagement() {
       const response = await fetch(`/api/admin/transfers/${transferId}`);
       const result = await response.json();
 
-      if (result.status === 'success') {
+      if (result.status === "success") {
         setSelectedTransferDetail(result.data);
       } else {
-        console.error('상세 정보 조회 실패:', result.message);
+        console.error("상세 정보 조회 실패:", result.message);
         setSelectedTransferDetail(null);
       }
     } catch (error) {
-      console.error('상세 정보 조회 API 호출 실패:', error);
+      console.error("상세 정보 조회 API 호출 실패:", error);
       setSelectedTransferDetail(null);
     } finally {
       setModalLoading(false);
@@ -219,7 +219,7 @@ export default function TransfersManagement() {
     setSelectedTransfer(transfer);
     setActionType(action);
     setModalVisible(true);
-    
+
     // 상세보기인 경우 추가 정보 로드
     if (action === "view") {
       fetchTransferDetail(transfer.id);
@@ -235,49 +235,49 @@ export default function TransfersManagement() {
       if (action === "delete") {
         // DELETE 요청
         const response = await fetch(`/api/admin/transfers/${transferId}`, {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            reason: '관리자에 의한 삭제',
+            reason: "관리자에 의한 삭제",
           }),
         });
 
         const result = await response.json();
-        if (result.status !== 'success') {
+        if (result.status !== "success") {
           throw new Error(result.message);
         }
       } else {
         // PATCH 요청 (상태 변경)
         const statusMap = {
-          approve: 'ACTIVE',
-          suspend: 'SUSPENDED',
+          approve: "ACTIVE",
+          suspend: "SUSPENDED",
         };
 
         const response = await fetch(`/api/admin/transfers/${transferId}`, {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             status: statusMap[action],
-            reason: action === 'approve' ? '관리자 승인' : '관리자에 의한 정지',
+            reason: action === "approve" ? "관리자 승인" : "관리자에 의한 정지",
           }),
         });
 
         const result = await response.json();
-        if (result.status !== 'success') {
+        if (result.status !== "success") {
           throw new Error(result.message);
         }
       }
 
       // 성공 시 데이터 새로고침
       await fetchTransfers();
-      
+
       return true;
     } catch (error) {
-      console.error('액션 실행 실패:', error);
+      console.error("액션 실행 실패:", error);
       return false;
     }
   };
@@ -285,15 +285,18 @@ export default function TransfersManagement() {
   const confirmAction = async () => {
     if (!selectedTransfer) return;
 
-    const success = await executeAction(selectedTransfer.id, actionType as "approve" | "suspend" | "delete");
-    
+    const success = await executeAction(
+      selectedTransfer.id,
+      actionType as "approve" | "suspend" | "delete"
+    );
+
     if (success) {
       setModalVisible(false);
       setSelectedTransfer(null);
       setSelectedTransferDetail(null);
     } else {
       // TODO: 에러 알림 표시
-      alert('작업 실행 중 오류가 발생했습니다.');
+      alert("작업 실행 중 오류가 발생했습니다.");
     }
   };
 
@@ -476,434 +479,6 @@ export default function TransfersManagement() {
         </CardContent>
       </Card>
 
-      {/* Ultra Modern Stats Cards */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffd3d3)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
-                    {stats.active}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
-                    활성 게시물
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    전월 대비 +12%
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <CheckCircle sx={{ fontSize: 28, color: "#ff8796" }} />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(255, 139, 150, 0.15)",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffb7b8)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
-                    {stats.pending}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
-                    승인 대기
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    24시간 내 처리
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Warning sx={{ fontSize: 28, color: "#ff8796" }} />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(255, 135, 150, 0.2)",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ff8796)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
-                    {stats.suspended}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
-                    비활성화 게시물
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    즉시 확인 필요
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #fff7f7 0%, #ffe5e5 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Cancel sx={{ fontSize: 28, color: "#ff8796" }} />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box
-          sx={{
-            flex: {
-              xs: "1 1 100%",
-              sm: "1 1 calc(50% - 12px)",
-              md: "1 1 calc(25% - 18px)",
-            },
-          }}
-        >
-          <Card
-            sx={{
-              position: "relative",
-              bgcolor: "white",
-              border: "1px solid #efeff0",
-              borderRadius: 4,
-              overflow: "hidden",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: "0 12px 32px rgba(105, 140, 252, 0.15)",
-                "&::before": {
-                  opacity: 1,
-                },
-              },
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "4px",
-                background: "linear-gradient(90deg, #ff8796, #ffd3d3)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      color: "#3b394d",
-                      mb: 0.5,
-                      fontSize: "2rem",
-                    }}
-                  >
-                    {stats.total}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#4f5866",
-                      fontWeight: 600,
-                      mb: 2,
-                    }}
-                  >
-                    총 문의수
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "#ff8796",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: "#ff8796",
-                        mr: 1,
-                      }}
-                    />
-                    이번 주 +8건
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, #ffe5e5 0%, #ffd3d3 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Home sx={{ fontSize: 28, color: "#ff8796" }} />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>
-
       {/* Ultra Modern Data Table */}
       <Card
         sx={{
@@ -1045,7 +620,7 @@ export default function TransfersManagement() {
                     letterSpacing: "0.025em",
                   }}
                 >
-                  문의
+                  좋아요수
                 </TableCell>
                 <TableCell
                   sx={{
@@ -1082,96 +657,96 @@ export default function TransfersManagement() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
+                  <TableCell colSpan={9} sx={{ textAlign: "center", py: 4 }}>
                     <Typography>데이터를 불러오는 중...</Typography>
                   </TableCell>
                 </TableRow>
               ) : currentTransfers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
+                  <TableCell colSpan={9} sx={{ textAlign: "center", py: 4 }}>
                     <Typography>검색 결과가 없습니다.</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
                 currentTransfers.map((transfer) => (
-                <TableRow
-                  key={transfer.id}
-                  hover
-                  sx={{
-                    "&:hover": {
-                      bgcolor: "rgba(0, 0, 0, 0.02)",
-                    },
-                    "& .MuiTableCell-root": {
-                      py: 2,
-                    },
-                  }}
-                >
-                  <TableCell>
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight="600"
-                        sx={{ color: "text.primary", mb: 0.5 }}
-                      >
-                        {transfer.title}
+                  <TableRow
+                    key={transfer.id}
+                    hover
+                    sx={{
+                      "&:hover": {
+                        bgcolor: "rgba(0, 0, 0, 0.02)",
+                      },
+                      "& .MuiTableCell-root": {
+                        py: 2,
+                      },
+                    }}
+                  >
+                    <TableCell>
+                      <Box>
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="600"
+                          sx={{ color: "text.primary", mb: 0.5 }}
+                        >
+                          {transfer.title}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ lineHeight: 1.3 }}
+                        >
+                          {transfer.description}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 0.5 }}
+                        >
+                          {transfer.hospitalName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {transfer.location}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <AttachMoney
+                          sx={{ mr: 0.5, fontSize: 20, color: "#4CAF50" }}
+                        />
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          sx={{ color: "#4CAF50" }}
+                        >
+                          {transfer.price}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>{getTypeTag(transfer.transferType)}</TableCell>
+                    <TableCell>{getStatusTag(transfer.status)}</TableCell>
+                    <TableCell>
+                      <Tag variant={3}>{transfer.inquiryCount}건</Tag>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {transfer.viewCount.toLocaleString()}
                       </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ lineHeight: 1.3 }}
-                      >
-                        {transfer.description}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box>
+                    </TableCell>
+                    <TableCell>
                       <Typography
                         variant="body2"
-                        sx={{ fontWeight: 500, mb: 0.5 }}
+                        color="#9098a4"
+                        sx={{ fontSize: "0.875rem" }}
                       >
-                        {transfer.hospitalName}
+                        {transfer.createdAt}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {transfer.location}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <AttachMoney
-                        sx={{ mr: 0.5, fontSize: 20, color: "#4CAF50" }}
-                      />
-                      <Typography
-                        variant="body2"
-                        fontWeight="600"
-                        sx={{ color: "#4CAF50" }}
-                      >
-                        {transfer.price}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{getTypeTag(transfer.transferType)}</TableCell>
-                  <TableCell>{getStatusTag(transfer.status)}</TableCell>
-                  <TableCell>
-                    <Tag variant={3}>{transfer.inquiryCount}건</Tag>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {transfer.viewCount.toLocaleString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      color="#9098a4"
-                      sx={{ fontSize: "0.875rem" }}
-                    >
-                      {transfer.createdAt}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{renderActionButtons(transfer)}</TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell>{renderActionButtons(transfer)}</TableCell>
+                  </TableRow>
                 ))
               )}
             </TableBody>
@@ -1244,7 +819,12 @@ export default function TransfersManagement() {
                         {selectedTransferDetail.title}
                       </Typography>
                       <Box
-                        sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 1 }}
+                        sx={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 2,
+                          mt: 1,
+                        }}
                       >
                         <Box
                           sx={{
@@ -1253,20 +833,27 @@ export default function TransfersManagement() {
                         >
                           <Stack spacing={1}>
                             <Typography>
-                              <strong>위치:</strong> {selectedTransferDetail.location}
+                              <strong>위치:</strong>{" "}
+                              {selectedTransferDetail.location}
                             </Typography>
                             <Typography>
-                              <strong>가격:</strong> {selectedTransferDetail.price}
+                              <strong>가격:</strong>{" "}
+                              {selectedTransferDetail.price}
                             </Typography>
                             <Box
-                              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
                             >
                               <strong>유형:</strong>
                               {getTypeTag(selectedTransferDetail.transferType)}
                             </Box>
                             {selectedTransferDetail.area && (
                               <Typography>
-                                <strong>면적:</strong> {selectedTransferDetail.area}평
+                                <strong>면적:</strong>{" "}
+                                {selectedTransferDetail.area}평
                               </Typography>
                             )}
                           </Stack>
@@ -1278,7 +865,11 @@ export default function TransfersManagement() {
                         >
                           <Stack spacing={1}>
                             <Box
-                              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
                             >
                               <strong>상태:</strong>
                               {getStatusTag(selectedTransferDetail.status)}
@@ -1292,7 +883,8 @@ export default function TransfersManagement() {
                               {selectedTransferDetail.viewCount.toLocaleString()}
                             </Typography>
                             <Typography>
-                              <strong>등록일:</strong> {selectedTransferDetail.createdAt}
+                              <strong>등록일:</strong>{" "}
+                              {selectedTransferDetail.createdAt}
                             </Typography>
                           </Stack>
                         </Box>
@@ -1301,47 +893,71 @@ export default function TransfersManagement() {
                         <Typography variant="subtitle2" gutterBottom>
                           <strong>설명:</strong>
                         </Typography>
-                        <Typography>{selectedTransferDetail.description}</Typography>
+                        <Typography>
+                          {selectedTransferDetail.description}
+                        </Typography>
                       </Box>
                       {selectedTransferDetail.user && (
-                        <Box sx={{ mt: 2, p: 2, bgcolor: "#f5f5f5", borderRadius: 1 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            p: 2,
+                            bgcolor: "#f5f5f5",
+                            borderRadius: 1,
+                          }}
+                        >
                           <Typography variant="subtitle2" gutterBottom>
                             <strong>작성자 정보:</strong>
                           </Typography>
                           <Stack spacing={0.5}>
                             <Typography variant="body2">
-                              <strong>이름:</strong> {selectedTransferDetail.user.name}
+                              <strong>이름:</strong>{" "}
+                              {selectedTransferDetail.user.name}
                             </Typography>
                             <Typography variant="body2">
-                              <strong>이메일:</strong> {selectedTransferDetail.user.email}
+                              <strong>이메일:</strong>{" "}
+                              {selectedTransferDetail.user.email}
                             </Typography>
                             {selectedTransferDetail.user.phone && (
                               <Typography variant="body2">
-                                <strong>연락처:</strong> {selectedTransferDetail.user.phone}
+                                <strong>연락처:</strong>{" "}
+                                {selectedTransferDetail.user.phone}
                               </Typography>
                             )}
                           </Stack>
                         </Box>
                       )}
-                      {selectedTransferDetail.relatedStats && selectedTransferDetail.relatedStats.relatedCount > 0 && (
-                        <Alert severity="info" sx={{ mt: 2 }}>
-                          <strong>참고:</strong> 같은 지역({selectedTransferDetail.sido} {selectedTransferDetail.sigungu})에
-                          {selectedTransferDetail.relatedStats.relatedCount}개의 유사한 게시물이 있습니다.
-                          {selectedTransferDetail.relatedStats.avgPrice > 0 && (
-                            <> 평균 가격: {selectedTransferDetail.relatedStats.avgPrice.toLocaleString()}원</>  
-                          )}
-                        </Alert>
-                      )}
+                      {selectedTransferDetail.relatedStats &&
+                        selectedTransferDetail.relatedStats.relatedCount >
+                          0 && (
+                          <Alert severity="info" sx={{ mt: 2 }}>
+                            <strong>참고:</strong> 같은 지역(
+                            {selectedTransferDetail.sido}{" "}
+                            {selectedTransferDetail.sigungu})에
+                            {selectedTransferDetail.relatedStats.relatedCount}
+                            개의 유사한 게시물이 있습니다.
+                            {selectedTransferDetail.relatedStats.avgPrice >
+                              0 && (
+                              <>
+                                {" "}
+                                평균 가격:{" "}
+                                {selectedTransferDetail.relatedStats.avgPrice.toLocaleString()}
+                                원
+                              </>
+                            )}
+                          </Alert>
+                        )}
                       {selectedTransferDetail.reportCount > 0 && (
                         <Alert severity="warning" sx={{ mt: 2 }}>
                           <strong>주의:</strong> 이 게시물은{" "}
-                          {selectedTransferDetail.reportCount}건의 신고를 받았습니다.
+                          {selectedTransferDetail.reportCount}건의 신고를
+                          받았습니다.
                         </Alert>
                       )}
                       {selectedTransferDetail.status === "PENDING" && (
                         <Alert severity="info" sx={{ mt: 2 }}>
-                          <strong>알림:</strong> 이 게시물은 관리자 승인을 기다리고
-                          있습니다.
+                          <strong>알림:</strong> 이 게시물은 관리자 승인을
+                          기다리고 있습니다.
                         </Alert>
                       )}
                     </>
@@ -1396,11 +1012,11 @@ export default function TransfersManagement() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button 
+          <Button
             onClick={() => {
               setModalVisible(false);
               setSelectedTransferDetail(null);
-            }} 
+            }}
             color="inherit"
           >
             취소
