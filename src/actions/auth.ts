@@ -1156,7 +1156,7 @@ export async function registerHospital(data: HospitalRegisterData) {
         if (imageUrl) {
           await sql`
             INSERT INTO hospital_images (
-              id, "hospitalId", "userId", "imageUrl", "imageOrder", "createdAt", "updatedAt"
+              id, "hospitalId", "userId", "imageUrl", "displayOrder", "createdAt", "updatedAt"
             ) VALUES (
               ${createId()}, ${hospitalId}, ${user.id}, ${imageUrl}, ${i + 1}, ${currentDate}, ${currentDate}
             )
