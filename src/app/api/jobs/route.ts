@@ -8,7 +8,7 @@ import {
   getAdvertisements,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { sql } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -94,15 +94,13 @@ export async function GET(request: NextRequest) {
       console.log("[Jobs API] 조회할 job IDs:", jobIds);
       
       if (jobIds.length > 0) {
-        const likes = await (prisma as any).jobLike.findMany({
-          where: { 
-            userId,
-            jobId: { in: jobIds }
-          },
-          select: { jobId: true }
-        });
-        console.log("[Jobs API] 조회된 좋아요:", likes);
-        userLikes = likes.map((like: any) => like.jobId);
+        const likesResult = await sql`
+          SELECT "jobId" FROM job_likes 
+          WHERE "userId" = ${userId} 
+          AND "jobId" = ANY(${jobIds})
+        `;
+        console.log("[Jobs API] 조회된 좋아요:", likesResult);
+        userLikes = likesResult.map((like: any) => like.jobId);
         console.log("[Jobs API] 좋아요된 job IDs:", userLikes);
       }
     }
