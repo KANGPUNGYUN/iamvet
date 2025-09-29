@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -42,7 +42,7 @@ import {
 import { Tag } from "@/components/ui/Tag";
 
 interface Transfer {
-  id: number;
+  id: string;
   title: string;
   hospitalName: string;
   location: string;
@@ -54,87 +54,53 @@ interface Transfer {
   createdAt: string;
   viewCount: number;
   description: string;
+  userName?: string;
+  userEmail?: string;
+  userPhone?: string;
+}
+
+interface ApiResponse {
+  status: string;
+  data: {
+    transfers: Transfer[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+    stats: {
+      total: number;
+      active: number;
+      pending: number;
+      suspended: number;
+      completed: number;
+      transferOut: number;
+      transferIn: number;
+    };
+  };
 }
 
 export default function TransfersManagement() {
-  const [transfers, setTransfers] = useState<Transfer[]>([
-    {
-      id: 1,
-      title: "서울 강남구 동물병원 양도",
-      hospitalName: "강남펫클리닉",
-      location: "서울 강남구",
-      price: "15억원",
-      transferType: "양도",
-      status: "ACTIVE",
-      reportCount: 0,
-      inquiryCount: 8,
-      createdAt: "2024-01-20",
-      viewCount: 456,
-      description: "최신 의료장비 완비, 안정적인 고객층 보유",
-    },
-    {
-      id: 2,
-      title: "부산 해운대 동물병원 인수 희망",
-      hospitalName: "",
-      location: "부산 해운대구",
-      price: "5억원~8억원",
-      transferType: "양수",
-      status: "ACTIVE",
-      reportCount: 0,
-      inquiryCount: 3,
-      createdAt: "2024-01-19",
-      viewCount: 234,
-      description: "경력 10년 수의사, 해운대 지역 선호",
-    },
-    {
-      id: 3,
-      title: "대구 수성구 24시 동물병원 양도",
-      hospitalName: "대구24시동물병원",
-      location: "대구 수성구",
-      price: "협의",
-      transferType: "양도",
-      status: "PENDING",
-      reportCount: 0,
-      inquiryCount: 12,
-      createdAt: "2024-01-18",
-      viewCount: 678,
-      description: "24시간 운영, 응급실 완비",
-    },
-    {
-      id: 4,
-      title: "인천 송도 동물병원 양도",
-      hospitalName: "송도펫케어",
-      location: "인천 연수구",
-      price: "12억원",
-      transferType: "양도",
-      status: "COMPLETED",
-      reportCount: 0,
-      inquiryCount: 15,
-      createdAt: "2024-01-15",
-      viewCount: 890,
-      description: "신도시 위치, 높은 성장 잠재력",
-    },
-    {
-      id: 5,
-      title: "허위 양도 정보",
-      hospitalName: "가짜병원",
-      location: "가짜 주소",
-      price: "비현실적 가격",
-      transferType: "양도",
-      status: "SUSPENDED",
-      reportCount: 6,
-      inquiryCount: 2,
-      createdAt: "2024-01-10",
-      viewCount: 45,
-      description: "허위 정보로 신고됨",
-    },
-  ]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    pending: 0,
+    suspended: 0,
+    completed: 0,
+    transferOut: 0,
+    transferIn: 0,
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [filterType, setFilterType] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [totalPagesState, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null
@@ -142,6 +108,60 @@ export default function TransfersManagement() {
   const [actionType, setActionType] = useState<
     "view" | "suspend" | "delete" | "approve"
   >("view");
+  const [modalLoading, setModalLoading] = useState(false);
+  const [selectedTransferDetail, setSelectedTransferDetail] = useState<any>(null);
+
+  // API 호출 함수
+  const fetchTransfers = async (
+    page: number = currentPage,
+    search: string = searchTerm,
+    status: string = filterStatus,
+    type: string = filterType
+  ) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: itemsPerPage.toString(),
+      });
+
+      if (search) params.append('search', search);
+      if (status !== 'ALL') params.append('status', status);
+      if (type !== 'ALL') params.append('transferType', type);
+
+      const response = await fetch(`/api/admin/transfers?${params}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setTransfers(result.data.transfers);
+        setStats(result.data.stats);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
+      } else {
+        console.error('데이터 조회 실패:', result.message);
+      }
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    fetchTransfers();
+  }, []);
+
+  // 검색/필터 변경 시 데이터 새로고침
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(1);
+      fetchTransfers(1, searchTerm, filterStatus, filterType);
+    }, 500); // 500ms 디바운스
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, filterStatus, filterType]);
+
 
   const getStatusTag = (status: string) => {
     const statusMap: {
@@ -168,25 +188,29 @@ export default function TransfersManagement() {
     return <Tag variant={typeInfo.variant}>{type}</Tag>;
   };
 
-  const filteredTransfers = transfers.filter((transfer) => {
-    const matchesSearch =
-      transfer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transfer.hospitalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transfer.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      filterStatus === "ALL" || transfer.status === filterStatus;
-    const matchesType =
-      filterType === "ALL" || transfer.transferType === filterType;
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  // 서버 사이드 페이지네이션을 사용하므로 클라이언트 필터링 제거
+  const currentTransfers = transfers;
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTransfers = filteredTransfers.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-  const totalPages = Math.ceil(filteredTransfers.length / itemsPerPage);
+  // 상세 정보 조회 함수
+  const fetchTransferDetail = async (transferId: string) => {
+    try {
+      setModalLoading(true);
+      const response = await fetch(`/api/admin/transfers/${transferId}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setSelectedTransferDetail(result.data);
+      } else {
+        console.error('상세 정보 조회 실패:', result.message);
+        setSelectedTransferDetail(null);
+      }
+    } catch (error) {
+      console.error('상세 정보 조회 API 호출 실패:', error);
+      setSelectedTransferDetail(null);
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   const handleAction = (
     transfer: Transfer,
@@ -195,31 +219,82 @@ export default function TransfersManagement() {
     setSelectedTransfer(transfer);
     setActionType(action);
     setModalVisible(true);
+    
+    // 상세보기인 경우 추가 정보 로드
+    if (action === "view") {
+      fetchTransferDetail(transfer.id);
+    }
   };
 
-  const confirmAction = () => {
+  // 액션 API 호출 함수
+  const executeAction = async (
+    transferId: string,
+    action: "approve" | "suspend" | "delete"
+  ) => {
+    try {
+      if (action === "delete") {
+        // DELETE 요청
+        const response = await fetch(`/api/admin/transfers/${transferId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            reason: '관리자에 의한 삭제',
+          }),
+        });
+
+        const result = await response.json();
+        if (result.status !== 'success') {
+          throw new Error(result.message);
+        }
+      } else {
+        // PATCH 요청 (상태 변경)
+        const statusMap = {
+          approve: 'ACTIVE',
+          suspend: 'SUSPENDED',
+        };
+
+        const response = await fetch(`/api/admin/transfers/${transferId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: statusMap[action],
+            reason: action === 'approve' ? '관리자 승인' : '관리자에 의한 정지',
+          }),
+        });
+
+        const result = await response.json();
+        if (result.status !== 'success') {
+          throw new Error(result.message);
+        }
+      }
+
+      // 성공 시 데이터 새로고침
+      await fetchTransfers();
+      
+      return true;
+    } catch (error) {
+      console.error('액션 실행 실패:', error);
+      return false;
+    }
+  };
+
+  const confirmAction = async () => {
     if (!selectedTransfer) return;
 
-    setTransfers((prev) =>
-      prev.map((transfer) => {
-        if (transfer.id === selectedTransfer.id) {
-          switch (actionType) {
-            case "approve":
-              return { ...transfer, status: "ACTIVE" as const };
-            case "suspend":
-              return { ...transfer, status: "SUSPENDED" as const };
-            case "delete":
-              return { ...transfer, status: "SUSPENDED" as const };
-            default:
-              return transfer;
-          }
-        }
-        return transfer;
-      })
-    );
-
-    setModalVisible(false);
-    setSelectedTransfer(null);
+    const success = await executeAction(selectedTransfer.id, actionType as "approve" | "suspend" | "delete");
+    
+    if (success) {
+      setModalVisible(false);
+      setSelectedTransfer(null);
+      setSelectedTransferDetail(null);
+    } else {
+      // TODO: 에러 알림 표시
+      alert('작업 실행 중 오류가 발생했습니다.');
+    }
   };
 
   const renderActionButtons = (transfer: Transfer) => (
@@ -310,12 +385,14 @@ export default function TransfersManagement() {
                     },
                   },
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: "#9098a4", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search sx={{ color: "#9098a4", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
             </Box>
@@ -456,7 +533,7 @@ export default function TransfersManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {transfers.filter((t) => t.status === "ACTIVE").length}
+                    {stats.active}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -562,7 +639,7 @@ export default function TransfersManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {transfers.filter((t) => t.status === "PENDING").length}
+                    {stats.pending}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -668,7 +745,7 @@ export default function TransfersManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {transfers.filter((t) => t.reportCount > 0).length}
+                    {stats.suspended}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -774,10 +851,7 @@ export default function TransfersManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {transfers.reduce(
-                      (sum, transfer) => sum + transfer.inquiryCount,
-                      0
-                    )}
+                    {stats.total}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -871,7 +945,7 @@ export default function TransfersManagement() {
                   mt: 0.5,
                 }}
               >
-                총 {filteredTransfers.length}개의 게시물
+                총 {totalItems}개의 게시물
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1 }}>
@@ -1006,7 +1080,20 @@ export default function TransfersManagement() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {currentTransfers.map((transfer) => (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography>데이터를 불러오는 중...</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : currentTransfers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography>검색 결과가 없습니다.</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                currentTransfers.map((transfer) => (
                 <TableRow
                   key={transfer.id}
                   hover
@@ -1085,13 +1172,14 @@ export default function TransfersManagement() {
                   </TableCell>
                   <TableCell>{renderActionButtons(transfer)}</TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
 
         {/* Modern Pagination */}
-        {totalPages > 1 && (
+        {totalPagesState > 1 && (
           <Box
             sx={{
               display: "flex",
@@ -1102,9 +1190,12 @@ export default function TransfersManagement() {
             }}
           >
             <Pagination
-              count={totalPages}
+              count={totalPagesState}
               page={currentPage}
-              onChange={(_, page) => setCurrentPage(page)}
+              onChange={(_, page) => {
+                setCurrentPage(page);
+                fetchTransfers(page, searchTerm, filterStatus, filterType);
+              }}
               sx={{
                 "& .MuiPaginationItem-root": {
                   borderRadius: 2,
@@ -1145,79 +1236,117 @@ export default function TransfersManagement() {
             <Box>
               {actionType === "view" && (
                 <Box>
-                  <Typography variant="h6" gutterBottom>
-                    {selectedTransfer.title}
-                  </Typography>
-                  <Box
-                    sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 1 }}
-                  >
-                    <Box
-                      sx={{
-                        flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
-                      }}
-                    >
-                      <Stack spacing={1}>
-                        <Typography>
-                          <strong>병원명:</strong>{" "}
-                          {selectedTransfer.hospitalName || "정보없음"}
-                        </Typography>
-                        <Typography>
-                          <strong>위치:</strong> {selectedTransfer.location}
-                        </Typography>
-                        <Typography>
-                          <strong>가격:</strong> {selectedTransfer.price}
-                        </Typography>
+                  {modalLoading ? (
+                    <Typography>상세 정보를 불러오는 중...</Typography>
+                  ) : selectedTransferDetail ? (
+                    <>
+                      <Typography variant="h6" gutterBottom>
+                        {selectedTransferDetail.title}
+                      </Typography>
+                      <Box
+                        sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 1 }}
+                      >
                         <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                          sx={{
+                            flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
+                          }}
                         >
-                          <strong>유형:</strong>
-                          {getTypeTag(selectedTransfer.transferType)}
+                          <Stack spacing={1}>
+                            <Typography>
+                              <strong>위치:</strong> {selectedTransferDetail.location}
+                            </Typography>
+                            <Typography>
+                              <strong>가격:</strong> {selectedTransferDetail.price}
+                            </Typography>
+                            <Box
+                              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                            >
+                              <strong>유형:</strong>
+                              {getTypeTag(selectedTransferDetail.transferType)}
+                            </Box>
+                            {selectedTransferDetail.area && (
+                              <Typography>
+                                <strong>면적:</strong> {selectedTransferDetail.area}평
+                              </Typography>
+                            )}
+                          </Stack>
                         </Box>
-                      </Stack>
-                    </Box>
-                    <Box
-                      sx={{
-                        flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
-                      }}
-                    >
-                      <Stack spacing={1}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                          sx={{
+                            flex: { xs: "1 1 100%", md: "1 1 calc(50% - 8px)" },
+                          }}
                         >
-                          <strong>상태:</strong>
-                          {getStatusTag(selectedTransfer.status)}
+                          <Stack spacing={1}>
+                            <Box
+                              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                            >
+                              <strong>상태:</strong>
+                              {getStatusTag(selectedTransferDetail.status)}
+                            </Box>
+                            <Typography>
+                              <strong>좋아요:</strong>{" "}
+                              {selectedTransferDetail.likeCount}개
+                            </Typography>
+                            <Typography>
+                              <strong>조회수:</strong>{" "}
+                              {selectedTransferDetail.viewCount.toLocaleString()}
+                            </Typography>
+                            <Typography>
+                              <strong>등록일:</strong> {selectedTransferDetail.createdAt}
+                            </Typography>
+                          </Stack>
                         </Box>
-                        <Typography>
-                          <strong>문의 수:</strong>{" "}
-                          {selectedTransfer.inquiryCount}건
+                      </Box>
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          <strong>설명:</strong>
                         </Typography>
-                        <Typography>
-                          <strong>조회수:</strong>{" "}
-                          {selectedTransfer.viewCount.toLocaleString()}
-                        </Typography>
-                        <Typography>
-                          <strong>등록일:</strong> {selectedTransfer.createdAt}
-                        </Typography>
-                      </Stack>
-                    </Box>
-                  </Box>
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      <strong>설명:</strong>
-                    </Typography>
-                    <Typography>{selectedTransfer.description}</Typography>
-                  </Box>
-                  {selectedTransfer.reportCount > 0 && (
-                    <Alert severity="warning" sx={{ mt: 2 }}>
-                      <strong>주의:</strong> 이 게시물은{" "}
-                      {selectedTransfer.reportCount}건의 신고를 받았습니다.
-                    </Alert>
-                  )}
-                  {selectedTransfer.status === "PENDING" && (
-                    <Alert severity="info" sx={{ mt: 2 }}>
-                      <strong>알림:</strong> 이 게시물은 관리자 승인을 기다리고
-                      있습니다.
-                    </Alert>
+                        <Typography>{selectedTransferDetail.description}</Typography>
+                      </Box>
+                      {selectedTransferDetail.user && (
+                        <Box sx={{ mt: 2, p: 2, bgcolor: "#f5f5f5", borderRadius: 1 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            <strong>작성자 정보:</strong>
+                          </Typography>
+                          <Stack spacing={0.5}>
+                            <Typography variant="body2">
+                              <strong>이름:</strong> {selectedTransferDetail.user.name}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>이메일:</strong> {selectedTransferDetail.user.email}
+                            </Typography>
+                            {selectedTransferDetail.user.phone && (
+                              <Typography variant="body2">
+                                <strong>연락처:</strong> {selectedTransferDetail.user.phone}
+                              </Typography>
+                            )}
+                          </Stack>
+                        </Box>
+                      )}
+                      {selectedTransferDetail.relatedStats && selectedTransferDetail.relatedStats.relatedCount > 0 && (
+                        <Alert severity="info" sx={{ mt: 2 }}>
+                          <strong>참고:</strong> 같은 지역({selectedTransferDetail.sido} {selectedTransferDetail.sigungu})에
+                          {selectedTransferDetail.relatedStats.relatedCount}개의 유사한 게시물이 있습니다.
+                          {selectedTransferDetail.relatedStats.avgPrice > 0 && (
+                            <> 평균 가격: {selectedTransferDetail.relatedStats.avgPrice.toLocaleString()}원</>  
+                          )}
+                        </Alert>
+                      )}
+                      {selectedTransferDetail.reportCount > 0 && (
+                        <Alert severity="warning" sx={{ mt: 2 }}>
+                          <strong>주의:</strong> 이 게시물은{" "}
+                          {selectedTransferDetail.reportCount}건의 신고를 받았습니다.
+                        </Alert>
+                      )}
+                      {selectedTransferDetail.status === "PENDING" && (
+                        <Alert severity="info" sx={{ mt: 2 }}>
+                          <strong>알림:</strong> 이 게시물은 관리자 승인을 기다리고
+                          있습니다.
+                        </Alert>
+                      )}
+                    </>
+                  ) : (
+                    <Typography>상세 정보를 불러올 수 없습니다.</Typography>
                   )}
                 </Box>
               )}
@@ -1267,7 +1396,13 @@ export default function TransfersManagement() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModalVisible(false)} color="inherit">
+          <Button 
+            onClick={() => {
+              setModalVisible(false);
+              setSelectedTransferDetail(null);
+            }} 
+            color="inherit"
+          >
             취소
           </Button>
           {actionType !== "view" && (

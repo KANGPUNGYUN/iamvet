@@ -2,6 +2,9 @@
   "functions": {
     "src/app/**/*.{js,ts,jsx,tsx}": {
       "maxDuration": 30
+    },
+    "src/app/api/upload/**/*.{js,ts,jsx,tsx}": {
+      "maxDuration": 30
     }
   },
   "headers": [
