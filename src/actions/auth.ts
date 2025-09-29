@@ -1089,7 +1089,7 @@ export async function registerHospital(data: HospitalRegisterData) {
     const generatedId = createId();
     const currentDate = new Date();
 
-    // users 테이블에 기본 사용자 정보만 저장
+    // users 테이블에 기본 사용자 정보만 저장 (정규화된 스키마)
     const userResult = await sql`
       INSERT INTO users (
         id, "loginId", email, phone, "passwordHash", "userType", 
@@ -1107,13 +1107,13 @@ export async function registerHospital(data: HospitalRegisterData) {
     const user = userResult[0];
     console.log("SERVER: Hospital user created successfully:", user.id);
 
-    // hospitals 테이블에 병원 상세 정보 저장
+    // hospitals 테이블에 병원 상세 정보 저장 (정규화된 스키마)
     const hospitalId = createId();
     await sql`
       INSERT INTO hospitals (
         id, "userId", "hospitalName", "representativeName", "businessNumber", 
         "businessLicenseFile", "establishedDate", "hospitalAddress", "hospitalAddressDetail",
-        "postalCode", "latitude", "longitude", "hospitalLogo", "hospitalWebsite", 
+        "postalCode", latitude, longitude, "hospitalLogo", "hospitalWebsite", 
         "hospitalDescription", "createdAt", "updatedAt"
       )
       VALUES (
@@ -1126,7 +1126,7 @@ export async function registerHospital(data: HospitalRegisterData) {
 
     console.log("SERVER: Hospital details saved to hospitals table");
 
-    // 병원 시설 이미지 저장 (hospital_images 테이블 사용)
+    // 병원 시설 이미지 저장 (정규화된 스키마의 hospital_images 테이블)
     if (hospitalImages && hospitalImages.length > 0) {
       for (let i = 0; i < hospitalImages.length; i++) {
         const imageUrl = hospitalImages[i];
