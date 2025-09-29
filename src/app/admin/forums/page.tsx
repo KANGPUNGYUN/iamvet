@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -71,110 +71,100 @@ interface ForumPost {
 }
 
 export default function ForumsManagement() {
-  const [forumPosts, setForumPosts] = useState<ForumPost[]>([
-    {
-      id: 1,
-      title: "강아지 파보바이러스 감염 시 치료 프로토콜",
-      content:
-        "최근 파보바이러스 감염 케이스가 늘어나고 있습니다. 효과적인 치료 방법에 대해 논의해보고 싶습니다...",
-      author: {
-        id: 1,
-        name: "김수의",
-        type: "VETERINARIAN",
-      },
-      category: "TREATMENT",
-      isActive: true,
-      viewCount: 1205,
-      likeCount: 34,
-      commentCount: 18,
-      createdAt: "2024-01-20",
-      updatedAt: "2024-01-20",
-      tags: ["파보바이러스", "감염", "치료"],
-    },
-    {
-      id: 2,
-      title: "고양이 만성 신부전 관리법",
-      content: "고령 고양이의 만성 신부전 관리에 대한 경험을 공유합니다...",
-      author: {
-        id: 2,
-        name: "박수의",
-        type: "VETERINARIAN",
-      },
-      category: "CLINICAL",
-      isActive: true,
-      viewCount: 892,
-      likeCount: 25,
-      commentCount: 12,
-      createdAt: "2024-01-19",
-      updatedAt: "2024-01-19",
-      tags: ["고양이", "신부전", "만성질환"],
-    },
-    {
-      id: 3,
-      title: "새로운 심장사상충 예방약 효과 분석",
-      content:
-        "최근 출시된 심장사상충 예방약의 효과에 대한 임상 데이터를 분석했습니다...",
-      author: {
-        id: 3,
-        name: "서울동물병원",
-        type: "HOSPITAL",
-      },
-      category: "MEDICATION",
-      isActive: true,
-      viewCount: 567,
-      likeCount: 15,
-      commentCount: 8,
-      createdAt: "2024-01-18",
-      updatedAt: "2024-01-18",
-      tags: ["심장사상충", "예방약", "분석"],
-    },
-    {
-      id: 4,
-      title: "부적절한 내용이 포함된 게시물",
-      content: "이 게시물은 부적절한 내용을 포함하고 있어 신고되었습니다...",
-      author: {
-        id: 4,
-        name: "익명사용자",
-        type: "VETERINARIAN",
-      },
-      category: "GENERAL",
-      isActive: true,
-      viewCount: 123,
-      likeCount: 2,
-      commentCount: 3,
-      createdAt: "2024-01-17",
-      updatedAt: "2024-01-17",
-      tags: ["신고됨"],
-    },
-    {
-      id: 5,
-      title: "복강경 수술 기법 워크샵 후기",
-      content:
-        "지난 주 참석한 복강경 수술 워크샵에서 배운 내용을 정리해봤습니다...",
-      author: {
-        id: 5,
-        name: "이수의",
-        type: "VETERINARIAN",
-      },
-      category: "SURGERY",
-      isActive: false,
-      viewCount: 445,
-      likeCount: 22,
-      commentCount: 7,
-      createdAt: "2024-01-16",
-      updatedAt: "2024-01-16",
-      tags: ["복강경", "수술", "워크샵"],
-    },
-  ]);
+  const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    totalViews: 0,
+    totalComments: 0,
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("ALL");
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [totalPagesState, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
+  const [selectedPostDetail, setSelectedPostDetail] = useState<any>(null);
   const [actionType, setActionType] = useState<"view" | "toggle">("view");
+  const [modalLoading, setModalLoading] = useState(false);
+
+  // API 호출 함수
+  const fetchForums = async (
+    page: number = currentPage,
+    search: string = searchTerm,
+    category: string = filterCategory,
+    status: string = filterStatus
+  ) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: itemsPerPage.toString(),
+      });
+
+      if (search) params.append('search', search);
+      if (category !== 'ALL') params.append('category', category);
+      if (status !== 'ALL') params.append('status', status);
+
+      const response = await fetch(`/api/admin/forums?${params}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setForumPosts(result.data.forums);
+        setStats(result.data.stats);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
+      } else {
+        console.error('데이터 조회 실패:', result.message);
+      }
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 상세 정보 조회 함수
+  const fetchForumDetail = async (forumId: number) => {
+    try {
+      setModalLoading(true);
+      const response = await fetch(`/api/admin/forums/${forumId}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setSelectedPostDetail(result.data);
+      } else {
+        console.error('상세 정보 조회 실패:', result.message);
+        setSelectedPostDetail(null);
+      }
+    } catch (error) {
+      console.error('상세 정보 조회 API 호출 실패:', error);
+      setSelectedPostDetail(null);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    fetchForums();
+  }, []);
+
+  // 검색/필터 변경 시 데이터 새로고침
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(1);
+      fetchForums(1, searchTerm, filterCategory, filterStatus);
+    }, 500); // 500ms 디바운스
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, filterCategory, filterStatus]);
 
   const getCategoryTag = (category: string) => {
     const categoryMap: {
@@ -202,54 +192,64 @@ export default function ForumsManagement() {
     );
   };
 
-  // Filter posts based on search and filters
-  const filteredPosts = forumPosts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.tags.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    const matchesCategory =
-      filterCategory === "ALL" || post.category === filterCategory;
-    const matchesStatus =
-      filterStatus === "ALL" ||
-      (filterStatus === "ACTIVE" && post.isActive) ||
-      (filterStatus === "INACTIVE" && !post.isActive);
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  // 서버 사이드 페이지네이션을 사용하므로 클라이언트 필터링 제거
+  const currentPosts = forumPosts;
 
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentPosts = filteredPosts.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
+  // 액션 API 호출 함수
+  const executeAction = async (postId: number, action: "activate" | "deactivate") => {
+    try {
+      const response = await fetch(`/api/admin/forums/${postId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: action,
+          reason: action === 'activate' ? '관리자 활성화' : '관리자 비활성화',
+        }),
+      });
+
+      const result = await response.json();
+      if (result.status !== 'success') {
+        throw new Error(result.message);
+      }
+
+      // 성공 시 데이터 새로고침
+      await fetchForums();
+      
+      return true;
+    } catch (error) {
+      console.error('액션 실행 실패:', error);
+      return false;
+    }
+  };
 
   const handleAction = (post: ForumPost, action: "view" | "toggle") => {
     setSelectedPost(post);
     setActionType(action);
     setModalVisible(true);
+    
+    // 상세보기인 경우 추가 정보 로드
+    if (action === "view") {
+      fetchForumDetail(post.id);
+    }
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     if (!selectedPost) return;
 
-    setForumPosts((prev) =>
-      prev.map((post) => {
-        if (post.id === selectedPost.id) {
-          switch (actionType) {
-            case "toggle":
-              return { ...post, isActive: !post.isActive };
-            default:
-              return post;
-          }
-        }
-        return post;
-      })
-    );
-
-    setModalVisible(false);
-    setSelectedPost(null);
+    if (actionType === "toggle") {
+      const action = selectedPost.isActive ? "deactivate" : "activate";
+      const success = await executeAction(selectedPost.id, action);
+      
+      if (success) {
+        setModalVisible(false);
+        setSelectedPost(null);
+        setSelectedPostDetail(null);
+      } else {
+        alert('작업 실행 중 오류가 발생했습니다.');
+      }
+    }
   };
 
   const renderActionButtons = (post: ForumPost) => (
@@ -323,12 +323,14 @@ export default function ForumsManagement() {
                     },
                   },
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: "#9098a4", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search sx={{ color: "#9098a4", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
             </Box>
@@ -471,7 +473,7 @@ export default function ForumsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {forumPosts.filter((p) => p.isActive).length}
+                    {stats.active}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -577,7 +579,7 @@ export default function ForumsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {forumPosts.filter((p) => !p.isActive).length}
+                    {stats.inactive}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -683,7 +685,7 @@ export default function ForumsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {forumPosts.reduce((sum, p) => sum + p.commentCount, 0)}
+                    {stats.totalComments}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -789,9 +791,7 @@ export default function ForumsManagement() {
                       fontSize: "2rem",
                     }}
                   >
-                    {forumPosts
-                      .reduce((sum, p) => sum + p.viewCount, 0)
-                      .toLocaleString()}
+                    {stats.totalViews.toLocaleString()}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -885,7 +885,7 @@ export default function ForumsManagement() {
                   mt: 0.5,
                 }}
               >
-                총 {filteredPosts.length}개의 게시물
+                총 {totalItems}개의 게시물
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1 }}>
@@ -1000,7 +1000,20 @@ export default function ForumsManagement() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {currentPosts.map((post) => (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography>데이터를 불러오는 중...</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : currentPosts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography>검색 결과가 없습니다.</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                currentPosts.map((post) => (
                 <TableRow
                   key={post.id}
                   hover
@@ -1153,13 +1166,14 @@ export default function ForumsManagement() {
                   </TableCell>
                   <TableCell>{renderActionButtons(post)}</TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
 
         {/* Modern Pagination */}
-        {totalPages > 1 && (
+        {totalPagesState > 1 && (
           <Box
             sx={{
               display: "flex",
@@ -1170,9 +1184,12 @@ export default function ForumsManagement() {
             }}
           >
             <Pagination
-              count={totalPages}
+              count={totalPagesState}
               page={currentPage}
-              onChange={(_, page) => setCurrentPage(page)}
+              onChange={(_, page) => {
+                setCurrentPage(page);
+                fetchForums(page, searchTerm, filterCategory, filterStatus);
+              }}
               sx={{
                 "& .MuiPaginationItem-root": {
                   borderRadius: 2,
@@ -1211,100 +1228,107 @@ export default function ForumsManagement() {
           {selectedPost && (
             <Box>
               {actionType === "view" && (
-                <Stack spacing={3} sx={{ mt: 2 }}>
-                  <Box>
-                    <Typography
-                      variant="h6"
-                      sx={{ fontWeight: 600, color: "#3b394d", mb: 1 }}
-                    >
-                      {selectedPost.title}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                        mb: 2,
-                      }}
-                    >
-                      <Avatar
-                        sx={{
-                          bgcolor:
-                            selectedPost.author.type === "VETERINARIAN"
-                              ? "#ff8796"
-                              : "#ffb7b8",
-                          width: 32,
-                          height: 32,
-                        }}
-                      >
-                        <Person />
-                      </Avatar>
+                <Box>
+                  {modalLoading ? (
+                    <Typography>상세 정보를 불러오는 중...</Typography>
+                  ) : selectedPostDetail ? (
+                    <Stack spacing={3} sx={{ mt: 2 }}>
                       <Box>
-                        <Typography variant="body2" fontWeight="600">
-                          {selectedPost.author.name}
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: "#3b394d", mb: 1 }}
+                        >
+                          {selectedPostDetail.title}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {selectedPost.author.type === "VETERINARIAN"
-                            ? "수의사"
-                            : "병원"}{" "}
-                          • {selectedPost.createdAt}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            mb: 2,
+                          }}
+                        >
+                          <Avatar
+                            sx={{
+                              bgcolor:
+                                selectedPostDetail.author.type === "VETERINARIAN"
+                                  ? "#ff8796"
+                                  : "#ffb7b8",
+                              width: 32,
+                              height: 32,
+                            }}
+                          >
+                            <Person />
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" fontWeight="600">
+                              {selectedPostDetail.author.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {selectedPostDetail.author.type === "VETERINARIAN"
+                                ? "수의사"
+                                : "병원"}{" "}
+                              • {selectedPostDetail.createdAt}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box
+                          sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}
+                        >
+                          {getCategoryTag(selectedPostDetail.category)}
+                          {getStatusTag(selectedPostDetail.isActive)}
+                        </Box>
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#3b394d", mb: 2, lineHeight: 1.7 }}
+                        >
+                          {selectedPostDetail.content}
                         </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 0.5,
+                            mb: 3,
+                          }}
+                        >
+                          {selectedPostDetail.tags.map((tag, index) => (
+                            <Chip
+                              key={index}
+                              label={`#${tag}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{ color: "#ff8796", borderColor: "#ff8796" }}
+                            />
+                          ))}
+                        </Box>
                       </Box>
-                    </Box>
-                    <Box
-                      sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}
-                    >
-                      {getCategoryTag(selectedPost.category)}
-                      {getStatusTag(selectedPost.isActive)}
-                    </Box>
-                    <Typography
-                      variant="body1"
-                      sx={{ color: "#3b394d", mb: 2, lineHeight: 1.7 }}
-                    >
-                      {selectedPost.content}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 0.5,
-                        mb: 3,
-                      }}
-                    >
-                      {selectedPost.tags.map((tag, index) => (
-                        <Chip
-                          key={index}
-                          label={`#${tag}`}
-                          size="small"
-                          variant="outlined"
-                          sx={{ color: "#ff8796", borderColor: "#ff8796" }}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
 
-                  <Box sx={{ display: "flex", gap: 4 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}
-                      >
-                        참여 통계
-                      </Typography>
-                      <Stack spacing={1}>
-                        <Typography variant="body2" sx={{ color: "#3b394d" }}>
-                          조회수: {selectedPost.viewCount.toLocaleString()}회
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#3b394d" }}>
-                          좋아요: {selectedPost.likeCount}개
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#3b394d" }}>
-                          댓글: {selectedPost.commentCount}개
-                        </Typography>
-                      </Stack>
-                    </Box>
-                  </Box>
-                </Stack>
+                      <Box sx={{ display: "flex", gap: 4 }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}
+                          >
+                            참여 통계
+                          </Typography>
+                          <Stack spacing={1}>
+                            <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                              조회수: {selectedPostDetail.viewCount.toLocaleString()}회
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                              좋아요: {selectedPostDetail.likeCount}개
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#3b394d" }}>
+                              댓글: {selectedPostDetail.commentCount}개
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      </Box>
+                    </Stack>
+                  ) : (
+                    <Typography>상세 정보를 불러올 수 없습니다.</Typography>
+                  )}
               )}
 
               {actionType === "toggle" && (
@@ -1324,7 +1348,13 @@ export default function ForumsManagement() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModalVisible(false)} color="inherit">
+          <Button 
+            onClick={() => {
+              setModalVisible(false);
+              setSelectedPostDetail(null);
+            }} 
+            color="inherit"
+          >
             {actionType === "view" ? "닫기" : "취소"}
           </Button>
           {actionType !== "view" && (
