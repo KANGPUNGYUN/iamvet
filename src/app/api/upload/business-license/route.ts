@@ -2,6 +2,9 @@ import { uploadFile } from "@/lib/s3";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 60; // 60초 타임아웃
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   console.log("[Business License Upload] Request received");
   
@@ -22,11 +25,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 파일 크기 검증 (50MB)
+    // 파일 크기 검증 (50MB로 증가)
     if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json(
         createErrorResponse("파일 크기는 50MB를 초과할 수 없습니다"),
-        { status: 400 }
+        { status: 413 }
       );
     }
 

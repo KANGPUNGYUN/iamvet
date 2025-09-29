@@ -46,12 +46,9 @@ const nextConfig = {
     },
   },
 
-  // API 라우트 body size limit 설정
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
+  // API Routes의 body size limit 설정 (Next.js 15 방식)
+  serverComponentsExternalPackages: [],
+
 
   webpack: (config, { isServer }) => {
     // Handle database modules for serverless deployment

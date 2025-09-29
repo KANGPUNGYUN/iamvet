@@ -1,9 +1,14 @@
 {
   "functions": {
     "src/app/**/*.{js,ts,jsx,tsx}": {
-      "maxDuration": 30
+      "maxDuration": 60
+    },
+    "src/app/api/upload/**/*.{js,ts,jsx,tsx}": {
+      "maxDuration": 300,
+      "memory": 1024
     }
   },
+  "regions": ["icn1"],
   "headers": [
     {
       "source": "/fonts/(.*)",

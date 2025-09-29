@@ -412,33 +412,51 @@ export const HospitalRegistrationForm: React.FC<
     }));
 
     try {
-      // FormData 생성
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // 서버 사이드 업로드 API 호출
-      const uploadResponse = await fetch('/api/upload/business-license', {
+      // 1단계: Presigned URL 생성
+      const presignedResponse = await fetch('/api/upload/presigned-url', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          folder: 'business-licenses'
+        }),
       });
 
-      const result = await uploadResponse.json();
+      const presignedResult = await presignedResponse.json();
 
-      if (result.status === "success") {
+      if (presignedResult.status !== "success") {
+        throw new Error(presignedResult.message || 'Presigned URL 생성 실패');
+      }
+
+      // 2단계: S3에 직접 파일 업로드 (CORS 헤더 추가)
+      const uploadResponse = await fetch(presignedResult.data.presignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+        mode: 'cors',
+      });
+
+      if (uploadResponse.ok) {
         // 업로드 성공
         setFormData((prev) => ({
           ...prev,
           businessLicense: {
             file: file,
-            url: result.data.fileUrl,
-            fileName: result.data.fileName,
-            fileType: result.data.fileType,
-            mimeType: result.data.mimeType,
-            fileSize: result.data.fileSize,
+            url: presignedResult.data.fileUrl,
+            fileName: presignedResult.data.fileName,
+            fileType: file.type.startsWith('image/') ? 'image' : file.type === 'application/pdf' ? 'pdf' : 'document',
+            mimeType: file.type,
+            fileSize: file.size,
           }
         }));
       } else {
-        throw new Error(result.message || '파일 업로드 실패');
+        throw new Error(`S3 파일 업로드 실패: ${uploadResponse.status} ${uploadResponse.statusText}`);
       }
     } catch (error) {
       console.error('File upload error:', error);
@@ -1192,8 +1210,8 @@ export const HospitalRegistrationForm: React.FC<
             <FileUpload
               onFileSelect={handleFileChange}
               accept="image/*,.pdf,.doc,.docx"
-              maxSize={10 * 1024 * 1024}
-              placeholder="사업자등록증 파일을 업로드해주세요 (이미지, PDF, Word 파일)"
+              maxSize={50 * 1024 * 1024}
+              placeholder="사업자등록증 파일을 업로드해주세요 (최대 50MB, 이미지/PDF/Word 파일)"
             />
             {formData.businessLicense.file && formData.businessLicense.url && (
               <div className="text-sm text-green-600 mt-2">
