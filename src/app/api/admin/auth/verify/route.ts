@@ -19,6 +19,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      email: decoded.email,
+      name: decoded.name,
+      role: decoded.role,
       admin: {
         id: decoded.adminId,
         email: decoded.email,

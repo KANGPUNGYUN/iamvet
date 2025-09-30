@@ -34,7 +34,6 @@ import {
   Delete,
   Announcement,
   Edit,
-  Publish,
   Check,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
@@ -45,7 +44,7 @@ interface AnnouncementData {
   title: string;
   content: string;
   priority: "HIGH" | "NORMAL" | "LOW";
-  status: "DRAFT" | "PUBLISHED" | "SENT";
+  status: "DRAFT" | "SENT";
   targetUsers: string[];
   sendCount: number;
   totalRecipients: number;
@@ -75,11 +74,23 @@ export default function AnnouncementManagement() {
 
   const itemsPerPage = 10;
 
+  // 관리자 토큰 가져오기
+  const getAdminToken = () => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('admin-token') || localStorage.getItem('accessToken');
+  };
+
   // 공지사항 목록 조회
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/admin/announcements");
+      const token = getAdminToken();
+      const response = await axios.get("/api/admin/announcements", {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        }
+      });
       if (response.data.success) {
         setAnnouncements(response.data.data);
       }
@@ -184,11 +195,17 @@ export default function AnnouncementManagement() {
 
       if (actionType === "compose") {
         // 새 공지사항 생성
+        const token = getAdminToken();
         const response = await axios.post("/api/admin/announcements", {
           title: announcementData.title,
           content: announcementData.content,
           priority: announcementData.priority,
           targetUsers: targetUsersArray,
+        }, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          }
         });
         
         if (response.data.success) {
@@ -196,11 +213,17 @@ export default function AnnouncementManagement() {
         }
       } else if (actionType === "edit" && selectedItem) {
         // 공지사항 수정
+        const token = getAdminToken();
         const response = await axios.put(`/api/admin/announcements/${selectedItem.id}`, {
           title: announcementData.title,
           content: announcementData.content,
           priority: announcementData.priority,
           targetUsers: targetUsersArray,
+        }, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          }
         });
         
         if (response.data.success) {
@@ -223,25 +246,18 @@ export default function AnnouncementManagement() {
     }
   };
 
-  const handlePublishAnnouncement = async (announcementId: string) => {
-    try {
-      setLoading(true);
-      await axios.post(`/api/admin/announcements/${announcementId}`, {
-        action: "publish"
-      });
-      await fetchAnnouncements();
-    } catch (error) {
-      console.error("Failed to publish announcement:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSendAnnouncement = async (announcementId: string) => {
     try {
       setLoading(true);
+      const token = getAdminToken();
       const response = await axios.post(`/api/admin/announcements/${announcementId}`, {
         action: "send"
+      }, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        }
       });
       
       if (response.data.success) {
@@ -261,7 +277,12 @@ export default function AnnouncementManagement() {
       if (!selectedItem) return;
       
       setLoading(true);
-      await axios.delete(`/api/admin/announcements/${selectedItem.id}`);
+      const token = getAdminToken();
+      await axios.delete(`/api/admin/announcements/${selectedItem.id}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      });
       await fetchAnnouncements();
       
       setModalVisible(false);
@@ -290,17 +311,7 @@ export default function AnnouncementManagement() {
       {item.status === "DRAFT" && (
         <Button
           variant="outlined"
-          color="success"
-          onClick={() => handlePublishAnnouncement(item.id)}
-        >
-          <Publish />
-        </Button>
-      )}
-      
-      {(item.status === "PUBLISHED" || item.status === "DRAFT") && (
-        <Button
-          variant="outlined"
-          color="warning"
+          color="primary"
           onClick={() => handleSendAnnouncement(item.id)}
         >
           <Send />

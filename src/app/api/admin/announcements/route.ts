@@ -70,27 +70,27 @@ export async function GET(req: NextRequest) {
 
     // 데이터 변환
     const transformedAnnouncements = announcements.map((announcement: any) => {
-      const latestBatch = announcement.notification_batches[0];
+      const latestBatch = announcement.notification_batches?.[0];
       const authorName =
-        announcement.users.veterinarians?.realName ||
-        announcement.users.veterinary_students?.realName ||
-        announcement.users.hospitals?.representativeName ||
+        announcement.users?.veterinarians?.realName ||
+        announcement.users?.veterinary_students?.realName ||
+        announcement.users?.hospitals?.representativeName ||
         "관리자";
 
       return {
         id: announcement.id,
-        title: announcement.notifications.title,
-        content: announcement.notifications.content,
-        priority: announcement.priority,
+        title: announcement.notifications?.title || "",
+        content: announcement.notifications?.content || "",
+        priority: announcement.priority || "NORMAL",
         status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
         sendCount: latestBatch?.sentCount || 0,
         totalRecipients: latestBatch?.totalRecipients || 0,
         readCount: 0, // TODO: 읽음 수 계산 구현 필요
         author: authorName,
-        createdAt: announcement.notifications.createdAt,
-        updatedAt: announcement.notifications.updatedAt,
+        createdAt: announcement.notifications?.createdAt || new Date(),
+        updatedAt: announcement.notifications?.updatedAt || new Date(),
         sentAt: latestBatch?.completedAt || null,
-        targetUsers: announcement.targetUserTypes,
+        targetUsers: announcement.targetUserTypes || [],
       };
     });
 

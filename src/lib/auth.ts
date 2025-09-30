@@ -112,8 +112,13 @@ export const verifyAdminToken = (request: any) => {
     } else {
       // 쿠키에서 토큰 가져오기
       const adminTokenCookie = request.cookies?.get?.("admin-token")?.value;
+      const userTokenCookie = request.cookies?.get?.("token")?.value;
+      
       if (adminTokenCookie) {
         token = adminTokenCookie;
+      } else if (userTokenCookie) {
+        // 일반 사용자 토큰도 확인
+        token = userTokenCookie;
       }
     }
 
@@ -121,13 +126,31 @@ export const verifyAdminToken = (request: any) => {
       return { success: false, error: "인증 토큰이 없습니다" };
     }
 
-    const payload = verifyAdminTokenJWT(token);
+    // 먼저 관리자 토큰으로 검증 시도
+    let payload = verifyAdminTokenJWT(token);
+    let isAdminToken = true;
+    
+    if (!payload) {
+      // 관리자 토큰이 아니면 일반 사용자 토큰으로 검증 시도
+      payload = verifyToken(token);
+      isAdminToken = false;
+    }
+    
     if (!payload) {
       return { success: false, error: "유효하지 않은 토큰입니다" };
     }
 
-    // 관리자 권한 확인은 별도 구현 필요 (현재는 토큰 검증만)
-    return { success: true, payload };
+    // 일반 사용자 토큰인 경우 관리자 권한 확인 필요
+    // TODO: 데이터베이스에서 사용자의 관리자 권한 확인
+    if (!isAdminToken) {
+      // 임시로 특정 이메일만 관리자 권한 부여
+      const adminEmails = ["admin@example.com", "kpy2709@gmail.com"];
+      if (!adminEmails.includes(payload.email)) {
+        return { success: false, error: "관리자 권한이 없습니다" };
+      }
+    }
+
+    return { success: true, payload, isAdminToken };
 
   } catch (error) {
     return { success: false, error: "토큰 검증 중 오류가 발생했습니다" };

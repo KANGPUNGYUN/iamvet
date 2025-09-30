@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { NotificationType, NotificationPriority, UserType, NotificationBatchStatus } from "@prisma/client";
-import { getCurrentUser } from "@/actions/auth";
+import { verifyAdminToken } from "@/lib/auth";
 import { nanoid } from "nanoid";
 
 export async function PUT(
@@ -9,10 +9,10 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userResult = await getCurrentUser();
-    if (!userResult.success || !userResult.user) {
+    const adminAuth = verifyAdminToken(req);
+    if (!adminAuth.success) {
       return NextResponse.json(
-        { success: false, error: "인증이 필요합니다." },
+        { success: false, error: adminAuth.error || "인증이 필요합니다." },
         { status: 401 }
       );
     }
@@ -81,10 +81,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userResult = await getCurrentUser();
-    if (!userResult.success || !userResult.user) {
+    const adminAuth = verifyAdminToken(req);
+    if (!adminAuth.success) {
       return NextResponse.json(
-        { success: false, error: "인증이 필요합니다." },
+        { success: false, error: adminAuth.error || "인증이 필요합니다." },
         { status: 401 }
       );
     }
@@ -92,9 +92,17 @@ export async function DELETE(
     const resolvedParams = await params;
     const announcementId = resolvedParams.id;
 
-    // 공지사항 삭제 (Cascade로 관련 데이터도 함께 삭제됨)
-    await prisma.announcements.delete({
-      where: { id: announcementId },
+    // 트랜잭션으로 관련 데이터 함께 삭제
+    await prisma.$transaction(async (tx) => {
+      // 1. notification_batches 먼저 삭제
+      await tx.notification_batches.deleteMany({
+        where: { announcementId },
+      });
+
+      // 2. announcements 삭제 (notifications는 cascade로 자동 삭제됨)
+      await tx.announcements.delete({
+        where: { id: announcementId },
+      });
     });
 
     return NextResponse.json({
@@ -115,10 +123,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userResult = await getCurrentUser();
-    if (!userResult.success || !userResult.user) {
+    const adminAuth = verifyAdminToken(req);
+    if (!adminAuth.success) {
       return NextResponse.json(
-        { success: false, error: "인증이 필요합니다." },
+        { success: false, error: adminAuth.error || "인증이 필요합니다." },
         { status: 401 }
       );
     }
@@ -192,7 +200,7 @@ export async function POST(
                 type: NotificationType.ANNOUNCEMENT,
                 recipientId: user.id,
                 recipientType: user.userType,
-                senderId: userResult.user!.id,
+                senderId: announcement.createdBy,
                 title: announcement.notifications.title,
                 content: announcement.notifications.content,
                 updatedAt: new Date(),

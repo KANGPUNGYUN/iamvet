@@ -58,28 +58,62 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [adminEmail, setAdminEmail] = React.useState("");
+  const [isChecking, setIsChecking] = React.useState(true);
 
   // 로그인 상태 확인
   React.useEffect(() => {
-    const checkAuth = () => {
+    let isMounted = true;
+    
+    const checkAuth = async () => {
       // 로그인 페이지는 인증 체크에서 제외
       if (pathname === "/admin/login") {
+        setIsChecking(false);
         return;
       }
 
-      const loggedIn = localStorage.getItem("isAdminLoggedIn");
-      const email = localStorage.getItem("adminEmail");
-      
-      if (loggedIn === "true" && email) {
-        setIsLoggedIn(true);
-        setAdminEmail(email);
-      } else {
-        // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
-        router.push("/admin/login");
+      try {
+        // 서버에서 실제 인증 상태 확인
+        const response = await fetch("/api/admin/auth/verify", {
+          credentials: "include",
+        });
+
+        if (!isMounted) return;
+
+        if (response.ok) {
+          const data = await response.json();
+          setIsLoggedIn(true);
+          setAdminEmail(data.email || localStorage.getItem("adminEmail") || "");
+          
+          // localStorage 업데이트
+          if (data.email) {
+            localStorage.setItem("isAdminLoggedIn", "true");
+            localStorage.setItem("adminEmail", data.email);
+          }
+        } else {
+          // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
+          localStorage.removeItem("isAdminLoggedIn");
+          localStorage.removeItem("adminEmail");
+          localStorage.removeItem("adminName");
+          localStorage.removeItem("adminRole");
+          router.push("/admin/login");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        if (isMounted) {
+          router.push("/admin/login");
+        }
+      } finally {
+        if (isMounted) {
+          setIsChecking(false);
+        }
       }
     };
 
     checkAuth();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [pathname, router]);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -116,8 +150,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return <>{children}</>;
   }
 
-  // 로그인되지 않은 상태에서는 로딩 표시
-  if (!isLoggedIn) {
+  // 인증 체크 중이거나 로그인되지 않은 상태에서는 로딩 표시
+  if (isChecking || (!isLoggedIn && pathname !== "/admin/login")) {
     return (
       <Box
         sx={{
