@@ -1,25 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NotificationType, NotificationPriority, UserType } from "@prisma/client";
-import { getCurrentUser } from "@/actions/auth";
+import { NotificationType, NotificationPriority } from "@prisma/client";
 import { nanoid } from "nanoid";
 
 export async function GET(req: NextRequest) {
   try {
-    // 관리자 인증 확인 (필요시)
-    const userResult = await getCurrentUser();
-    if (!userResult.success || !userResult.user) {
+    // 관리자 인증 확인
+    const adminAuth = verifyAdminToken(req);
+    if (!adminAuth.success) {
       return NextResponse.json(
-        { success: false, error: "인증이 필요합니다." },
+        { success: false, error: adminAuth.error || "인증이 필요합니다." },
         { status: 401 }
       );
     }
 
-    // 공지사항 조회 (announcements 테이블에서 직접)
+    // 공지사항 조회 (Prisma 사용)
     const announcements = await prisma.announcements.findMany({
       include: {
+        notifications: {
+          select: {
+            id: true,
+            title: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
         users: {
-          include: {
+          select: {
+            id: true,
+            email: true,
             veterinarians: {
               select: {
                 realName: true,
@@ -33,18 +44,8 @@ export async function GET(req: NextRequest) {
             hospitals: {
               select: {
                 representativeName: true,
-                hospitalName: true,
               },
             },
-          },
-        },
-        notifications: {
-          select: {
-            id: true,
-            title: true,
-            content: true,
-            createdAt: true,
-            updatedAt: true,
           },
         },
         notification_batches: {
@@ -54,6 +55,10 @@ export async function GET(req: NextRequest) {
             status: true,
             completedAt: true,
           },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
         },
       },
       orderBy: {
@@ -64,26 +69,30 @@ export async function GET(req: NextRequest) {
     });
 
     // 데이터 변환
-    const transformedAnnouncements = announcements.map((announcement) => ({
-      id: announcement.id,
-      title: announcement.notifications.title,
-      content: announcement.notifications.content,
-      priority: announcement.priority,
-      targetUsers: announcement.targetUserTypes,
-      status: announcement.notification_batches.length > 0 
-        ? announcement.notification_batches[0].status === 'COMPLETED' ? 'SENT' : 'PUBLISHED'
-        : 'DRAFT',
-      sendCount: announcement.notification_batches[0]?.sentCount || 0,
-      totalRecipients: announcement.notification_batches[0]?.totalRecipients || 0,
-      readCount: 0, // 추후 구현 필요
-      author: announcement.users.veterinarians?.realName || 
-              announcement.users.veterinary_students?.realName || 
-              announcement.users.hospitals?.representativeName || 
-              announcement.users.hospitals?.hospitalName || '관리자',
-      createdAt: announcement.notifications.createdAt,
-      updatedAt: announcement.notifications.updatedAt,
-      sentAt: announcement.notification_batches[0]?.completedAt,
-    }));
+    const transformedAnnouncements = announcements.map((announcement: any) => {
+      const latestBatch = announcement.notification_batches[0];
+      const authorName =
+        announcement.users.veterinarians?.realName ||
+        announcement.users.veterinary_students?.realName ||
+        announcement.users.hospitals?.representativeName ||
+        "관리자";
+
+      return {
+        id: announcement.id,
+        title: announcement.notifications.title,
+        content: announcement.notifications.content,
+        priority: announcement.priority,
+        status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
+        sendCount: latestBatch?.sentCount || 0,
+        totalRecipients: latestBatch?.totalRecipients || 0,
+        readCount: 0, // TODO: 읽음 수 계산 구현 필요
+        author: authorName,
+        createdAt: announcement.notifications.createdAt,
+        updatedAt: announcement.notifications.updatedAt,
+        sentAt: latestBatch?.completedAt || null,
+        targetUsers: announcement.targetUserTypes,
+      };
+    });
 
     return NextResponse.json({
       success: true,
@@ -101,10 +110,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // 관리자 인증 확인
-    const userResult = await getCurrentUser();
-    if (!userResult.success || !userResult.user) {
+    const adminAuth = verifyAdminToken(req);
+    if (!adminAuth.success) {
       return NextResponse.json(
-        { success: false, error: "인증이 필요합니다." },
+        { success: false, error: adminAuth.error || "인증이 필요합니다." },
         { status: 401 }
       );
     }
@@ -119,23 +128,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const announcementId = nanoid();
-    const draftNotificationId = nanoid();
+    // 관리자 사용자 찾기 (임시로 첫 번째 사용자 사용)
+    const adminUser = await prisma.users.findFirst();
+    if (!adminUser) {
+      return NextResponse.json(
+        { success: false, error: "관리자 사용자를 찾을 수 없습니다." },
+        { status: 500 }
+      );
+    }
 
-    // 트랜잭션으로 공지사항 생성 (초안용 단일 notification만 생성)
+    const notificationId = nanoid();
+    const announcementId = nanoid();
+
+    // 공지사항 드래프트 생성 (트랜잭션 사용)
     const result = await prisma.$transaction(async (tx) => {
-      // 1. 초안용 notification 생성 (관리자 본인에게만, 실제 발송 전까지 표시용)
+      // 1. 먼저 notification 생성 (드래프트로, 실제 수신자는 관리자 자신)
       const notification = await tx.notifications.create({
         data: {
-          id: draftNotificationId,
+          id: notificationId,
           type: NotificationType.ANNOUNCEMENT,
-          recipientId: userResult.user!.id,
-          recipientType: userResult.user!.userType as UserType,
-          senderId: userResult.user!.id,
+          recipientId: adminUser.id,
+          recipientType: adminUser.userType,
+          senderId: adminUser.id,
           title,
           content,
           updatedAt: new Date(),
-          isRead: true, // 작성자는 이미 읽은 것으로 처리
         },
       });
 
@@ -143,10 +160,15 @@ export async function POST(req: NextRequest) {
       const announcement = await tx.announcements.create({
         data: {
           id: announcementId,
-          notificationId: draftNotificationId,
-          targetUserTypes: Array.isArray(targetUsers) ? targetUsers : [targetUsers],
-          priority: priority as NotificationPriority,
-          createdBy: userResult.user!.id,
+          notificationId: notificationId,
+          targetUserTypes: Array.isArray(targetUsers)
+            ? targetUsers
+            : targetUsers
+            ? [targetUsers]
+            : ["VETERINARIAN", "HOSPITAL", "VETERINARY_STUDENT"],
+          priority:
+            (priority as NotificationPriority) || NotificationPriority.NORMAL,
+          createdBy: adminUser.id,
         },
       });
 
@@ -159,15 +181,16 @@ export async function POST(req: NextRequest) {
         id: result.announcement.id,
         title,
         content,
-        priority,
+        priority: result.announcement.priority,
         targetUsers: result.announcement.targetUserTypes,
-        status: 'DRAFT',
+        status: "DRAFT",
         sendCount: 0,
         totalRecipients: 0,
         readCount: 0,
-        author: '관리자',
+        author: "관리자",
         createdAt: result.notification.createdAt,
         updatedAt: result.notification.updatedAt,
+        sentAt: null,
       },
     });
   } catch (error) {
