@@ -301,7 +301,15 @@ export async function getCurrentUser(): Promise<{
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as any;
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return { success: false, error: "토큰이 만료되었습니다." };
+      }
+      throw error;
+    }
 
     // Get current user data
     const result = await sql`
@@ -2339,13 +2347,11 @@ export async function completeSocialVeterinarianRegistration(
 
     const userResult = await sql`
       INSERT INTO users (
-        id, username, email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
+        id, email, phone, "passwordHash", "userType", "profileImage", provider,
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${userId}, ${email}, ${email}, ${phone}, ${nickname}, ${realName || name}, ${
-      birthDate ? new Date(birthDate) : null
-    }, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
+        ${userId}, ${email}, ${phone}, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
         ${termsAgreed ? currentDate : null}, ${
       privacyAgreed ? currentDate : null
     }, ${marketingAgreed ? currentDate : null},
@@ -2368,11 +2374,11 @@ export async function completeSocialVeterinarianRegistration(
     // Create veterinarian profile
     const profileId = createId();
     await sql`
-      INSERT INTO veterinarian_profiles (
-        id, "userId", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
+      INSERT INTO veterinarians (
+        id, "userId", "realName", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
       )
       VALUES (
-        ${profileId}, ${user.id}, ${nickname}, ${
+        ${profileId}, ${user.id}, ${realName || name}, ${nickname}, ${
       birthDate ? new Date(birthDate) : null
     }, ${licenseImage || null},
         ${currentDate}, ${currentDate}

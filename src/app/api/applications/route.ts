@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, message: "Unauthorized" },
+        { success: false, message: "토큰이 유효하지 않거나 만료되었습니다. 다시 로그인해주세요." },
         { status: 401 }
       );
     }
