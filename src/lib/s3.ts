@@ -1,6 +1,6 @@
 "use server";
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, PutObjectAclCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -224,6 +224,37 @@ export async function getSignedImageUrl(
     return {
       success: false,
       error: '서명된 URL 생성 중 오류가 발생했습니다.',
+    };
+  }
+}
+
+// 기존 이미지를 public으로 변경
+export async function makeImagePublic(imageUrl: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const key = await extractS3Key(imageUrl);
+    
+    if (!key) {
+      return {
+        success: false,
+        error: '잘못된 이미지 URL입니다.',
+      };
+    }
+
+    // ACL을 public-read로 변경
+    const command = new PutObjectAclCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      ACL: 'public-read',
+    });
+
+    await s3Client.send(command);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Make image public error:', error);
+    return {
+      success: false,
+      error: '이미지 공개 설정 중 오류가 발생했습니다.',
     };
   }
 }

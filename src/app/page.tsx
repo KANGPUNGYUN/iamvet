@@ -9,7 +9,6 @@ import lightbombImg from "@/assets/images/lightbomb.png";
 import hospitalImg from "@/assets/images/hospital.png";
 import lecture1Img from "@/assets/images/lecture/lecture1.png";
 import AdvertisementSlider from "@/components/ui/AdvertisementSlider";
-import { advertisementsData } from "@/data/advertisementsData";
 import { useState } from "react";
 import BannerSlider, {
   BannerItem,
@@ -25,6 +24,7 @@ import { useJobs } from "@/hooks/useJobs";
 import { useLectures } from "@/hooks/api/useLectures";
 import { useTransfers } from "@/hooks/api/useTransfers";
 import { useLikeStore } from "@/stores/likeStore";
+import { useHeroBanners, useBannerAds } from "@/hooks/api/useAdvertisements";
 import React from "react";
 
 export default function HomePage() {
@@ -84,6 +84,12 @@ export default function HomePage() {
     // 매핑된 값이 있으면 반환, 없으면 원본 반환
     return mapped || englishName;
   };
+
+  // 히어로 배너 조회
+  const { data: heroBannersData, isLoading: heroBannersLoading } = useHeroBanners();
+  
+  // 일반 광고 배너 조회
+  const { data: bannerAdsData, isLoading: bannerAdsLoading } = useBannerAds();
 
   // 이력서 목록 조회
   const { data: resumesData, isLoading: resumesLoading } = useResumes({
@@ -604,29 +610,60 @@ export default function HomePage() {
     }
   };
 
-  const sampleBanners: BannerItem[] = [
-    {
-      id: "1",
-      imageUrl: banner1Img,
-      alt: "첫 번째 배너",
-      buttonText: "확인하러 가기",
-      buttonLink: "/member-select",
-    },
-    {
-      id: "2",
-      imageUrl: banner2Img,
-      alt: "두 번째 배너",
-      buttonText: "확인하러 가기",
-      buttonLink: "/member-select",
-    },
-    {
-      id: "3",
-      imageUrl: banner3Img,
-      alt: "세 번째 배너",
-      buttonText: "확인하러 가기",
-      buttonLink: "/member-select",
-    },
-  ];
+  // API 데이터를 BannerItem 형식으로 변환
+  const heroBanners: BannerItem[] = React.useMemo(() => {
+    if (!heroBannersData?.data) {
+      // API 데이터가 없으면 기본 배너 사용
+      return [
+        {
+          id: "1",
+          imageUrl: banner1Img,
+          alt: "첫 번째 배너",
+          buttonText: "확인하러 가기",
+          buttonLink: "/member-select",
+        },
+        {
+          id: "2",
+          imageUrl: banner2Img,
+          alt: "두 번째 배너",
+          buttonText: "확인하러 가기",
+          buttonLink: "/member-select",
+        },
+        {
+          id: "3",
+          imageUrl: banner3Img,
+          alt: "세 번째 배너",
+          buttonText: "확인하러 가기",
+          buttonLink: "/member-select",
+        },
+      ];
+    }
+
+    return heroBannersData.data
+      .sort((a, b) => a.order - b.order) // order 필드로 정렬
+      .map((banner) => ({
+        id: banner.id,
+        imageUrl: banner.imageUrl,
+        alt: banner.title,
+        buttonText: "확인하러 가기",
+        buttonLink: banner.linkUrl,
+      }));
+  }, [heroBannersData]);
+
+  // 일반 배너 데이터 변환
+  const bannerAds = React.useMemo(() => {
+    if (!bannerAdsData?.data) {
+      return [];
+    }
+
+    return bannerAdsData.data
+      .sort((a, b) => a.order - b.order)
+      .map((ad) => ({
+        id: ad.id,
+        imageUrl: ad.imageUrl,
+        linkUrl: ad.linkUrl,
+      }));
+  }, [bannerAdsData]);
 
   return (
     <>
@@ -635,11 +672,36 @@ export default function HomePage() {
           {/* 데스크톱: 가로 배치, 모바일: 세로 배치 */}
           <div className="flex flex-col xl:flex-row xl:items-start xl:gap-[30px] gap-8">
             <div className="flex-1 max-w-[982px]">
-              <BannerSlider
-                banners={sampleBanners}
-                autoSlideInterval={4000}
-                showButton={true}
-              />
+              {heroBannersLoading ? (
+                // 로딩 스켈레톤
+                <div className="w-full h-[300px] md:h-[400px] bg-gray-200 rounded-xl animate-pulse"></div>
+              ) : heroBanners.length > 0 ? (
+                <BannerSlider
+                  banners={heroBanners}
+                  autoSlideInterval={4000}
+                  showButton={true}
+                />
+              ) : (
+                // 히어로 배너가 없을 때 안내 메시지
+                <div className="w-full h-[300px] md:h-[400px] bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="mb-4">
+                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      히어로 배너가 없습니다
+                    </h3>
+                    <p className="text-gray-500 text-sm md:text-base mb-4">
+                      관리자 페이지에서 히어로 배너를 등록해주세요
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      관리자 &gt; 광고배너 관리에서 등록할 수 있습니다
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center xl:items-start gap-[12px] xl:flex-shrink-0 xl:flex-col flex-col-reverse xl:w-auto w-full">
@@ -856,11 +918,28 @@ export default function HomePage() {
 
           {/* 광고 슬라이더 섹션 */}
           <section className="pt-[40px] md:pt-[42px]">
-            <AdvertisementSlider
-              advertisements={advertisementsData}
-              autoPlay={true}
-              autoPlayInterval={5000}
-            />
+            {bannerAdsLoading ? (
+              // 로딩 스켈레톤
+              <div className="w-full h-[120px] bg-gray-200 rounded-xl animate-pulse"></div>
+            ) : bannerAds.length > 0 ? (
+              <AdvertisementSlider
+                advertisements={bannerAds}
+                autoPlay={true}
+                autoPlayInterval={5000}
+              />
+            ) : (
+              // 등록된 배너가 없을 때 메시지
+              <div className="w-full h-[120px] bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-gray-500 text-sm md:text-base font-medium">
+                    등록된 배너가 없습니다
+                  </p>
+                  <p className="text-gray-400 text-xs md:text-sm mt-1">
+                    관리자 페이지에서 배너를 등록해주세요
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* 기존 강의 섹션을 이 코드로 교체 */}

@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 
 interface Advertisement {
   id: string;
   imageUrl: string;
-  imageLargeUrl: string;
   linkUrl?: string;
 }
 
@@ -74,22 +72,16 @@ const AdvertisementSlider: React.FC<AdvertisementSliderProps> = ({
         className="relative w-full h-full cursor-pointer group"
         onClick={handleAdClick}
       >
-        {/* 모바일용 이미지 */}
-        <Image
+        {/* 이미지 */}
+        <img
           src={currentAd.imageUrl}
           alt={`Advertisement ${currentIndex + 1}`}
-          fill
-          className="md:hidden object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="100vw"
-        />
-        
-        {/* 데스크톱용 이미지 */}
-        <Image
-          src={currentAd.imageLargeUrl}
-          alt={`Advertisement ${currentIndex + 1}`}
-          fill
-          className="hidden md:block object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 1200px) 100vw, 1200px"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => {
+            console.error('Image failed to load:', currentAd.imageUrl);
+            // 폴백 이미지 또는 플레이스홀더 표시
+            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDgwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zNTAgMTUwSDQ1MFYyNTBIMzUwVjE1MFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHN2Zz4K';
+          }}
         />
 
         {/* 페이지 인디케이터 */}

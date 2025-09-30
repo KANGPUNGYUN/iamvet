@@ -650,57 +650,92 @@ export default function AdvertiseManagement() {
                     sx={{ "&:hover": { bgcolor: "rgba(0, 0, 0, 0.02)" } }}
                   >
                     <TableCell>
-                      <Box>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{
-                            fontWeight: 600,
-                            color: "var(--Text)",
-                            mb: 0.5,
-                          }}
-                        >
-                          {ad.title}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: "var(--Subtext2)",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            mb: 0.5,
-                          }}
-                        >
-                          {ad.description}
-                        </Typography>
-                        {ad.linkUrl && (
+                      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                        {/* 이미지 썸네일 */}
+                        {ad.imageUrl ? (
+                          <Box
+                            component="img"
+                            src={ad.imageUrl}
+                            sx={{
+                              width: 60,
+                              height: 40,
+                              objectFit: "cover",
+                              borderRadius: 1,
+                              border: "1px solid var(--Line)",
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
                           <Box
                             sx={{
+                              width: 60,
+                              height: 40,
+                              bgcolor: "var(--Box_Light)",
+                              borderRadius: 1,
+                              border: "1px solid var(--Line)",
                               display: "flex",
                               alignItems: "center",
-                              gap: 0.5,
+                              justifyContent: "center",
+                              flexShrink: 0,
                             }}
                           >
-                            <LinkIcon
-                              sx={{ fontSize: 14, color: "var(--Guidetext)" }}
-                            />
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: "var(--Guidetext)",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => window.open(ad.linkUrl, "_blank")}
-                            >
-                              {ad.linkUrl.length > 30
-                                ? `${ad.linkUrl.substring(0, 30)}...`
-                                : ad.linkUrl}
-                            </Typography>
+                            <Image sx={{ fontSize: 16, color: "var(--Guidetext)" }} />
                           </Box>
                         )}
+                        
+                        {/* 텍스트 정보 */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 600,
+                              color: "var(--Text)",
+                              mb: 0.5,
+                            }}
+                          >
+                            {ad.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: "var(--Subtext2)",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              mb: 0.5,
+                            }}
+                          >
+                            {ad.description}
+                          </Typography>
+                          {ad.linkUrl && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                              }}
+                            >
+                              <LinkIcon
+                                sx={{ fontSize: 14, color: "var(--Guidetext)" }}
+                              />
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "var(--Guidetext)",
+                                  textDecoration: "underline",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => window.open(ad.linkUrl, "_blank")}
+                              >
+                                {ad.linkUrl.length > 30
+                                  ? `${ad.linkUrl.substring(0, 30)}...`
+                                  : ad.linkUrl}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -844,22 +879,23 @@ export default function AdvertiseManagement() {
                   <Box
                     sx={{
                       width: "100%",
-                      height: 200,
-                      bgcolor: "var(--Box_Light)",
+                      maxHeight: 300,
                       borderRadius: 2,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      overflow: "hidden",
+                      border: "1px solid var(--Line)",
                       mb: 2,
                     }}
                   >
-                    <Image sx={{ fontSize: 48, color: "var(--Guidetext)" }} />
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "var(--Guidetext)", ml: 1 }}
-                    >
-                      광고 이미지
-                    </Typography>
+                    <Box
+                      component="img"
+                      src={selectedAd.imageUrl}
+                      sx={{
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "contain",
+                        maxHeight: 300,
+                      }}
+                    />
                   </Box>
                 )}
               </Box>

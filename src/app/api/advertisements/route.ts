@@ -20,22 +20,46 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const type = searchParams.get("type");
+    const position = searchParams.get("position"); // 홈페이지용 position 파라미터 추가
     const status = searchParams.get("status");
+    const isActive = searchParams.get("isActive"); // 홈페이지용 isActive 파라미터 추가
     const search = searchParams.get("search");
 
     const skip = (page - 1) * limit;
     const now = new Date();
+    // 테스트를 위해 현재 시간을 하루 뒤로 설정
+    now.setDate(now.getDate() + 1);
 
     // 필터 조건 구성
     const where: any = {
       deletedAt: null,
     };
 
-    if (type && type !== "ALL") {
+    // 홈페이지에서 활성화된 광고만 조회하는 경우
+    if (isActive === 'true') {
+      where.isActive = true;
+      where.startDate = { lte: now };
+      where.endDate = { gte: now };
+      console.log(`[API] Date filter applied - Current time: ${now.toISOString()}`);
+    }
+
+    // position 기반 필터링 (HERO, BANNER 등)
+    if (position) {
+      // position 파라미터를 AdvertisementType으로 매핑
+      const typeMapping: { [key: string]: AdvertisementType } = {
+        'HERO': 'HERO_BANNER',
+        'BANNER': 'GENERAL_BANNER',
+        'SIDEBAR': 'SIDE_AD'
+      };
+      const mappedType = typeMapping[position];
+      if (mappedType) {
+        where.type = mappedType;
+      }
+    } else if (type && type !== "ALL") {
       where.type = type as AdvertisementType;
     }
 
-    if (status) {
+    if (status && !isActive) {
       switch (status) {
         case "ACTIVE":
           where.isActive = true;
@@ -74,12 +98,31 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
+        orderBy: [
+          { startDate: "desc" }, // 최신 순서로 정렬 (display order가 없으므로)
+          { createdAt: "desc" }
+        ],
+        skip: isActive === 'true' ? 0 : skip, // 홈페이지용 조회시 페이징 무시
+        take: isActive === 'true' ? undefined : limit, // 홈페이지용 조회시 제한 없음
       }),
       (prisma as any).advertisements.count({ where }),
     ]);
+
+    // 홈페이지용 간단한 응답 형식
+    if (isActive === 'true') {
+      console.log(`[API] Filtering result: Found ${advertisements.length} advertisements for position: ${position}`);
+      console.log(`[API] Query conditions:`, { position, isActive, whereClause: where });
+      return NextResponse.json({
+        success: true,
+        data: advertisements.map((ad: any) => ({
+          id: ad.id,
+          title: ad.title,
+          imageUrl: ad.imageUrl,
+          linkUrl: ad.linkUrl,
+          order: 0, // 기본값
+        })),
+      });
+    }
 
     return NextResponse.json({
       success: true,
