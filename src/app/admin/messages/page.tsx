@@ -44,7 +44,7 @@ interface AnnouncementData {
   title: string;
   content: string;
   priority: "HIGH" | "NORMAL" | "LOW";
-  status: "DRAFT" | "SENT";
+  status: "DRAFT" | "SENT" | "PUBLISHED";
   targetUsers: string[];
   sendCount: number;
   totalRecipients: number;
