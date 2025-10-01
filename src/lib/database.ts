@@ -3881,12 +3881,27 @@ export const createHospitalEvaluation = async (evaluationData: any) => {
 
 export const getHospitalById = async (hospitalId: string) => {
   const query = `
-    SELECT u.*, dhp.* FROM users u
-    LEFT JOIN detailed_hospital_profiles dhp ON u.id = dhp."userId"
+    SELECT u.*, h.* FROM users u
+    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE u.id = $1 AND u."deletedAt" IS NULL AND u."userType" = 'HOSPITAL'
   `;
   const result = await pool.query(query, [hospitalId]);
-  return result.rows[0] || null;
+  
+  if (!result.rows[0]) return null;
+  
+  // Get hospital images
+  const imagesQuery = `
+    SELECT id, "imageUrl"
+    FROM hospital_images
+    WHERE "hospitalId" = $1
+    ORDER BY "createdAt" ASC
+  `;
+  const imagesResult = await pool.query(imagesQuery, [result.rows[0].id]);
+  
+  return {
+    ...result.rows[0],
+    images: imagesResult.rows
+  };
 };
 
 export const updateHospitalProfile = async (hospitalId: string, updateData: any) => {

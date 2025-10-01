@@ -51,7 +51,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       introduction: hospital.description || "병원 소개를 준비중입니다.",
       businessType: hospital.treatmentAnimals ? mapBusinessTypesToKorean(hospital.treatmentAnimals).join(", ") : "반려동물",
       specialties: hospital.treatmentFields ? mapSpecialtiesToKorean(hospital.treatmentFields) : [],
-      facilityImages: hospital.facilityImages || [],
+      facilityImages: hospital.images?.map((img: any) => img.imageUrl) || [],
       jobPostings: jobPostings.slice(0, 10), // 최대 10개로 제한
       jobCount: jobPostings.length,
     };
