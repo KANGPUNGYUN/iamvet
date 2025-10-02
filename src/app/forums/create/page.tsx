@@ -39,16 +39,11 @@ export default function ForumCreatePage() {
     // 사용자 로그인 상태 확인
     if (!user) {
       alert("로그인이 필요합니다.");
-      router.push("/login");
+      router.push("/member-select");
       return;
     }
 
-    if (
-      !title.trim() ||
-      !content.trim() ||
-      !selectedAnimal ||
-      !selectedField
-    ) {
+    if (!title.trim() || !content.trim() || !selectedAnimal || !selectedField) {
       alert("모든 필드를 입력해주세요.");
       return;
     }
@@ -64,11 +59,11 @@ export default function ForumCreatePage() {
       };
 
       // localStorage에서 토큰 가져오기
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = localStorage.getItem("accessToken");
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      
+
       if (accessToken) {
         headers.Authorization = `Bearer ${accessToken}`;
       }
@@ -89,7 +84,9 @@ export default function ForumCreatePage() {
       }
     } catch (error) {
       console.error("게시글 작성 실패:", error);
-      alert(error instanceof Error ? error.message : "게시글 작성에 실패했습니다.");
+      alert(
+        error instanceof Error ? error.message : "게시글 작성에 실패했습니다."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +104,6 @@ export default function ForumCreatePage() {
 
   return (
     <>
-
       <main className="pt-[50px] pb-[100px] px-[16px] bg-white">
         <div className="max-w-[800px] mx-auto">
           {/* 헤더 */}

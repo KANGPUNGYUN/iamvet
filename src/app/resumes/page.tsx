@@ -21,7 +21,7 @@ export default function ResumesPage() {
     setResumeLike,
     toggleResumeLike,
     initializeResumeLikes,
-    isResumeLiked
+    isResumeLiked,
   } = useLikeStore();
 
   // 적용된 필터 상태 (실제 필터링에 사용)
@@ -44,12 +44,15 @@ export default function ResumesPage() {
     sortBy: "recent",
   });
 
-
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // API 데이터 가져오기 (전체 데이터를 가져온 후 클라이언트에서 필터링)
-  const { data: apiData, isLoading, error } = useResumes({
+  const {
+    data: apiData,
+    isLoading,
+    error,
+  } = useResumes({
     page: 1, // 전체 데이터를 가져오기 위해 첫 페이지부터
     limit: 1000, // 충분히 큰 수로 설정
     sort: appliedFilters.sortBy === "recent" ? "latest" : appliedFilters.sortBy,
@@ -61,9 +64,12 @@ export default function ResumesPage() {
       const likedResumeIds = apiData.data
         .filter((resume: any) => resume.isLiked)
         .map((resume: any) => resume.id);
-      
+
       if (likedResumeIds.length > 0) {
-        console.log('[ResumesPage] 서버에서 받은 좋아요 이력서:', likedResumeIds);
+        console.log(
+          "[ResumesPage] 서버에서 받은 좋아요 이력서:",
+          likedResumeIds
+        );
         initializeResumeLikes(likedResumeIds);
       }
     }
@@ -124,60 +130,59 @@ export default function ResumesPage() {
     router.push(newURL, { scroll: false });
   };
 
-
   // 지역 이름 한국어 맵핑 함수
   const getKoreanRegionName = (englishName: string) => {
-    if (!englishName) return '';
-    
+    if (!englishName) return "";
+
     const regionMap: { [key: string]: string } = {
-      'seoul': '서울',
-      'busan': '부산',
-      'daegu': '대구',
-      'incheon': '인천',
-      'gwangju': '광주',
-      'daejeon': '대전',
-      'ulsan': '울산',
-      'gyeonggi': '경기',
-      'gangwon': '강원',
-      'chungbuk': '충북',
-      'chungnam': '충남',
-      'jeonbuk': '전북',
-      'jeonnam': '전남',
-      'gyeongbuk': '경북',
-      'gyeongnam': '경남',
-      'jeju': '제주',
-      'sejong': '세종',
+      seoul: "서울",
+      busan: "부산",
+      daegu: "대구",
+      incheon: "인천",
+      gwangju: "광주",
+      daejeon: "대전",
+      ulsan: "울산",
+      gyeonggi: "경기",
+      gangwon: "강원",
+      chungbuk: "충북",
+      chungnam: "충남",
+      jeonbuk: "전북",
+      jeonnam: "전남",
+      gyeongbuk: "경북",
+      gyeongnam: "경남",
+      jeju: "제주",
+      sejong: "세종",
       // 영어 전체 이름도 추가
-      'seoul-si': '서울',
-      'seoul-city': '서울',
-      'busan-si': '부산',
-      'busan-city': '부산',
-      'gyeonggi-do': '경기',
-      'gyeonggi-province': '경기',
+      "seoul-si": "서울",
+      "seoul-city": "서울",
+      "busan-si": "부산",
+      "busan-city": "부산",
+      "gyeonggi-do": "경기",
+      "gyeonggi-province": "경기",
       // 이미 한국어인 경우도 처리
-      '서울': '서울',
-      '부산': '부산',
-      '대구': '대구',
-      '인천': '인천',
-      '광주': '광주',
-      '대전': '대전',
-      '울산': '울산',
-      '경기': '경기',
-      '강원': '강원',
-      '충북': '충북',
-      '충남': '충남',
-      '전북': '전북',
-      '전남': '전남',
-      '경북': '경북',
-      '경남': '경남',
-      '제주': '제주',
-      '세종': '세종',
+      서울: "서울",
+      부산: "부산",
+      대구: "대구",
+      인천: "인천",
+      광주: "광주",
+      대전: "대전",
+      울산: "울산",
+      경기: "경기",
+      강원: "강원",
+      충북: "충북",
+      충남: "충남",
+      전북: "전북",
+      전남: "전남",
+      경북: "경북",
+      경남: "경남",
+      제주: "제주",
+      세종: "세종",
     };
-    
+
     // 소문자로 변환해서 매핑 시도
     const lowerCase = englishName.toLowerCase().trim();
     const mapped = regionMap[lowerCase];
-    
+
     // 매핑된 값이 있으면 반환, 없으면 원본 반환
     return mapped || englishName;
   };
@@ -186,68 +191,70 @@ export default function ResumesPage() {
   const getKoreanLabel = (keyword: string) => {
     const labelMap: { [key: string]: string } = {
       // 전공 분야 (specialties)
-      'internal': '내과',
-      'surgery': '외과',
-      'dermatology': '피부과',
-      'orthopedics': '정형외과',
-      'ophthalmology': '안과',
-      'dentistry': '치과',
-      'emergency': '응급의학과',
-      'cardiology': '심장내과',
-      'neurology': '신경과',
-      'oncology': '종양학과',
-      'anesthesiology': '마취과',
-      'radiology': '영상의학과',
-      'pathology': '병리과',
-      'laboratory': '임상병리과',
-      
+      internal: "내과",
+      surgery: "외과",
+      dermatology: "피부과",
+      orthopedics: "정형외과",
+      ophthalmology: "안과",
+      dentistry: "치과",
+      emergency: "응급의학과",
+      cardiology: "심장내과",
+      neurology: "신경과",
+      oncology: "종양학과",
+      anesthesiology: "마취과",
+      radiology: "영상의학과",
+      pathology: "병리과",
+      laboratory: "임상병리과",
+
       // 직무 (position)
-      'veterinarian': '수의사',
-      'assistant': '수의테크니션',
-      'manager': '병원장',
-      'intern': '인턴',
-      'resident': '전공의',
-      
+      veterinarian: "수의사",
+      assistant: "수의테크니션",
+      manager: "병원장",
+      intern: "인턴",
+      resident: "전공의",
+
       // 근무 형태 (workTypes)
-      'full-time': '정규직',
-      'part-time': '파트타임',
-      'contract': '계약직',
-      'freelance': '프리랜서',
-      'internship': '인턴십',
-      
+      "full-time": "정규직",
+      "part-time": "파트타임",
+      contract: "계약직",
+      freelance: "프리랜서",
+      internship: "인턴십",
+
       // 숙련도 (proficiency)
-      'beginner': '초급',
-      'intermediate': '중급',
-      'advanced': '고급',
-      'expert': '전문가',
+      beginner: "초급",
+      intermediate: "중급",
+      advanced: "고급",
+      expert: "전문가",
     };
-    
+
     return labelMap[keyword.toLowerCase()] || keyword;
   };
 
   // 필터링 로직 (API 데이터 직접 사용, 빈 값으로 기본값 설정)
   const getFilteredData = () => {
     if (!apiData?.data) return [];
-    
+
     // 경력 계산 함수
     const calculateExperience = (experiences: any[]) => {
       if (!experiences || experiences.length === 0) return "경력 없음";
-      
+
       let totalMonths = 0;
       experiences.forEach((exp) => {
         if (exp.startDate && exp.endDate) {
           const start = new Date(exp.startDate);
           const end = new Date(exp.endDate);
-          const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+          const months =
+            (end.getFullYear() - start.getFullYear()) * 12 +
+            (end.getMonth() - start.getMonth());
           totalMonths += months;
         }
       });
-      
+
       if (totalMonths === 0) return "경력 없음";
-      
+
       const years = Math.floor(totalMonths / 12);
       const remainingMonths = totalMonths % 12;
-      
+
       if (years === 0) return `${remainingMonths}개월`;
       if (remainingMonths === 0) return `${years}년`;
       return `${years}년 ${remainingMonths}개월`;
@@ -258,20 +265,27 @@ export default function ResumesPage() {
       id: resume.id,
       name: resume.name || "",
       experience: calculateExperience(resume.experiences),
-      preferredLocation: resume.preferredRegions?.map((region: string) => getKoreanRegionName(region)).join(", ") || "",
+      preferredLocation:
+        resume.preferredRegions
+          ?.map((region: string) => getKoreanRegionName(region))
+          .join(", ") || "",
       keywords: [
         ...(resume.specialties || []),
         ...(resume.workTypes || []),
         ...(resume.position ? [resume.position] : []),
-      ].filter(Boolean).map((keyword: string) => getKoreanLabel(keyword)),
-      lastAccessDate: new Date(resume.updatedAt).toLocaleDateString('ko-KR').replace(/\//g, '.'),
+      ]
+        .filter(Boolean)
+        .map((keyword: string) => getKoreanLabel(keyword)),
+      lastAccessDate: new Date(resume.updatedAt)
+        .toLocaleDateString("ko-KR")
+        .replace(/\//g, "."),
       isBookmarked: false,
       profileImage: resume.photo || undefined,
       createdAt: new Date(resume.createdAt),
       // 원본 데이터도 보관 (필터링용)
-      originalData: resume
+      originalData: resume,
     }));
-    
+
     let filtered = [...convertedData];
 
     // 키워드 검색
@@ -281,7 +295,9 @@ export default function ResumesPage() {
         (resume) =>
           resume.name.toLowerCase().includes(keyword) ||
           resume.preferredLocation.toLowerCase().includes(keyword) ||
-          resume.keywords.some((k: string) => k.toLowerCase().includes(keyword)) ||
+          resume.keywords.some((k: string) =>
+            k.toLowerCase().includes(keyword)
+          ) ||
           resume.originalData.introduction?.toLowerCase().includes(keyword)
       );
     }
@@ -292,9 +308,11 @@ export default function ResumesPage() {
         appliedFilters.workType.some((type) => {
           const workTypes = resume.originalData.workTypes || [];
           // 한국어로 저장되므로 직접 비교
-          return workTypes.includes(type) || 
-                 // 영어로 저장된 경우를 위한 변환
-                 workTypes.some((wt: string) => getKoreanLabel(wt) === type);
+          return (
+            workTypes.includes(type) ||
+            // 영어로 저장된 경우를 위한 변환
+            workTypes.some((wt: string) => getKoreanLabel(wt) === type)
+          );
         })
       );
     }
@@ -303,7 +321,7 @@ export default function ResumesPage() {
     if (appliedFilters.experience.length > 0) {
       filtered = filtered.filter((resume) => {
         const experienceText = resume.experience;
-        
+
         return appliedFilters.experience.some((expFilter) => {
           switch (expFilter) {
             case "신입":
@@ -311,21 +329,27 @@ export default function ResumesPage() {
             case "1-3년":
               // 1년 이상 3년 미만
               if (experienceText.includes("년")) {
-                const years = parseInt(experienceText.match(/(\d+)년/)?.[1] || "0");
+                const years = parseInt(
+                  experienceText.match(/(\d+)년/)?.[1] || "0"
+                );
                 return years >= 1 && years < 3;
               }
               return false;
             case "3-5년":
               // 3년 이상 5년 미만
               if (experienceText.includes("년")) {
-                const years = parseInt(experienceText.match(/(\d+)년/)?.[1] || "0");
+                const years = parseInt(
+                  experienceText.match(/(\d+)년/)?.[1] || "0"
+                );
                 return years >= 3 && years < 5;
               }
               return false;
             case "5년 이상":
               // 5년 이상
               if (experienceText.includes("년")) {
-                const years = parseInt(experienceText.match(/(\d+)년/)?.[1] || "0");
+                const years = parseInt(
+                  experienceText.match(/(\d+)년/)?.[1] || "0"
+                );
                 return years >= 5;
               }
               return false;
@@ -341,8 +365,10 @@ export default function ResumesPage() {
       filtered = filtered.filter((resume) => {
         const position = resume.originalData.position;
         // 영어와 한국어 둘 다 확인
-        return position === appliedFilters.certificate || 
-               getKoreanLabel(position) === appliedFilters.certificate;
+        return (
+          position === appliedFilters.certificate ||
+          getKoreanLabel(position) === appliedFilters.certificate
+        );
       });
     }
 
@@ -350,17 +376,19 @@ export default function ResumesPage() {
     if (appliedFilters.location && appliedFilters.location !== "all") {
       filtered = filtered.filter((resume) => {
         const preferredRegions = resume.originalData.preferredRegions || [];
-        
+
         return preferredRegions.some((region: string) => {
           // 영어 키에서 한국어로 변환해서 비교
           const koreanRegion = getKoreanRegionName(region);
-          
+
           // 정확한 매칭: 영어 -> 한국어 변환 후 비교
-          return koreanRegion === appliedFilters.location ||
-                 region === appliedFilters.location ||
-                 // 포함 관계도 확인 (ex: "서울 강남구"에서 "서울" 찾기)
-                 koreanRegion.includes(appliedFilters.location) ||
-                 region.toLowerCase().includes(appliedFilters.location.toLowerCase());
+          return (
+            koreanRegion === appliedFilters.location ||
+            region === appliedFilters.location ||
+            // 포함 관계도 확인 (ex: "서울 강남구"에서 "서울" 찾기)
+            koreanRegion.includes(appliedFilters.location) ||
+            region.toLowerCase().includes(appliedFilters.location.toLowerCase())
+          );
         });
       });
     }
@@ -423,7 +451,6 @@ export default function ResumesPage() {
     updateURL(resetFilters, 1);
   };
 
-
   // 검색어 변경 (즉시 적용)
   const handleSearchChange = (searchKeyword: string) => {
     const newFilters = { ...appliedFilters, searchKeyword };
@@ -450,22 +477,28 @@ export default function ResumesPage() {
   // 이력서 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
   const handleResumeLike = async (resumeId: string) => {
     const isCurrentlyLiked = isResumeLiked(resumeId);
-    
-    console.log(`[ResumesPage Like] ${resumeId} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[ResumesPage Like] ${resumeId} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleResumeLike(resumeId);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[ResumesPage Like] API 요청: ${method} /api/resumes/${resumeId}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[ResumesPage Like] API 요청: ${method} /api/resumes/${resumeId}/like`
+      );
+
       const response = await fetch(`/api/resumes/${resumeId}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -473,25 +506,27 @@ export default function ResumesPage() {
 
       if (!response.ok) {
         console.error(`[ResumesPage Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setResumeLike(resumeId, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('이력서를 찾을 수 없습니다:', resumeId);
+          console.warn("이력서를 찾을 수 없습니다:", resumeId);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[ResumesPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[ResumesPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setResumeLike(resumeId, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
-          router.push("/login/hospital");
+          router.push("/member-select");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -499,14 +534,18 @@ export default function ResumesPage() {
 
       console.log(`[ResumesPage Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[ResumesPage Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[ResumesPage Like] ${
+          isCurrentlyLiked ? "좋아요 취소" : "좋아요"
+        } 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setResumeLike(resumeId, isCurrentlyLiked);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
+      alert("좋아요 처리 중 오류가 발생했습니다.");
     }
   };
-
 
   // 로딩 상태 처리
   if (isLoading) {
@@ -516,7 +555,9 @@ export default function ResumesPage() {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-key1 mx-auto mb-4"></div>
-              <p className="text-lg text-gray-600">이력서 목록을 불러오는 중...</p>
+              <p className="text-lg text-gray-600">
+                이력서 목록을 불러오는 중...
+              </p>
             </div>
           </div>
         </div>

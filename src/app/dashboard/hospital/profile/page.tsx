@@ -66,7 +66,9 @@ export default function HospitalProfilePage() {
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <p className="text-red-600 mb-4">로그인이 필요합니다.</p>
-              <Button onClick={() => (window.location.href = "/auth/login")}>
+              <Button
+                onClick={() => (window.location.href = "/login/hospital")}
+              >
                 로그인하기
               </Button>
             </div>

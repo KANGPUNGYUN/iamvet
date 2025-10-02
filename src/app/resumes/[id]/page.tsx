@@ -164,7 +164,9 @@ export default function ResumeDetailPage({
   const [evaluations, setEvaluations] = useState<any[]>([]);
   const [evaluationsLoading, setEvaluationsLoading] = useState(false);
   const [expandedEvaluations, setExpandedEvaluations] = useState<string[]>([]);
-  const [editingEvaluationId, setEditingEvaluationId] = useState<string | null>(null);
+  const [editingEvaluationId, setEditingEvaluationId] = useState<string | null>(
+    null
+  );
   const [ratings, setRatings] = useState({
     stressManagement: 0,
     growth: 0,
@@ -374,7 +376,7 @@ export default function ResumeDetailPage({
 
     if (!user) {
       alert("로그인이 필요합니다.");
-      router.push("/login/veterinarian");
+      router.push("/member-select");
       return;
     }
 
@@ -428,7 +430,7 @@ export default function ResumeDetailPage({
         } else if (response.status === 401) {
           console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
-          router.push("/login/veterinarian");
+          router.push("/member-select");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -625,7 +627,7 @@ export default function ResumeDetailPage({
 
       if (error.message.includes("Unauthorized")) {
         alert("로그인이 필요합니다.");
-        router.push("/login/veterinarian");
+        router.push("/member-select");
       } else {
         alert(error.message || "문의 전송 중 오류가 발생했습니다.");
       }
@@ -695,7 +697,7 @@ export default function ResumeDetailPage({
 
       const token = localStorage.getItem("accessToken");
       const method = editingEvaluationId ? "PUT" : "POST";
-      const url = editingEvaluationId 
+      const url = editingEvaluationId
         ? `/api/resumes/${id}/evaluation/${editingEvaluationId}`
         : `/api/resumes/${id}/evaluation`;
 
@@ -714,7 +716,11 @@ export default function ResumeDetailPage({
       const result = await response.json();
 
       if (result.status === "success") {
-        alert(editingEvaluationId ? "평가가 성공적으로 수정되었습니다." : "평가가 성공적으로 등록되었습니다.");
+        alert(
+          editingEvaluationId
+            ? "평가가 성공적으로 수정되었습니다."
+            : "평가가 성공적으로 등록되었습니다."
+        );
         setShowRatingModal(false);
         setEditingEvaluationId(null);
         resetRatingForm();
@@ -741,35 +747,68 @@ export default function ResumeDetailPage({
     setEditingEvaluationId(evaluation.id);
     // 기존 평가 데이터로 폼 채우기
     setRatings({
-      stressManagement: evaluation.detailedEvaluations?.find((d: any) => d.category === "스트레스 관리")?.rating || 0,
-      growth: evaluation.detailedEvaluations?.find((d: any) => d.category === "성장 잠재력")?.rating || 0,
-      care: evaluation.detailedEvaluations?.find((d: any) => d.category === "소통 능력")?.rating || 0,
-      documentation: evaluation.detailedEvaluations?.find((d: any) => d.category === "업무 역량")?.rating || 0,
-      contribution: evaluation.detailedEvaluations?.find((d: any) => d.category === "협업 능력")?.rating || 0,
+      stressManagement:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "스트레스 관리"
+        )?.rating || 0,
+      growth:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "성장 잠재력"
+        )?.rating || 0,
+      care:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "소통 능력"
+        )?.rating || 0,
+      documentation:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "업무 역량"
+        )?.rating || 0,
+      contribution:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "협업 능력"
+        )?.rating || 0,
     });
     setComments({
-      stressManagement: evaluation.detailedEvaluations?.find((d: any) => d.category === "스트레스 관리")?.comment || "",
-      growth: evaluation.detailedEvaluations?.find((d: any) => d.category === "성장 잠재력")?.comment || "",
-      care: evaluation.detailedEvaluations?.find((d: any) => d.category === "소통 능력")?.comment || "",
-      documentation: evaluation.detailedEvaluations?.find((d: any) => d.category === "업무 역량")?.comment || "",
-      contribution: evaluation.detailedEvaluations?.find((d: any) => d.category === "협업 능력")?.comment || "",
+      stressManagement:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "스트레스 관리"
+        )?.comment || "",
+      growth:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "성장 잠재력"
+        )?.comment || "",
+      care:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "소통 능력"
+        )?.comment || "",
+      documentation:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "업무 역량"
+        )?.comment || "",
+      contribution:
+        evaluation.detailedEvaluations?.find(
+          (d: any) => d.category === "협업 능력"
+        )?.comment || "",
     });
     setShowRatingModal(true);
   };
 
   const handleDeleteEvaluation = async (evaluationId: string) => {
-    if (!window.confirm('정말로 이 평가를 삭제하시겠습니까?')) {
+    if (!window.confirm("정말로 이 평가를 삭제하시겠습니까?")) {
       return;
     }
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`/api/resumes/${id}/evaluation/${evaluationId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `/api/resumes/${id}/evaluation/${evaluationId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const result = await response.json();
 
@@ -800,7 +839,7 @@ export default function ResumeDetailPage({
       user: user,
       userId: user?.id,
       evaluatorId: evaluation.evaluatorId,
-      canEdit: user && evaluation.evaluatorId === user.id
+      canEdit: user && evaluation.evaluatorId === user.id,
     });
     return user && evaluation.evaluatorId === user.id;
   };
@@ -1890,7 +1929,7 @@ export default function ResumeDetailPage({
                     onBookmarkClick={async () => {
                       if (!user) {
                         alert("로그인이 필요합니다.");
-                        router.push("/login/veterinarian");
+                        router.push("/member-select");
                         return;
                       }
 
@@ -1962,7 +2001,7 @@ export default function ResumeDetailPage({
                         onBookmarkClick={async () => {
                           if (!user) {
                             alert("로그인이 필요합니다.");
-                            router.push("/login/veterinarian");
+                            router.push("/member-select");
                             return;
                           }
 
@@ -2020,7 +2059,9 @@ export default function ResumeDetailPage({
             {/* 모달 헤더 */}
             <div className="flex justify-between items-center p-[24px] border-b border-[#EFEFF0]">
               <h2 className="font-title text-[24px] font-light text-primary">
-                {editingEvaluationId ? "수의사 평가 수정하기" : "수의사 평가하기"}
+                {editingEvaluationId
+                  ? "수의사 평가 수정하기"
+                  : "수의사 평가하기"}
               </h2>
               <button
                 onClick={handleModalClose}
@@ -2251,7 +2292,9 @@ export default function ResumeDetailPage({
                 <ArrowLeftIcon currentColor="currentColor" />
               </button>
               <h2 className="font-title text-[16px] font-light text-primary">
-                {editingEvaluationId ? "수의사 평가 수정하기" : "수의사 평가하기"}
+                {editingEvaluationId
+                  ? "수의사 평가 수정하기"
+                  : "수의사 평가하기"}
               </h2>
               <div className="w-8 h-8"></div>
             </div>

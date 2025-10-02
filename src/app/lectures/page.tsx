@@ -34,7 +34,7 @@ export default function LecturesPage() {
     setLectureLike,
     toggleLectureLike,
     initializeLectureLikes,
-    isLectureLiked
+    isLectureLiked,
   } = useLikeStore();
 
   // 필터 상태 관리 (UI용 - 아직 적용되지 않은 상태)
@@ -57,7 +57,7 @@ export default function LecturesPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  
+
   // API 상태 관리
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,7 +150,7 @@ export default function LecturesPage() {
       setError(null);
 
       const params = new URLSearchParams();
-      
+
       if (appliedFilters.searchKeyword.trim()) {
         params.set("keyword", appliedFilters.searchKeyword.trim());
       }
@@ -160,38 +160,43 @@ export default function LecturesPage() {
       if (appliedFilters.difficulty.length > 0) {
         params.set("difficulty", appliedFilters.difficulty.join(","));
       }
-      
+
       params.set("page", currentPage.toString());
       params.set("limit", "9"); // 3x3 그리드
       params.set("sort", appliedFilters.sortBy);
 
       const response = await fetch(`/api/lectures?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error("강의 목록을 불러오는데 실패했습니다.");
       }
 
       const result = await response.json();
-      
+
       if (result.status === "success") {
         const lecturesData = result.data.lectures;
         const lectures = lecturesData.data || [];
-        
+
         setLectures(lectures);
         setTotalLectures(lecturesData.total || 0);
         setTotalPages(lecturesData.totalPages || 0);
-        
+
         // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
         const likedLectureIds = lectures
           .filter((lecture: any) => lecture.isLiked)
           .map((lecture: any) => lecture.id);
-        
+
         if (likedLectureIds.length > 0) {
-          console.log('[LecturesPage] 서버에서 받은 좋아요 강의:', likedLectureIds);
+          console.log(
+            "[LecturesPage] 서버에서 받은 좋아요 강의:",
+            likedLectureIds
+          );
           initializeLectureLikes(likedLectureIds);
         }
       } else {
-        throw new Error(result.message || "강의 목록을 불러오는데 실패했습니다.");
+        throw new Error(
+          result.message || "강의 목록을 불러오는데 실패했습니다."
+        );
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
@@ -293,22 +298,28 @@ export default function LecturesPage() {
   // 강의 좋아요/취소 핸들러
   const handleLectureLike = async (lectureId: string) => {
     const isCurrentlyLiked = isLectureLiked(lectureId);
-    
-    console.log(`[LecturesPage Like] ${lectureId} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[LecturesPage Like] ${lectureId} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleLectureLike(lectureId);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[LecturesPage Like] API 요청: ${method} /api/lectures/${lectureId}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[LecturesPage Like] API 요청: ${method} /api/lectures/${lectureId}/like`
+      );
+
       const response = await fetch(`/api/lectures/${lectureId}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -316,25 +327,27 @@ export default function LecturesPage() {
 
       if (!response.ok) {
         console.error(`[LecturesPage Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setLectureLike(lectureId, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('강의를 찾을 수 없습니다:', lectureId);
+          console.warn("강의를 찾을 수 없습니다:", lectureId);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[LecturesPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[LecturesPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setLectureLike(lectureId, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
-          router.push("/login/veterinarian");
+          router.push("/member-select");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -342,11 +355,16 @@ export default function LecturesPage() {
 
       console.log(`[LecturesPage Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[LecturesPage Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[LecturesPage Like] ${
+          isCurrentlyLiked ? "좋아요 취소" : "좋아요"
+        } 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setLectureLike(lectureId, isCurrentlyLiked);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
+      alert("좋아요 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -354,7 +372,6 @@ export default function LecturesPage() {
 
   return (
     <>
-
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
           <div className="hidden xl:flex xl:gap-[30px] xl:py-8">
@@ -478,7 +495,7 @@ export default function LecturesPage() {
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
                     <p className="text-red-500 mb-4">{error}</p>
-                    <button 
+                    <button
                       onClick={fetchLectures}
                       className="px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
                     >
@@ -517,8 +534,12 @@ export default function LecturesPage() {
               {!loading && !error && lectures.length === 0 && (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
-                    <p className="text-[#9098A4] text-lg">검색 결과가 없습니다.</p>
-                    <p className="text-[#9098A4] text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
+                    <p className="text-[#9098A4] text-lg">
+                      검색 결과가 없습니다.
+                    </p>
+                    <p className="text-[#9098A4] text-sm mt-2">
+                      다른 검색어나 필터를 시도해보세요.
+                    </p>
                   </div>
                 </div>
               )}
@@ -614,7 +635,7 @@ export default function LecturesPage() {
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
                     <p className="text-red-500 mb-4">{error}</p>
-                    <button 
+                    <button
                       onClick={fetchLectures}
                       className="px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
                     >
@@ -653,8 +674,12 @@ export default function LecturesPage() {
               {!loading && !error && lectures.length === 0 && (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
-                    <p className="text-[#9098A4] text-lg">검색 결과가 없습니다.</p>
-                    <p className="text-[#9098A4] text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
+                    <p className="text-[#9098A4] text-lg">
+                      검색 결과가 없습니다.
+                    </p>
+                    <p className="text-[#9098A4] text-sm mt-2">
+                      다른 검색어나 필터를 시도해보세요.
+                    </p>
                   </div>
                 </div>
               )}
@@ -805,7 +830,6 @@ export default function LecturesPage() {
           )}
         </div>
       </main>
-
     </>
   );
 }

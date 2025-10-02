@@ -181,7 +181,7 @@ export default function JobDetailPage({
 
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
-      router.push("/login/veterinarian");
+      router.push("/member-select");
       return;
     }
 
@@ -233,7 +233,7 @@ export default function JobDetailPage({
         } else if (response.status === 401) {
           console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
-          router.push("/login/veterinarian");
+          router.push("/member-select");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -259,7 +259,7 @@ export default function JobDetailPage({
   const handleApplyClick = () => {
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
-      router.push("/login/veterinarian");
+      router.push("/member-select");
       return;
     }
 
@@ -279,7 +279,7 @@ export default function JobDetailPage({
       console.log("Resume error detected:", resumeError);
       clearExpiredAuth();
       alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-      router.push("/login/veterinarian");
+      router.push("/member-select");
       return;
     }
 
@@ -404,7 +404,7 @@ export default function JobDetailPage({
 
       if (error.response?.status === 401) {
         alert("로그인이 필요합니다.");
-        router.push("/login");
+        router.push("/member-select");
       } else {
         const errorMessage =
           error.response?.data?.error || "문의 전송 중 오류가 발생했습니다.";

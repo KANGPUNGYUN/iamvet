@@ -179,65 +179,65 @@ export default function LectureDetailPage({
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[LectureDetail] handleCommentSubmit 시작:', {
+    console.log("[LectureDetail] handleCommentSubmit 시작:", {
       newComment: newComment.substring(0, 50),
       isAuthenticated,
       currentUser: !!currentUser,
-      userId: currentUser?.id
+      userId: currentUser?.id,
     });
-    
+
     if (!newComment.trim()) {
-      console.log('[LectureDetail] 댓글 내용이 비어있음');
+      console.log("[LectureDetail] 댓글 내용이 비어있음");
       return;
     }
-    
+
     if (!isAuthenticated) {
-      console.log('[LectureDetail] 인증되지 않은 사용자');
-      alert('로그인이 필요합니다.');
+      console.log("[LectureDetail] 인증되지 않은 사용자");
+      alert("로그인이 필요합니다.");
       return;
     }
 
     try {
-      console.log('[LectureDetail] createComment 호출 중...');
+      console.log("[LectureDetail] createComment 호출 중...");
       await createComment(id, "lecture", newComment);
-      console.log('[LectureDetail] createComment 성공, 입력창 초기화');
+      console.log("[LectureDetail] createComment 성공, 입력창 초기화");
       setNewComment("");
     } catch (error) {
       console.error("Failed to create comment:", error);
-      alert('댓글 작성에 실패했습니다.');
+      alert("댓글 작성에 실패했습니다.");
     }
   };
 
   const handleReplySubmit = async (parentId: string) => {
     const replyContent = replyInputs[parentId];
-    console.log('[LectureDetail] handleReplySubmit 시작:', {
+    console.log("[LectureDetail] handleReplySubmit 시작:", {
       parentId,
       replyContent: replyContent?.substring(0, 50),
       isAuthenticated,
-      currentUser: !!currentUser
+      currentUser: !!currentUser,
     });
-    
+
     if (!replyContent?.trim()) {
-      console.log('[LectureDetail] 답글 내용이 비어있음');
+      console.log("[LectureDetail] 답글 내용이 비어있음");
       return;
     }
-    
+
     if (!isAuthenticated) {
-      console.log('[LectureDetail] 인증되지 않은 사용자');
-      alert('로그인이 필요합니다.');
+      console.log("[LectureDetail] 인증되지 않은 사용자");
+      alert("로그인이 필요합니다.");
       return;
     }
 
     try {
-      console.log('[LectureDetail] createComment (reply) 호출 중...');
+      console.log("[LectureDetail] createComment (reply) 호출 중...");
       await createComment(id, "lecture", replyContent, parentId);
-      console.log('[LectureDetail] createComment (reply) 성공');
+      console.log("[LectureDetail] createComment (reply) 성공");
       setReplyInputs((prev) => ({ ...prev, [parentId]: "" }));
       // 답글을 추가한 후 자동으로 답글 목록을 펼침
       setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
     } catch (error) {
       console.error("Failed to create reply:", error);
-      alert('답글 작성에 실패했습니다.');
+      alert("답글 작성에 실패했습니다.");
     }
   };
 
@@ -298,7 +298,7 @@ export default function LectureDetailPage({
 
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
-      router.push("/login/veterinarian");
+      router.push("/member-select");
       return;
     }
 
@@ -352,7 +352,7 @@ export default function LectureDetailPage({
         } else if (response.status === 401) {
           console.warn("로그인이 필요합니다.");
           alert("로그인이 필요합니다.");
-          router.push("/login/veterinarian");
+          router.push("/member-select");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);

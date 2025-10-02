@@ -6,7 +6,10 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { FilterBox } from "@/components/ui/FilterBox";
-import { ProfileImageUpload, MultiImageUpload } from "@/components/features/profile";
+import {
+  ProfileImageUpload,
+  MultiImageUpload,
+} from "@/components/features/profile";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import { FileUpload } from "@/components/ui/FileUpload";
 import { BirthDateInput } from "@/components/ui/FormattedInput";
@@ -48,10 +51,8 @@ interface HospitalProfileData {
 }
 
 export default function HospitalProfileEditPage() {
-  const {
-    data: detailedProfile,
-    isLoading: detailedLoading,
-  } = useDetailedHospitalProfile();
+  const { data: detailedProfile, isLoading: detailedLoading } =
+    useDetailedHospitalProfile();
   const {
     data: basicProfile,
     isLoading: basicLoading,
@@ -96,18 +97,22 @@ export default function HospitalProfileEditPage() {
   useEffect(() => {
     if (detailedProfile) {
       // DB enum 값을 한글 표시값으로 변환
-      const mappedAnimals = detailedProfile.treatmentAnimals.map(animal => 
-        ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] || animal
+      const mappedAnimals = detailedProfile.treatmentAnimals.map(
+        (animal) =>
+          ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] ||
+          animal
       );
-      const mappedFields = detailedProfile.treatmentFields.map(field => 
-        SPECIALTY_TYPE_LABELS[field as keyof typeof SPECIALTY_TYPE_LABELS] || field
+      const mappedFields = detailedProfile.treatmentFields.map(
+        (field) =>
+          SPECIALTY_TYPE_LABELS[field as keyof typeof SPECIALTY_TYPE_LABELS] ||
+          field
       );
 
       console.log("[HospitalProfileEditPage] Loading detailed profile:", {
         originalAnimals: detailedProfile.treatmentAnimals,
         mappedAnimals,
         originalFields: detailedProfile.treatmentFields,
-        mappedFields
+        mappedFields,
       });
 
       setFormData({
@@ -139,23 +144,33 @@ export default function HospitalProfileEditPage() {
       });
     } else if (basicProfile || currentUser) {
       // 상세 프로필이 없으면 기본 프로필 또는 유저 정보로 초기화
-      const mappedAnimals = basicProfile?.treatmentAnimals?.map(animal => 
-        ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] || animal
-      ) || [];
-      const mappedFields = basicProfile?.treatmentSpecialties?.map(field => 
-        SPECIALTY_TYPE_LABELS[field as keyof typeof SPECIALTY_TYPE_LABELS] || field
-      ) || [];
+      const mappedAnimals =
+        basicProfile?.treatmentAnimals?.map(
+          (animal) =>
+            ANIMAL_TYPE_LABELS[animal as keyof typeof ANIMAL_TYPE_LABELS] ||
+            animal
+        ) || [];
+      const mappedFields =
+        basicProfile?.treatmentSpecialties?.map(
+          (field) =>
+            SPECIALTY_TYPE_LABELS[
+              field as keyof typeof SPECIALTY_TYPE_LABELS
+            ] || field
+        ) || [];
 
       console.log("[HospitalProfileEditPage] Loading basic profile:", {
         originalAnimals: basicProfile?.treatmentAnimals,
         mappedAnimals,
         originalFields: basicProfile?.treatmentSpecialties,
-        mappedFields
+        mappedFields,
       });
 
       setFormData({
         hospitalLogo: hospitalImage.src,
-        hospitalName: basicProfile?.hospitalName || (currentUser as any)?.hospitalName || "",
+        hospitalName:
+          basicProfile?.hospitalName ||
+          (currentUser as any)?.hospitalName ||
+          "",
         realName: "",
         establishedDate: "",
         address: basicProfile?.address || "",
@@ -198,7 +213,7 @@ export default function HospitalProfileEditPage() {
           fileType: null,
           mimeType: null,
           fileSize: null,
-        }
+        },
       }));
       return;
     }
@@ -213,16 +228,16 @@ export default function HospitalProfileEditPage() {
         fileType: null,
         mimeType: null,
         fileSize: null,
-      }
+      },
     }));
 
     try {
       // 파일 업로드
       const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
+      uploadFormData.append("file", file);
 
-      const response = await fetch('/api/upload/business-license', {
-        method: 'POST',
+      const response = await fetch("/api/upload/business-license", {
+        method: "POST",
         body: uploadFormData,
       });
 
@@ -238,11 +253,11 @@ export default function HospitalProfileEditPage() {
             fileType: result.data.fileType,
             mimeType: result.data.mimeType,
             fileSize: result.data.fileSize || file.size,
-          }
+          },
         }));
       } else {
-        console.error('File upload failed:', result.message);
-        alert('파일 업로드에 실패했습니다: ' + result.message);
+        console.error("File upload failed:", result.message);
+        alert("파일 업로드에 실패했습니다: " + result.message);
         setFormData((prev) => ({
           ...prev,
           businessLicense: {
@@ -252,12 +267,12 @@ export default function HospitalProfileEditPage() {
             fileType: null,
             mimeType: null,
             fileSize: null,
-          }
+          },
         }));
       }
     } catch (error) {
-      console.error('File upload error:', error);
-      alert('파일 업로드 중 오류가 발생했습니다.');
+      console.error("File upload error:", error);
+      alert("파일 업로드 중 오류가 발생했습니다.");
       setFormData((prev) => ({
         ...prev,
         businessLicense: {
@@ -267,7 +282,7 @@ export default function HospitalProfileEditPage() {
           fileType: null,
           mimeType: null,
           fileSize: null,
-        }
+        },
       }));
     }
   };
@@ -275,18 +290,23 @@ export default function HospitalProfileEditPage() {
   const handleSave = async () => {
     try {
       // 한글 표시값을 DB enum 값으로 변환
-      const treatmentAnimalsEnum = formData.treatmentAnimals.map(animal => 
-        ANIMAL_LABEL_TO_ENUM[animal as keyof typeof ANIMAL_LABEL_TO_ENUM] || animal
+      const treatmentAnimalsEnum = formData.treatmentAnimals.map(
+        (animal) =>
+          ANIMAL_LABEL_TO_ENUM[animal as keyof typeof ANIMAL_LABEL_TO_ENUM] ||
+          animal
       );
-      const treatmentFieldsEnum = formData.treatmentFields.map(field => 
-        SPECIALTY_LABEL_TO_ENUM[field as keyof typeof SPECIALTY_LABEL_TO_ENUM] || field
+      const treatmentFieldsEnum = formData.treatmentFields.map(
+        (field) =>
+          SPECIALTY_LABEL_TO_ENUM[
+            field as keyof typeof SPECIALTY_LABEL_TO_ENUM
+          ] || field
       );
 
       console.log("[HospitalProfileEditPage] Saving data:", {
         displayAnimals: formData.treatmentAnimals,
         enumAnimals: treatmentAnimalsEnum,
         displayFields: formData.treatmentFields,
-        enumFields: treatmentFieldsEnum
+        enumFields: treatmentFieldsEnum,
       });
 
       // 폼 데이터를 DetailedHospitalProfileData 형식으로 변환
@@ -356,21 +376,21 @@ export default function HospitalProfileEditPage() {
 
   // 동물 타입 매핑 (DB enum -> 한글 표시)
   const ANIMAL_TYPE_LABELS = {
-    'DOG': '반려견',
-    'CAT': '고양이', 
-    'EXOTIC': '특수동물',
-    'LARGE_ANIMAL': '대동물'
+    DOG: "반려견",
+    CAT: "고양이",
+    EXOTIC: "특수동물",
+    LARGE_ANIMAL: "대동물",
   };
 
   // 진료 분야 매핑 (DB enum -> 한글 표시)
   const SPECIALTY_TYPE_LABELS = {
-    'INTERNAL_MEDICINE': '내과',
-    'SURGERY': '외과',
-    'DERMATOLOGY': '피부과',
-    'DENTISTRY': '치과',
-    'OPHTHALMOLOGY': '안과',
-    'NEUROLOGY': '신경과',
-    'ORTHOPEDICS': '정형외과'
+    INTERNAL_MEDICINE: "내과",
+    SURGERY: "외과",
+    DERMATOLOGY: "피부과",
+    DENTISTRY: "치과",
+    OPHTHALMOLOGY: "안과",
+    NEUROLOGY: "신경과",
+    ORTHOPEDICS: "정형외과",
   };
 
   // 한글 표시 -> DB enum 매핑 (역방향)
@@ -425,7 +445,11 @@ export default function HospitalProfileEditPage() {
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <p className="text-red-600 mb-4">로그인이 필요합니다.</p>
-              <Button onClick={() => window.location.href = "/auth/login"}>로그인하기</Button>
+              <Button
+                onClick={() => (window.location.href = "/login/hospital")}
+              >
+                로그인하기
+              </Button>
             </div>
           </div>
         </div>
@@ -444,7 +468,9 @@ export default function HospitalProfileEditPage() {
                 프로필 정보를 불러오는데 실패했습니다.
               </p>
               <p className="text-gray-600 mb-4 text-sm">
-                {basicError?.message || userError?.message || "알 수 없는 오류가 발생했습니다."}
+                {basicError?.message ||
+                  userError?.message ||
+                  "알 수 없는 오류가 발생했습니다."}
               </p>
               <Button onClick={() => window.location.reload()}>
                 다시 시도
@@ -665,7 +691,8 @@ export default function HospitalProfileEditPage() {
             {/* 병원 이미지 */}
             <div>
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
-                병원 이미지 <span className="text-[#C5CCD8]">(선택, 최대 10장)</span>
+                병원 이미지{" "}
+                <span className="text-[#C5CCD8]">(선택, 최대 10장)</span>
               </label>
               <MultiImageUpload
                 value={formData.hospitalImages}
@@ -692,33 +719,37 @@ export default function HospitalProfileEditPage() {
                 maxSize={10 * 1024 * 1024}
                 placeholder="사업자등록증 파일을 업로드해주세요 (이미지, PDF, Word 파일)"
               />
-              {formData.businessLicense.file && formData.businessLicense.url && (
-                <div className="text-sm text-green-600 mt-2">
-                  <p>✅ 업로드 완료: {formData.businessLicense.file.name}</p>
-                  <p className="text-xs text-gray-500">
-                    파일 형식: {formData.businessLicense.fileType} | 
-                    크기: {Math.round(formData.businessLicense.file.size / 1024)}KB
-                  </p>
-                </div>
-              )}
-              {formData.businessLicense.file && !formData.businessLicense.url && (
-                <p className="text-sm text-amber-600 mt-2">
-                  📤 업로드 중...
-                </p>
-              )}
-              {!formData.businessLicense.file && formData.businessLicense.url && (
-                <div className="text-sm text-blue-600 mt-2">
-                  <p>📄 기존 파일: {formData.businessLicense.fileName || '사업자등록증'}</p>
-                  <a 
-                    href={formData.businessLicense.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    파일 보기
-                  </a>
-                </div>
-              )}
+              {formData.businessLicense.file &&
+                formData.businessLicense.url && (
+                  <div className="text-sm text-green-600 mt-2">
+                    <p>✅ 업로드 완료: {formData.businessLicense.file.name}</p>
+                    <p className="text-xs text-gray-500">
+                      파일 형식: {formData.businessLicense.fileType} | 크기:{" "}
+                      {Math.round(formData.businessLicense.file.size / 1024)}KB
+                    </p>
+                  </div>
+                )}
+              {formData.businessLicense.file &&
+                !formData.businessLicense.url && (
+                  <p className="text-sm text-amber-600 mt-2">📤 업로드 중...</p>
+                )}
+              {!formData.businessLicense.file &&
+                formData.businessLicense.url && (
+                  <div className="text-sm text-blue-600 mt-2">
+                    <p>
+                      📄 기존 파일:{" "}
+                      {formData.businessLicense.fileName || "사업자등록증"}
+                    </p>
+                    <a
+                      href={formData.businessLicense.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      파일 보기
+                    </a>
+                  </div>
+                )}
             </div>
 
             {/* 취소/저장 버튼 */}

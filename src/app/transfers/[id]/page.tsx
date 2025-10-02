@@ -126,6 +126,39 @@ const ImageSlider = ({ images }: { images: string[] }) => {
   );
 };
 
+// 가격 포맷팅 함수
+const formatPrice = (priceString: string | number | undefined): string => {
+  if (!priceString) return "가격 협의";
+
+  // 타입 체크 및 문자열 변환
+  const priceStr = String(priceString);
+
+  // 이미 "만원" 또는 "원"이 포함된 경우 그대로 반환
+  if (priceStr.includes("만원") || priceStr.includes("원")) {
+    return priceStr;
+  }
+
+  // 숫자만 추출
+  const numbers = priceStr.match(/\d+/g);
+  if (!numbers) return priceStr;
+
+  const number = parseInt(numbers.join(""));
+
+  // 만원 단위 이상인 경우
+  if (number >= 10000) {
+    const man = number / 10000;
+    // 정수로 떨어지는 경우
+    if (number % 10000 === 0) {
+      return `${man.toLocaleString()}만원`;
+    }
+    // 소수점이 있는 경우
+    return `${man.toLocaleString()}만원`;
+  }
+
+  // 만원 미만인 경우 원 단위로 표시
+  return `${number.toLocaleString()}원`;
+};
+
 interface TransferData {
   id: string;
   userId?: string;
@@ -176,7 +209,7 @@ export default function TransferDetailPage({
     setTransferLike,
     toggleTransferLike,
     initializeTransferLikes,
-    isTransferLiked
+    isTransferLiked,
   } = useLikeStore();
 
   // Zustand 스토어에서 조회수 상태 관리
@@ -194,56 +227,69 @@ export default function TransferDetailPage({
         setLoading(true);
         const response = await fetch(`/api/transfers/${id}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
           },
         });
 
         if (!response.ok) {
-          throw new Error('게시글을 불러오는데 실패했습니다.');
+          throw new Error("게시글을 불러오는데 실패했습니다.");
         }
 
         const data = await response.json();
-        if (data.status === 'success' && data.data) {
-          console.log('Transfer data:', data.data);
-          console.log('Current user:', user);
+        if (data.status === "success" && data.data) {
+          console.log("Transfer data:", data.data);
+          console.log("Current user:", user);
           setTransferData(data.data);
-          
+
           // 좋아요 상태를 Zustand 스토어에 동기화
           if (data.data.isLiked) {
-            console.log('[Transfer Like] 서버에서 받은 좋아요 양수양도:', [id]);
+            console.log("[Transfer Like] 서버에서 받은 좋아요 양수양도:", [id]);
             initializeTransferLikes([id]);
           }
 
           // 조회수 초기화 및 실시간 증가 처리
           if (data.data.views !== undefined) {
-            console.log('[TransferDetail] 서버에서 받은 조회수:', data.data.views);
+            console.log(
+              "[TransferDetail] 서버에서 받은 조회수:",
+              data.data.views
+            );
             // 서버에서 받은 조회수로 초기화
             setTransferViewCount(id, data.data.views);
-            
+
             // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
-            if (!isAlreadyViewed('transfer', id)) {
-              console.log('[TransferDetail] 조회수 실시간 증가:', id);
+            if (!isAlreadyViewed("transfer", id)) {
+              console.log("[TransferDetail] 조회수 실시간 증가:", id);
               incrementTransferViewCount(id);
-              markAsViewed('transfer', id);
+              markAsViewed("transfer", id);
             }
           }
 
           // 추천 양수양도 카드의 좋아요 상태도 초기화
-          if (data.data.relatedTransfers && data.data.relatedTransfers.length > 0) {
+          if (
+            data.data.relatedTransfers &&
+            data.data.relatedTransfers.length > 0
+          ) {
             const likedRelatedTransferIds = data.data.relatedTransfers
-              .filter((transfer: any) => transfer.isLiked || transfer.isBookmarked)
+              .filter(
+                (transfer: any) => transfer.isLiked || transfer.isBookmarked
+              )
               .map((transfer: any) => transfer.id);
-            
+
             if (likedRelatedTransferIds.length > 0) {
-              console.log('[Transfer Like] 추천 양수양도 좋아요 초기화:', likedRelatedTransferIds);
+              console.log(
+                "[Transfer Like] 추천 양수양도 좋아요 초기화:",
+                likedRelatedTransferIds
+              );
               initializeTransferLikes(likedRelatedTransferIds);
             }
           }
         } else {
-          throw new Error(data.message || '게시글을 불러오는데 실패했습니다.');
+          throw new Error(data.message || "게시글을 불러오는데 실패했습니다.");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+        setError(
+          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
+        );
       } finally {
         setLoading(false);
       }
@@ -254,30 +300,36 @@ export default function TransferDetailPage({
 
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!user) {
-      alert('로그인이 필요한 서비스입니다.');
-      router.push('/login');
+      alert("로그인이 필요한 서비스입니다.");
+      router.push("/member-select");
       return;
     }
 
     const isCurrentlyLiked = isTransferLiked(id);
-    
-    console.log(`[Transfer Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[Transfer Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleTransferLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[Transfer Like] API 요청: ${method} /api/transfers/${id}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[Transfer Like] API 요청: ${method} /api/transfers/${id}/like`
+      );
+
       const response = await fetch(`/api/transfers/${id}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -285,17 +337,19 @@ export default function TransferDetailPage({
 
       if (!response.ok) {
         console.error(`[Transfer Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setTransferLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('양수양도를 찾을 수 없습니다:', id);
-          alert('양수양도를 찾을 수 없습니다.');
+          console.warn("양수양도를 찾을 수 없습니다:", id);
+          alert("양수양도를 찾을 수 없습니다.");
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setTransferLike(id, true);
             return;
           }
@@ -303,9 +357,9 @@ export default function TransferDetailPage({
           alert(result.message || `${actionText}에 실패했습니다.`);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
-          alert('로그인이 필요한 서비스입니다.');
-          router.push('/login');
+          console.warn("로그인이 필요합니다.");
+          alert("로그인이 필요한 서비스입니다.");
+          router.push("/member-select");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -313,11 +367,14 @@ export default function TransferDetailPage({
 
       console.log(`[Transfer Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[Transfer Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[Transfer Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setTransferLike(id, isCurrentlyLiked);
-      alert('북마크 처리 중 오류가 발생했습니다.');
+      alert("북마크 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -325,22 +382,28 @@ export default function TransferDetailPage({
   const handleRecommendedTransferLike = async (transferId: string | number) => {
     const transferIdStr = transferId.toString();
     const isCurrentlyLiked = isTransferLiked(transferIdStr);
-    
-    console.log(`[Transfer Like] ${transferIdStr} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[Transfer Like] ${transferIdStr} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleTransferLike(transferIdStr);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[Transfer Like] API 요청: ${method} /api/transfers/${transferId}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[Transfer Like] API 요청: ${method} /api/transfers/${transferId}/like`
+      );
+
       const response = await fetch(`/api/transfers/${transferId}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -348,23 +411,25 @@ export default function TransferDetailPage({
 
       if (!response.ok) {
         console.error(`[Transfer Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setTransferLike(transferIdStr, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('양수양도를 찾을 수 없습니다:', transferId);
+          console.warn("양수양도를 찾을 수 없습니다:", transferId);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setTransferLike(transferIdStr, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -372,40 +437,43 @@ export default function TransferDetailPage({
 
       console.log(`[Transfer Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[Transfer Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[Transfer Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setTransferLike(transferIdStr, isCurrentlyLiked);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) return;
+    if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
 
     if (!user) {
-      alert('로그인이 필요한 서비스입니다.');
-      router.push('/login');
+      alert("로그인이 필요한 서비스입니다.");
+      router.push("/member-select");
       return;
     }
 
     try {
       const response = await fetch(`/api/transfers/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (response.ok) {
-        alert('게시글이 삭제되었습니다.');
-        router.push('/transfers');
+        alert("게시글이 삭제되었습니다.");
+        router.push("/transfers");
       } else {
         const data = await response.json();
-        alert(data.message || '게시글 삭제에 실패했습니다.');
+        alert(data.message || "게시글 삭제에 실패했습니다.");
       }
     } catch (error) {
-      console.error('Delete error:', error);
-      alert('게시글 삭제 중 오류가 발생했습니다.');
+      console.error("Delete error:", error);
+      alert("게시글 삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -425,7 +493,9 @@ export default function TransferDetailPage({
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || '게시글을 찾을 수 없습니다.'}</p>
+          <p className="text-red-600 mb-4">
+            {error || "게시글을 찾을 수 없습니다."}
+          </p>
           <Link href="/transfers" className="text-[#ff8796] hover:underline">
             목록으로 돌아가기
           </Link>
@@ -435,26 +505,29 @@ export default function TransferDetailPage({
   }
 
   // 이미지 배열 (없으면 기본 이미지 사용)
-  const sliderImages = transferData.images && transferData.images.length > 0 
-    ? transferData.images 
-    : [
-        transfer1Img.src,
-        transfer2Img.src,
-        transfer3Img.src,
-        transfer4Img.src,
-        transfer5Img.src,
-        transfer6Img.src,
-      ];
+  const sliderImages =
+    transferData.images && transferData.images.length > 0
+      ? transferData.images
+      : [
+          transfer1Img.src,
+          transfer2Img.src,
+          transfer3Img.src,
+          transfer4Img.src,
+          transfer5Img.src,
+          transfer6Img.src,
+        ];
 
   // 작성자 정보
   const author = {
     name: transferData.user?.hospitalName || "익명",
     profileImage: transferData.user?.profileImage || null,
   };
-  
+
   // 프로필 이미지 URL 처리
-  const profileImageSrc = author.profileImage 
-    ? (typeof author.profileImage === 'string' ? author.profileImage : profileImg)
+  const profileImageSrc = author.profileImage
+    ? typeof author.profileImage === "string"
+      ? author.profileImage
+      : profileImg
     : profileImg;
 
   // 추천 카드 데이터
@@ -493,14 +566,25 @@ export default function TransferDetailPage({
 
             {/* 작성자만 수정/삭제 메뉴 표시 */}
             {(() => {
-              console.log('Menu visibility check:');
-              console.log('user:', user);
-              console.log('transferData:', transferData);
-              console.log('transferData.user:', transferData?.user);
-              console.log('transferData.userId:', transferData?.userId);
-              console.log('user.id:', user?.id);
-              console.log('Match:', user && transferData && (transferData.user?.id === user.id || transferData.userId === user.id));
-              return user && transferData && (transferData.user?.id === user.id || transferData.userId === user.id);
+              console.log("Menu visibility check:");
+              console.log("user:", user);
+              console.log("transferData:", transferData);
+              console.log("transferData.user:", transferData?.user);
+              console.log("transferData.userId:", transferData?.userId);
+              console.log("user.id:", user?.id);
+              console.log(
+                "Match:",
+                user &&
+                  transferData &&
+                  (transferData.user?.id === user.id ||
+                    transferData.userId === user.id)
+              );
+              return (
+                user &&
+                transferData &&
+                (transferData.user?.id === user.id ||
+                  transferData.userId === user.id)
+              );
             })() && (
               <div className="relative">
                 <button
@@ -519,7 +603,7 @@ export default function TransferDetailPage({
                       <EditIcon size="24" currentColor="currentColor" />
                       <span className="ml-2">수정하기</span>
                     </Link>
-                    <button 
+                    <button
                       onClick={handleDelete}
                       className="flex justify-center items-center w-full px-[20px] py-[10px] text-sm text-[#ff8796] hover:bg-gray-50"
                     >
@@ -555,7 +639,7 @@ export default function TransferDetailPage({
 
               {/* 제목 */}
               <h1 className="font-text text-[32px] text-bold text-primary mt-[10px]">
-                {transferData.title || '제목 없음'}
+                {transferData.title || "제목 없음"}
               </h1>
 
               {/* 위치 */}
@@ -563,7 +647,7 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-1">
                   <LocationIcon currentColor="currentColor" />
                   <span className="text-[16px] font-text text-sub">
-                    {transferData.location || '위치 정보 없음'}
+                    {transferData.location || "위치 정보 없음"}
                   </span>
                 </div>
               </div>
@@ -587,10 +671,14 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-[33px]">
                   <div className="flex items-center gap-1">
                     <EyeIcon currentColor="currentColor" />
-                    <span className="text-sm">{getTransferViewCount(id) || 0}</span>
+                    <span className="text-sm">
+                      {getTransferViewCount(id) || 0}
+                    </span>
                   </div>
                   <span className="text-sm">
-                    {transferData.createdAt ? new Date(transferData.createdAt).toLocaleDateString() : ''}
+                    {transferData.createdAt
+                      ? new Date(transferData.createdAt).toLocaleDateString()
+                      : ""}
                   </span>
                 </div>
               </div>
@@ -623,14 +711,14 @@ export default function TransferDetailPage({
 
               {/* 제목 */}
               <h1 className="font-text text-[24px] text-bold text-primary mb-2">
-                {transferData.title || '제목 없음'}
+                {transferData.title || "제목 없음"}
               </h1>
 
               {/* 위치 */}
               <div className="flex items-center gap-2 mb-4">
                 <LocationIcon currentColor="currentColor" />
                 <span className="text-[14px] font-text text-sub">
-                  {transferData.location || '위치 정보 없음'}
+                  {transferData.location || "위치 정보 없음"}
                 </span>
               </div>
 
@@ -653,10 +741,14 @@ export default function TransferDetailPage({
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <EyeIcon currentColor="currentColor" />
-                    <span className="text-[12px]">{getTransferViewCount(id) || 0}</span>
+                    <span className="text-[12px]">
+                      {getTransferViewCount(id) || 0}
+                    </span>
                   </div>
                   <span className="text-[12px]">
-                    {transferData.createdAt ? new Date(transferData.createdAt).toLocaleDateString() : ''}
+                    {transferData.createdAt
+                      ? new Date(transferData.createdAt).toLocaleDateString()
+                      : ""}
                   </span>
                 </div>
               </div>
@@ -670,7 +762,7 @@ export default function TransferDetailPage({
                     가격
                   </span>
                   <p className="font-text text-[24px] lg:text-[32px] text-bold text-key1">
-                    {transferData.price || '가격 협의'}
+                    {formatPrice(transferData.price)}
                   </p>
                 </div>
                 <div>
@@ -678,7 +770,9 @@ export default function TransferDetailPage({
                     평수
                   </span>
                   <p className="font-text text-[24px] lg:text-[32px] text-nomal text-sub">
-                    {transferData.area ? `${transferData.area}m²` : '평수 정보 없음'}
+                    {transferData.area
+                      ? `${transferData.area}m²`
+                      : "평수 정보 없음"}
                   </p>
                 </div>
               </div>
@@ -691,7 +785,7 @@ export default function TransferDetailPage({
               </h2>
               <div className="prose max-w-none">
                 <p className="font-text text-[14px] lg:text-[16px] text-light text-sub whitespace-pre-line">
-                  {transferData.description || '상세 설명이 없습니다.'}
+                  {transferData.description || "상세 설명이 없습니다."}
                 </p>
               </div>
             </div>
@@ -701,14 +795,16 @@ export default function TransferDetailPage({
               <h2 className="font-title text-[16px] lg:text-[20px] title-light text-primary mb-[15px] lg:mb-[20px]">
                 위치 정보
               </h2>
-              <NaverMap 
-                location={transferData.location || ''} 
+              <NaverMap
+                location={transferData.location || ""}
                 latitude={transferData.latitude}
                 longitude={transferData.longitude}
-                height="265px" 
+                height="265px"
               />
               <p className="font-text text-[14px] lg:text-[16px] text-light mt-[15px] lg:mt-[20px] text-sub">
-                {transferData.address || transferData.location || '주소 정보 없음'}
+                {transferData.address ||
+                  transferData.location ||
+                  "주소 정보 없음"}
               </p>
             </div>
           </section>
@@ -772,18 +868,26 @@ export default function TransferDetailPage({
                         >
                           <TransferCard
                             id={transfer.id}
-                            title={transfer.title || '제목 없음'}
-                            location={transfer.location || '위치 정보 없음'}
-                            hospitalType={transfer.hospitalType || ''}
-                            area={transfer.area || ''}
-                            price={transfer.price || '가격 협의'}
-                            date={transfer.createdAt ? new Date(transfer.createdAt).toLocaleDateString() : ''}
+                            title={transfer.title || "제목 없음"}
+                            location={transfer.location || "위치 정보 없음"}
+                            hospitalType={transfer.hospitalType || ""}
+                            area={transfer.area || ""}
+                            price={formatPrice(transfer.price)}
+                            date={
+                              transfer.createdAt
+                                ? new Date(
+                                    transfer.createdAt
+                                  ).toLocaleDateString()
+                                : ""
+                            }
                             views={transfer.viewCount || 0}
                             imageUrl={transfer.images?.[0] || transfer1Img.src}
                             categories={transfer.categories || []}
                             isAd={false}
                             isLiked={isTransferLiked(transfer.id)}
-                            onLike={() => handleRecommendedTransferLike(transfer.id)}
+                            onLike={() =>
+                              handleRecommendedTransferLike(transfer.id)
+                            }
                           />
                         </div>
                       ))}
@@ -823,12 +927,16 @@ export default function TransferDetailPage({
                     <TransferCard
                       key={transfer.id}
                       id={transfer.id}
-                      title={transfer.title || '제목 없음'}
-                      location={transfer.location || '위치 정보 없음'}
-                      hospitalType={transfer.hospitalType || ''}
-                      area={transfer.area || ''}
-                      price={transfer.price || '가격 협의'}
-                      date={transfer.createdAt ? new Date(transfer.createdAt).toLocaleDateString() : ''}
+                      title={transfer.title || "제목 없음"}
+                      location={transfer.location || "위치 정보 없음"}
+                      hospitalType={transfer.hospitalType || ""}
+                      area={transfer.area || ""}
+                      price={formatPrice(transfer.price)}
+                      date={
+                        transfer.createdAt
+                          ? new Date(transfer.createdAt).toLocaleDateString()
+                          : ""
+                      }
                       views={transfer.viewCount || 0}
                       imageUrl={transfer.images?.[0] || transfer1Img.src}
                       categories={transfer.categories || []}

@@ -49,12 +49,8 @@ export default function VeterinarianJobBookmarksPage() {
   const itemsPerPage = 9;
 
   // Zustand 스토어에서 좋아요 상태 관리
-  const {
-    setJobLike,
-    toggleJobLike,
-    initializeJobLikes,
-    isJobLiked,
-  } = useLikeStore();
+  const { setJobLike, toggleJobLike, initializeJobLikes, isJobLiked } =
+    useLikeStore();
 
   // API에서 북마크한 채용공고 정보 가져오기
   const fetchBookmarkedJobs = async () => {
@@ -124,9 +120,10 @@ export default function VeterinarianJobBookmarksPage() {
 
   // 채용공고 데이터 변환 함수
   const transformJobData = (job: JobData) => {
-    const location = job.hospital.city && job.hospital.district 
-      ? `${job.hospital.city} ${job.hospital.district}`
-      : job.hospital.address || "";
+    const location =
+      job.hospital.city && job.hospital.district
+        ? `${job.hospital.city} ${job.hospital.district}`
+        : job.hospital.address || "";
 
     return {
       ...job,
@@ -181,7 +178,10 @@ export default function VeterinarianJobBookmarksPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        console.error(`[VeterinarianJobBookmarks Like] ${actionText} 실패:`, result);
+        console.error(
+          `[VeterinarianJobBookmarks Like] ${actionText} 실패:`,
+          result
+        );
 
         // 오류 발생 시 상태 롤백
         setJobLike(jobId, isCurrentlyLiked);
@@ -208,7 +208,10 @@ export default function VeterinarianJobBookmarksPage() {
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
       }
 
-      console.log(`[VeterinarianJobBookmarks Like] ${actionText} 성공:`, result);
+      console.log(
+        `[VeterinarianJobBookmarks Like] ${actionText} 성공:`,
+        result
+      );
 
       // 북마크 페이지에서 좋아요 취소 시 목록 새로고침
       if (isCurrentlyLiked) {
@@ -263,7 +266,9 @@ export default function VeterinarianJobBookmarksPage() {
               {/* 근무형태 필터 */}
               <div className="w-full lg:w-auto">
                 <div className="mb-4">
-                  <span className="text-sm font-medium text-gray-700 mb-2 block">근무형태</span>
+                  <span className="text-sm font-medium text-gray-700 mb-2 block">
+                    근무형태
+                  </span>
                   <FilterBoxGroup
                     value={selectedWorkTypes}
                     onChange={handleWorkTypeChange}
@@ -279,7 +284,9 @@ export default function VeterinarianJobBookmarksPage() {
 
                 {/* 경력 필터 */}
                 <div>
-                  <span className="text-sm font-medium text-gray-700 mb-2 block">경력</span>
+                  <span className="text-sm font-medium text-gray-700 mb-2 block">
+                    경력
+                  </span>
                   <FilterBoxGroup
                     value={selectedExperiences}
                     onChange={handleExperienceChange}
@@ -336,8 +343,12 @@ export default function VeterinarianJobBookmarksPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {jobs.map((job) => {
                   const transformedJob = transformJobData(job);
-                  const dDay = job.deadline 
-                    ? Math.ceil((new Date(job.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                  const dDay = job.deadline
+                    ? Math.ceil(
+                        (new Date(job.deadline).getTime() -
+                          new Date().getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      )
                     : null;
 
                   return (

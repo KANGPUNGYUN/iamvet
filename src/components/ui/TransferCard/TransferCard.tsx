@@ -21,6 +21,37 @@ interface TransferCardProps {
   onClick?: () => void; // 기존 호환성을 위해 유지
 }
 
+// 가격 포맷팅 함수
+const formatPrice = (priceString: string | number): string => {
+  // 타입 체크 및 문자열 변환
+  const priceStr = String(priceString);
+  
+  // 이미 "만원" 또는 "원"이 포함된 경우 그대로 반환
+  if (priceStr.includes('만원') || priceStr.includes('원')) {
+    return priceStr;
+  }
+  
+  // 숫자만 추출
+  const numbers = priceStr.match(/\d+/g);
+  if (!numbers) return priceStr;
+  
+  const number = parseInt(numbers.join(''));
+  
+  // 만원 단위 이상인 경우
+  if (number >= 10000) {
+    const man = number / 10000;
+    // 정수로 떨어지는 경우
+    if (number % 10000 === 0) {
+      return `${man.toLocaleString()}만원`;
+    }
+    // 소수점이 있는 경우 (예: 1.5억)
+    return `${man.toLocaleString()}만원`;
+  }
+  
+  // 만원 미만인 경우 원 단위로 표시
+  return `${number.toLocaleString()}원`;
+};
+
 const TransferCard: React.FC<TransferCardProps> = ({
   id,
   title = "[양도] 강남 소재 내과 병원 양도합니다",
@@ -165,7 +196,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
         {/* 가격 */}
         <div className="mb-2 text-end">
           <span className="font-text text-[20px] text-extrabold leading-[150%] text-key1">
-            {price}
+            {formatPrice(price)}
           </span>
         </div>
 
@@ -276,7 +307,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
         <div className="flex flex-col w-full">
           <div className="text-right">
             <span className="font-text text-[14px] text-extrabold leading-[150%] text-key1">
-              {price}
+              {formatPrice(price)}
             </span>
           </div>
           <div className="flex items-center justify-between w-full mt-auto">

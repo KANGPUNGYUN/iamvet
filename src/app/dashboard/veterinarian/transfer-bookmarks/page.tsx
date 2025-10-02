@@ -164,7 +164,10 @@ export default function VeterinarianTransferBookmarksPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        console.error(`[VeterinarianTransferBookmarks Like] ${actionText} 실패:`, result);
+        console.error(
+          `[VeterinarianTransferBookmarks Like] ${actionText} 실패:`,
+          result
+        );
 
         // 오류 발생 시 상태 롤백
         setTransferLike(transferId, isCurrentlyLiked);
@@ -191,7 +194,10 @@ export default function VeterinarianTransferBookmarksPage() {
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
       }
 
-      console.log(`[VeterinarianTransferBookmarks Like] ${actionText} 성공:`, result);
+      console.log(
+        `[VeterinarianTransferBookmarks Like] ${actionText} 성공:`,
+        result
+      );
 
       // 북마크 페이지에서 좋아요 취소 시 목록 새로고침
       if (isCurrentlyLiked) {
