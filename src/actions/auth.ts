@@ -830,7 +830,7 @@ export interface VeterinaryStudentRegisterData {
   password: string;
   nickname: string;
   phone: string;
-  universityEmail: string; // 대학교 이메일 추가
+  email: string; // 이메일 필드명 통일
   realName?: string;
   birthDate: string;
   profileImage?: string;
@@ -972,7 +972,7 @@ export async function registerVeterinaryStudent(
       password,
       nickname,
       phone,
-      universityEmail,
+      email,
       realName,
       birthDate,
       profileImage,
@@ -985,7 +985,7 @@ export async function registerVeterinaryStudent(
     // Check if user already exists
     const existingUser = await sql`
       SELECT id FROM users 
-      WHERE ("loginId" = ${userId} OR email = ${universityEmail} OR "universityEmail" = ${universityEmail} OR phone = ${phone}) 
+      WHERE ("loginId" = ${userId} OR email = ${email} OR phone = ${phone}) 
       AND "isActive" = true
     `;
 
@@ -1008,7 +1008,7 @@ export async function registerVeterinaryStudent(
         "profileImage", provider, "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
         "isActive", "createdAt", "updatedAt"
       ) VALUES (
-        ${userId_generated}, ${userId}, ${universityEmail}, ${phone}, ${hashedPassword}, 'VETERINARY_STUDENT',
+        ${userId_generated}, ${userId}, ${email}, ${phone}, ${hashedPassword}, 'VETERINARY_STUDENT',
         ${profileImage}, 'NORMAL', ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
         true, ${currentDate}, ${currentDate}
       )
@@ -1025,7 +1025,7 @@ export async function registerVeterinaryStudent(
         id, "userId", "realName", "birthDate", nickname, "universityEmail", "createdAt", "updatedAt"
       )
       VALUES (
-        ${studentId}, ${user.id}, ${realName}, ${birthDate ? new Date(birthDate) : null}, ${nickname}, ${universityEmail}, ${currentDate}, ${currentDate}
+        ${studentId}, ${user.id}, ${realName}, ${birthDate ? new Date(birthDate) : null}, ${nickname}, ${email}, ${currentDate}, ${currentDate}
       )
     `;
 

@@ -53,7 +53,7 @@ function VeterinaryStudentRegisterContent() {
         realName: formData.realName,
         nickname: formData.nickname,
         phone: formData.phone,
-        universityEmail: formData.email,
+        email: formData.email,
         birthDate: formData.birthDate,
         profileImage: profileImageUrl || undefined,
         termsAgreed: formData.agreements.terms,

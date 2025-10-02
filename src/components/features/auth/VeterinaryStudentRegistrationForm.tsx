@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { BirthDateInput } from "@/components/ui/FormattedInput";
 import { ProfileImageUpload } from "@/components/features/profile";
 import { checkEmailDuplicate, checkLoginIdDuplicate, checkPhoneDuplicate } from "@/actions/auth";
+import { validateStudentEmail } from "@/lib/emailValidation";
+import EmailVerificationModal from "./EmailVerificationModal";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -71,6 +73,12 @@ export const VeterinaryStudentRegistrationForm: React.FC<
       isChecking: false,
       isValid: false,
     },
+  });
+
+  // 이메일 인증 상태
+  const [emailVerification, setEmailVerification] = useState({
+    showModal: false,
+    isVerified: false,
   });
 
   // 입력 에러 상태
@@ -256,8 +264,11 @@ export const VeterinaryStudentRegistrationForm: React.FC<
           error = "대학교 이메일을 입력해주세요.";
         } else if (!emailRegex2.test(value)) {
           error = "올바른 이메일 형식을 입력해주세요.";
-        } else if (!validateUniversityEmail(value)) {
-          error = "수의학과가 있는 대학교의 이메일을 입력해주세요.";
+        } else if (!validateStudentEmail(value)) {
+          const isDevelopment = process.env.NODE_ENV === 'development';
+          error = isDevelopment 
+            ? "수의학과 대학 이메일(.ac.kr) 또는 @naver.com(테스트용)을 입력해주세요."
+            : "수의학과가 있는 대학교의 이메일을 입력해주세요.";
         }
         break;
 
@@ -302,24 +313,6 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     setInputErrors((prev) => ({ ...prev, [field]: error }));
   };
 
-  // 대학교 이메일 검증 (수의학과가 있는 대학교만)
-  const validateUniversityEmail = (email: string): boolean => {
-    const veterinaryUniversityDomains = [
-      "kangwon.ac.kr", // 강원대
-      "konkuk.ac.kr", // 건국대
-      "knu.ac.kr", // 경북대
-      "gnu.ac.kr", // 경상국립대
-      "snu.ac.kr", // 서울대
-      "jnu.ac.kr", // 전남대
-      "jbnu.ac.kr", // 전북대
-      "stu.jejunu.ac.kr", // 제주대
-      "o.cnu.ac.kr", // 충남대
-      "chungbuk.ac.kr", // 충북대
-    ];
-
-    const domain = email.split("@")[1]?.toLowerCase();
-    return veterinaryUniversityDomains.includes(domain || "");
-  };
 
   const handleImageChange = (field: "profileImage") => (url: string | null) => {
     setFormData((prev) => ({ ...prev, [field]: url }));
@@ -385,9 +378,11 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     }
   };
 
-  const handleEmailDuplicateCheck = async () => {
-    console.log("CLIENT: handleEmailDuplicateCheck called");
-    console.log("CLIENT: formData.email =", formData.email);
+  const handleEmailVerification = async () => {
+    // 이미 인증 중이면 무시
+    if (duplicateCheck.email.isChecking) {
+      return;
+    }
 
     if (!formData.email.trim()) {
       alert("대학교 이메일을 입력해주세요.");
@@ -402,54 +397,58 @@ export const VeterinaryStudentRegistrationForm: React.FC<
     }
 
     // 대학교 이메일 도메인 검증
-    if (!validateUniversityEmail(formData.email)) {
-      alert("수의학과가 있는 대학교의 이메일을 입력해주세요.");
+    if (!validateStudentEmail(formData.email)) {
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      alert(isDevelopment 
+        ? "수의학과 대학 이메일(.ac.kr) 또는 @naver.com(테스트용)을 입력해주세요."
+        : "수의학과가 있는 대학교의 이메일을 입력해주세요.");
       return;
     }
 
-    console.log("CLIENT: About to call checkEmailDuplicate");
     setDuplicateCheck((prev) => ({
       ...prev,
       email: { ...prev.email, isChecking: true },
     }));
 
     try {
-      console.log("CLIENT: Calling checkEmailDuplicate with:", formData.email);
+      // 먼저 중복 확인
       const result = await checkEmailDuplicate(formData.email);
-      console.log("CLIENT: checkEmailDuplicate result:", result);
-
-      if (result.success) {
-        const isValid = !result.isDuplicate;
-        console.log(
-          "CLIENT: isDuplicate =",
-          result.isDuplicate,
-          "isValid =",
-          isValid
-        );
-        setDuplicateCheck((prev) => ({
-          ...prev,
-          email: {
-            isChecking: false,
-            isValid,
-          },
-        }));
-        alert(result.message);
-      } else {
-        console.log("CLIENT: checkEmailDuplicate failed:", result.error);
+      
+      if (result.success && !result.isDuplicate) {
+        // 중복이 아니면 이메일 인증 모달 표시
         setDuplicateCheck((prev) => ({
           ...prev,
           email: { ...prev.email, isChecking: false },
         }));
-        alert(result.error || "이메일 중복 확인 중 오류가 발생했습니다.");
+        setEmailVerification({ showModal: true, isVerified: false });
+      } else {
+        // 중복이면 에러 표시
+        setDuplicateCheck((prev) => ({
+          ...prev,
+          email: { ...prev.email, isChecking: false },
+        }));
+        alert(result.error || "이미 사용 중인 이메일입니다.");
       }
     } catch (error) {
-      console.error("CLIENT: 이메일 중복 확인 오류:", error);
+      console.error("이메일 확인 오류:", error);
       setDuplicateCheck((prev) => ({
         ...prev,
         email: { ...prev.email, isChecking: false },
       }));
-      alert("이메일 중복 확인 중 오류가 발생했습니다.");
+      alert("이메일 확인 중 오류가 발생했습니다.");
     }
+  };
+
+  const handleEmailVerified = () => {
+    setEmailVerification({ showModal: false, isVerified: true });
+    setDuplicateCheck((prev) => ({
+      ...prev,
+      email: { isChecking: false, isValid: true },
+    }));
+  };
+
+  const handleEmailVerificationClose = () => {
+    setEmailVerification({ showModal: false, isVerified: false });
   };
 
   const handlePhoneDuplicateCheck = async () => {
@@ -808,11 +807,11 @@ export const VeterinaryStudentRegistrationForm: React.FC<
               <InputBox
                 value={formData.email}
                 onChange={handleInputChange("email")}
-                placeholder="수의학과 대학교 이메일을 입력해주세요 (예: student@snu.ac.kr)"
+                placeholder="수의학과 대학교 이메일을 입력해주세요 (예: student@snu.ac.kr, test@naver.com)"
                 type="email"
                 duplicateCheck={{
                   buttonText: "인증",
-                  onCheck: handleEmailDuplicateCheck,
+                  onCheck: handleEmailVerification,
                   isChecking: duplicateCheck.email.isChecking,
                   isValid: duplicateCheck.email.isValid,
                 }}
@@ -925,6 +924,17 @@ export const VeterinaryStudentRegistrationForm: React.FC<
           </Button>
         </div>
       </div>
+
+      {/* 이메일 인증 모달 */}
+      {emailVerification.showModal && (
+        <EmailVerificationModal
+          email={formData.email}
+          name={formData.realName}
+          onVerified={handleEmailVerified}
+          onClose={handleEmailVerificationClose}
+          autoSend={true}
+        />
+      )}
     </div>
   );
 };

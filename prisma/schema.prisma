@@ -636,6 +636,7 @@ model users {
   veterinarian_profiles                                       veterinarian_profiles?
   veterinarians                                               veterinarians?
   veterinary_students                                         veterinary_students?
+  email_verifications                                         email_verifications[]
 
   @@index([loginId], map: "idx_users_loginid")
 }
@@ -832,6 +833,24 @@ model hospital_specialties_backup {
   createdAt DateTime?
 
   @@ignore
+}
+
+model email_verifications {
+  id               String    @id
+  userId           String?
+  email            String
+  verificationCode String
+  expiresAt        DateTime
+  verified         Boolean   @default(false)
+  verifiedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime
+  users            users?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([verificationCode])
+  @@index([expiresAt])
 }
 
 enum AnimalType {
