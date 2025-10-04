@@ -1923,6 +1923,7 @@ export default function ResumeDetailPage({
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
                     isBookmarked={resume.isBookmarked}
+                    profileImage={resume.profileImage}
                     onClick={() => {
                       window.location.href = `/resumes/${resume.id}`;
                     }}
@@ -1995,6 +1996,7 @@ export default function ResumeDetailPage({
                         keywords={resume.keywords}
                         lastAccessDate={resume.lastAccessDate}
                         isBookmarked={resume.isBookmarked}
+                        profileImage={resume.profileImage}
                         onClick={() => {
                           window.location.href = `/resumes/${resume.id}`;
                         }}

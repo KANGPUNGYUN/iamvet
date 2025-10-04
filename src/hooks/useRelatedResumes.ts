@@ -10,6 +10,7 @@ interface RelatedResume {
   keywords: string[];
   lastAccessDate: string;
   isBookmarked: boolean;
+  profileImage?: string;
 }
 
 export function useRelatedResumes(resumeId: string) {

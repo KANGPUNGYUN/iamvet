@@ -185,7 +185,8 @@ export async function GET(
           : '미정',
         keywords: keywords.slice(0, 4), // 최대 4개까지만
         lastAccessDate: new Date(resume.updatedAt).toLocaleDateString('ko-KR').replace(/\. /g, '.').replace(/\.$/, ''),
-        isBookmarked: likedResumeIds.includes(resume.id)
+        isBookmarked: likedResumeIds.includes(resume.id),
+        profileImage: resume.photo // 프로필 이미지 추가
       };
     });
 
