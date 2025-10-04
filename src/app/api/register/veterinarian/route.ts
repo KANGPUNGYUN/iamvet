@@ -7,6 +7,7 @@ import {
   createUser,
   createVeterinarianProfile,
   generateTokens,
+  updateLastLogin,
 } from "@/lib/database";
 import {
   checkUserExists,
@@ -118,6 +119,9 @@ export async function POST(request: NextRequest) {
 
     // 토큰 생성
     const tokens = await generateTokens(user);
+    
+    // 마지막 로그인 시간 업데이트
+    await updateLastLogin(user.id);
 
     return NextResponse.json(
       createApiResponse("success", "회원가입이 완료되었습니다", {

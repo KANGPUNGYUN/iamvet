@@ -118,6 +118,13 @@ export async function login(credentials: LoginCredentials) {
       return { success: false, error: "비밀번호가 올바르지 않습니다." };
     }
 
+    // Update lastLoginAt
+    await sql`
+      UPDATE users 
+      SET "lastLoginAt" = CURRENT_TIMESTAMP 
+      WHERE id = ${user.id}
+    `;
+
     // Generate JWT token
     const token = jwt.sign(
       {

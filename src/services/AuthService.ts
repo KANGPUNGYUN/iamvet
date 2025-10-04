@@ -1,19 +1,19 @@
 import {
   getUserByEmail,
   getUserBySocialProvider,
-  createSocialUser,
   linkSocialAccount,
   generateTokens,
+  updateLastLogin,
+  isUserProfileComplete,
 } from "@/lib/database";
+import { sql } from "@/lib/db";
 import {
   AuthResponse,
-  SocialUser,
   SocialLoginResponse,
   ProfileCompleteness,
 } from "@/types/auth";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+// NOTE: 이전에 Prisma를 직접 사용하려다가 타입 오류 발생
+// import { prisma } from "@/lib/prisma";
 
 /**
  * Auth Service Layer - Central business logic for authentication
@@ -22,18 +22,6 @@ const prisma = new PrismaClient();
  * Handles both traditional and social authentication flows
  */
 export class AuthService {
-  /**
-   * Map frontend user types to database enum values
-   */
-  private static mapUserTypeToDbEnum(userType: string): string {
-    const mapping: { [key: string]: string } = {
-      veterinarian: "VETERINARIAN",
-      hospital: "HOSPITAL",
-      "veterinary-student": "VETERINARIAN", // Store as VETERINARIAN in DB for now
-    };
-    return mapping[userType] || "VETERINARIAN";
-  }
-
   /**
    * Handle social authentication flow
    * Used by all OAuth callback routes (Google, Kakao, Naver)
@@ -61,11 +49,7 @@ export class AuthService {
         userType,
         provider,
         providerId,
-        socialData,
       } = socialUserData;
-
-      // Convert userType to database-compatible format
-      const dbUserType = this.mapUserTypeToDbEnum(userType);
 
       // Check if user exists by social provider
       console.log("Checking user by social provider:", provider, providerId);
@@ -88,6 +72,9 @@ export class AuthService {
             profileImage,
           });
           user = existingUser;
+
+          // Update lastLoginAt for the existing user
+          await updateLastLogin(existingUser.id);
         } else {
           // For new users, don't create user yet - redirect to registration completion
           return {
@@ -116,8 +103,14 @@ export class AuthService {
       }
 
       // At this point, we have an existing user
+      // Update lastLoginAt for the user
+      await updateLastLogin(user.id);
+
       // Check profile completeness - use original userType for logic
-      const isProfileComplete = await this.checkProfileComplete(user.id, userType);
+      const isProfileComplete = await this.checkProfileComplete(
+        user.id,
+        userType
+      );
 
       // Generate tokens for existing user
       const tokens = await generateTokens(user);
@@ -126,18 +119,30 @@ export class AuthService {
       let userPhone = user.phone || phone; // Use DB phone first, fallback to social phone
       let userBirthDate = birthDate; // Start with social birthDate
       let userRealName = user.realName || realName || name; // Use DB realName first
-      
+
       // Get additional profile info from veterinarian_profiles if needed
-      if (userType === 'veterinarian' || userType === 'veterinary-student') {
+      if (userType === "veterinarian" || userType === "veterinary-student") {
         try {
-          const profile = await prisma.veterinarian_profiles.findUnique({
-            where: { userId: user.id },
-          });
-          if (profile) {
-            userBirthDate = profile.birthDate ? profile.birthDate.toISOString().split('T')[0] : userBirthDate;
+          // SQL 쿼리로 veterinarian_profiles 조회 (Prisma 타입 오류 회피)
+          const profileResult = await sql`
+            SELECT "birthDate" FROM veterinarian_profiles 
+            WHERE "userId" = ${user.id}
+          `;
+          if (profileResult.length > 0 && profileResult[0].birthDate) {
+            userBirthDate = profileResult[0].birthDate
+              .toISOString()
+              .split("T")[0];
           }
+
+          // 이전 Prisma 방식 (타입 오류로 주석처리)
+          // const profile = await prisma.veterinarian_profiles.findUnique({
+          //   where: { userId: user.id },
+          // });
+          // if (profile) {
+          //   userBirthDate = profile.birthDate ? profile.birthDate.toISOString().split('T')[0] : userBirthDate;
+          // }
         } catch (error) {
-          console.error('Failed to fetch veterinarian profile:', error);
+          console.error("Failed to fetch veterinarian profile:", error);
         }
       }
 
@@ -179,23 +184,32 @@ export class AuthService {
   }
 
   /**
-   * Check if user profile is complete using Prisma
+   * Check if user profile is complete using database function
+   * NOTE: 이전에 Prisma를 직접 사용하려다가 hospitals 테이블 타입 오류 발생
+   * 해결책: database.ts의 기존 함수 사용
    */
-  static async checkProfileComplete(userId: string, userType: string): Promise<boolean> {
+  static async checkProfileComplete(
+    userId: string,
+    userType: string
+  ): Promise<boolean> {
     try {
-      if (userType === 'VETERINARIAN' || userType === 'veterinary-student') {
-        // Check veterinarian_profiles table for profile completion
-        const profile = await prisma.veterinarian_profiles.findUnique({
-          where: { userId },
-        });
-        return !!profile;
-      } else if (userType === 'HOSPITAL' || userType === 'hospital') {
-        const profile = await prisma.hospitals.findUnique({
-          where: { userId },
-        });
-        return !!profile;
-      }
-      return false;
+      // database.ts의 기존 함수 사용 - SQL 쿼리로 구현되어 있음
+      return await isUserProfileComplete(userId, userType);
+
+      // 이전 Prisma 방식 (타입 오류로 주석처리)
+      // if (userType === 'VETERINARIAN' || userType === 'veterinary-student') {
+      //   // Check veterinarian_profiles table for profile completion
+      //   const profile = await prisma.veterinarian_profiles.findUnique({
+      //     where: { userId },
+      //   });
+      //   return !!profile;
+      // } else if (userType === 'HOSPITAL' || userType === 'hospital') {
+      //   const profile = await (prisma as any).hospitals.findUnique({
+      //     where: { userId },
+      //   });
+      //   return !!profile;
+      // }
+      // return false;
     } catch (error) {
       console.error("Profile completeness check error:", error);
       return false;
@@ -237,7 +251,14 @@ export class AuthService {
   static generateRedirectUrl(
     isProfileComplete: boolean,
     userType: string,
-    socialData?: { email: string; name: string; realName?: string; phone?: string; birthDate?: string; profileImage?: string }
+    socialData?: {
+      email: string;
+      name: string;
+      realName?: string;
+      phone?: string;
+      birthDate?: string;
+      profileImage?: string;
+    }
   ): string {
     if (isProfileComplete) {
       // Redirect to dashboard
@@ -290,9 +311,9 @@ export class AuthService {
    * Traditional login (for Server Actions)
    */
   async login(
-    email: string,
-    password: string,
-    userType: string
+    _email: string,
+    _password: string,
+    _userType: string
   ): Promise<AuthResponse> {
     try {
       // This would implement traditional email/password login

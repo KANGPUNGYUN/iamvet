@@ -146,6 +146,11 @@ export async function POST(request: NextRequest) {
       )
     `;
 
+    // 마지막 로그인 시간 업데이트
+    await sql`
+      UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = ${userId}
+    `;
+
     // JWT 토큰 생성
     const token = jwt.sign(
       {

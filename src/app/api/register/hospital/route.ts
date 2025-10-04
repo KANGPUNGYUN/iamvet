@@ -3,6 +3,7 @@ import { checkUserExists, createUser } from "@/lib/auth-helpers";
 import {
   checkBusinessNumberExists,
   createHospitalProfile,
+  updateLastLogin,
 } from "@/lib/database";
 import { uploadFile } from "@/lib/s3";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
@@ -122,6 +123,9 @@ export async function POST(request: NextRequest) {
 
     // 토큰 생성
     const tokens = await generateTokens(user);
+    
+    // 마지막 로그인 시간 업데이트
+    await updateLastLogin(user.id);
 
     return NextResponse.json(
       createApiResponse("success", "병원 등록이 완료되었습니다", {

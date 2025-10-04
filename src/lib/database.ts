@@ -2999,6 +2999,9 @@ export const createSocialUser = async (userData: any) => {
     accessToken: userData.accessToken,
     refreshToken: userData.refreshToken,
   });
+  
+  // 마지막 로그인 시간 업데이트
+  await updateLastLogin(user.id);
 
   return user;
 };
