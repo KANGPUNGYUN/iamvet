@@ -129,6 +129,7 @@ export async function GET(request: NextRequest) {
           preferredLocation: resume.users.veterinarian_profiles?.preferredLocation || '전국',
           keywords: [resume.users.veterinarian_profiles?.specialty || '일반진료'],
           lastAccessDate: resume.updatedAt?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+          lastLoginAt: resume.users.lastLoginAt, // 최근 로그인 정보 추가
           isNew: false,
           isBookmarked: true, // 북마크된 항목이므로 true
           viewCount: resume.users.veterinarian_profiles?.viewCount || 0,

@@ -820,7 +820,7 @@ export const incrementResumeViewCount = async (
 export const getResumesWithPagination = async (params: any) => {
   console.log("[getResumesWithPagination] 파라미터:", params);
   
-  // detailed_resumes 테이블에서 직접 조회
+  // detailed_resumes 테이블과 users 테이블을 JOIN하여 조회 (lastLoginAt 포함)
   let query = `
     SELECT 
       dr.id,
@@ -832,9 +832,11 @@ export const getResumesWithPagination = async (params: any) => {
       dr.specialties,
       dr."preferredRegions",
       dr."createdAt",
-      dr."updatedAt"
+      dr."updatedAt",
+      u."lastLoginAt"
     FROM detailed_resumes dr
-    WHERE 1=1
+    JOIN users u ON dr."userId" = u.id
+    WHERE u."deletedAt" IS NULL AND u."isActive" = true
   `;
 
   const queryParams: any[] = [];

@@ -279,6 +279,7 @@ export default function ResumesPage() {
       lastAccessDate: new Date(resume.updatedAt)
         .toLocaleDateString("ko-KR")
         .replace(/\//g, "."),
+      lastLoginAt: resume.lastLoginAt || null, // 최근 로그인 정보 추가
       isBookmarked: false,
       profileImage: resume.photo || undefined,
       createdAt: new Date(resume.createdAt),
@@ -742,6 +743,7 @@ export default function ResumesPage() {
                     preferredLocation={resume.preferredLocation}
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
+                    lastLoginAt={resume.lastLoginAt}
                     isBookmarked={isResumeLiked(resume.id)}
                     profileImage={resume.profileImage}
                     onClick={() => {
@@ -838,6 +840,7 @@ export default function ResumesPage() {
                     preferredLocation={resume.preferredLocation}
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
+                    lastLoginAt={resume.lastLoginAt}
                     isBookmarked={isResumeLiked(resume.id)}
                     profileImage={resume.profileImage}
                     onClick={() => {

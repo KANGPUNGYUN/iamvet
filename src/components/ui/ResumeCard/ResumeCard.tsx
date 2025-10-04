@@ -17,6 +17,7 @@ export interface ResumeCardProps {
   keywords: string[]; // e.g., ["내과", "외과", "정규직", "계약직", "파트타임"]
   lastAccessDate: string; // e.g., "2025.04.15"
   profileImage?: string; // 프로필 이미지 URL
+  lastLoginAt?: string | Date | null; // 최근 로그인 시간
   isNew?: boolean; // 신규 여부
   isBookmarked?: boolean; // 북마크 여부
   onClick?: () => void;
@@ -30,6 +31,7 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
   keywords = [],
   lastAccessDate,
   profileImage,
+  lastLoginAt,
   isNew = false,
   isBookmarked = false,
   onClick,
@@ -38,6 +40,14 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onBookmarkClick?.();
+  };
+
+  // 최근 로그인 날짜 포맷팅 함수
+  const formatLastLoginDate = (lastLoginAt: string | Date | null) => {
+    if (!lastLoginAt) return "로그인 정보 없음";
+    
+    const loginDate = new Date(lastLoginAt);
+    return loginDate.toLocaleDateString('ko-KR').replace(/\. /g, '.').replace(/\.$/, '');
   };
 
   return (
@@ -147,10 +157,10 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
         </div>
       </div>
 
-      {/* 최근 접속일 */}
+      {/* 최근 로그인 정보 */}
       <div className="text-right">
         <span className="font-text text-[14px] text-[#CACAD2]">
-          최근 접속: {lastAccessDate}
+          최근 로그인: {formatLastLoginDate(lastLoginAt || null)}
         </span>
       </div>
     </div>
