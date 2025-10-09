@@ -3590,16 +3590,32 @@ export const getForumsWithPagination = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
   const query = `
     SELECT 
-      fp.*,
+      fp.id,
+      fp.title,
+      fp.content,
+      fp."userId",
+      fp."animalType",
+      fp."medicalField", 
+      fp."createdAt",
+      fp."updatedAt",
+      fp."deletedAt",
+      fp."viewCount",
       COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       u."profileImage" as author_profile_image,
-      COALESCE(v."realName", vs."realName", h."representativeName") as author_display_name
+      COALESCE(v."realName", vs."realName", h."representativeName") as author_display_name,
+      COUNT(fc.id) as "commentCount"
     FROM forum_posts fp
     LEFT JOIN users u ON fp."userId" = u.id
     LEFT JOIN veterinarians v ON u.id = v."userId"
     LEFT JOIN veterinary_students vs ON u.id = vs."userId"
     LEFT JOIN hospitals h ON u.id = h."userId"
+    LEFT JOIN forum_comments fc ON fp.id = fc.forum_id AND fc."deletedAt" IS NULL
     WHERE fp."deletedAt" IS NULL 
+    GROUP BY fp.id, fp.title, fp.content, fp."userId", fp."animalType", fp."medicalField", fp."createdAt", fp."updatedAt", fp."deletedAt", fp."viewCount", 
+             u.id, u."profileImage", 
+             v.id, v.nickname, v."realName",
+             vs.id, vs.nickname, vs."realName",
+             h.id, h."hospitalName", h."representativeName"
     ORDER BY fp."createdAt" DESC 
     LIMIT $1 OFFSET $2
   `;
