@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Exchange code for tokens
     const naverClientId = process.env.NAVER_CLIENT_ID;
     const naverClientSecret = process.env.NAVER_CLIENT_SECRET;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const redirectUri = `${baseUrl}/api/auth/naver/callback`;
 
     if (!naverClientId || !naverClientSecret) {
@@ -83,18 +83,18 @@ export async function GET(request: NextRequest) {
     // Extract real name, phone, and birth date from Naver user data
     const realName = naverUser.name || undefined;
     const phone = naverUser.mobile || undefined;
-    
+
     // Extract birth date from Naver user data
     // Naver can provide birthday in various formats: YYYY-MM-DD, MM-DD, or separate fields
     let birthDate = undefined;
-    
+
     if (naverUser.birthday) {
       const birthday = naverUser.birthday;
-      
+
       // Check if birthday already includes year (YYYY-MM-DD format)
-      if (birthday.length === 10 && birthday.includes('-')) {
+      if (birthday.length === 10 && birthday.includes("-")) {
         birthDate = birthday;
-      } else if (birthday.length === 5 && birthday.includes('-')) {
+      } else if (birthday.length === 5 && birthday.includes("-")) {
         // MM-DD format, check if we have birthyear
         if (naverUser.birthyear) {
           birthDate = `${naverUser.birthyear}-${birthday}`;
@@ -215,7 +215,9 @@ function createSuccessPage(message: string, data: any) {
             const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             const isProduction = window.location.hostname !== 'localhost';
             const secureFlag = isProduction ? '; secure' : '';
-            document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; samesite=strict' + secureFlag;
+            document.cookie = 'auth-token=${
+              data.tokens.accessToken
+            }; expires=' + expireDate.toUTCString() + '; path=/; samesite=strict' + secureFlag;
             
             // 인증 상태 강제 업데이트를 위한 이벤트 발생
             window.dispatchEvent(new StorageEvent('storage', {
@@ -239,7 +241,9 @@ function createSuccessPage(message: string, data: any) {
           const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
           const isProduction = window.location.hostname !== 'localhost';
           const secureFlag = isProduction ? '; secure' : '';
-          document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; samesite=strict' + secureFlag;
+          document.cookie = 'auth-token=${
+            data.tokens.accessToken
+          }; expires=' + expireDate.toUTCString() + '; path=/; samesite=strict' + secureFlag;
           
           // 인증 상태 강제 업데이트를 위한 이벤트 발생
           window.dispatchEvent(new StorageEvent('storage', {

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     // Exchange code for tokens
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
     if (!googleClientId || !googleClientSecret) {
@@ -80,14 +80,14 @@ export async function GET(request: NextRequest) {
 
     console.log("Google OAuth user data:", googleUser);
     console.log("Processed userType:", userType);
-    
+
     // Extract real name, phone, and birth date from Google user data
     // Google OAuth v2 API doesn't provide phone number or birth date by default
     // Real name is usually the same as the display name
     const realName = googleUser.name || undefined;
     const phone = undefined; // Google OAuth v2 doesn't provide phone number
     const birthDate = undefined; // Google OAuth v2 doesn't provide birth date by default
-    
+
     // Use AuthService to handle social authentication
     const authResult = await AuthService.handleSocialAuth({
       email: googleUser.email,
@@ -192,15 +192,21 @@ function createSuccessPage(message: string, data: any) {
           } else {
             // If not in popup or opener is closed, redirect using AuthService generated URL
             if (${JSON.stringify(data.tokens)}) {
-              localStorage.setItem('accessToken', '${data.tokens?.accessToken || ''}');
-              localStorage.setItem('refreshToken', '${data.tokens?.refreshToken || ''}');
+              localStorage.setItem('accessToken', '${
+                data.tokens?.accessToken || ""
+              }');
+              localStorage.setItem('refreshToken', '${
+                data.tokens?.refreshToken || ""
+              }');
               localStorage.setItem('user', JSON.stringify(${JSON.stringify(
                 data.user
               )}));
               
               // 토큰을 쿠키로도 동기화
               const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-              document.cookie = 'auth-token=${data.tokens?.accessToken || ''}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+              document.cookie = 'auth-token=${
+                data.tokens?.accessToken || ""
+              }; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
             }
             
             window.location.href = '${redirectUrl}';
@@ -209,15 +215,21 @@ function createSuccessPage(message: string, data: any) {
           console.error('OAuth callback error:', error);
           // Fallback to redirect flow
           if (${JSON.stringify(data.tokens)}) {
-            localStorage.setItem('accessToken', '${data.tokens?.accessToken || ''}');
-            localStorage.setItem('refreshToken', '${data.tokens?.refreshToken || ''}');
+            localStorage.setItem('accessToken', '${
+              data.tokens?.accessToken || ""
+            }');
+            localStorage.setItem('refreshToken', '${
+              data.tokens?.refreshToken || ""
+            }');
             localStorage.setItem('user', JSON.stringify(${JSON.stringify(
               data.user
             )}));
             
             // 토큰을 쿠키로도 동기화
             const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            document.cookie = 'auth-token=${data.tokens?.accessToken || ''}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+            document.cookie = 'auth-token=${
+              data.tokens?.accessToken || ""
+            }; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
           }
           
           window.location.href = '${redirectUrl}';

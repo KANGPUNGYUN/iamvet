@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
     const userType = searchParams.get("userType") || "veterinarian";
 
     // Validate userType
-    if (!["veterinarian", "hospital", "veterinary-student"].includes(userType)) {
+    if (
+      !["veterinarian", "hospital", "veterinary-student"].includes(userType)
+    ) {
       return NextResponse.json(
         createErrorResponse("유효하지 않은 사용자 타입입니다"),
         { status: 400 }
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Kakao OAuth URLs
     const kakaoClientId = process.env.KAKAO_CLIENT_ID;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const redirectUri = `${baseUrl}/api/auth/kakao/callback`;
 
     if (!kakaoClientId) {

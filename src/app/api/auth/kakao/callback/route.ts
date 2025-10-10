@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Exchange code for tokens
     const kakaoClientId = process.env.KAKAO_CLIENT_ID;
     const kakaoClientSecret = process.env.KAKAO_CLIENT_SECRET;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const redirectUri = `${baseUrl}/api/auth/kakao/callback`;
 
     if (!kakaoClientId || !kakaoClientSecret) {
@@ -88,13 +88,13 @@ export async function GET(request: NextRequest) {
     // Extract real name, phone, and birth date from Kakao user data
     const realName = kakaoUser.kakao_account?.name || undefined;
     const phone = kakaoUser.kakao_account?.phone_number || undefined;
-    
+
     // Extract birth date from Kakao user data
     // Kakao provides birthday (MMDD) and birthyear (YYYY) separately
     let birthDate = undefined;
     const birthday = kakaoUser.kakao_account?.birthday; // MMDD format
     const birthyear = kakaoUser.kakao_account?.birthyear; // YYYY format
-    
+
     if (birthday && birthyear) {
       // Combine year and birthday to create YYYY-MM-DD format
       const month = birthday.substring(0, 2);
@@ -213,7 +213,9 @@ function createSuccessPage(message: string, data: any) {
             
             // 토큰을 쿠키로도 동기화
             const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+            document.cookie = 'auth-token=${
+              data.tokens.accessToken
+            }; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
             
             window.location.href = '${redirectUrl}';
           }
@@ -227,7 +229,9 @@ function createSuccessPage(message: string, data: any) {
           
           // 토큰을 쿠키로도 동기화
           const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-          document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+          document.cookie = 'auth-token=${
+            data.tokens.accessToken
+          }; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
           
           window.location.href = '${redirectUrl}';
         }
