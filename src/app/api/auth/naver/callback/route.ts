@@ -213,9 +213,19 @@ function createSuccessPage(message: string, data: any) {
             
             // 토큰을 쿠키로도 동기화
             const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-            document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+            const isProduction = window.location.hostname !== 'localhost';
+            const secureFlag = isProduction ? '; secure' : '';
+            document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; samesite=strict' + secureFlag;
             
-            window.location.href = '${redirectUrl}';
+            // 인증 상태 강제 업데이트를 위한 이벤트 발생
+            window.dispatchEvent(new StorageEvent('storage', {
+              key: 'accessToken',
+              newValue: '${data.tokens.accessToken}',
+              url: window.location.href
+            }));
+            
+            // 리다이렉트 시 auth 파라미터 추가로 상태 갱신 트리거
+            window.location.href = '${redirectUrl}' + (window.location.href.includes('?') ? '&' : '?') + 'auth=success';
           }
         } catch (error) {
           console.error('OAuth callback error:', error);
@@ -227,9 +237,19 @@ function createSuccessPage(message: string, data: any) {
           
           // 토큰을 쿠키로도 동기화
           const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-          document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; secure; samesite=strict';
+          const isProduction = window.location.hostname !== 'localhost';
+          const secureFlag = isProduction ? '; secure' : '';
+          document.cookie = 'auth-token=${data.tokens.accessToken}; expires=' + expireDate.toUTCString() + '; path=/; samesite=strict' + secureFlag;
           
-          window.location.href = '${redirectUrl}';
+          // 인증 상태 강제 업데이트를 위한 이벤트 발생
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'accessToken',
+            newValue: '${data.tokens.accessToken}',
+            url: window.location.href
+          }));
+          
+          // 리다이렉트 시 auth 파라미터 추가로 상태 갔9신 트리거
+          window.location.href = '${redirectUrl}' + (window.location.href.includes('?') ? '&' : '?') + 'auth=success';
         }
       </script>
     </body>

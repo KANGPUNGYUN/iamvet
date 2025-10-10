@@ -233,6 +233,23 @@ export function useAuth() {
       console.log('[useAuth] Cookie set successfully');
     }
   }, []);
+  
+  // URL 파라미터에서 auth=success 확인 시 즉시 상태 업데이트
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auth') === 'success') {
+      console.log('[useAuth] Auth success detected in URL, refetching...');
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken && !user) {
+        refetch();
+      }
+      
+      // URL에서 auth 파라미터 제거
+      urlParams.delete('auth');
+      const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [user, refetch]);
 
   // localStorage 변화 감지하여 사용자 정보 다시 가져오기
   React.useEffect(() => {
