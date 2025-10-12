@@ -13,12 +13,14 @@ export default function RootLayout({
     <html lang="ko" className={`${gmarketSans.variable} ${suit.variable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="google-site-verification"
+          content="td2rnXEEwjO-IAgJVIJmSwbbGRgFl4fpl2Zst_rEvFQ"
+        />
       </head>
       <body className="font-text">
         <QueryProvider>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
+          <ClientLayout>{children}</ClientLayout>
         </QueryProvider>
       </body>
     </html>
