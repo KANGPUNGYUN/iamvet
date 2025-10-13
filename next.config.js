@@ -46,8 +46,6 @@ const nextConfig = {
     },
   },
 
-  // API Routes의 body size limit 설정 (Next.js 15 방식)
-  serverComponentsExternalPackages: [],
 
 
   webpack: (config, { isServer }) => {
