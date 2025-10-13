@@ -1,8 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -30,11 +28,11 @@ export async function GET(
 
     if (type === "notification") {
       // 알림 조회
-      const notification = await (prisma as any).notification.findUnique({
+      const notification = await (prisma as any).notifications.findUnique({
         where: { id },
         include: {
-          sender: {
-            select: { id: true, nickname: true, userType: true, profileImage: true }
+          users_notifications_senderIdTousers: {
+            select: { id: true, userType: true, profileImage: true }
           }
         }
       });
@@ -49,7 +47,7 @@ export async function GET(
 
       // 읽음 처리
       if (!notification.isRead) {
-        await (prisma as any).notification.update({
+        await (prisma as any).notifications.update({
           where: { id },
           data: { 
             isRead: true,
@@ -66,28 +64,30 @@ export async function GET(
         createdAt: notification.createdAt,
         isRead: true, // 조회 시 읽음 처리됨
         senderId: notification.senderId,
-        sender: notification.sender,
+        sender: notification.users_notifications_senderIdTousers ? {
+          id: notification.users_notifications_senderIdTousers.id,
+          nickname: null, // nickname은 users 테이블에 없으므로 별도로 가져와야 함
+          userType: notification.users_notifications_senderIdTousers.userType,
+          profileImage: notification.users_notifications_senderIdTousers.profileImage
+        } : null,
         notificationType: notification.type,
         category: getNotificationCategory(notification.type)
       };
     } else if (type === "inquiry") {
       // 문의 조회
-      const inquiry = await (prisma as any).contactInquiry.findUnique({
+      const inquiry = await (prisma as any).contact_inquiries.findUnique({
         where: { id },
         include: {
-          sender: {
-            select: { id: true, nickname: true, userType: true, profileImage: true }
+          users_contact_inquiries_sender_idTousers: {
+            select: { id: true, userType: true, profileImage: true }
           },
-          job: {
+          jobs: {
             select: { 
               id: true, 
-              title: true,
-              hospital: {
-                select: { hospitalName: true }
-              }
+              title: true
             }
           },
-          resume: {
+          resumes: {
             select: { id: true, title: true }
           }
         }
@@ -97,34 +97,39 @@ export async function GET(
         return Response.json({ error: "Inquiry not found" }, { status: 404 });
       }
 
-      if (inquiry.recipientId !== payload.userId) {
+      if (inquiry.recipient_id !== payload.userId) {
         return Response.json({ error: "Forbidden" }, { status: 403 });
       }
 
       // 읽음 처리
-      if (!inquiry.isRead) {
-        await (prisma as any).contactInquiry.update({
+      if (!inquiry.is_read) {
+        await (prisma as any).contact_inquiries.update({
           where: { id },
-          data: { isRead: true }
+          data: { is_read: true }
         });
       }
 
       messageData = {
         id: inquiry.id,
         type: "inquiry",
-        title: `${inquiry.sender?.nickname || "사용자"}님으로부터 문의: ${inquiry.subject}`,
+        title: `사용자님으로부터 문의: ${inquiry.subject}`,
         content: inquiry.message,
-        createdAt: inquiry.createdAt,
+        createdAt: inquiry.created_at,
         isRead: true, // 조회 시 읽음 처리됨
-        senderId: inquiry.senderId,
-        sender: inquiry.sender,
-        subject: inquiry.subject,
-        job: inquiry.job ? {
-          id: inquiry.job.id,
-          title: inquiry.job.title,
-          hospitalName: inquiry.job.hospital?.hospitalName || null
+        senderId: inquiry.sender_id,
+        sender: inquiry.users_contact_inquiries_sender_idTousers ? {
+          id: inquiry.users_contact_inquiries_sender_idTousers.id,
+          nickname: null,
+          userType: inquiry.users_contact_inquiries_sender_idTousers.userType,
+          profileImage: inquiry.users_contact_inquiries_sender_idTousers.profileImage
         } : null,
-        resume: inquiry.resume,
+        subject: inquiry.subject,
+        job: inquiry.jobs ? {
+          id: inquiry.jobs.id,
+          title: inquiry.jobs.title,
+          hospitalName: null
+        } : null,
+        resume: inquiry.resumes,
         inquiryType: inquiry.type,
         category: getInquiryCategory(inquiry.type)
       };

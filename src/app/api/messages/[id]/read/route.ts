@@ -1,8 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function PUT(
   request: NextRequest,
@@ -23,12 +21,17 @@ export async function PUT(
       return Response.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return Response.json({ error: "Invalid request body" }, { status: 400 });
+    }
     const { type } = body; // "notification" or "inquiry"
 
     if (type === "notification") {
       // 알림 읽음 처리
-      const notification = await (prisma as any).notification.findUnique({
+      const notification = await (prisma as any).notifications.findUnique({
         where: { id },
         select: { recipientId: true }
       });
@@ -41,7 +44,7 @@ export async function PUT(
         return Response.json({ error: "Forbidden" }, { status: 403 });
       }
 
-      await (prisma as any).notification.update({
+      await (prisma as any).notifications.update({
         where: { id },
         data: { 
           isRead: true,
@@ -50,22 +53,22 @@ export async function PUT(
       });
     } else if (type === "inquiry") {
       // 문의 읽음 처리
-      const inquiry = await (prisma as any).contactInquiry.findUnique({
+      const inquiry = await (prisma as any).contact_inquiries.findUnique({
         where: { id },
-        select: { recipientId: true }
+        select: { recipient_id: true, is_read: true }
       });
 
       if (!inquiry) {
         return Response.json({ error: "Inquiry not found" }, { status: 404 });
       }
 
-      if (inquiry.recipientId !== payload.userId) {
+      if (inquiry.recipient_id !== payload.userId) {
         return Response.json({ error: "Forbidden" }, { status: 403 });
       }
 
-      await (prisma as any).contactInquiry.update({
+      await (prisma as any).contact_inquiries.update({
         where: { id },
-        data: { isRead: true }
+        data: { is_read: true }
       });
     } else {
       return Response.json({ error: "Invalid type" }, { status: 400 });

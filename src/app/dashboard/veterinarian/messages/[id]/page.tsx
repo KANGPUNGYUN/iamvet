@@ -19,6 +19,15 @@ export default function VeterinarianMessageDetailPage({
   const router = useRouter();
   const [messageType, setMessageType] = useState<'notification' | 'inquiry'>('notification');
 
+  const handleBack = () => {
+    // window.history.length가 2 이상이면 이전 페이지가 있음
+    if (window.history.length > 2) {
+      router.back();
+    } else {
+      router.push('/dashboard/veterinarian/messages');
+    }
+  };
+
   // URL에서 타입 파라미터 확인
   useEffect(() => {
     const type = searchParams.get('type');
@@ -45,12 +54,12 @@ export default function VeterinarianMessageDetailPage({
       <div className="bg-white min-h-screen pt-[20px]">
         <div className="w-full mx-auto max-w-[984px] justify-center">
           <div className="mb-6">
-            <Link
-              href="/dashboard/veterinarian/messages"
+            <button
+              onClick={handleBack}
               className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon currentColor="currentColor" />
-            </Link>
+            </button>
           </div>
           <div className="lg:p-[20px] p-[16px]">
             <div className="text-center py-10">
@@ -74,12 +83,12 @@ export default function VeterinarianMessageDetailPage({
       <div className="bg-white min-h-screen pt-[20px]">
         <div className="w-full mx-auto max-w-[984px] justify-center">
           <div className="mb-6">
-            <Link
-              href="/dashboard/veterinarian/messages"
+            <button
+              onClick={handleBack}
               className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon currentColor="currentColor" />
-            </Link>
+            </button>
           </div>
           <div className="lg:p-[20px] p-[16px]">
             <div className="text-center py-10">
@@ -97,12 +106,12 @@ export default function VeterinarianMessageDetailPage({
       <div className="bg-white min-h-screen pt-[20px]">
         <div className="w-full mx-auto max-w-[984px] justify-center">
           <div className="mb-6">
-            <Link
-              href="/dashboard/veterinarian/messages"
+            <button
+              onClick={handleBack}
               className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon currentColor="currentColor" />
-            </Link>
+            </button>
           </div>
           <div className="lg:p-[20px] p-[16px]">
             <div className="text-center py-10">
@@ -215,7 +224,7 @@ export default function VeterinarianMessageDetailPage({
             
             <div className="flex gap-3">
               <button
-                onClick={() => router.back()}
+                onClick={handleBack}
                 className="p-[10px] rounded-[8px] border border-gray-300 hover:bg-gray-50 transition-colors inline-flex items-center justify-center"
                 title="이전 페이지"
               >
