@@ -17,6 +17,10 @@ export default function RootLayout({
           name="google-site-verification"
           content="td2rnXEEwjO-IAgJVIJmSwbbGRgFl4fpl2Zst_rEvFQ"
         />
+        <meta
+          name="google-site-verification"
+          content="td2rnXEEwjO-IAgJVIJmSwbbGRgFl4fpl2Zst_rEvFQ"
+        />
       </head>
       <body className="font-text">
         <QueryProvider>
