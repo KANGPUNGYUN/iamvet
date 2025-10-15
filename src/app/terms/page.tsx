@@ -138,6 +138,11 @@ export default function TermsPage() {
               제19조 (이용자의 개인정보보호)
             </a>
           </li>
+          <li>
+            <a href="#article20" className="text-[#FF8796] hover:underline">
+              제20조 (SNS 간편 로그인 이용)
+            </a>
+          </li>
         </ol>
       </div>
 
@@ -542,6 +547,93 @@ export default function TermsPage() {
               보호에 관해서는 관련법령 및 회사가 정하는 "개인정보취급방침"에
               정한 바에 의합니다.
             </p>
+          </div>
+
+          <div id="article20" className="mb-6">
+            <h4 className="text-xl font-semibold mb-3">
+              제20조 (SNS 간편 로그인 이용)
+            </h4>
+            
+            <p className="text-gray-700 mb-4">
+              회사는 이용자의 편의를 위해 네이버, 카카오, 구글 등 SNS 계정을 이용한 
+              간편 로그인 서비스를 제공합니다. SNS 간편 로그인 이용과 관련하여 
+              다음 사항을 규정합니다.
+            </p>
+
+            <ol className="list-decimal ml-6 space-y-3 text-gray-700">
+              <li>
+                <strong>SNS 로그인을 통한 개인정보 수집</strong>
+                <p className="mt-2">
+                  회사는 SNS 간편 로그인 서비스 제공을 위해 다음과 같은 정보를 
+                  해당 SNS 플랫폼으로부터 제공받습니다:
+                </p>
+                <ul className="list-disc ml-6 mt-2 space-y-1">
+                  <li>닉네임 (이름)</li>
+                  <li>이메일 주소</li>
+                  <li>휴대폰 번호</li>
+                  <li>프로필 이미지</li>
+                </ul>
+              </li>
+
+              <li>
+                <strong>제3자 정보 제공 동의</strong>
+                <p className="mt-2">
+                  이용자가 SNS 간편 로그인을 선택하는 경우, 해당 SNS 플랫폼의 
+                  인증 과정에서 위 정보들이 회사에 제공되는 것에 동의한 것으로 
+                  간주합니다. 각 SNS 플랫폼의 정보 제공 범위는 해당 플랫폼의 
+                  정책에 따라 달라질 수 있습니다.
+                </p>
+              </li>
+
+              <li>
+                <strong>수집된 정보의 이용 목적</strong>
+                <p className="mt-2">
+                  SNS 로그인을 통해 수집된 정보는 다음의 목적으로만 이용됩니다:
+                </p>
+                <ul className="list-disc ml-6 mt-2 space-y-1">
+                  <li>회원 가입 및 관리</li>
+                  <li>서비스 제공 및 본인 확인</li>
+                  <li>고객 문의 응대 및 공지사항 전달</li>
+                  <li>서비스 개선을 위한 통계 분석 (개인 식별 불가능한 형태)</li>
+                </ul>
+              </li>
+
+              <li>
+                <strong>정보의 보관 및 파기</strong>
+                <p className="mt-2">
+                  SNS 로그인을 통해 수집된 개인정보는 회원 탈퇴 시까지 보관되며, 
+                  탈퇴 시 즉시 파기됩니다. 단, 관련 법령에 의한 보관 의무가 있는 
+                  경우에는 해당 기간 동안 보관 후 파기합니다.
+                </p>
+              </li>
+
+              <li>
+                <strong>SNS 계정 연동 해제</strong>
+                <p className="mt-2">
+                  이용자는 언제든지 마이페이지에서 SNS 계정 연동을 해제할 수 있으며, 
+                  연동 해제 시 해당 SNS를 통한 로그인이 불가능해집니다. SNS 연동 
+                  해제는 회원 탈퇴와는 별개의 절차입니다.
+                </p>
+              </li>
+
+              <li>
+                <strong>SNS 플랫폼의 정책 변경</strong>
+                <p className="mt-2">
+                  각 SNS 플랫폼의 정책 변경으로 인해 제공받는 정보의 범위가 
+                  변경될 수 있으며, 이 경우 회사는 변경된 사항을 이용자에게 
+                  고지합니다.
+                </p>
+              </li>
+
+              <li>
+                <strong>보안</strong>
+                <p className="mt-2">
+                  회사는 SNS 로그인을 통해 수집된 정보를 안전하게 보호하기 위해 
+                  필요한 기술적, 관리적 보안 조치를 취합니다. SNS 계정의 보안은 
+                  이용자가 해당 SNS 플랫폼에서 직접 관리해야 합니다.
+                </p>
+              </li>
+            </ol>
           </div>
         </section>
       </div>
