@@ -25,6 +25,16 @@ export default function JobsPage() {
     isJobLiked
   } = useLikeStore();
 
+  // SIDE_AD 광고 데이터
+  const [sideAdData, setSideAdData] = useState<{
+    id: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+    linkUrl?: string;
+  } | null>(null);
+  const [isLoadingAd, setIsLoadingAd] = useState(true);
+
   // 필터 상태 관리 (UI용 - 아직 적용되지 않은 상태)
   const [filters, setFilters] = useState({
     workType: [] as string[],
@@ -112,6 +122,35 @@ export default function JobsPage() {
     setFilters(newFilters); // UI 필터도 동기화
     setCurrentPage(urlFilters.page);
   }, [searchParams]);
+
+  // API에서 SIDE_AD 광고 가져오기
+  useEffect(() => {
+    const fetchSideAd = async () => {
+      setIsLoadingAd(true);
+      try {
+        const response = await fetch('/api/advertisements?type=SIDE_AD&status=ACTIVE');
+        const data = await response.json();
+        
+        if (data.success && data.data?.length > 0) {
+          // 첫 번째 활성 광고 가져오기
+          const ad = data.data[0];
+          setSideAdData({
+            id: ad.id,
+            title: ad.title,
+            description: ad.description,
+            imageUrl: ad.imageUrl,
+            linkUrl: ad.linkUrl
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch side ad:', error);
+      } finally {
+        setIsLoadingAd(false);
+      }
+    };
+
+    fetchSideAd();
+  }, []);
 
   // Build API filters from current state
   const buildApiFilters = (): JobFilters => {
@@ -480,41 +519,75 @@ export default function JobsPage() {
 
             {/* 오른쪽: 광고 및 인기 채용공고 */}
             <div className="flex-shrink-0 w-[308px] space-y-6">
-              {/* 가상 광고 영역 */}
-              <div
-                className="flex flex-col self-stretch rounded-[16px] text-white"
-                style={{
-                  padding: "20px",
-                  background:
-                    "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
-                }}
-              >
-                <div className="flex self-end">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="32"
-                    height="32"
-                    viewBox="0 0 32 32"
-                    fill="none"
+              {/* 광고 영역 */}
+              {!isLoadingAd && (
+                sideAdData ? (
+                  <div
+                    className="flex flex-col self-stretch rounded-[16px] text-white cursor-pointer transition-all hover:scale-[1.02]"
+                    style={{
+                      padding: "20px",
+                      background: "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
+                    }}
+                    onClick={() => {
+                      if (sideAdData.linkUrl) {
+                        window.open(sideAdData.linkUrl, '_blank');
+                      }
+                    }}
                   >
-                    <path
-                      d="M9.33325 22.6654L22.6666 9.33203M22.6666 9.33203H9.33325M22.6666 9.33203V22.6654"
-                      stroke="white"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-title title-medium text-[20px] mb-[8px] text-[white]">
-                    가상 광고 영역
-                  </p>
-                  <p className="font-text text-medium text-[13px] text-[white]">
-                    전문가의 이력서 첨삭 20% 할인
-                  </p>
-                </div>
-              </div>
+                    <div className="flex self-end">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="32"
+                        height="32"
+                        viewBox="0 0 32 32"
+                        fill="none"
+                      >
+                        <path
+                          d="M9.33325 22.6654L22.6666 9.33203M22.6666 9.33203H9.33325M22.6666 9.33203V22.6654"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-title title-medium text-[20px] mb-[8px] text-[white]">
+                        {sideAdData.title}
+                      </p>
+                      <p className="font-text text-medium text-[13px] text-[white] whitespace-pre-line">
+                        {sideAdData.description}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  // 광고가 없는 경우 표시할 기본 영역
+                  <div
+                    className="flex flex-col self-stretch rounded-[16px] bg-gray-50 border border-gray-200"
+                    style={{ padding: "20px" }}
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <svg 
+                        width="48" 
+                        height="48" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        className="mb-3 text-gray-300"
+                      >
+                        <path d="M13 7H22V20H13V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 7H11V12H2V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 17H11V20H2V17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="font-title text-[16px] text-gray-600 mb-1">
+                        광고를 원하시나요?
+                      </p>
+                      <p className="font-text text-[12px] text-gray-400">
+                        관리자에게 문의하세요
+                      </p>
+                    </div>
+                  </div>
+                )
+              )}
 
               {/* 인기 채용공고 */}
               <JobFamousList />
@@ -643,41 +716,72 @@ export default function JobsPage() {
                 )}
               </div>
 
-              {/* 가상 광고 영역 */}
-              <div
-                className="flex flex-col self-stretch rounded-[16px] text-white"
-                style={{
-                  padding: "20px",
-                  background:
-                    "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
-                }}
-              >
-                <div className="flex self-end">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="32"
-                    height="32"
-                    viewBox="0 0 32 32"
-                    fill="none"
+              {/* 광고 영역 - 모바일 */}
+              {!isLoadingAd && (
+                sideAdData ? (
+                  <div
+                    className="flex flex-col self-stretch rounded-[16px] text-white cursor-pointer"
+                    style={{
+                      padding: "20px",
+                      background: "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
+                    }}
+                    onClick={() => {
+                      if (sideAdData.linkUrl) {
+                        window.open(sideAdData.linkUrl, '_blank');
+                      }
+                    }}
                   >
-                    <path
-                      d="M9.33325 22.6654L22.6666 9.33203M22.6666 9.33203H9.33325M22.6666 9.33203V22.6654"
-                      stroke="white"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-title title-medium text-[20px] mb-[8px] text-[white]">
-                    가상 광고 영역
-                  </p>
-                  <p className="font-text text-medium text-[13px] text-[white]">
-                    전문가의 이력서 첨삭 20% 할인
-                  </p>
-                </div>
-              </div>
+                    <div className="flex self-end">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="32"
+                        height="32"
+                        viewBox="0 0 32 32"
+                        fill="none"
+                      >
+                        <path
+                          d="M9.33325 22.6654L22.6666 9.33203M22.6666 9.33203H9.33325M22.6666 9.33203V22.6654"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-title title-medium text-[20px] mb-[8px] text-[white]">
+                        {sideAdData.title}
+                      </p>
+                      <p className="font-text text-medium text-[13px] text-[white] whitespace-pre-line">
+                        {sideAdData.description}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  // 광고가 없는 경우 표시할 기본 영역
+                  <div className="flex flex-col self-stretch rounded-[16px] bg-gray-50 border border-gray-200 p-5">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <svg 
+                        width="40" 
+                        height="40" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        className="mb-2 text-gray-300"
+                      >
+                        <path d="M13 7H22V20H13V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 7H11V12H2V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 17H11V20H2V17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="font-title text-[14px] text-gray-600 mb-1">
+                        광고를 원하시나요?
+                      </p>
+                      <p className="font-text text-[11px] text-gray-400">
+                        관리자에게 문의하세요
+                      </p>
+                    </div>
+                  </div>
+                )
+              )}
 
               {/* 나머지 채용공고 카드들 */}
               <div className="space-y-3">

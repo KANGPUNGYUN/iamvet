@@ -35,6 +35,17 @@ export default function TransfersPage() {
   const [transfersData, setTransfersData] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
+  // AD_CARD 광고 데이터
+  const [adData, setAdData] = useState<{
+    id: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+    linkUrl?: string;
+    variant?: "default" | "blue";
+  } | null>(null);
+  const [isLoadingAd, setIsLoadingAd] = useState(true);
+
   // 적용된 필터 상태 (실제 필터링에 사용)
   const [appliedFilters, setAppliedFilters] = useState({
     category: [] as string[],
@@ -132,6 +143,36 @@ export default function TransfersPage() {
     };
 
     fetchTransfers();
+  }, []);
+
+  // API에서 AD_CARD 광고 가져오기
+  useEffect(() => {
+    const fetchAdCard = async () => {
+      setIsLoadingAd(true);
+      try {
+        const response = await fetch('/api/advertisements?type=AD_CARD&status=ACTIVE');
+        const data = await response.json();
+        
+        if (data.success && data.data?.length > 0) {
+          // 첫 번째 활성 광고 가져오기
+          const ad = data.data[0];
+          setAdData({
+            id: ad.id,
+            title: ad.title,
+            description: ad.description,
+            imageUrl: ad.imageUrl,
+            linkUrl: ad.linkUrl,
+            variant: ad.variant || "default"
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch ad card:', error);
+      } finally {
+        setIsLoadingAd(false);
+      }
+    };
+
+    fetchAdCard();
   }, []);
 
   // Transfer 좋아요 상태 동기화
@@ -1040,12 +1081,41 @@ export default function TransfersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
                 {/* 9로 나눈 나머지가 1인 위치에 광고 표시 */}
                 {shouldShowAd && (
-                  <AdCard
-                    title="가산점"
-                    subtitle="어떤 과목 선택도 부담없이!\n강의 들어 가산점으로 환산받자!"
-                    variant="default"
-                    onClick={() => console.log("광고 클릭")}
-                  />
+                  adData ? (
+                    <AdCard
+                      title={adData.title}
+                      subtitle={adData.description}
+                      variant={adData.variant}
+                      onClick={() => {
+                        if (adData.linkUrl) {
+                          window.open(adData.linkUrl, '_blank');
+                        }
+                      }}
+                    />
+                  ) : !isLoadingAd ? (
+                    // 광고가 없는 경우 표시할 기본 카드
+                    <div className="w-full bg-white shadow-sm rounded-[16px] border border-[#EFEFF0] p-6 flex flex-col justify-center items-center min-h-[192px]">
+                      <div className="text-center">
+                        <svg 
+                          width="48" 
+                          height="48" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          className="mx-auto mb-4 text-gray-300"
+                        >
+                          <path d="M13 7H22V20H13V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2 7H11V12H2V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2 17H11V20H2V17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <p className="text-sm text-gray-500 font-medium">
+                          광고를 원하시나요?
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          관리자에게 문의하세요
+                        </p>
+                      </div>
+                    </div>
+                  ) : null
                 )}
 
                 {transferData.map((transfer) => (
