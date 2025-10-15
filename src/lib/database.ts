@@ -2977,9 +2977,9 @@ export const linkSocialAccount = async (userId: string, socialData: any) => {
   const query = `
     INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, $6, NOW())
-    ON CONFLICT ("userId", provider) 
+    ON CONFLICT (provider, "providerId") 
     DO UPDATE SET 
-      "providerId" = $4,
+      "userId" = $2,
       "accessToken" = $5,
       "refreshToken" = $6,
       "updatedAt" = NOW()
