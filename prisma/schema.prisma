@@ -606,6 +606,7 @@ model users {
   contact_inquiries_contact_inquiries_recipient_idTousers     contact_inquiries[]              @relation("contact_inquiries_recipient_idTousers")
   contact_inquiries_contact_inquiries_sender_idTousers        contact_inquiries[]              @relation("contact_inquiries_sender_idTousers")
   detailed_resumes                                            detailed_resumes?
+  email_verifications                                         email_verifications[]
   forum_comments                                              forum_comments[]
   forum_post_likes                                            forum_post_likes[]
   forum_posts                                                 forum_posts[]
@@ -636,7 +637,6 @@ model users {
   veterinarian_profiles                                       veterinarian_profiles?
   veterinarians                                               veterinarians?
   veterinary_students                                         veterinary_students?
-  email_verifications                                         email_verifications[]
 
   @@index([loginId], map: "idx_users_loginid")
 }

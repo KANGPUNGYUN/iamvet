@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { v4 as uuidv4 } from 'uuid';
 
 // Type definitions
 type NotificationType = 
@@ -2971,14 +2972,38 @@ export const getUserBySocialProvider = async (provider: string, providerId: stri
 };
 
 export const linkSocialAccount = async (userId: string, socialData: any) => {
+  console.log('[linkSocialAccount] Called with:', { userId, socialData });
+  
   const query = `
-    INSERT INTO social_accounts ("userId", provider, "providerId", "accessToken", "refreshToken")
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, NOW())
+    ON CONFLICT ("userId", provider) 
+    DO UPDATE SET 
+      "providerId" = $4,
+      "accessToken" = $5,
+      "refreshToken" = $6,
+      "updatedAt" = NOW()
     RETURNING *
   `;
-  const values = [userId, socialData.provider, socialData.providerId, socialData.accessToken, socialData.refreshToken];
-  const result = await pool.query(query, values);
-  return result.rows[0];
+  const values = [
+    uuidv4(), // ID를 명시적으로 생성
+    userId, 
+    socialData.provider, 
+    socialData.providerId, 
+    socialData.accessToken || null, 
+    socialData.refreshToken || null
+  ];
+  
+  console.log('[linkSocialAccount] Query values:', values);
+  
+  try {
+    const result = await pool.query(query, values);
+    console.log('[linkSocialAccount] Success:', result.rows[0]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('[linkSocialAccount] Error:', error);
+    throw error;
+  }
 };
 
 export const createSocialUser = async (userData: any) => {
