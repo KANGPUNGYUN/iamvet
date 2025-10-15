@@ -71,10 +71,17 @@ export class AuthService {
             success: false,
             error: "EXISTING_ACCOUNT",
             data: {
-              email: existingUser.email,
-              existingProviders: existingSocialAccounts.map(sa => sa.provider),
-              hasPassword: !!existingUser.passwordHash, // 일반 회원가입 여부
-              attemptedProvider: provider,
+              user: null,
+              tokens: null,
+              isNewUser: false,
+              isProfileComplete: false,
+              socialData: {
+                email: existingUser.email,
+                name: existingUser.realName || existingUser.nickname || '',
+                provider,
+                providerId,
+                userType,
+              }
             },
             message: "이미 가입된 계정이 있습니다",
           };

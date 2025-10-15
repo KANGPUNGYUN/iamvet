@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (userType !== "VETERINARIAN" && userType !== "VETERINARY_STUDENT") {
+    if (!userType || !["VETERINARIAN", "VETERINARY_STUDENT", "veterinarian", "veterinary_student"].includes(userType)) {
       return NextResponse.json(
         { error: "수의사 또는 수의학과 학생 계정만 접근 가능합니다." },
         { status: 403 }
