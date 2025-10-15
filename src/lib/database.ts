@@ -2971,6 +2971,17 @@ export const getUserBySocialProvider = async (provider: string, providerId: stri
   return result.rows[0] || null;
 };
 
+export const getUserSocialAccounts = async (userId: string) => {
+  const query = `
+    SELECT provider, "providerId", "createdAt" 
+    FROM social_accounts 
+    WHERE "userId" = $1
+    ORDER BY "createdAt" DESC
+  `;
+  const result = await pool.query(query, [userId]);
+  return result.rows;
+};
+
 export const linkSocialAccount = async (userId: string, socialData: any) => {
   console.log('[linkSocialAccount] Called with:', { userId, socialData });
   

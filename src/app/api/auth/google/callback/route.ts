@@ -104,11 +104,23 @@ export async function GET(request: NextRequest) {
 
     console.log("AuthService result:", authResult);
 
-    if (!authResult.success || !authResult.data) {
+    if (!authResult.success) {
+      // Check if it's an existing account error
+      if (authResult.error === "EXISTING_ACCOUNT" && authResult.data) {
+        return createExistingAccountPage(authResult.data);
+      }
+      
       console.error("AuthService failed:", authResult.error);
       return createErrorPage(
         "Google 로그인 실패",
-        authResult.error || "인증 처리 실패"
+        authResult.message || "인증 처리 실패"
+      );
+    }
+    
+    if (!authResult.data) {
+      return createErrorPage(
+        "Google 로그인 실패",
+        "인증 데이터 오류"
       );
     }
 
@@ -239,6 +251,151 @@ function createSuccessPage(message: string, data: any) {
     </html>
   `;
 
+  return new NextResponse(html, {
+    headers: { "Content-Type": "text/html" },
+  });
+}
+
+function createExistingAccountPage(data: any) {
+  const providerNames = {
+    GOOGLE: '구글',
+    KAKAO: '카카오',
+    NAVER: '네이버'
+  };
+  
+  const attemptedProviderName = providerNames[data.attemptedProvider as keyof typeof providerNames] || data.attemptedProvider;
+  
+  let loginMethods = [];
+  if (data.hasPassword) {
+    loginMethods.push('일반 로그인(이메일/비밀번호)');
+  }
+  
+  const socialProviders = data.existingProviders.map((p: string) => 
+    `${providerNames[p as keyof typeof providerNames] || p} 로그인`
+  );
+  loginMethods = [...loginMethods, ...socialProviders];
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>이미 가입된 계정</title>
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          text-align: center; 
+          padding: 50px;
+          background-color: #f5f5f5;
+        }
+        .container {
+          background: white;
+          border-radius: 8px;
+          padding: 30px;
+          max-width: 500px;
+          margin: 0 auto;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .warning { 
+          color: #ff6b6b;
+          font-size: 18px;
+          margin-bottom: 20px;
+        }
+        .email {
+          font-weight: bold;
+          color: #333;
+          margin: 10px 0;
+        }
+        .methods {
+          background: #f8f9fa;
+          border-radius: 4px;
+          padding: 15px;
+          margin: 20px 0;
+          text-align: left;
+        }
+        .methods h4 {
+          margin: 0 0 10px 0;
+          color: #333;
+        }
+        .methods ul {
+          margin: 0;
+          padding-left: 20px;
+        }
+        .methods li {
+          margin: 5px 0;
+          color: #666;
+        }
+        .button {
+          background: #FF8796;
+          color: white;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 16px;
+          margin-top: 20px;
+        }
+        .button:hover {
+          background: #ff6b7d;
+        }
+        .info {
+          color: #666;
+          font-size: 14px;
+          margin-top: 20px;
+          line-height: 1.5;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2 class="warning">이미 가입된 계정입니다</h2>
+        <p class="email">${data.email}</p>
+        <p>${attemptedProviderName}로 로그인을 시도하셨지만,<br>해당 이메일로 이미 가입된 계정이 있습니다.</p>
+        
+        <div class="methods">
+          <h4>기존 로그인 방법:</h4>
+          <ul>
+            ${loginMethods.map(method => `<li>${method}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <p class="info">
+          위의 방법으로 로그인해주세요.<br>
+          비밀번호를 잊으셨다면 로그인 페이지에서<br>
+          '비밀번호 찾기'를 이용해주세요.
+        </p>
+        
+        <button class="button" onclick="closeAndRedirect()">로그인 페이지로 이동</button>
+      </div>
+      
+      <script>
+        function closeAndRedirect() {
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.postMessage({
+                type: 'SOCIAL_LOGIN_ERROR',
+                error: 'EXISTING_ACCOUNT',
+                data: ${JSON.stringify(data)}
+              }, window.location.origin);
+              
+              setTimeout(function() {
+                window.close();
+              }, 100);
+            } else {
+              window.location.href = '/member-select';
+            }
+          } catch (error) {
+            window.location.href = '/member-select';
+          }
+        }
+        
+        // 5초 후 자동으로 로그인 페이지로 이동
+        setTimeout(closeAndRedirect, 5000);
+      </script>
+    </body>
+    </html>
+  `;
+  
   return new NextResponse(html, {
     headers: { "Content-Type": "text/html" },
   });

@@ -63,18 +63,21 @@ export class AuthService {
         console.log("Existing user found by email:", !!existingUser);
 
         if (existingUser) {
-          // Link social account to existing user
-          await linkSocialAccount(existingUser.id, {
-            provider,
-            providerId,
-            email,
-            name,
-            profileImage,
-          });
-          user = existingUser;
-
-          // Update lastLoginAt for the existing user
-          await updateLastLogin(existingUser.id);
+          // User already exists with this email
+          // Check how they signed up
+          const existingSocialAccounts = await this.getUserSocialAccounts(existingUser.id);
+          
+          return {
+            success: false,
+            error: "EXISTING_ACCOUNT",
+            data: {
+              email: existingUser.email,
+              existingProviders: existingSocialAccounts.map(sa => sa.provider),
+              hasPassword: !!existingUser.passwordHash, // 일반 회원가입 여부
+              attemptedProvider: provider,
+            },
+            message: "이미 가입된 계정이 있습니다",
+          };
         } else {
           // For new users, don't create user yet - redirect to registration completion
           return {
@@ -180,6 +183,19 @@ export class AuthService {
             ? error.message
             : "소셜 로그인 처리 중 오류가 발생했습니다",
       };
+    }
+  }
+
+  /**
+   * Get user's social accounts
+   */
+  static async getUserSocialAccounts(userId: string) {
+    try {
+      const { getUserSocialAccounts } = await import("@/lib/database");
+      return await getUserSocialAccounts(userId);
+    } catch (error) {
+      console.error("Error fetching social accounts:", error);
+      return [];
     }
   }
 
