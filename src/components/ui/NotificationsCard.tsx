@@ -30,33 +30,6 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({
     }).replace(/\. /g, '.').replace(/\.$/, ''),
     type: msg.type
   }));
-
-  // Fallback to mock data if no real notifications
-  const fallbackNotifications = [
-    {
-      id: "1",
-      title: "[지원 결과 안내] 지원하신 '포엔트벳 개병원' 결과가 올라왔습니다.",
-      message: "지원 결과 안내",
-      createdAt: "2024.05.03",
-      type: "notification" as const
-    },
-    {
-      id: "2", 
-      title: "[지원 결과 안내] 지원하신 '포엔트벳 개병원' 결과가 올라왔습니다.",
-      message: "지원 결과 안내",
-      createdAt: "2024.05.03",
-      type: "notification" as const
-    },
-    {
-      id: "3",
-      title: "[지원 결과 안내] 지원하신 '포엔트벳 개병원' 결과가 올라왔습니다.",
-      message: "지원 결과 안내", 
-      createdAt: "2024.05.03",
-      type: "notification" as const
-    },
-  ];
-
-  const displayNotifications = notifications.length > 0 ? notifications : fallbackNotifications;
   if (error) {
     console.error('Notifications loading error:', error);
   }
@@ -90,7 +63,7 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({
               </div>
             ))}
           </>
-        ) : displayNotifications.length === 0 ? (
+        ) : notifications.length === 0 ? (
           // Empty state
           <div className="flex flex-col items-center justify-center py-8 text-gray-500">
             <div className="text-4xl mb-2">📭</div>
@@ -98,7 +71,7 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({
           </div>
         ) : (
           // Notifications list
-          displayNotifications.slice(0, 3).map((notification) => (
+          notifications.slice(0, 3).map((notification) => (
             <Link
               key={notification.id}
               href={`/dashboard/veterinarian/messages/${notification.id}?type=${notification.type}`}
