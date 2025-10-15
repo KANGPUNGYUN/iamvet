@@ -55,7 +55,7 @@ interface Advertisement {
   id: string;
   title: string;
   description: string;
-  type: "HERO_BANNER" | "GENERAL_BANNER" | "SIDE_AD" | "AD_CARD";
+  type: "HERO_BANNER" | "GENERAL_BANNER" | "SIDE_AD" | "AD_CARD" | "DASHBOARD_BANNER";
   imageUrl?: string;
   linkUrl?: string;
   isActive: boolean;
@@ -519,6 +519,7 @@ export default function AdvertiseManagement() {
                   <MenuItem value="GENERAL_BANNER">일반 배너</MenuItem>
                   <MenuItem value="SIDE_AD">사이드 광고</MenuItem>
                   <MenuItem value="AD_CARD">광고 카드</MenuItem>
+                  <MenuItem value="DASHBOARD_BANNER">대시보드 배너</MenuItem>
                 </Select>
               </FormControl>
             </Box>
@@ -747,7 +748,9 @@ export default function AdvertiseManagement() {
                             ? "일반 배너"
                             : ad.type === "SIDE_AD"
                             ? "사이드 광고"
-                            : "광고 카드"
+                            : ad.type === "AD_CARD"
+                            ? "광고 카드"
+                            : "대시보드 배너"
                         }
                         size="small"
                         sx={{
@@ -916,7 +919,9 @@ export default function AdvertiseManagement() {
                       ? "일반 배너"
                       : selectedAd.type === "SIDE_AD"
                       ? "사이드 광고"
-                      : "광고 카드"}
+                      : selectedAd.type === "AD_CARD"
+                      ? "광고 카드"
+                      : "대시보드 배너"}
                   </Typography>
                   {selectedAd.buttonText && (
                     <Typography variant="body2" sx={{ color: "var(--Text)" }}>
@@ -1009,6 +1014,9 @@ export default function AdvertiseManagement() {
                   </MenuItem>
                   <MenuItem value="SIDE_AD">사이드 광고 (Jobs 페이지)</MenuItem>
                   <MenuItem value="AD_CARD">광고 카드 (AdCard)</MenuItem>
+                  <MenuItem value="DASHBOARD_BANNER">
+                    대시보드 배너 (대시보드 페이지)
+                  </MenuItem>
                 </Select>
               </FormControl>
 
