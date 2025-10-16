@@ -14,27 +14,27 @@ const staticPages = [
 ];
 
 // 동적 페이지를 가져오는 함수들
-async function getJobIds() {
+async function getJobIds(): Promise<string[]> {
   // TODO: 실제 API 호출로 채용공고 ID들을 가져와야 함
   return [];
 }
 
-async function getResumeIds() {
+async function getResumeIds(): Promise<string[]> {
   // TODO: 실제 API 호출로 이력서 ID들을 가져와야 함
   return [];
 }
 
-async function getForumIds() {
+async function getForumIds(): Promise<string[]> {
   // TODO: 실제 API 호출로 포럼 게시글 ID들을 가져와야 함
   return [];
 }
 
-async function getTransferIds() {
+async function getTransferIds(): Promise<string[]> {
   // TODO: 실제 API 호출로 양수양도 ID들을 가져와야 함
   return [];
 }
 
-async function getLectureIds() {
+async function getLectureIds(): Promise<string[]> {
   // TODO: 실제 API 호출로 강의 ID들을 가져와야 함
   return [];
 }

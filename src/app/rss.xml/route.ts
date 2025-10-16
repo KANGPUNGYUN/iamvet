@@ -6,17 +6,17 @@ const SITE_DESCRIPTION =
   "수의사를 위한 채용, 이력서, 포럼, 양수양도, 강의 플랫폼";
 
 // RSS 피드에 포함할 최신 콘텐츠를 가져오는 함수들
-async function getLatestForums() {
+async function getLatestForums(): Promise<any[]> {
   // TODO: 실제 API 호출로 최신 포럼 게시글을 가져와야 함
   return [];
 }
 
-async function getLatestJobs() {
+async function getLatestJobs(): Promise<any[]> {
   // TODO: 실제 API 호출로 최신 채용공고를 가져와야 함
   return [];
 }
 
-async function getLatestLectures() {
+async function getLatestLectures(): Promise<any[]> {
   // TODO: 실제 API 호출로 최신 강의를 가져와야 함
   return [];
 }
