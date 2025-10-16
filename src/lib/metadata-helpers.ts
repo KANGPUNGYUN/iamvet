@@ -24,10 +24,11 @@ export function generateJobMetadata(job: {
       type: 'article',
       images: [
         {
-          url: "/opengraph.png",
+          url: "https://www.iam-vet.com/opengraph.png",
           width: 1200,
           height: 630,
           alt: title,
+          type: "image/png",
         },
       ],
     },
@@ -35,7 +36,12 @@ export function generateJobMetadata(job: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/opengraph.png"],
+      images: [
+        {
+          url: "https://www.iam-vet.com/opengraph.png",
+          alt: title,
+        },
+      ],
     },
   };
 }
@@ -62,10 +68,11 @@ export function generateResumeMetadata(resume: {
       type: 'profile',
       images: [
         {
-          url: "/opengraph.png",
+          url: "https://www.iam-vet.com/opengraph.png",
           width: 1200,
           height: 630,
           alt: title,
+          type: "image/png",
         },
       ],
     },
@@ -73,7 +80,12 @@ export function generateResumeMetadata(resume: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/opengraph.png"],
+      images: [
+        {
+          url: "https://www.iam-vet.com/opengraph.png",
+          alt: title,
+        },
+      ],
     },
   };
 }
@@ -98,10 +110,11 @@ export function generateForumMetadata(post: {
       type: 'article',
       images: [
         {
-          url: "/opengraph.png",
+          url: "https://www.iam-vet.com/opengraph.png",
           width: 1200,
           height: 630,
           alt: title,
+          type: "image/png",
         },
       ],
     },
@@ -109,7 +122,12 @@ export function generateForumMetadata(post: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/opengraph.png"],
+      images: [
+        {
+          url: "https://www.iam-vet.com/opengraph.png",
+          alt: title,
+        },
+      ],
     },
   };
 }
@@ -134,10 +152,11 @@ export function generateTransferMetadata(transfer: {
       type: 'article',
       images: [
         {
-          url: "/opengraph.png",
+          url: "https://www.iam-vet.com/opengraph.png",
           width: 1200,
           height: 630,
           alt: title,
+          type: "image/png",
         },
       ],
     },
@@ -145,7 +164,12 @@ export function generateTransferMetadata(transfer: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/opengraph.png"],
+      images: [
+        {
+          url: "https://www.iam-vet.com/opengraph.png",
+          alt: title,
+        },
+      ],
     },
   };
 }
@@ -170,10 +194,11 @@ export function generateLectureMetadata(lecture: {
       type: 'video.other',
       images: [
         {
-          url: "/opengraph.png",
+          url: "https://www.iam-vet.com/opengraph.png",
           width: 1200,
           height: 630,
           alt: title,
+          type: "image/png",
         },
       ],
     },
@@ -181,7 +206,12 @@ export function generateLectureMetadata(lecture: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/opengraph.png"],
+      images: [
+        {
+          url: "https://www.iam-vet.com/opengraph.png",
+          alt: title,
+        },
+      ],
     },
   };
 }

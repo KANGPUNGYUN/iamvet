@@ -27,10 +27,11 @@ export const metadata: Metadata = {
     description: "수의사를 위한 채용, 이력서, 포럼, 양수양도, 강의 플랫폼",
     images: [
       {
-        url: "/opengraph.png",
+        url: "https://www.iam-vet.com/opengraph.png",
         width: 1200,
         height: 630,
         alt: "IAMVET - 수의사 커뮤니티",
+        type: "image/png",
       },
     ],
   },
@@ -38,7 +39,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "IAMVET - 수의사 커뮤니티",
     description: "수의사를 위한 채용, 이력서, 포럼, 양수양도, 강의 플랫폼",
-    images: ["/opengraph.png"],
+    images: [
+      {
+        url: "https://www.iam-vet.com/opengraph.png",
+        alt: "IAMVET - 수의사 커뮤니티",
+      },
+    ],
   },
   verification: {
     google: "td2rnXEEwjO-IAgJVIJmSwbbGRgFl4fpl2Zst_rEvFQ",
