@@ -1,0 +1,14 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "강의 영상 - IAMVET",
+  description: "수의학 전문 강의 영상을 통해 최신 의료 기술과 임상 노하우를 학습하세요. 수술, 내과, 응급의학 등 다양한 분야의 전문 강의를 제공합니다.",
+};
+
+export default function LecturesLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}
