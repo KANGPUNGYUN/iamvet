@@ -22,6 +22,20 @@ export function generateJobMetadata(job: {
       title,
       description,
       type: 'article',
+      images: [
+        {
+          url: "/opengraph.png",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph.png"],
     },
   };
 }
@@ -46,6 +60,20 @@ export function generateResumeMetadata(resume: {
       title,
       description,
       type: 'profile',
+      images: [
+        {
+          url: "/opengraph.png",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph.png"],
     },
   };
 }
@@ -68,6 +96,20 @@ export function generateForumMetadata(post: {
       title,
       description,
       type: 'article',
+      images: [
+        {
+          url: "/opengraph.png",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph.png"],
     },
   };
 }
@@ -90,6 +132,20 @@ export function generateTransferMetadata(transfer: {
       title,
       description,
       type: 'article',
+      images: [
+        {
+          url: "/opengraph.png",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph.png"],
     },
   };
 }
@@ -112,6 +168,20 @@ export function generateLectureMetadata(lecture: {
       title,
       description,
       type: 'video.other',
+      images: [
+        {
+          url: "/opengraph.png",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph.png"],
     },
   };
 }
