@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({ className = "" }) => {
             <Link href="/marketing" className="footer-nav-item">
               마케팅정보수신
             </Link>
-            <Link href="/sitemap" className="footer-nav-item">
+            <Link href="/address" className="footer-nav-item">
               오시는길
             </Link>
           </nav>
@@ -59,7 +59,8 @@ export const Footer: React.FC<FooterProps> = ({ className = "" }) => {
                 주소: 서울특별시 서초구 서초대로77길 39, 9층 102호
               </div>
               <div className="footer-contact-item">
-                이메일: <a href="mailto:iamvet25@gmail.com">iamvet25@gmail.com</a>
+                이메일:{" "}
+                <a href="mailto:iamvet25@gmail.com">iamvet25@gmail.com</a>
               </div>
               <div className="footer-contact-item">
                 연락처: <a href="tel:01042031721">010-4203-1721</a>
@@ -67,9 +68,7 @@ export const Footer: React.FC<FooterProps> = ({ className = "" }) => {
               <div className="footer-contact-item">
                 사업자등록번호: 507-81-17466
               </div>
-              <div className="footer-contact-item">
-                대표자명: 김국현
-              </div>
+              <div className="footer-contact-item">대표자명: 김국현</div>
             </div>
 
             <div className="footer-copyright">
