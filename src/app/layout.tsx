@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     shortcut: "/iamvet.ico",
     apple: "/iamvet.ico",
   },
+  alternates: {
+    canonical: "https://www.iam-vet.com",
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",

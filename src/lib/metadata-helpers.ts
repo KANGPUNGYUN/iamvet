@@ -18,6 +18,9 @@ export function generateJobMetadata(job: {
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://www.iam-vet.com/jobs/${job.hospitalName.replace(/\s+/g, '-').toLowerCase()}`,
+    },
     openGraph: {
       title,
       description,
@@ -62,6 +65,9 @@ export function generateResumeMetadata(resume: {
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://www.iam-vet.com/resumes/${resume.name.replace(/\s+/g, '-').toLowerCase()}`,
+    },
     openGraph: {
       title,
       description,
@@ -104,6 +110,9 @@ export function generateForumMetadata(post: {
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://www.iam-vet.com/forums/${post.category.replace(/\s+/g, '-').toLowerCase()}`,
+    },
     openGraph: {
       title,
       description,
@@ -146,6 +155,9 @@ export function generateTransferMetadata(transfer: {
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://www.iam-vet.com/transfers/${transfer.type.replace(/\s+/g, '-').toLowerCase()}`,
+    },
     openGraph: {
       title,
       description,
@@ -188,6 +200,9 @@ export function generateLectureMetadata(lecture: {
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://www.iam-vet.com/lectures/${lecture.title.replace(/\s+/g, '-').toLowerCase()}`,
+    },
     openGraph: {
       title,
       description,
