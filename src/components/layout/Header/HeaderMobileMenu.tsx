@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { HospitalOnlyButton } from "@/components/ui/HospitalOnlyButton";
+import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
+import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
 import { HeaderMobileMenuProps, DashboardMenuItem } from "./types";
 import {
   HomeIcon,
@@ -26,6 +29,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   className = "",
 }) => {
   const pathname = usePathname();
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
 
   // active 상태 확인 함수 (Sidebar와 동일한 로직)
   const isActive = (href: string, userType: "veterinarian" | "hospital") => {
@@ -251,23 +255,41 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                   msOverflowStyle: "scrollbar", // IE/Edge 스크롤바
                 }}
               >
-                {navigationItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.href}
-                    onClick={onToggle}
-                    className={`
-                      block px-4 py-3 font-title text-base font-medium rounded-lg transition-colors duration-200 
-                      ${
-                        item.active
-                          ? "text-[#FF8796] bg-[#FFF7F7]"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                      }
-                    `}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {navigationItems.map((item, index) => {
+                  const isResumeRoute = item.href.startsWith('/resumes');
+                  const LinkComponent = isResumeRoute ? HospitalOnlyButton : Link;
+                  
+                  return (
+                    <LinkComponent
+                      key={index}
+                      href={item.href}
+                      onClick={onToggle}
+                      className={`
+                        block px-4 py-3 font-title text-base font-medium rounded-lg transition-colors duration-200 
+                        ${
+                          item.active
+                            ? "text-[#FF8796] bg-[#FFF7F7]"
+                            : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                        }
+                        ${isResumeRoute ? "border-none bg-none cursor-pointer text-left" : ""}
+                      `}
+                      {...(isResumeRoute ? { showAuthModal: showModal } : {})}
+                      style={isResumeRoute ? {
+                        border: "none",
+                        background: "none",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        width: "100%",
+                        padding: "12px 16px",
+                        fontFamily: "inherit",
+                        fontSize: "inherit",
+                        fontWeight: "inherit"
+                      } : {}}
+                    >
+                      {item.label}
+                    </LinkComponent>
+                  );
+                })}
 
                 {/* 로그인된 경우 마이페이지 섹션 */}
                 {isLoggedIn && actualUserType && (
@@ -337,6 +359,13 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           </div>
         </div>
       )}
+
+      {/* 병원 인증 모달 */}
+      <HospitalAuthModal 
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        returnUrl={modalReturnUrl}
+      />
     </>
   );
 };

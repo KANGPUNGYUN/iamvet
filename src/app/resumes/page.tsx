@@ -11,10 +11,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { useResumes } from "@/hooks/useResumes";
 import { useLikeStore } from "@/stores/likeStore";
+import { useHospitalAuth } from "@/utils/hospitalAuthGuard";
+import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
+import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
 
 export default function ResumesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticated, userType } = useHospitalAuth();
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
+
+  // 병원 사용자가 아닌 경우 모달 표시
+  React.useEffect(() => {
+    if (!isAuthenticated || userType !== 'hospital') {
+      showModal('/resumes');
+    }
+  }, [isAuthenticated, userType, showModal]);
 
   // Zustand 스토어에서 좋아요 상태 관리
   const {
@@ -1012,6 +1024,13 @@ export default function ResumesPage() {
           )}
         </div>
       </main>
+      
+      {/* 병원 인증 모달 */}
+      <HospitalAuthModal 
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        returnUrl={modalReturnUrl}
+      />
     </>
   );
 }

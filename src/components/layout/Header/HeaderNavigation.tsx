@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { HospitalOnlyButton } from "@/components/ui/HospitalOnlyButton";
+import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
+import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
 import { HeaderNavigationProps } from "./types";
 
 export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
@@ -9,6 +12,7 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
   className = "",
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
 
   return (
     <nav className={`flex gap-[26px] items-center ${className}`}>
@@ -17,32 +21,42 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
         const isActive = item.active;
         const shouldShowLine = isHovered || isActive;
 
+        const isResumeRoute = item.href.startsWith('/resumes');
+        
+        const linkStyle = {
+          position: "relative" as const,
+          display: "flex",
+          flexDirection: "column" as const,
+          justifyContent: "flex-end" as const,
+          alignItems: "center" as const,
+          gap: "6px",
+          flexShrink: 0,
+          color:
+            isHovered || isActive
+              ? "var(--Keycolor1, #FF8796)"
+              : "var(--text-default, #35313C)",
+          textAlign: "center" as const,
+          fontFamily: "SUIT",
+          fontSize: "18px",
+          fontStyle: "normal" as const,
+          fontWeight: "500",
+          textDecoration: "none",
+          transition: "color 0.2s ease",
+          border: "none",
+          background: "none",
+          cursor: "pointer",
+        };
+
+        const LinkComponent = isResumeRoute ? HospitalOnlyButton : Link;
+
         return (
-          <Link
+          <LinkComponent
             key={index}
             href={item.href}
-            style={{
-              position: "relative",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              gap: "6px",
-              flexShrink: 0,
-              color:
-                isHovered || isActive
-                  ? "var(--Keycolor1, #FF8796)"
-                  : "var(--text-default, #35313C)",
-              textAlign: "center",
-              fontFamily: "SUIT",
-              fontSize: "18px",
-              fontStyle: "normal",
-              fontWeight: "500",
-              textDecoration: "none",
-              transition: "color 0.2s ease",
-            }}
+            style={linkStyle}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
+            {...(isResumeRoute ? { showAuthModal: showModal } : {})}
           >
             {item.label}
             <div
@@ -56,9 +70,16 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
                 transition: "width 0.3s ease, left 0.3s ease",
               }}
             />
-          </Link>
+          </LinkComponent>
         );
       })}
+      
+      {/* 병원 인증 모달 */}
+      <HospitalAuthModal 
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        returnUrl={modalReturnUrl}
+      />
     </nav>
   );
 };

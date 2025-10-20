@@ -38,6 +38,7 @@ import { useCurrentUser } from "@/hooks/api/useAuth";
 import { deleteResumeAction } from "@/actions/resumes";
 import { useLikeStore } from "@/stores/likeStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
+import { useHospitalAuth } from "@/utils/hospitalAuthGuard";
 
 // 별점 표시 컴포넌트 (소수점 지원)
 const StarRating = ({
@@ -144,6 +145,7 @@ export default function ResumeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const { isHospitalUser } = useHospitalAuth();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
@@ -183,6 +185,50 @@ export default function ResumeDetailPage({
   });
 
   const { id } = use(params);
+  
+  // 병원 사용자가 아닌 경우 접근 차단
+  if (!isHospitalUser) {
+    return (
+      <main className="pt-[50px] bg-white">
+        <div className="max-w-[1440px] mx-auto px-[16px] py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="mb-6">
+                <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">이력서 열람 권한이 필요합니다</h2>
+                <p className="text-gray-600 mb-6">
+                  이력서 상세 정보는 병원 회원만 열람할 수 있습니다.<br />
+                  병원 계정으로 로그인해주세요.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Button
+                  variant="default"
+                  size="large"
+                  onClick={() => router.push('/login/hospital')}
+                  className="px-8 py-3"
+                >
+                  병원계정으로 로그인하기
+                </Button>
+                <div className="text-sm text-gray-500">
+                  병원 계정이 없으신가요?{' '}
+                  <button
+                    onClick={() => router.push('/register/hospital')}
+                    className="text-key1 hover:underline"
+                  >
+                    회원가입
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   const { data: resumeData, isLoading, error } = useResumeDetail(id);
   const { data: relatedResumes, isLoading: relatedLoading } =
     useRelatedResumes(id);
@@ -201,7 +247,6 @@ export default function ResumeDetailPage({
   const {
     setResumeViewCount,
     incrementResumeViewCount,
-    getResumeViewCount,
     markAsViewed,
     isAlreadyViewed,
   } = useViewCountStore();

@@ -25,9 +25,25 @@ import { useLectures } from "@/hooks/api/useLectures";
 import { useTransfers } from "@/hooks/api/useTransfers";
 import { useLikeStore } from "@/stores/likeStore";
 import { useHeroBanners, useBannerAds } from "@/hooks/api/useAdvertisements";
+import { useRouter } from "next/navigation";
+import { createResumeNavigationHandler, useHospitalAuth } from "@/utils/hospitalAuthGuard";
+import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
+import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
 import React from "react";
 
 export default function HomePage() {
+  const router = useRouter();
+  const { isHospitalUser, isAuthenticated, userType } = useHospitalAuth();
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
+  
+  // 이력서 네비게이션 핸들러
+  const handleResumeNavigation = createResumeNavigationHandler(
+    router, 
+    isAuthenticated, 
+    userType, 
+    showModal
+  );
+
   // 지역 이름 한국어 맵핑 함수
   const getKoreanRegionName = (englishName: string) => {
     if (!englishName) return "";
@@ -91,11 +107,11 @@ export default function HomePage() {
   // 일반 광고 배너 조회
   const { data: bannerAdsData, isLoading: bannerAdsLoading } = useBannerAds();
 
-  // 이력서 목록 조회
-  const { data: resumesData, isLoading: resumesLoading } = useResumes({
+  // 이력서 목록 조회 (병원 사용자인 경우에만)
+  const { data: resumesData, isLoading: resumesLoading } = useResumes(isHospitalUser ? {
     limit: 5,
     sort: "latest",
-  });
+  } : undefined);
 
   // 채용공고 목록 조회
   const { data: jobsData, isLoading: jobsLoading } = useJobs({
@@ -206,7 +222,7 @@ export default function HomePage() {
 
   const handleAITalentSearch = () => {
     console.log("AI로 인재 찾기 클릭");
-    window.location.href = "/resumes";
+    handleResumeNavigation("/resumes");
   };
 
   const handleAIHospitalSearch = () => {
@@ -726,22 +742,28 @@ export default function HomePage() {
             </div>
           </div>
           <Tab
-            defaultTab="internal"
+            defaultTab={isHospitalUser ? "internal" : "surgery"}
             variant="default"
             className="bg-box-light xl:px-[32px] py-[36px] px-[16px] rounded-[16px] mt-[30px]"
             onTabChange={setActiveTab}
           >
             <Tab.List className="flex md:justify-between md:items-center flex-col md:flex-row gap-[16px] md:gap-0">
               <div className="flex gap-4">
-                <Tab.Item value="internal">구직정보</Tab.Item>
+                {isHospitalUser && <Tab.Item value="internal">구직정보</Tab.Item>}
                 <Tab.Item value="surgery">구인정보</Tab.Item>
               </div>
-              <Link
-                className="flex font-title title-light text-[16px] text-sub hover:underline self-end md:self-auto"
-                href={activeTab === "internal" ? "/resumes" : "/jobs"}
+              <button
+                className="flex font-title title-light text-[16px] text-sub hover:underline self-end md:self-auto cursor-pointer"
+                onClick={() => {
+                  if (activeTab === "internal") {
+                    handleResumeNavigation("/resumes");
+                  } else {
+                    router.push("/jobs");
+                  }
+                }}
               >
                 {<PlusIcon size="21" />} 전체보기
-              </Link>
+              </button>
             </Tab.List>
             <Tab.Content value="internal">
               <div className="flex items-start gap-[10px] overflow-x-auto custom-scrollbar pb-4">
@@ -834,7 +856,7 @@ export default function HomePage() {
                                 isLiked={isResumeLiked(resume.id)}
                                 onLike={handleResumeLike}
                                 onClick={() =>
-                                  (window.location.href = `/resumes/${resume.id}`)
+                                  handleResumeNavigation(`/resumes/${resume.id}`)
                                 }
                               />
                             );
@@ -1334,6 +1356,13 @@ export default function HomePage() {
           </section>
         </div>
       </div>
+
+      {/* 병원 인증 모달 */}
+      <HospitalAuthModal 
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        returnUrl={modalReturnUrl}
+      />
     </>
   );
 }
