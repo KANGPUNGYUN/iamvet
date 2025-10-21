@@ -403,6 +403,73 @@ function createExistingAccountPage(data: any) {
 }
 
 function createErrorPage(message: string, error: string) {
+  // 에러 메시지를 더 사용자 친화적으로 변환
+  const getUserFriendlyErrorMessage = (originalError: string) => {
+    const errorMappings = {
+      "인증 코드가 없습니다": {
+        friendly: "카카오 로그인 과정에서 인증 정보를 받지 못했습니다.",
+        solution: "다시 로그인을 시도해주세요.",
+        technical: "Authorization code missing"
+      },
+      "유효하지 않은 상태값입니다": {
+        friendly: "로그인 요청이 손상되었습니다.",
+        solution: "새로고침 후 다시 로그인해주세요.",
+        technical: "Invalid state parameter"
+      },
+      "토큰 교환 실패": {
+        friendly: "카카오 서버와의 연결에 문제가 발생했습니다.",
+        solution: "잠시 후 다시 시도하거나, 네트워크 연결을 확인해주세요.",
+        technical: "Token exchange failed"
+      },
+      "사용자 정보 조회 실패": {
+        friendly: "카카오에서 사용자 정보를 가져올 수 없습니다.",
+        solution: "카카오 앱에서 권한 설정을 확인하고 다시 시도해주세요.",
+        technical: "User info retrieval failed"
+      },
+      "이메일 정보가 필요합니다": {
+        friendly: "로그인을 위해 이메일 정보가 필요합니다.",
+        solution: "카카오 계정 설정에서 이메일 공개를 허용하고 다시 시도해주세요.",
+        technical: "Email permission required"
+      },
+      "인증 처리 실패": {
+        friendly: "서버에서 인증 처리 중 오류가 발생했습니다.",
+        solution: "잠시 후 다시 시도해주세요. 계속 문제가 발생하면 고객센터에 문의해주세요.",
+        technical: "Authentication processing failed"
+      },
+      "서버 오류가 발생했습니다": {
+        friendly: "시스템에 일시적인 문제가 발생했습니다.",
+        solution: "잠시 후 다시 시도해주세요. 계속 문제가 발생하면 고객센터에 문의해주세요.",
+        technical: "Internal server error"
+      },
+      "이미 가입된 대학교 이메일입니다.": {
+        friendly: "해당 대학교 이메일로 이미 가입된 계정이 있습니다.",
+        solution: "기존 계정으로 로그인하거나, 다른 이메일로 가입해주세요.",
+        technical: "University email already registered"
+      }
+    };
+
+    // 정확히 일치하는 에러 메시지 찾기
+    const exactMatch = errorMappings[originalError as keyof typeof errorMappings];
+    if (exactMatch) return exactMatch;
+
+    // 부분 일치하는 에러 메시지 찾기
+    for (const [key, value] of Object.entries(errorMappings)) {
+      if (originalError.includes(key) || key.includes(originalError)) {
+        return value;
+      }
+    }
+
+    // 기본 에러 메시지
+    return {
+      friendly: "로그인 중 알 수 없는 오류가 발생했습니다.",
+      solution: "다시 시도해주세요. 계속 문제가 발생하면 고객센터에 문의해주세요.",
+      technical: originalError
+    };
+  };
+
+  const errorInfo = getUserFriendlyErrorMessage(error);
+  const timestamp = new Date().toLocaleString('ko-KR');
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -410,41 +477,209 @@ function createErrorPage(message: string, error: string) {
       <meta charset="UTF-8">
       <title>로그인 실패</title>
       <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        .error { color: red; }
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background-color: #f5f5f5;
+          color: #333;
+        }
+        .container {
+          max-width: 500px;
+          margin: 50px auto;
+          background: white;
+          border-radius: 12px;
+          padding: 30px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .error-icon {
+          font-size: 48px;
+          color: #ff6b6b;
+          margin-bottom: 20px;
+        }
+        .error-title { 
+          color: #ff6b6b;
+          font-size: 24px;
+          font-weight: 600;
+          margin-bottom: 15px;
+        }
+        .error-message {
+          font-size: 16px;
+          line-height: 1.6;
+          margin-bottom: 20px;
+          color: #555;
+        }
+        .solution {
+          background: #f8f9fa;
+          border-left: 4px solid #FF8796;
+          padding: 15px;
+          margin: 20px 0;
+          border-radius: 4px;
+        }
+        .solution-title {
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 8px;
+        }
+        .solution-text {
+          color: #666;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        .buttons {
+          display: flex;
+          gap: 10px;
+          margin-top: 25px;
+          justify-content: center;
+        }
+        .button {
+          padding: 12px 24px;
+          border: none;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .button-primary {
+          background: #FF8796;
+          color: white;
+        }
+        .button-primary:hover {
+          background: #ff6b7d;
+        }
+        .button-secondary {
+          background: #e9ecef;
+          color: #495057;
+        }
+        .button-secondary:hover {
+          background: #dee2e6;
+        }
+        .technical-details {
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          font-size: 12px;
+          color: #888;
+        }
+        .technical-toggle {
+          color: #FF8796;
+          cursor: pointer;
+          text-decoration: underline;
+        }
+        .technical-info {
+          display: none;
+          margin-top: 10px;
+          font-family: monospace;
+          background: #f8f9fa;
+          padding: 10px;
+          border-radius: 4px;
+          word-break: break-all;
+        }
+        .timestamp {
+          font-size: 11px;
+          color: #aaa;
+          margin-top: 10px;
+        }
       </style>
     </head>
     <body>
-      <h2 class="error">${message}</h2>
-      <p>${error}</p>
-      <button onclick="window.close()">닫기</button>
+      <div class="container">
+        <div style="text-align: center;">
+          <div class="error-icon">⚠️</div>
+          <h2 class="error-title">${message}</h2>
+        </div>
+        
+        <div class="error-message">${errorInfo.friendly}</div>
+        
+        <div class="solution">
+          <div class="solution-title">해결 방법</div>
+          <div class="solution-text">${errorInfo.solution}</div>
+        </div>
+        
+        <div class="buttons">
+          <button class="button button-primary" onclick="retryLogin()">다시 로그인</button>
+          <button class="button button-secondary" onclick="closeWindow()">닫기</button>
+        </div>
+        
+        <div class="technical-details">
+          <div class="technical-toggle" onclick="toggleTechnical()">기술적 세부사항 보기</div>
+          <div class="technical-info" id="technicalInfo">
+            <div><strong>오류 코드:</strong> ${errorInfo.technical}</div>
+            <div><strong>발생 시간:</strong> ${timestamp}</div>
+            <div><strong>사용자 에이전트:</strong> ${error.includes('fetch') ? 'Network Error' : 'Authentication Error'}</div>
+          </div>
+          <div class="timestamp">Error ID: ERR_${Date.now()}</div>
+        </div>
+      </div>
+      
       <script>
-        try {
-          if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({
-              type: 'SOCIAL_LOGIN_ERROR',
-              message: '${message}',
-              error: '${error}'
-            }, window.location.origin);
-            
-            setTimeout(function() {
-              try {
-                window.close();
-              } catch (e) {
-                // Ignore close errors
-              }
-            }, 3000);
-          } else {
-            setTimeout(function() {
-              window.location.href = '/member-select';
-            }, 3000);
-          }
-        } catch (error) {
-          console.error('OAuth error callback error:', error);
-          setTimeout(function() {
-            window.location.href = '/member-select';
-          }, 3000);
+        function toggleTechnical() {
+          const techInfo = document.getElementById('technicalInfo');
+          techInfo.style.display = techInfo.style.display === 'none' || techInfo.style.display === '' ? 'block' : 'none';
         }
+        
+        function retryLogin() {
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.postMessage({
+                type: 'SOCIAL_LOGIN_RETRY',
+                provider: 'kakao'
+              }, window.location.origin);
+              window.close();
+            } else {
+              window.location.href = '/login/veterinary-student';
+            }
+          } catch (error) {
+            window.location.href = '/login/veterinary-student';
+          }
+        }
+        
+        function closeWindow() {
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.postMessage({
+                type: 'SOCIAL_LOGIN_ERROR',
+                message: '${message}',
+                error: '${error}',
+                errorInfo: ${JSON.stringify(errorInfo)},
+                timestamp: '${timestamp}'
+              }, window.location.origin);
+              
+              setTimeout(function() {
+                try {
+                  window.close();
+                } catch (e) {
+                  console.log('Cannot close window automatically');
+                }
+              }, 500);
+            } else {
+              window.location.href = '/member-select';
+            }
+          } catch (error) {
+            console.error('OAuth error callback error:', error);
+            window.location.href = '/member-select';
+          }
+        }
+        
+        // 자동으로 10초 후에 닫기
+        let countdown = 10;
+        const countdownElement = document.createElement('div');
+        countdownElement.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 4px; font-size: 12px;';
+        document.body.appendChild(countdownElement);
+        
+        const timer = setInterval(() => {
+          countdownElement.textContent = \`\${countdown}초 후 자동으로 닫힙니다\`;
+          countdown--;
+          
+          if (countdown < 0) {
+            clearInterval(timer);
+            closeWindow();
+          }
+        }, 1000);
+        
+        // 즉시 카운트다운 표시
+        countdownElement.textContent = \`\${countdown}초 후 자동으로 닫힙니다\`;
       </script>
     </body>
     </html>

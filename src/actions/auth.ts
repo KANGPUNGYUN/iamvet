@@ -2543,9 +2543,17 @@ export async function completeSocialVeterinaryStudentRegistration(
   data: SocialVeterinaryStudentRegistrationData
 ) {
   try {
+    const timestamp = new Date().toISOString();
     console.log(
-      "SERVER: completeSocialVeterinaryStudentRegistration called with data:",
-      data
+      `SERVER: [${timestamp}] completeSocialVeterinaryStudentRegistration called with data:`,
+      {
+        ...data,
+        // 민감한 정보는 로그에서 제외하고 존재 여부만 표시
+        email: data.email ? `[EMAIL_PROVIDED: ${data.email.length} chars]` : '[NO_EMAIL]',
+        universityEmail: data.universityEmail ? `[UNIVERSITY_EMAIL_PROVIDED: ${data.universityEmail.length} chars]` : '[NO_UNIVERSITY_EMAIL]',
+        phone: data.phone ? '[PHONE_PROVIDED]' : '[NO_PHONE]',
+        providerId: data.providerId ? '[PROVIDER_ID_PROVIDED]' : '[NO_PROVIDER_ID]'
+      }
     );
 
     const {
@@ -2579,14 +2587,22 @@ export async function completeSocialVeterinaryStudentRegistration(
     }
 
     // Check if university email already exists (as email or loginId)
+    console.log(`SERVER: [${timestamp}] Checking for existing university email...`);
     const existingEmailUser = await sql`
       SELECT id FROM users WHERE email = ${universityEmail} OR "loginId" = ${universityEmail}
     `;
+    console.log(`SERVER: [${timestamp}] Existing email check result: ${existingEmailUser.length} matches found`);
 
     if (existingEmailUser.length > 0) {
       return {
         success: false,
         error: "이미 가입된 대학교 이메일입니다.",
+        details: {
+          type: "DUPLICATE_EMAIL",
+          field: "universityEmail",
+          value: universityEmail,
+          message: `${universityEmail}은 이미 사용 중인 이메일입니다. 다른 대학교 이메일을 사용하거나 기존 계정으로 로그인해주세요.`
+        }
       };
     }
 
@@ -2594,6 +2610,9 @@ export async function completeSocialVeterinaryStudentRegistration(
     const userId = createId();
     const currentDate = new Date();
 
+    console.log(`SERVER: [${timestamp}] Creating new user with ID: ${userId}`);
+    console.log(`SERVER: [${timestamp}] User data - loginId: ${universityEmail}, email: ${socialEmail}, userType: VETERINARY_STUDENT`);
+    
     const userResult = await sql`
       INSERT INTO users (
         id, "loginId", email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
@@ -2612,20 +2631,25 @@ export async function completeSocialVeterinaryStudentRegistration(
       )
       RETURNING *
     `;
+    
+    console.log(`SERVER: [${timestamp}] User created successfully with ID: ${userId}`);
 
     const user = userResult[0];
 
     // Create social account link
     const socialAccountId = createId();
+    console.log(`SERVER: [${timestamp}] Creating social account link with ID: ${socialAccountId}`);
     await sql`
       INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
       VALUES (${socialAccountId}, ${
       user.id
     }, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
     `;
+    console.log(`SERVER: [${timestamp}] Social account link created successfully`);
 
     // Create veterinary student profile
     const profileId = createId();
+    console.log(`SERVER: [${timestamp}] Creating veterinary student profile with ID: ${profileId}`);
     await sql`
       INSERT INTO veterinary_student_profiles (
         id, "userId", nickname, "birthDate", "universityEmail",
@@ -2637,9 +2661,12 @@ export async function completeSocialVeterinaryStudentRegistration(
     }, ${universityEmail}, ${currentDate}, ${currentDate}
       )
     `;
+    console.log(`SERVER: [${timestamp}] Veterinary student profile created successfully`);
 
     // Generate tokens for the new user
+    console.log(`SERVER: [${timestamp}] Generating tokens for user`);
     const tokens = await generateTokens(user);
+    console.log(`SERVER: [${timestamp}] Tokens generated successfully`);
 
     // Set auth cookie
     const cookieStore = await cookies();
@@ -2666,13 +2693,57 @@ export async function completeSocialVeterinaryStudentRegistration(
       "SERVER: Complete social veterinary student registration error:",
       error
     );
+    
+    // 데이터베이스 관련 에러를 더 구체적으로 분류
+    let errorMessage = "알 수 없는 오류가 발생했습니다.";
+    let errorType = "UNKNOWN_ERROR";
+    let errorDetails = {};
+    
+    if (error instanceof Error) {
+      const errorMsg = error.message.toLowerCase();
+      
+      if (errorMsg.includes('duplicate key') || errorMsg.includes('unique constraint')) {
+        if (errorMsg.includes('email')) {
+          errorMessage = "이미 사용 중인 이메일입니다.";
+          errorType = "DUPLICATE_EMAIL";
+          errorDetails = { field: "email" };
+        } else if (errorMsg.includes('loginid')) {
+          errorMessage = "이미 사용 중인 로그인 ID입니다.";
+          errorType = "DUPLICATE_LOGIN_ID";
+          errorDetails = { field: "loginId" };
+        } else {
+          errorMessage = "중복된 정보가 있습니다.";
+          errorType = "DUPLICATE_DATA";
+        }
+      } else if (errorMsg.includes('column') && errorMsg.includes('does not exist')) {
+        errorMessage = "데이터베이스 구조 오류가 발생했습니다.";
+        errorType = "DATABASE_SCHEMA_ERROR";
+        errorDetails = { technical: error.message };
+      } else if (errorMsg.includes('relation') && errorMsg.includes('does not exist')) {
+        errorMessage = "데이터베이스 테이블 오류가 발생했습니다.";
+        errorType = "DATABASE_TABLE_ERROR";
+        errorDetails = { technical: error.message };
+      } else if (errorMsg.includes('connection') || errorMsg.includes('timeout')) {
+        errorMessage = "데이터베이스 연결에 실패했습니다.";
+        errorType = "DATABASE_CONNECTION_ERROR";
+      } else if (errorMsg.includes('permission') || errorMsg.includes('access')) {
+        errorMessage = "데이터베이스 접근 권한 오류가 발생했습니다.";
+        errorType = "DATABASE_PERMISSION_ERROR";
+      } else {
+        errorMessage = error.message;
+        errorType = "DATABASE_ERROR";
+      }
+    }
+    
     return {
       success: false,
-      error: `소셜 수의학과 학생 회원가입 완료 실패: ${
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다."
-      }`,
+      error: `소셜 수의학과 학생 회원가입 완료 실패: ${errorMessage}`,
+      details: {
+        type: errorType,
+        message: errorMessage,
+        timestamp: new Date().toISOString(),
+        ...errorDetails
+      }
     };
   }
 }

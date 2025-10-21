@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { completeSocialVeterinaryStudentRegistration } from "@/actions/auth";
 import { useState, useEffect } from "react";
 
-export default function VeterinaryStudentSocialCompletePage() {
+export default function () {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +22,11 @@ export default function VeterinaryStudentSocialCompletePage() {
   };
 
   // 소셜 데이터 유효성 검사
-  const isDataValid = socialData.email && socialData.name && socialData.provider && socialData.providerId;
+  const isDataValid =
+    socialData.email &&
+    socialData.name &&
+    socialData.provider &&
+    socialData.providerId;
 
   useEffect(() => {
     if (!isDataValid) {
@@ -58,17 +62,134 @@ export default function VeterinaryStudentSocialCompletePage() {
 
       console.log("수의학과 학생 소셜 회원가입 데이터:", registrationData);
 
-      const result = await completeSocialVeterinaryStudentRegistration(registrationData);
+      const result = await completeSocialVeterinaryStudentRegistration(
+        registrationData
+      );
 
       if (result.success) {
         alert("회원가입이 완료되었습니다!");
         router.push("/login/veterinary-student");
       } else {
-        alert(result.error || "회원가입에 실패했습니다.");
+        // 구체적인 에러 메시지 처리
+        let userMessage = result.error || "회원가입에 실패했습니다.";
+
+        if (result.details) {
+          const { type, message } = result.details;
+
+          switch (type) {
+            case "DUPLICATE_EMAIL":
+              userMessage = `이미 사용 중인 이메일입니다.\n다른 대학교 이메일을 사용하거나 기존 계정으로 로그인해주세요.`;
+              break;
+            case "DUPLICATE_LOGIN_ID":
+              userMessage = `이미 사용 중인 로그인 ID입니다.\n다른 로그인 ID를 사용해주세요.`;
+              break;
+            case "DATABASE_SCHEMA_ERROR":
+            case "DATABASE_TABLE_ERROR":
+              userMessage = `시스템에 일시적인 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.`;
+              console.error("Database error:", result.details);
+              break;
+            case "DATABASE_CONNECTION_ERROR":
+              userMessage = `서버 연결에 문제가 발생했습니다.\n네트워크 연결을 확인하고 다시 시도해주세요.`;
+              break;
+            default:
+              userMessage = message || userMessage;
+          }
+        }
+
+        alert(userMessage);
       }
     } catch (error) {
       console.error("회원가입 오류:", error);
-      alert("회원가입 중 오류가 발생했습니다.");
+
+      // 에러의 구체적인 정보를 파악하여 사용자에게 전달
+      let errorMessage = "회원가입 중 오류가 발생했습니다.";
+      let errorDetails = "";
+
+      if (error instanceof Error) {
+        // 네트워크 에러
+        if (
+          error.message.includes("fetch") ||
+          error.message.includes("network")
+        ) {
+          errorMessage = "서버 연결에 실패했습니다.";
+          errorDetails = "네트워크 연결을 확인하고 다시 시도해주세요.";
+        }
+        // 서버 응답 에러
+        else if (error.message.includes("500")) {
+          errorMessage = "서버 내부 오류가 발생했습니다.";
+          errorDetails = "잠시 후 다시 시도해주세요.";
+        }
+        // 권한 에러
+        else if (
+          error.message.includes("401") ||
+          error.message.includes("403")
+        ) {
+          errorMessage = "인증에 실패했습니다.";
+          errorDetails = "다시 로그인 후 시도해주세요.";
+        }
+        // 기타 에러
+        else {
+          errorDetails = `오류 내용: ${error.message}`;
+        }
+      }
+
+      // 에러 리포팅을 위한 정보 수집
+      const errorReport = {
+        timestamp: new Date().toISOString(),
+        page: "VeterinaryStudentSocialCompletePage",
+        userAgent:
+          typeof window !== "undefined"
+            ? window.navigator.userAgent
+            : "Unknown",
+        url: typeof window !== "undefined" ? window.location.href : "Unknown",
+        error: {
+          message: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : "No stack trace",
+          name: error instanceof Error ? error.name : "Unknown",
+        },
+        formData: {
+          // 민감한 정보 제외하고 디버깅에 필요한 정보만
+          provider: socialData.provider,
+          hasEmail: !!socialData.email,
+          hasUniversityEmail: !!formData.email,
+          hasNickname: !!formData.nickname,
+          hasPhone: !!formData.phone,
+          hasBirthDate: !!formData.birthDate,
+          termsAgreed: formData.agreements?.terms,
+          privacyAgreed: formData.agreements?.privacy,
+        },
+      };
+
+      // 개발 환경에서는 더 상세한 에러 정보 표시
+      if (process.env.NODE_ENV === "development") {
+        console.log("=== 개발환경 에러 디버깅 ===");
+        console.log("에러 리포트:", errorReport);
+
+        const copyErrorInfo = () => {
+          navigator.clipboard.writeText(JSON.stringify(errorReport, null, 2));
+        };
+
+        if (
+          confirm(
+            `${errorMessage}\n\n개발자 정보:\n${errorDetails}\n\n에러 정보를 클립보드에 복사하시겠습니까?`
+          )
+        ) {
+          try {
+            copyErrorInfo();
+            alert("에러 정보가 클립보드에 복사되었습니다.");
+          } catch (e) {
+            console.log("클립보드 복사 실패:", e);
+          }
+        }
+      } else {
+        // 운영 환경에서는 간단한 에러 ID와 함께 표시
+        const errorId = `ERR_${Date.now()}`;
+        console.error(`Error ID: ${errorId}`, errorReport);
+
+        alert(
+          `${errorMessage}\n${errorDetails}\n\n문제가 지속되면 고객센터에 다음 에러 ID를 알려주세요:\n${errorId}`
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
