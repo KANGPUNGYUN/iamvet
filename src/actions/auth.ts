@@ -2604,7 +2604,7 @@ export async function completeSocialVeterinaryStudentRegistration(
       realName || name
     }, ${
       birthDate ? new Date(birthDate) : null
-    }, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
+    }, null, 'VETERINARY_STUDENT', ${profileImage}, ${provider.toUpperCase()},
         ${termsAgreed ? currentDate : null}, ${
       privacyAgreed ? currentDate : null
     }, ${marketingAgreed ? currentDate : null},
@@ -2624,22 +2624,17 @@ export async function completeSocialVeterinaryStudentRegistration(
     }, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
     `;
 
-    // Create veterinarian profile for veterinary student
+    // Create veterinary student profile
     const profileId = createId();
-    const universityDomain = universityEmail.split("@")[1] || "unknown";
     await sql`
-      INSERT INTO veterinarian_profiles (
-        id, "userId", nickname, "birthDate", "licenseImage", experience, specialty, introduction,
+      INSERT INTO veterinary_student_profiles (
+        id, "userId", nickname, "birthDate", "universityEmail",
         "createdAt", "updatedAt"
       )
       VALUES (
         ${profileId}, ${user.id}, ${nickname}, ${
       birthDate ? new Date(birthDate) : null
-    }, null,
-        ${"Student at " + universityDomain}, 'Veterinary Student',
-        ${
-          "University Email: " + universityEmail
-        }, ${currentDate}, ${currentDate}
+    }, ${universityEmail}, ${currentDate}, ${currentDate}
       )
     `;
 
