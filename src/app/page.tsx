@@ -21,7 +21,7 @@ import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import Link from "next/link";
 import { useResumes } from "@/hooks/useResumes";
 import { useJobs } from "@/hooks/useJobs";
-import { useLectures } from "@/hooks/api/useLectures";
+import { useLectures, usePopularLectureCategories } from "@/hooks/api/useLectures";
 import { useTransfers } from "@/hooks/api/useTransfers";
 import { useLikeStore } from "@/stores/likeStore";
 import { useHeroBanners, useBannerAds } from "@/hooks/api/useAdvertisements";
@@ -119,33 +119,11 @@ export default function HomePage() {
     sort: "latest",
   });
 
-  // 인기 카테고리별 강의 조회 (조회수 기준)
-  const { data: emergencyLecturesData, isLoading: emergencyLoading } =
-    useLectures({
-      medicalField: "emergency",
-      sort: "view",
-      limit: 4,
-    });
-
-  const { data: dermatologyLecturesData, isLoading: dermatologyLoading } =
-    useLectures({
-      medicalField: "dermatology",
-      sort: "view",
-      limit: 4,
-    });
-
-  const { data: internalLecturesData, isLoading: internalLoading } =
-    useLectures({
-      medicalField: "internal",
-      sort: "view",
-      limit: 4,
-    });
-
+  // 인기 카테고리별 강의 조회 (조회수 기준으로 상위 3개 카테고리)
+  const { data: popularCategoriesData, isLoading: popularCategoriesLoading } = usePopularLectureCategories();
+  
   // API 응답에서 실제 데이터 추출
-  const emergencyLectures = emergencyLecturesData?.data?.lectures?.data || [];
-  const dermatologyLectures =
-    dermatologyLecturesData?.data?.lectures?.data || [];
-  const internalLectures = internalLecturesData?.data?.lectures?.data || [];
+  const popularCategories = popularCategoriesData?.data?.categories || [];
 
   // 구직정보 데이터는 useResumes 훅에서 가져옴
 
@@ -284,56 +262,29 @@ export default function HomePage() {
     }
   }, [jobsData, initializeJobLikes]);
 
-  // 강의 좋아요 상태 동기화 (Emergency 강의)
+  // 강의 좋아요 상태 동기화 (인기 카테고리 강의들)
   React.useEffect(() => {
-    if (emergencyLectures.length > 0) {
-      const likedLectureIds = emergencyLectures
-        .filter((lecture: any) => lecture.isLiked)
-        .map((lecture: any) => lecture.id);
+    if (popularCategories.length > 0) {
+      const allLikedLectureIds: string[] = [];
+      
+      popularCategories.forEach((category: any) => {
+        if (category.lectures && category.lectures.length > 0) {
+          const likedLectureIds = category.lectures
+            .filter((lecture: any) => lecture.isLiked)
+            .map((lecture: any) => lecture.id);
+          allLikedLectureIds.push(...likedLectureIds);
+        }
+      });
 
-      if (likedLectureIds.length > 0) {
+      if (allLikedLectureIds.length > 0) {
         console.log(
-          "[Emergency Lecture Like] 서버에서 받은 좋아요 강의:",
-          likedLectureIds
+          "[Popular Categories Lecture Like] 서버에서 받은 좋아요 강의:",
+          allLikedLectureIds
         );
-        initializeLectureLikes(likedLectureIds);
+        initializeLectureLikes(allLikedLectureIds);
       }
     }
-  }, [emergencyLectures, initializeLectureLikes]);
-
-  // 강의 좋아요 상태 동기화 (Dermatology 강의)
-  React.useEffect(() => {
-    if (dermatologyLectures.length > 0) {
-      const likedLectureIds = dermatologyLectures
-        .filter((lecture: any) => lecture.isLiked)
-        .map((lecture: any) => lecture.id);
-
-      if (likedLectureIds.length > 0) {
-        console.log(
-          "[Dermatology Lecture Like] 서버에서 받은 좋아요 강의:",
-          likedLectureIds
-        );
-        initializeLectureLikes(likedLectureIds);
-      }
-    }
-  }, [dermatologyLectures, initializeLectureLikes]);
-
-  // 강의 좋아요 상태 동기화 (Internal 강의)
-  React.useEffect(() => {
-    if (internalLectures.length > 0) {
-      const likedLectureIds = internalLectures
-        .filter((lecture: any) => lecture.isLiked)
-        .map((lecture: any) => lecture.id);
-
-      if (likedLectureIds.length > 0) {
-        console.log(
-          "[Internal Lecture Like] 서버에서 받은 좋아요 강의:",
-          likedLectureIds
-        );
-        initializeLectureLikes(likedLectureIds);
-      }
-    }
-  }, [internalLectures, initializeLectureLikes]);
+  }, [popularCategories, initializeLectureLikes]);
 
   // Transfer 좋아요 상태 동기화
   React.useEffect(() => {
@@ -978,170 +929,110 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* 응급의학 강의 섹션 */}
-            <div className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
-              {/* 카테고리 카드 - 핑크 */}
-              <div
-                className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-[#FF8796] md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
-                onClick={() =>
-                  (window.location.href = "/lectures?medicalField=emergency")
-                }
-              >
-                <div className="flex flex-col gap-[12px]">
-                  <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-white mb-[px] leading-[135%]">
-                    응급의학
-                  </h4>
-                  <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-white opacity-90">
-                    응급 상황 대처부터 응급수술까지
-                    <br />
-                    응급의학 전문 역량을 쌓습니다
-                  </p>
-                </div>
-                <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] border border-white bg-white bg-opacity-20 rounded-full items-center justify-center hover:bg-opacity-30 transition-all duration-200">
-                  <ArrowRightIcon currentColor="white" size="16px" />
-                </button>
-              </div>
-
-              {/* 강의 리스트 */}
-              <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                {emergencyLoading
-                  ? // 로딩 스켈레톤
-                    [...Array(4)].map((_, i) => (
+            {/* 동적 인기 카테고리 섹션들 */}
+            {popularCategoriesLoading ? (
+              // 로딩 상태
+              [...Array(3)].map((_, index) => (
+                <div key={index} className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
+                  <div className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] bg-gray-200 rounded-[16px] animate-pulse mb-[20px] md:mb-0"></div>
+                  <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
+                    {[...Array(4)].map((_, i) => (
                       <div
                         key={i}
                         className="w-[294px] h-[240px] bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
                       ></div>
-                    ))
-                  : emergencyLectures.map((lecture: any) => (
-                      <LectureCard
-                        key={lecture.id}
-                        id={lecture.id}
-                        title={lecture.title}
-                        date={new Date(lecture.createdAt).toLocaleDateString(
-                          "ko-KR"
-                        )}
-                        views={lecture.viewCount || 0}
-                        category={lecture.category}
-                        imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                        isLiked={isLectureLiked(lecture.id)}
-                        onLike={handleLectureLike}
-                        onClick={() =>
-                          (window.location.href = `/lectures/${lecture.id}`)
-                        }
-                      />
                     ))}
-              </div>
-            </div>
-
-            {/* 피부과 섹션 */}
-            <div className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
-              {/* 카테고리 카드 - 흰색 */}
-              <div
-                className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-box md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
-                onClick={() =>
-                  (window.location.href = "/lectures?medicalField=dermatology")
-                }
-              >
-                <div className="flex flex-col gap-[12px]">
-                  <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-black mb-[px] leading-[135%]">
-                    피부과
-                  </h4>
-                  <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-[#6B6B6B]">
-                    피부질환 진단부터 치료까지
-                    <br />
-                    피부과 전문 지식을 습득합니다
-                  </p>
+                  </div>
                 </div>
-                <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] bg-[#F8F8F9] border border-[#FF8796] rounded-full items-center justify-center hover:bg-[#EFEFF0] transition-all duration-200">
-                  <ArrowRightIcon currentColor="#3B394D" size="16px" />
-                </button>
+              ))
+            ) : popularCategories.length === 0 ? (
+              // 데이터가 없는 경우
+              <div className="text-center py-[120px]">
+                <p className="text-gray-500 text-lg">등록된 강의가 없습니다.</p>
+                <p className="text-gray-400 text-sm mt-2">관리자 페이지에서 강의를 등록해주세요.</p>
               </div>
+            ) : (
+              // 인기 카테고리별 섹션 렌더링
+              popularCategories.map((categoryData: any, index: number) => {
+                // 교대로 핑크/흰색 스타일 적용
+                const isPinkStyle = index % 2 === 0;
+                const isLastSection = index === popularCategories.length - 1;
+                
+                return (
+                  <div 
+                    key={categoryData.category} 
+                    className={`relative ${isLastSection ? 'h-auto md:h-[400px]' : 'mb-[60px] md:mb-[120px] h-auto md:h-[400px]'}`}
+                  >
+                    {/* 카테고리 카드 */}
+                    <div
+                      className={`relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent ${
+                        isPinkStyle 
+                          ? 'md:bg-[#FF8796]' 
+                          : 'md:bg-box'
+                      } md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0`}
+                      onClick={() =>
+                        (window.location.href = `/lectures?medicalField=${categoryData.category}`)
+                      }
+                    >
+                      <div className="flex flex-col gap-[12px]">
+                        <h4 className={`font-title title-light text-[22px] md:text-[28px] text-[#3B394D] ${
+                          isPinkStyle ? 'md:text-white' : 'md:text-black'
+                        } mb-[px] leading-[135%]`}>
+                          {categoryData.displayName}
+                        </h4>
+                        <p className={`hidden md:block font-text text-[14px] md:text-[16px] text-regular ${
+                          isPinkStyle ? 'text-white opacity-90' : 'text-[#6B6B6B]'
+                        }`}>
+                          {categoryData.description.split('\n').map((line: string, lineIndex: number) => (
+                            <span key={lineIndex}>
+                              {line}
+                              {lineIndex < categoryData.description.split('\n').length - 1 && <br />}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                      <button className={`hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] ${
+                        isPinkStyle 
+                          ? 'border border-white bg-white bg-opacity-20 hover:bg-opacity-30' 
+                          : 'bg-[#F8F8F9] border border-[#FF8796] hover:bg-[#EFEFF0]'
+                      } rounded-full items-center justify-center transition-all duration-200`}>
+                        <ArrowRightIcon 
+                          currentColor={isPinkStyle ? "white" : "#3B394D"} 
+                          size="16px" 
+                        />
+                      </button>
+                    </div>
 
-              {/* 강의 리스트 */}
-              <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                {dermatologyLoading
-                  ? // 로딩 스켈레톤
-                    [...Array(4)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-[294px] h-[240px] bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
-                      ></div>
-                    ))
-                  : dermatologyLectures.map((lecture: any) => (
-                      <LectureCard
-                        key={lecture.id}
-                        id={lecture.id}
-                        title={lecture.title}
-                        date={new Date(lecture.createdAt).toLocaleDateString(
-                          "ko-KR"
-                        )}
-                        views={lecture.viewCount || 0}
-                        category={lecture.category}
-                        imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                        isLiked={isLectureLiked(lecture.id)}
-                        onLike={handleLectureLike}
-                        onClick={() =>
-                          (window.location.href = `/lectures/${lecture.id}`)
-                        }
-                      />
-                    ))}
-              </div>
-            </div>
-
-            {/* 내과 섹션 (세 번째) */}
-            <div className="relative h-auto md:h-[400px]">
-              {/* 카테고리 카드 - 핑크 */}
-              <div
-                className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent md:bg-[#FF8796] md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0"
-                onClick={() =>
-                  (window.location.href = "/lectures?medicalField=internal")
-                }
-              >
-                <div className="flex flex-col gap-[12px]">
-                  <h4 className="font-title title-light text-[22px] md:text-[28px] text-[#3B394D] md:text-white mb-[px] leading-[135%]">
-                    내과
-                  </h4>
-                  <p className="hidden md:block font-text text-[14px] md:text-[16px] text-regular text-white opacity-90">
-                    내과 질환 진단부터 치료까지
-                    <br />
-                    내과 전문 지식을 체계적으로 학습합니다
-                  </p>
-                </div>
-                <button className="hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] border border-white bg-white bg-opacity-20 rounded-full items-center justify-center hover:bg-opacity-30 transition-all duration-200">
-                  <ArrowRightIcon currentColor="white" size="16px" />
-                </button>
-              </div>
-
-              {/* 강의 리스트 */}
-              <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                {internalLoading
-                  ? // 로딩 스켈레톤
-                    [...Array(4)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-[294px] h-[240px] bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
-                      ></div>
-                    ))
-                  : internalLectures.map((lecture: any) => (
-                      <LectureCard
-                        key={lecture.id}
-                        id={lecture.id}
-                        title={lecture.title}
-                        date={new Date(lecture.createdAt).toLocaleDateString(
-                          "ko-KR"
-                        )}
-                        views={lecture.viewCount || 0}
-                        category={lecture.category}
-                        imageUrl={lecture.thumbnailUrl || lecture1Img.src}
-                        isLiked={isLectureLiked(lecture.id)}
-                        onLike={handleLectureLike}
-                        onClick={() =>
-                          (window.location.href = `/lectures/${lecture.id}`)
-                        }
-                      />
-                    ))}
-              </div>
-            </div>
+                    {/* 강의 리스트 */}
+                    <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
+                      {categoryData.lectures && categoryData.lectures.length > 0 ? (
+                        categoryData.lectures.map((lecture: any) => (
+                          <LectureCard
+                            key={lecture.id}
+                            id={lecture.id}
+                            title={lecture.title}
+                            date={new Date(lecture.createdAt).toLocaleDateString("ko-KR")}
+                            views={lecture.viewCount || 0}
+                            category={lecture.category}
+                            imageUrl={lecture.thumbnail || lecture1Img.src}
+                            isLiked={isLectureLiked(lecture.id)}
+                            onLike={handleLectureLike}
+                            onClick={() =>
+                              (window.location.href = `/lectures/${lecture.id}`)
+                            }
+                          />
+                        ))
+                      ) : (
+                        // 해당 카테고리에 강의가 없는 경우
+                        <div className="w-[294px] h-[240px] bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <p className="text-gray-500 text-sm">강의가 없습니다</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </section>
 
           <section className="py-[60px]">
