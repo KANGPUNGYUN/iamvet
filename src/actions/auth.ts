@@ -2549,7 +2549,7 @@ export async function completeSocialVeterinaryStudentRegistration(
     );
 
     const {
-      // email: socialEmail, // Not used in veterinary student registration
+      email: socialEmail, // SNS에서 가져온 원래 이메일
       name,
       realName,
       profileImage,
@@ -2578,9 +2578,9 @@ export async function completeSocialVeterinaryStudentRegistration(
       };
     }
 
-    // Check if university email already exists
+    // Check if university email already exists (as email or loginId)
     const existingEmailUser = await sql`
-      SELECT id FROM users WHERE email = ${universityEmail}
+      SELECT id FROM users WHERE email = ${universityEmail} OR "loginId" = ${universityEmail}
     `;
 
     if (existingEmailUser.length > 0) {
@@ -2596,11 +2596,11 @@ export async function completeSocialVeterinaryStudentRegistration(
 
     const userResult = await sql`
       INSERT INTO users (
-        id, email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
+        id, "loginId", email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
         "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
       )
       VALUES (
-        ${userId}, ${universityEmail}, ${phone}, ${nickname}, ${
+        ${userId}, ${universityEmail}, ${socialEmail}, ${phone}, ${nickname}, ${
       realName || name
     }, ${
       birthDate ? new Date(birthDate) : null
