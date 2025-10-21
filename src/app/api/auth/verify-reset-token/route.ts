@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPasswordResetTokens } from "../find-password/route";
+import { getPasswordResetToken, deletePasswordResetToken } from "@/lib/auth/password-reset-tokens";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,8 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 토큰 확인
-    const passwordResetTokens = getPasswordResetTokens();
-    const tokenData = passwordResetTokens.get(token);
+    const tokenData = getPasswordResetToken(token);
 
     if (!tokenData) {
       return NextResponse.json(
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
     // 토큰 만료 확인
     if (new Date() > tokenData.expires) {
       // 만료된 토큰 삭제
-      passwordResetTokens.delete(token);
+      deletePasswordResetToken(token);
       return NextResponse.json(
         {
           success: false,

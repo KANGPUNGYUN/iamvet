@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-
-// 임시로 메모리에 저장 (실제로는 데이터베이스에 저장해야 함)
-const passwordResetTokens = new Map<string, { email: string; expires: Date }>();
+import { setPasswordResetToken } from "@/lib/auth/password-reset-tokens";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,10 +34,9 @@ export async function POST(request: NextRequest) {
     
     // 토큰 생성
     const token = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15분 후 만료
 
     // 토큰 저장 (실제로는 데이터베이스에 저장)
-    passwordResetTokens.set(token, { email, expires });
+    setPasswordResetToken(token, email, 15); // 15분 후 만료
 
     // 이메일 전송 (실제로는 nodemailer 등을 사용)
     const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
@@ -64,9 +61,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// 토큰 검증용 함수 (다른 API에서 사용)
-export function getPasswordResetTokens() {
-  return passwordResetTokens;
 }
