@@ -44,7 +44,7 @@ function VeterinarianRegisterContent() {
       const licenseImageUrl = formData.licenseImage;
 
       const registerData: VeterinarianRegisterData = {
-        userId: formData.loginId,
+        loginId: formData.loginId,
         password: formData.password,
         realName: formData.realName, // 실명 추가
         nickname: formData.nickname,

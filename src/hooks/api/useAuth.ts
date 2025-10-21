@@ -78,11 +78,11 @@ export function useCurrentUser() {
       if (result.success && 'user' in result && result.user) {
         const userData = {
           id: result.user.id,
-          name: result.user.username || result.user.realName || result.user.email,
+          name: result.user.nickname || result.user.realName || result.user.email,
           email: result.user.email,
-          realName: result.user.realName || result.user.username,
+          realName: result.user.realName || result.user.nickname,
           type: (result.user.userType === "VETERINARIAN" || result.user.userType === "VETERINARY_STUDENT") ? "veterinarian" as const : "hospital" as const,
-          profileName: result.user.profileName || (result.user.userType === "HOSPITAL" ? result.user.hospitalName : result.user.realName) || result.user.username,
+          profileName: result.user.profileName || (result.user.userType === "HOSPITAL" ? result.user.hospitalName : result.user.realName) || result.user.nickname,
           profileImage: result.user.profileImage,
           hospitalName: result.user.hospitalName,
           hospitalLogo: result.user.hospitalLogo,

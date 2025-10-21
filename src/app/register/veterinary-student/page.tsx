@@ -48,7 +48,7 @@ function VeterinaryStudentRegisterContent() {
       const profileImageUrl = formData.profileImage;
 
       const registerData: VeterinaryStudentRegisterData = {
-        userId: formData.loginId,
+        loginId: formData.loginId,
         password: formData.password,
         realName: formData.realName,
         nickname: formData.nickname,

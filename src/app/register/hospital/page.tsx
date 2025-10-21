@@ -27,7 +27,7 @@ export default function HospitalRegisterPage() {
       const businessLicenseFileSize = formData.businessLicense.fileSize;
 
       const registerData: HospitalRegisterData = {
-        userId: formData.loginId,
+        loginId: formData.loginId,
         password: formData.password,
         realName: formData.realName, // 대표자명 추가
         hospitalName: formData.hospitalName,
