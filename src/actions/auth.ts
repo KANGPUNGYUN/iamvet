@@ -163,6 +163,8 @@ export async function login(credentials: LoginCredentials) {
         id: user.id,
         email: user.email,
         phone: user.phone, // phone 필드 추가
+        realName: user.realName,
+        nickname: user.nickname,
         userType: user.userType,
         profileImage: user.profileImage,
         hospitalName: hospitalName,
@@ -436,6 +438,8 @@ export async function getCurrentUser(): Promise<{
         id: user.id,
         email: user.email,
         phone: user.phone,
+        realName: user.realName,
+        nickname: user.nickname,
         birthDate: user.birthDate,
         userType: actualUserType, // Use detected userType
         profileImage: user.profileImage,

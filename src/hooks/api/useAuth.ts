@@ -150,12 +150,12 @@ export function useLogin() {
         }
         localStorage.setItem('user', JSON.stringify({
           id: result.user.id,
-          name: result.user.username || result.user.realName || result.user.hospitalName,
+          name: result.user.nickname || result.user.realName || result.user.hospitalName,
           email: result.user.email,
           realName: result.user.realName,
           userType: result.user.userType === "HOSPITAL" ? "hospital" : result.user.userType === "VETERINARIAN" || result.user.userType === "VETERINARY_STUDENT" ? "veterinarian" : result.user.userType,
           profileImage: result.user.profileImage,
-          profileName: result.user.hospitalName || result.user.username,
+          profileName: result.user.hospitalName || result.user.nickname,
           hospitalName: result.user.hospitalName,
           hospitalLogo: result.user.hospitalLogo,
           provider: 'NORMAL',
