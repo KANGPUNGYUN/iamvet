@@ -89,6 +89,11 @@ export interface SocialLoginResponse {
     providerId: string;
     userType: string;
   };
+  // 기존 계정 에러를 위한 추가 필드들
+  email?: string;
+  hasPassword?: boolean;
+  existingProviders?: string[];
+  attemptedProvider?: string;
 }
 
 // SNS 회원가입 완료 요청 타입

@@ -65,7 +65,13 @@ export class AuthService {
         if (existingUser) {
           // User already exists with this email
           // Check how they signed up
-          const existingSocialAccounts = await this.getUserSocialAccounts(existingUser.id);
+          let existingSocialAccounts = [];
+          try {
+            existingSocialAccounts = await this.getUserSocialAccounts(existingUser.id) || [];
+          } catch (error) {
+            console.error("Failed to get user social accounts:", error);
+            existingSocialAccounts = [];
+          }
           
           return {
             success: false,
@@ -75,6 +81,10 @@ export class AuthService {
               tokens: null,
               isNewUser: false,
               isProfileComplete: false,
+              email: existingUser.email,
+              hasPassword: !!existingUser.password, // Check if user has password
+              existingProviders: existingSocialAccounts.map((account: any) => account.provider), // Social providers
+              attemptedProvider: provider, // The provider they tried to use
               socialData: {
                 email: existingUser.email,
                 name: existingUser.realName || existingUser.nickname || '',

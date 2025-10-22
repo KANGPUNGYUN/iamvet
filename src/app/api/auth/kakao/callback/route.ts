@@ -271,7 +271,7 @@ function createExistingAccountPage(data: any) {
     loginMethods.push('일반 로그인(이메일/비밀번호)');
   }
   
-  const socialProviders = data.existingProviders.map((p: string) => 
+  const socialProviders = (data.existingProviders || []).map((p: string) => 
     `${providerNames[p as keyof typeof providerNames] || p} 로그인`
   );
   loginMethods = [...loginMethods, ...socialProviders];
