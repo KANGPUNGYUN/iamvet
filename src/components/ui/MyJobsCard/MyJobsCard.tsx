@@ -66,7 +66,7 @@ const MyJobsCard: React.FC = () => {
     const today = new Date();
     const diffTime = deadlineDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) return "마감";
     if (diffDays === 0) return "오늘 마감";
     if (diffDays <= 7) return `${diffDays}일 후 마감`;
@@ -111,7 +111,7 @@ const MyJobsCard: React.FC = () => {
         <h3 className="text-[18px] font-semibold text-[#3B394D]">
           내 채용공고
         </h3>
-        <Link 
+        <Link
           href="/dashboard/hospital/my-jobs"
           className="text-[14px] text-[#FF8796] hover:underline"
         >
@@ -143,7 +143,7 @@ const MyJobsCard: React.FC = () => {
             새로운 채용공고를 등록해보세요.
           </p>
           <button
-            onClick={() => router.push("/jobs/create")}
+            onClick={() => router.push("/dashboard/hospital/my-jobs/create")}
             className="inline-flex items-center px-4 py-2 bg-[#FF8796] text-white text-[14px] rounded-lg hover:bg-[#ffb7b8] transition-colors"
           >
             채용공고 등록
@@ -172,20 +172,22 @@ const MyJobsCard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4 text-[14px] text-[#9098A4]">
                 <span>{job.employmentType}</span>
                 <span>{job.experience}</span>
                 <span>조회 {job.viewCount}회</span>
               </div>
-              
+
               <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 text-[12px] rounded-full ${
-                    job.isActive
-                      ? "bg-green-100 text-green-600"
-                      : "bg-gray-100 text-gray-600"
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-[12px] rounded-full ${
+                      job.isActive
+                        ? "bg-green-100 text-green-600"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
                     {job.isActive ? "진행중" : "마감"}
                   </span>
                   {job.isDraft && (
@@ -194,7 +196,7 @@ const MyJobsCard: React.FC = () => {
                     </span>
                   )}
                 </div>
-                
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -207,7 +209,7 @@ const MyJobsCard: React.FC = () => {
               </div>
             </div>
           ))}
-          
+
           {jobs.length >= 2 && (
             <div className="text-center pt-2">
               <Link

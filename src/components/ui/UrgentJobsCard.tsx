@@ -53,7 +53,7 @@ const UrgentJobsCard: React.FC<UrgentJobsCardProps> = () => {
     const today = new Date();
     const diffTime = deadlineDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) return "마감";
     if (diffDays === 0) return "오늘 마감";
     if (diffDays <= 30) return `D-${diffDays}`;
@@ -73,9 +73,7 @@ const UrgentJobsCard: React.FC<UrgentJobsCardProps> = () => {
   return (
     <div className="bg-white w-full lg:max-w-[714px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-[20px] font-bold text-primary">
-          내 채용 공고
-        </h2>
+        <h2 className="text-[20px] font-bold text-primary">내 채용 공고</h2>
         <Link
           href="/dashboard/hospital/my-jobs"
           className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
@@ -116,7 +114,7 @@ const UrgentJobsCard: React.FC<UrgentJobsCardProps> = () => {
             새로운 채용공고를 등록해보세요.
           </p>
           <Link
-            href="/jobs/create"
+            href="/dashboard/hospital/my-jobs/create"
             className="inline-flex items-center px-4 py-2 bg-[#FF8796] text-white text-[14px] rounded-lg hover:bg-[#ffb7b8] transition-colors"
           >
             채용공고 등록
@@ -128,15 +126,23 @@ const UrgentJobsCard: React.FC<UrgentJobsCardProps> = () => {
             <JobInfoCard
               key={job.id}
               hospital={job.hospital?.name || "병원명"}
-              dDay={convertDDayToNumber(formatDeadline(job.deadline || new Date().toISOString()))}
+              dDay={convertDDayToNumber(
+                formatDeadline(job.deadline || new Date().toISOString())
+              )}
               position={job.title || "채용공고"}
               location={job.location || "위치 미정"}
               jobType={job.experience || "경력 무관"}
-              tags={[job.employmentType, ...(job.specialties || []).slice(0, 3)].filter(Boolean)}
+              tags={[
+                job.employmentType,
+                ...(job.specialties || []).slice(0, 3),
+              ].filter(Boolean)}
               isBookmarked={job.isLiked || false}
               isNew={isJobNew(job.createdAt || new Date().toISOString())}
               variant="wide"
-              showDeadline={formatDeadline(job.deadline || new Date().toISOString()) !== "진행중"}
+              showDeadline={
+                formatDeadline(job.deadline || new Date().toISOString()) !==
+                "진행중"
+              }
               onClick={() => {
                 window.location.href = `/jobs/${job.id}`;
               }}
