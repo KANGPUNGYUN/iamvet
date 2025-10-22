@@ -3082,7 +3082,7 @@ export const unlinkSocialAccount = async (userId: string, provider: string) => {
 };
 
 export const getUserById = async (userId: string) => {
-  const query = `SELECT * FROM users WHERE id = $1`;
+  const query = `SELECT * FROM users WHERE id = $1 AND "deletedAt" IS NULL AND "isActive" = true`;
   const result = await pool.query(query, [userId]);
   return result.rows[0] || null;
 };

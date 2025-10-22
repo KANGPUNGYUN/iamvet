@@ -78,6 +78,15 @@ export const POST = withAuth(
         );
       }
 
+      // 사용자 존재 확인
+      const userExists = await getUserById(user.userId);
+      if (!userExists) {
+        return NextResponse.json(
+          createErrorResponse("유효하지 않은 사용자입니다"),
+          { status: 401 }
+        );
+      }
+
       // 댓글 생성
       const comment = await createLectureComment({
         lectureId,
