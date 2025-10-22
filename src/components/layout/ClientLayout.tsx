@@ -31,12 +31,15 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   
   // 인증 상태가 변경되면 병원 인증 스토어도 동기화
   React.useEffect(() => {
+    console.log('[ClientLayout] Auth sync:', { user: !!user, isAuthenticated, userType: user?.type });
     if (user) {
       const userType = user.type === 'hospital' ? 'HOSPITAL' : 
                       user.type === 'veterinarian' ? 'VETERINARIAN' : 
                       'VETERINARY_STUDENT';
+      console.log('[ClientLayout] Setting hospital auth:', { isAuthenticated, userType, userId: user.id });
       setAuth(isAuthenticated, userType, user.id);
     } else if (!isAuthenticated) {
+      console.log('[ClientLayout] Clearing hospital auth');
       setAuth(false);
     }
   }, [user, isAuthenticated, setAuth]);

@@ -18,16 +18,10 @@ import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
 export default function ResumesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, userType } = useHospitalAuth();
+  const { isAuthenticated, userType, isLoading: isAuthLoading } = useHospitalAuth();
   const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
 
-  // 병원 사용자가 아닌 경우 모달 표시
-  React.useEffect(() => {
-    if (!isAuthenticated || userType !== 'HOSPITAL') {
-      showModal('/resumes');
-    }
-  }, [isAuthenticated, userType, showModal]);
-
+  // 모든 Hooks를 early return 이전에 호출
   // Zustand 스토어에서 좋아요 상태 관리
   const {
     setResumeLike,
@@ -560,49 +554,47 @@ export default function ResumesPage() {
     }
   };
 
-  // 로딩 상태 처리
-  if (isLoading) {
-    return (
-      <main className="pt-[50px] bg-white">
-        <div className="max-w-[1440px] mx-auto px-[16px] py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-key1 mx-auto mb-4"></div>
-              <p className="text-lg text-gray-600">
-                이력서 목록을 불러오는 중...
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  // 에러 상태 처리
-  if (error) {
-    return (
-      <main className="pt-[50px] bg-white">
-        <div className="max-w-[1440px] mx-auto px-[16px] py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <h2 className="text-xl font-bold mb-4">오류가 발생했습니다</h2>
-              <p className="text-gray-600 mb-4">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-key1 text-white rounded-md hover:bg-key1/90"
-              >
-                다시 시도
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <>
-      <main className="pt-[50px] bg-white">
+      {/* 로딩 상태 처리 */}
+      {isLoading && (
+        <main className="pt-[50px] bg-white">
+          <div className="max-w-[1440px] mx-auto px-[16px] py-8">
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-key1 mx-auto mb-4"></div>
+                <p className="text-lg text-gray-600">
+                  이력서 목록을 불러오는 중...
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* 에러 상태 처리 */}
+      {error && (
+        <main className="pt-[50px] bg-white">
+          <div className="max-w-[1440px] mx-auto px-[16px] py-8">
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <h2 className="text-xl font-bold mb-4">오류가 발생했습니다</h2>
+                <p className="text-gray-600 mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-key1 text-white rounded-md hover:bg-key1/90"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* 정상 상태 처리 */}
+      {!isLoading && !error && (
+        <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
           <div className="hidden xl:flex xl:gap-[30px] xl:py-8">
             {/* 왼쪽: 필터링 영역 */}
@@ -1024,6 +1016,7 @@ export default function ResumesPage() {
           )}
         </div>
       </main>
+      )}
       
       {/* 병원 인증 모달 */}
       <HospitalAuthModal 
