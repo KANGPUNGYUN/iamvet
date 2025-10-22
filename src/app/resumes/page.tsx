@@ -19,15 +19,15 @@ export default function ResumesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, userType, isLoading: isAuthLoading } = useHospitalAuth();
-  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
+  const { isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
 
   // 모든 Hooks를 early return 이전에 호출
   // Zustand 스토어에서 좋아요 상태 관리
   const {
     setResumeLike,
     toggleResumeLike,
-    initializeResumeLikes,
     isResumeLiked,
+    likedResumes,
   } = useLikeStore();
 
   // 적용된 필터 상태 (실제 필터링에 사용)
@@ -52,6 +52,12 @@ export default function ResumesPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  
+  // 좋아요 요청 상태 관리 (동시 요청 방지)
+  const [likingResumes, setLikingResumes] = useState<Set<string>>(new Set());
+  
+  // 스토어 초기화 상태 추적
+  const [isStoreInitialized, setIsStoreInitialized] = useState(false);
 
   // API 데이터 가져오기 (전체 데이터를 가져온 후 클라이언트에서 필터링)
   const {
@@ -64,22 +70,25 @@ export default function ResumesPage() {
     sort: appliedFilters.sortBy === "recent" ? "latest" : appliedFilters.sortBy,
   });
 
+
   // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
   React.useEffect(() => {
     if (apiData?.data) {
-      const likedResumeIds = apiData.data
-        .filter((resume: any) => resume.isLiked)
-        .map((resume: any) => resume.id);
-
-      if (likedResumeIds.length > 0) {
+      console.log(
+        "[ResumesPage] 모든 이력서의 좋아요 상태 초기화 시작"
+      );
+      
+      // 모든 이력서에 대해 좋아요 상태를 명시적으로 설정
+      apiData.data.forEach((resume: any) => {
+        setResumeLike(resume.id, resume.isLiked || false);
         console.log(
-          "[ResumesPage] 서버에서 받은 좋아요 이력서:",
-          likedResumeIds
+          `[ResumesPage] ${resume.id}: ${resume.isLiked ? "좋아요됨" : "좋아요안됨"}`
         );
-        initializeResumeLikes(likedResumeIds);
-      }
+      });
+      
+      setIsStoreInitialized(true);
     }
-  }, [apiData, initializeResumeLikes]);
+  }, [apiData, setResumeLike]);
 
   // URL에서 필터 상태 초기화
   useEffect(() => {
@@ -286,7 +295,6 @@ export default function ResumesPage() {
         .toLocaleDateString("ko-KR")
         .replace(/\//g, "."),
       lastLoginAt: resume.lastLoginAt || null, // 최근 로그인 정보 추가
-      isBookmarked: false,
       profileImage: resume.photo || undefined,
       createdAt: new Date(resume.createdAt),
       // 원본 데이터도 보관 (필터링용)
@@ -483,6 +491,12 @@ export default function ResumesPage() {
 
   // 이력서 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
   const handleResumeLike = async (resumeId: string) => {
+    // 이미 처리 중인 경우 무시
+    if (likingResumes.has(resumeId)) {
+      console.log(`[ResumesPage Like] ${resumeId} - 이미 처리 중, 요청 무시`);
+      return;
+    }
+
     const isCurrentlyLiked = isResumeLiked(resumeId);
 
     console.log(
@@ -490,6 +504,9 @@ export default function ResumesPage() {
         isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
       } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
     );
+
+    // 요청 시작 상태로 설정
+    setLikingResumes(prev => new Set(prev).add(resumeId));
 
     // 낙관적 업데이트: UI를 먼저 변경
     toggleResumeLike(resumeId);
@@ -507,12 +524,33 @@ export default function ResumesPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include', // 쿠키 포함
       });
 
-      const result = await response.json();
+      console.log(
+        `[ResumesPage Like] API 응답: ${response.status} ${response.statusText}`
+      );
 
       if (!response.ok) {
-        console.error(`[ResumesPage Like] ${actionText} 실패:`, result);
+        let result: any = {};
+        let responseText = '';
+        
+        try {
+          responseText = await response.text();
+          if (responseText) {
+            result = JSON.parse(responseText);
+          }
+        } catch (parseError) {
+          console.warn(`[ResumesPage Like] 응답 파싱 실패:`, parseError);
+          console.warn(`[ResumesPage Like] 원본 응답:`, responseText);
+        }
+
+        console.error(`[ResumesPage Like] ${actionText} 실패:`, {
+          status: response.status,
+          statusText: response.statusText,
+          result,
+          responseText
+        });
 
         // 오류 발생 시 상태 롤백
         setResumeLike(resumeId, isCurrentlyLiked);
@@ -539,6 +577,7 @@ export default function ResumesPage() {
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
       }
 
+      const result = await response.json();
       console.log(`[ResumesPage Like] ${actionText} 성공:`, result);
     } catch (error) {
       console.error(
@@ -551,6 +590,13 @@ export default function ResumesPage() {
       // 오류 발생 시 상태 롤백
       setResumeLike(resumeId, isCurrentlyLiked);
       alert("좋아요 처리 중 오류가 발생했습니다.");
+    } finally {
+      // 요청 완료 후 상태 해제
+      setLikingResumes(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(resumeId);
+        return newSet;
+      });
     }
   };
 
@@ -748,7 +794,7 @@ export default function ResumesPage() {
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
                     lastLoginAt={resume.lastLoginAt}
-                    isBookmarked={isResumeLiked(resume.id)}
+                    isBookmarked={isStoreInitialized ? likedResumes.has(resume.id) : (resume.originalData?.isLiked || false)}
                     profileImage={resume.profileImage}
                     onClick={() => {
                       window.location.href = `/resumes/${resume.id}`;
@@ -845,7 +891,7 @@ export default function ResumesPage() {
                     keywords={resume.keywords}
                     lastAccessDate={resume.lastAccessDate}
                     lastLoginAt={resume.lastLoginAt}
-                    isBookmarked={isResumeLiked(resume.id)}
+                    isBookmarked={isStoreInitialized ? likedResumes.has(resume.id) : (resume.originalData?.isLiked || false)}
                     profileImage={resume.profileImage}
                     onClick={() => {
                       window.location.href = `/resumes/${resume.id}`;

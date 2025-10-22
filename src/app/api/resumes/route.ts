@@ -156,46 +156,23 @@ export async function GET(request: NextRequest) {
     console.log("[Resumes API] resumesResult.data 개수:", resumesResult.data?.length);
     
     if (userId && resumesResult.data) {
-      // 일반 조회의 경우 user ID로 detailed_resume을 찾아야 함
       if (!bookmarked) {
-        // 사용자 ID들로부터 detailed_resume ID들을 찾기
-        const userIds = resumesResult.data.map((resume: any) => resume.id).filter(Boolean);
-        console.log("[Resumes API] 조회할 user IDs:", userIds);
+        // 일반 조회의 경우 getResumesWithPagination에서 반환한 ID는 이미 detailed_resume의 ID
+        const resumeIds = resumesResult.data.map((resume: any) => resume.id).filter(Boolean);
+        console.log("[Resumes API] 조회할 resume IDs:", resumeIds);
         
-        if (userIds.length > 0) {
-          const detailedResumes = await (prisma as any).detailed_resumes.findMany({
-            where: { userId: { in: userIds } },
-            select: { id: true, userId: true }
+        if (resumeIds.length > 0) {
+          const likes = await (prisma as any).resume_likes.findMany({
+            where: { 
+              userId,
+              resumeId: { in: resumeIds }
+            },
+            select: { resumeId: true }
           });
+          console.log("[Resumes API] 조회된 좋아요:", likes);
           
-          const resumeToUserMap = new Map();
-          detailedResumes.forEach((dr: any) => {
-            resumeToUserMap.set(dr.userId, dr.id);
-          });
-          
-          const detailedResumeIds = detailedResumes.map((dr: any) => dr.id);
-          console.log("[Resumes API] 조회할 detailed resume IDs:", detailedResumeIds);
-          
-          if (detailedResumeIds.length > 0) {
-            const likes = await (prisma as any).resume_likes.findMany({
-              where: { 
-                userId,
-                resumeId: { in: detailedResumeIds }
-              },
-              select: { resumeId: true }
-            });
-            console.log("[Resumes API] 조회된 좋아요:", likes);
-            
-            // resumeId를 userId로 변환
-            const likedResumeIds = likes.map((like: any) => like.resumeId);
-            userLikes = [];
-            detailedResumes.forEach((dr: any) => {
-              if (likedResumeIds.includes(dr.id)) {
-                userLikes.push(dr.userId);
-              }
-            });
-            console.log("[Resumes API] 좋아요된 user IDs:", userLikes);
-          }
+          userLikes = likes.map((like: any) => like.resumeId);
+          console.log("[Resumes API] 좋아요된 resume IDs:", userLikes);
         }
       } else {
         // 북마크 조회의 경우 이미 resumeId로 조회했으므로 다시 매핑 필요
@@ -210,7 +187,7 @@ export async function GET(request: NextRequest) {
       ...resumesResult,
       data: resumesResult.data.map((resume: any) => ({
         ...resume,
-        isLiked: userId ? userLikes.includes(resume.userId || resume.id) : false
+        isLiked: userId ? userLikes.includes(resume.id) : false
       }))
     } : resumesResult;
 

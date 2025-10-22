@@ -62,8 +62,8 @@ export const useLikeStore = create<LikeState>((set, get) => ({
   },
   
   initializeResumeLikes: (resumeIds: string[]) => {
-    set((state) => {
-      const newLikedResumes = new Set([...Array.from(state.likedResumes), ...resumeIds]);
+    set(() => {
+      const newLikedResumes = new Set(resumeIds);
       console.log(`[LikeStore] Resume 좋아요 초기화:`, Array.from(newLikedResumes));
       return { likedResumes: newLikedResumes };
     });
