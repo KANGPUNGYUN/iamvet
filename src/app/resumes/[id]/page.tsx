@@ -147,7 +147,7 @@ export default function ResumeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const { isAuthenticated, userType } = useHospitalAuth();
+  const { isAuthenticated, userType, isLoading: isAuthLoading } = useHospitalAuth();
   const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
@@ -189,12 +189,12 @@ export default function ResumeDetailPage({
 
   const { id } = use(params);
   
-  // 병원 사용자가 아닌 경우 모달 표시
+  // 병원 사용자가 아닌 경우에만 모달 표시
   React.useEffect(() => {
-    if (!isAuthenticated || userType !== 'HOSPITAL') {
+    if (!isAuthLoading && (!isAuthenticated || userType !== 'HOSPITAL')) {
       showModal(`/resumes/${id}`);
     }
-  }, [isAuthenticated, userType, showModal, id]);
+  }, [isAuthenticated, userType, showModal, id, isAuthLoading]);
 
 
   const { data: resumeData, isLoading, error } = useResumeDetail(id);

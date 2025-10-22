@@ -5,6 +5,7 @@ import {
   getLectureComments,
   createLectureComment,
   getLectureById,
+  getUserById,
 } from "@/lib/database";
 
 interface RouteContext {
