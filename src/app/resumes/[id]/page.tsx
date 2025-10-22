@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect } from "react";
+import React, { useState, use, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -39,6 +39,8 @@ import { deleteResumeAction } from "@/actions/resumes";
 import { useLikeStore } from "@/stores/likeStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
 import { useHospitalAuth } from "@/utils/hospitalAuthGuard";
+import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
+import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
 
 // 별점 표시 컴포넌트 (소수점 지원)
 const StarRating = ({
@@ -145,7 +147,8 @@ export default function ResumeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const { isHospitalUser } = useHospitalAuth();
+  const { isAuthenticated, userType } = useHospitalAuth();
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
@@ -186,8 +189,15 @@ export default function ResumeDetailPage({
 
   const { id } = use(params);
   
+  // 병원 사용자가 아닌 경우 모달 표시
+  React.useEffect(() => {
+    if (!isAuthenticated || userType !== 'HOSPITAL') {
+      showModal(`/resumes/${id}`);
+    }
+  }, [isAuthenticated, userType, showModal, id]);
+
   // 병원 사용자가 아닌 경우 접근 차단
-  if (!isHospitalUser) {
+  if (!isAuthenticated || userType !== 'HOSPITAL') {
     return (
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px] py-8">
@@ -2616,6 +2626,13 @@ export default function ResumeDetailPage({
           </div>
         </div>
       )}
+      
+      {/* 병원 인증 모달 */}
+      <HospitalAuthModal 
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        returnUrl={modalReturnUrl}
+      />
     </>
   );
 }

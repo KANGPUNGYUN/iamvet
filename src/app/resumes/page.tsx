@@ -23,7 +23,7 @@ export default function ResumesPage() {
 
   // 병원 사용자가 아닌 경우 모달 표시
   React.useEffect(() => {
-    if (!isAuthenticated || userType !== 'hospital') {
+    if (!isAuthenticated || userType !== 'HOSPITAL') {
       showModal('/resumes');
     }
   }, [isAuthenticated, userType, showModal]);

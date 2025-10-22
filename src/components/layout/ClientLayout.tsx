@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { useAuth, useLogout } from "@/hooks/api/useAuth";
+import { useAuthStore as useHospitalAuthStore } from "@/stores/authStore";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -18,11 +19,27 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   // 새로운 상태 관리 시스템 사용
   const { user, isAuthenticated, isLoading } = useAuth();
   const logoutMutation = useLogout();
+  
+  // 병원 인증용 스토어
+  const { setAuth, checkAuth, logout: hospitalLogout } = useHospitalAuthStore();
 
   // 클라이언트 hydration 완료 체크
   React.useEffect(() => {
     setIsHydrated(true);
-  }, []);
+    checkAuth(); // 병원 인증 스토어 초기화
+  }, [checkAuth]);
+  
+  // 인증 상태가 변경되면 병원 인증 스토어도 동기화
+  React.useEffect(() => {
+    if (user) {
+      const userType = user.type === 'hospital' ? 'HOSPITAL' : 
+                      user.type === 'veterinarian' ? 'VETERINARIAN' : 
+                      'VETERINARY_STUDENT';
+      setAuth(isAuthenticated, userType, user.id);
+    } else if (!isAuthenticated) {
+      setAuth(false);
+    }
+  }, [user, isAuthenticated, setAuth]);
 
   // 관리자 페이지인지 확인
   const isAdminPage = pathname.startsWith("/admin");
@@ -30,6 +47,7 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   // 로그아웃 처리
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();
+    hospitalLogout(); // 병원 인증 스토어도 초기화
     router.push("/");
   };
 
