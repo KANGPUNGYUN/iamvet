@@ -26,6 +26,8 @@ interface JobInfoCardProps {
   isNew?: boolean; // 신규 공고 여부
   id?: number | string; // 채용공고 ID 추가
   className?: string;
+  deadline?: string | null; // 마감일 정보 추가 (ISO 형식 또는 "상시")
+  isAlwaysOpen?: boolean; // 상시 채용 여부
 }
 
 const JobInfoCard: React.FC<JobInfoCardProps> = ({
@@ -44,8 +46,39 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
   isNew = false,
   id,
   className,
+  deadline = null,
+  isAlwaysOpen = false,
 }) => {
   const isWide = variant === "wide";
+
+  // 마감일 포맷팅 함수 (~mm/dd(월) 형식)
+  const formatDeadline = (
+    deadline: string | null,
+    isAlwaysOpen: boolean
+  ): string => {
+    if (isAlwaysOpen || deadline === "상시") {
+      return "상시";
+    }
+
+    if (!deadline) {
+      return "";
+    }
+
+    try {
+      const date = new Date(deadline);
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+      const weekday = weekdays[date.getDay()];
+
+      return `~${month}/${day}(${weekday})`;
+    } catch (error) {
+      return "";
+    }
+  };
+
+  const deadlineText = formatDeadline(deadline, isAlwaysOpen);
 
   // Wide 버전일 때의 스타일
   const containerClass = isWide
@@ -119,15 +152,32 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
         )}
       </div>
 
-      {/* 태그들 */}
-      <div className="flex justify-between">
+      {/* 태그들과 마감일 */}
+      <div className="space-y-3">
+        {/* 태그들 */}
         <div className="flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
-            <Tag key={index} variant={3}>
-              {tag}
-            </Tag>
-          ))}
+          {tags.length <= 3 ? (
+            tags.map((tag, index) => (
+              <Tag key={index} variant={3}>
+                {tag}
+              </Tag>
+            ))
+          ) : (
+            <>
+              <Tag variant={3}>{tags[0]}</Tag>
+              <Tag variant={3}>외 {tags.length - 1}개</Tag>
+            </>
+          )}
         </div>
+
+        {/* 마감일 정보 - 별도 행에 오른쪽 정렬 */}
+        {deadlineText && (
+          <div className="flex justify-end">
+            <span className="font-text text-[12px] text-medium text-subtext2">
+              {deadlineText}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

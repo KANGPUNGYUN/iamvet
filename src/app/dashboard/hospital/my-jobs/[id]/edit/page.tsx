@@ -114,11 +114,29 @@ export default function EditJobPage({ params }: EditJobPageProps) {
       const timeToObject = (time: string | null) => {
         if (!time) return null;
         const [hourStr, minute] = time.split(':');
-        const hour = parseInt(hourStr);
+        const hour24 = parseInt(hourStr);
+        
+        let hour12;
+        let period;
+        
+        if (hour24 === 0) {
+          hour12 = 12; // 0시 → 12 AM
+          period = 'AM';
+        } else if (hour24 === 12) {
+          hour12 = 12; // 12시 → 12 PM
+          period = 'PM';
+        } else if (hour24 > 12) {
+          hour12 = hour24 - 12; // 13시 → 1 PM
+          period = 'PM';
+        } else {
+          hour12 = hour24; // 1-11시 → 1-11 AM
+          period = 'AM';
+        }
+        
         return {
-          hour: hour > 12 ? hour - 12 : hour,
+          hour: hour12,
           minute: parseInt(minute),
-          period: hour >= 12 ? 'PM' : 'AM'
+          period: period
         };
       };
 
@@ -224,15 +242,24 @@ export default function EditJobPage({ params }: EditJobPageProps) {
 
   const handleSave = async () => {
     try {
-      // 시간 포맷 변환
+      // 시간 포맷 변환 (AM/PM을 24시간 형식으로)
       const formatTime = (timeObj: any) => {
         if (!timeObj) return null;
-        const hour = timeObj.period === 'PM' && timeObj.hour !== 12 
-          ? timeObj.hour + 12 
-          : timeObj.period === 'AM' && timeObj.hour === 12 
-          ? 0 
-          : timeObj.hour;
-        return `${hour.toString().padStart(2, '0')}:${timeObj.minute.toString().padStart(2, '0')}`;
+        
+        let hour = timeObj.hour;
+        const minute = timeObj.minute;
+        const period = timeObj.period;
+
+        // AM/PM이 있는 경우 24시간 형식으로 변환
+        if (period) {
+          if (period === "PM" && hour !== 12) {
+            hour = hour + 12; // PM 2시 → 14시
+          } else if (period === "AM" && hour === 12) {
+            hour = 0; // AM 12시 → 0시
+          }
+        }
+
+        return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       };
 
       const requestData = {

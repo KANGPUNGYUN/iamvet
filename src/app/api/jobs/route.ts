@@ -126,6 +126,8 @@ export async function GET(request: NextRequest) {
       isLiked: userLikes.includes(job.id),
       dDay: job.recruitEndDate ? Math.ceil((new Date(job.recruitEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null,
       deadline: job.recruitEndDate ? new Date(job.recruitEndDate) : null,
+      recruitEndDate: job.recruitEndDate ? new Date(job.recruitEndDate) : null,
+      isUnlimitedRecruit: Boolean(job.isUnlimitedRecruit) || !job.recruitEndDate,
       createdAt: new Date(job.createdAt),
       // Additional fields for detailed view
       jobType: Array.isArray(job.workType) ? job.workType.join(', ') : (job.workType || '정규직'),

@@ -889,6 +889,8 @@ export default function HomePage() {
                                 isBookmarked={job.isBookmarked || false}
                                 isLiked={isJobLiked(job.id)}
                                 onLike={handleJobLike}
+                                deadline={job.recruitEndDate}
+                                isAlwaysOpen={job.isUnlimitedRecruit || false}
                                 onClick={() =>
                                   (window.location.href = `/jobs/${job.id}`)
                                 }

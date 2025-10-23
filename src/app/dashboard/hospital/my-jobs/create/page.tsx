@@ -213,7 +213,21 @@ export default function CreateJobPage() {
 
   const formatTime = (timeObj: any): string => {
     if (!timeObj) return "";
-    return `${timeObj.hour?.toString().padStart(2, '0')}:${timeObj.minute?.toString().padStart(2, '0')}`;
+    
+    let hour = timeObj.hour;
+    const minute = timeObj.minute;
+    const period = timeObj.period;
+
+    // AM/PM이 있는 경우 24시간 형식으로 변환
+    if (period) {
+      if (period === "PM" && hour !== 12) {
+        hour = hour + 12; // PM 2시 → 14시
+      } else if (period === "AM" && hour === 12) {
+        hour = 0; // AM 12시 → 0시
+      }
+    }
+
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
   };
 
   return (

@@ -521,6 +521,8 @@ export default function JobsPage() {
                       variant="wide"
                       showDeadline={true}
                       isNew={job.isNew}
+                      deadline={job.recruitEndDate}
+                      isAlwaysOpen={job.isUnlimitedRecruit || false}
                       onClick={() => router.push(`/jobs/${job.id}`)}
                     />
                   ))
@@ -757,6 +759,8 @@ export default function JobsPage() {
                         isBookmarked={job.isBookmarked}
                         isLiked={isJobLiked(job.id)}
                         onLike={handleJobLike}
+                        deadline={job.recruitEndDate}
+                        isAlwaysOpen={job.isUnlimitedRecruit || false}
                         variant="wide"
                         showDeadline={false}
                         isNew={job.isNew}
@@ -873,6 +877,8 @@ export default function JobsPage() {
                         isBookmarked={job.isBookmarked}
                         isLiked={isJobLiked(job.id)}
                         onLike={handleJobLike}
+                        deadline={job.recruitEndDate}
+                        isAlwaysOpen={job.isUnlimitedRecruit || false}
                         variant="wide"
                         showDeadline={false}
                         isNew={job.isNew}
