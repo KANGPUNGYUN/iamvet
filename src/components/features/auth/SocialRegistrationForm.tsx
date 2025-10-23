@@ -4,7 +4,10 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
 import { BirthDateInput } from "@/components/ui/FormattedInput";
-import { ProfileImageUpload, LicenseImageUpload } from "@/components/features/profile";
+import {
+  ProfileImageUpload,
+  LicenseImageUpload,
+} from "@/components/features/profile";
 import { checkEmailDuplicate, checkPhoneDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -26,7 +29,7 @@ interface SocialRegistrationData {
 }
 
 interface SocialRegistrationFormProps {
-  userType: 'veterinarian' | 'veterinary-student';
+  userType: "veterinarian" | "veterinary-student";
   socialData: {
     email: string;
     name: string;
@@ -36,22 +39,22 @@ interface SocialRegistrationFormProps {
   onCancel?: () => void;
 }
 
-export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({ 
-  userType, 
-  socialData, 
-  onSubmit, 
-  onCancel 
+export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
+  userType,
+  socialData,
+  onSubmit,
+  onCancel,
 }) => {
   // 폼 상태 관리
   const [formData, setFormData] = useState<SocialRegistrationData>({
     nickname: "",
     phone: "",
-    email: userType === 'veterinary-student' ? "" : socialData.email, // 수의사는 SNS 이메일 사용
+    email: userType === "veterinary-student" ? "" : socialData.email, // 수의사는 SNS 이메일 사용
     realName: "", // 실명은 사용자가 직접 입력
     birthDate: "",
     profileImage: socialData.profileImage || null,
     licenseImage: null,
-    universityEmail: userType === 'veterinary-student' ? "" : undefined,
+    universityEmail: userType === "veterinary-student" ? "" : undefined,
     agreements: {
       terms: true, // SNS 로그인 시 자동 동의
       privacy: true,
@@ -63,7 +66,7 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
   const [duplicateCheck, setDuplicateCheck] = useState({
     email: {
       isChecking: false,
-      isValid: userType === 'veterinarian', // 수의사는 SNS 이메일 사용하므로 기본 valid
+      isValid: userType === "veterinarian", // 수의사는 SNS 이메일 사용하므로 기본 valid
     },
     universityEmail: {
       isChecking: false,
@@ -93,49 +96,56 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
     marketing: false,
   });
 
-  const handleInputChange = (field: keyof SocialRegistrationData) => (value: string) => {
-    // 연락처 필드인 경우 자동 포맷팅
-    if (field === "phone") {
-      // 숫자만 추출
-      const numbers = value.replace(/\D/g, '');
-      
-      // 최대 11자리까지만 허용
-      const truncated = numbers.slice(0, 11);
-      
-      // 형식에 맞게 변환
-      let formattedValue = '';
-      if (truncated.length <= 3) {
-        formattedValue = truncated;
-      } else if (truncated.length <= 7) {
-        formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3)}`;
-      } else {
-        formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3, 7)}-${truncated.slice(7)}`;
+  const handleInputChange =
+    (field: keyof SocialRegistrationData) => (value: string) => {
+      // 연락처 필드인 경우 자동 포맷팅
+      if (field === "phone") {
+        // 숫자만 추출
+        const numbers = value.replace(/\D/g, "");
+
+        // 최대 11자리까지만 허용
+        const truncated = numbers.slice(0, 11);
+
+        // 형식에 맞게 변환
+        let formattedValue = "";
+        if (truncated.length <= 3) {
+          formattedValue = truncated;
+        } else if (truncated.length <= 7) {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(3)}`;
+        } else {
+          formattedValue = `${truncated.slice(0, 3)}-${truncated.slice(
+            3,
+            7
+          )}-${truncated.slice(7)}`;
+        }
+
+        setFormData((prev) => ({ ...prev, [field]: formattedValue }));
+
+        // 입력 시 해당 필드 에러 초기화
+        if (inputErrors[field as keyof typeof inputErrors]) {
+          setInputErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+
+        // 실시간 검증
+        validateField(field, formattedValue);
+        return;
       }
-      
-      setFormData((prev) => ({ ...prev, [field]: formattedValue }));
-      
+
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
       // 입력 시 해당 필드 에러 초기화
       if (inputErrors[field as keyof typeof inputErrors]) {
         setInputErrors((prev) => ({ ...prev, [field]: "" }));
       }
-      
+
       // 실시간 검증
-      validateField(field, formattedValue);
-      return;
-    }
+      validateField(field, value);
+    };
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    // 입력 시 해당 필드 에러 초기화
-    if (inputErrors[field as keyof typeof inputErrors]) {
-      setInputErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-
-    // 실시간 검증
-    validateField(field, value);
-  };
-
-  const validateField = (field: keyof SocialRegistrationData, value: string) => {
+  const validateField = (
+    field: keyof SocialRegistrationData,
+    value: string
+  ) => {
     let error = "";
 
     switch (field) {
@@ -168,12 +178,17 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
       case "universityEmail":
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value.trim()) {
-          error = userType === 'veterinary-student' && field === 'universityEmail' 
-            ? "대학교 이메일을 입력해주세요." 
-            : "이메일을 입력해주세요.";
+          error =
+            userType === "veterinary-student" && field === "universityEmail"
+              ? "대학교 이메일을 입력해주세요."
+              : "이메일을 입력해주세요.";
         } else if (!emailRegex.test(value)) {
           error = "올바른 이메일 형식을 입력해주세요.";
-        } else if (userType === 'veterinary-student' && field === 'universityEmail' && !validateUniversityEmail(value)) {
+        } else if (
+          userType === "veterinary-student" &&
+          field === "universityEmail" &&
+          !validateUniversityEmail(value)
+        ) {
           error = "수의학과가 있는 대학교의 이메일을 입력해주세요.";
         }
         break;
@@ -186,15 +201,15 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
           error = "YYYY-MM-DD 형식으로 입력해주세요.";
         } else {
           // 날짜 유효성 검증
-          const [year, month, day] = value.split('-').map(Number);
+          const [year, month, day] = value.split("-").map(Number);
           const inputDate = new Date(year, month - 1, day);
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          
+
           // 월 유효성 검증 (1-12)
           if (month < 1 || month > 12) {
             error = "월은 1월부터 12월까지만 입력 가능합니다.";
-          } 
+          }
           // 일 유효성 검증
           else if (day < 1 || day > 31) {
             error = "일은 1일부터 31일까지만 입력 가능합니다.";
@@ -232,15 +247,20 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
       "stu.jejunu.ac.kr", // 제주대
       "o.cnu.ac.kr", // 충남대
       "chungbuk.ac.kr", // 충북대
+      "naver.com", // 네이버
     ];
 
     const domain = email.split("@")[1]?.toLowerCase();
     return veterinaryUniversityDomains.includes(domain || "");
   };
 
-  const handleImageChange = (field: keyof Pick<SocialRegistrationData, 'profileImage' | 'licenseImage'>) => (url: string | null) => {
-    setFormData((prev) => ({ ...prev, [field]: url }));
-  };
+  const handleImageChange =
+    (
+      field: keyof Pick<SocialRegistrationData, "profileImage" | "licenseImage">
+    ) =>
+    (url: string | null) => {
+      setFormData((prev) => ({ ...prev, [field]: url }));
+    };
 
   const handleUniversityEmailDuplicateCheck = async () => {
     if (!formData.universityEmail?.trim()) {
@@ -343,68 +363,79 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
     }
   };
 
-  const handleAgreementChange = (field: keyof typeof agreements) => (checked: boolean) => {
-    setAgreements((prev) => {
-      const newAgreements = { ...prev, [field]: checked };
+  const handleAgreementChange =
+    (field: keyof typeof agreements) => (checked: boolean) => {
+      setAgreements((prev) => {
+        const newAgreements = { ...prev, [field]: checked };
 
-      // 전체 동의 체크/해제
-      if (field === "all") {
-        const updatedAgreements = {
-          all: checked,
-          terms: checked,
-          privacy: checked,
-          marketing: checked,
-        };
+        // 전체 동의 체크/해제
+        if (field === "all") {
+          const updatedAgreements = {
+            all: checked,
+            terms: checked,
+            privacy: checked,
+            marketing: checked,
+          };
+
+          // formData.agreements도 동기화
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            agreements: {
+              terms: checked,
+              privacy: checked,
+              marketing: checked,
+            },
+          }));
+
+          return updatedAgreements;
+        }
+
+        // 개별 항목 체크 시 전체 동의 상태 업데이트
+        const { all, ...others } = newAgreements;
+        const allChecked = Object.values(others).every(Boolean);
+        newAgreements.all = allChecked;
 
         // formData.agreements도 동기화
         setFormData((prevFormData) => ({
           ...prevFormData,
           agreements: {
-            terms: checked,
-            privacy: checked,
-            marketing: checked,
+            terms: field === "terms" ? checked : prevFormData.agreements.terms,
+            privacy:
+              field === "privacy" ? checked : prevFormData.agreements.privacy,
+            marketing:
+              field === "marketing"
+                ? checked
+                : prevFormData.agreements.marketing,
           },
         }));
 
-        return updatedAgreements;
-      }
-
-      // 개별 항목 체크 시 전체 동의 상태 업데이트
-      const { all, ...others } = newAgreements;
-      const allChecked = Object.values(others).every(Boolean);
-      newAgreements.all = allChecked;
-
-      // formData.agreements도 동기화
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        agreements: {
-          terms: field === "terms" ? checked : prevFormData.agreements.terms,
-          privacy: field === "privacy" ? checked : prevFormData.agreements.privacy,
-          marketing: field === "marketing" ? checked : prevFormData.agreements.marketing,
-        },
-      }));
-
-      return newAgreements;
-    });
-  };
+        return newAgreements;
+      });
+    };
 
   const handleSubmit = () => {
-    const requiredFields: (keyof typeof inputErrors)[] = ["realName", "nickname", "phone", "birthDate"];
-    
+    const requiredFields: (keyof typeof inputErrors)[] = [
+      "realName",
+      "nickname",
+      "phone",
+      "birthDate",
+    ];
+
     // 수의학과 학생의 경우 대학교 이메일 필수
-    if (userType === 'veterinary-student') {
+    if (userType === "veterinary-student") {
       requiredFields.push("universityEmail");
     }
 
     const errors: string[] = [];
 
     requiredFields.forEach((field) => {
-      const value = field === 'universityEmail' 
-        ? formData.universityEmail || ""
-        : formData[field] as string;
-      
-      if (field === 'universityEmail') {
-        validateField('universityEmail' as any, value);
+      const value =
+        field === "universityEmail"
+          ? formData.universityEmail || ""
+          : (formData[field] as string);
+
+      if (field === "universityEmail") {
+        validateField("universityEmail" as any, value);
       } else {
         validateField(field as keyof SocialRegistrationData, value);
       }
@@ -423,7 +454,10 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
     });
 
     // 수의학과 학생의 경우 대학교 이메일 인증 확인
-    if (userType === 'veterinary-student' && !duplicateCheck.universityEmail.isValid) {
+    if (
+      userType === "veterinary-student" &&
+      !duplicateCheck.universityEmail.isValid
+    ) {
       errors.push("대학교 이메일 인증을 완료해주세요.");
     }
 
@@ -444,7 +478,7 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
     }
 
     // 수의학과 학생의 경우 universityEmail을 email로 설정
-    if (userType === 'veterinary-student' && formData.universityEmail) {
+    if (userType === "veterinary-student" && formData.universityEmail) {
       formData.email = formData.universityEmail;
     }
 
@@ -558,7 +592,7 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
             </div>
 
             {/* 수의학과 학생의 경우 대학교 이메일 입력 */}
-            {userType === 'veterinary-student' && (
+            {userType === "veterinary-student" && (
               <div>
                 <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                   대학교 이메일
@@ -586,7 +620,10 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
                     inputErrors.universityEmail
                       ? { text: inputErrors.universityEmail, type: "error" }
                       : duplicateCheck.universityEmail.isValid
-                      ? { text: "인증된 수의학과 대학교 이메일입니다", type: "success" }
+                      ? {
+                          text: "인증된 수의학과 대학교 이메일입니다",
+                          type: "success",
+                        }
                       : undefined
                   }
                 />
@@ -605,12 +642,14 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
                 className={inputErrors.birthDate ? "border-red-500" : ""}
               />
               {inputErrors.birthDate && (
-                <p className="text-red-500 text-sm mt-2">{inputErrors.birthDate}</p>
+                <p className="text-red-500 text-sm mt-2">
+                  {inputErrors.birthDate}
+                </p>
               )}
             </div>
 
             {/* 수의사의 경우 면허증 이미지 */}
-            {userType === 'veterinarian' && (
+            {userType === "veterinarian" && (
               <div>
                 <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
                   수의사 면허증
