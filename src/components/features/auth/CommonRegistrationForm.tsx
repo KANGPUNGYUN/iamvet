@@ -3,20 +3,25 @@
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
-import { ProfileImageUpload, LicenseImageUpload } from "@/components/features/profile";
+import {
+  ProfileImageUpload,
+  LicenseImageUpload,
+} from "@/components/features/profile";
 import { checkUserIdDuplicate, checkEmailDuplicate } from "@/actions/auth";
 import Link from "next/link";
 import { useState } from "react";
-import { 
-  BaseRegistrationData, 
-  VeterinarianRegistrationData, 
+import {
+  BaseRegistrationData,
+  VeterinarianRegistrationData,
   VeterinaryStudentRegistrationData,
   DuplicateCheckState,
   InputErrorState,
-  UserRegistrationType
+  UserRegistrationType,
 } from "./types";
 
-type RegistrationData = VeterinarianRegistrationData | VeterinaryStudentRegistrationData;
+type RegistrationData =
+  | VeterinarianRegistrationData
+  | VeterinaryStudentRegistrationData;
 
 interface CommonRegistrationFormProps {
   userType: UserRegistrationType;
@@ -24,13 +29,13 @@ interface CommonRegistrationFormProps {
   onCancel?: () => void;
 }
 
-export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({ 
-  userType, 
-  onSubmit, 
-  onCancel 
+export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
+  userType,
+  onSubmit,
+  onCancel,
 }) => {
-  const isVeterinarian = userType === 'veterinarian';
-  const isVeterinaryStudent = userType === 'veterinary-student';
+  const isVeterinarian = userType === "veterinarian";
+  const isVeterinaryStudent = userType === "veterinary-student";
 
   // 폼 상태 관리
   const [formData, setFormData] = useState<RegistrationData>(() => {
@@ -52,9 +57,15 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
     };
 
     if (isVeterinarian) {
-      return { ...baseData, licenseImage: null } as VeterinarianRegistrationData;
+      return {
+        ...baseData,
+        licenseImage: null,
+      } as VeterinarianRegistrationData;
     } else {
-      return { ...baseData, universityEmail: "" } as VeterinaryStudentRegistrationData;
+      return {
+        ...baseData,
+        universityEmail: "",
+      } as VeterinaryStudentRegistrationData;
     }
   });
 
@@ -84,17 +95,21 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 폼 필드 업데이트  
+  // 폼 필드 업데이트
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    
+
     // 해당 필드의 에러 클리어
     if (errors[field as keyof InputErrorState]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
 
     // 중복 검사 상태 리셋 (userId, email, universityEmail의 경우)
-    if (field === "userId" || field === "email" || (field === "universityEmail" && isVeterinaryStudent)) {
+    if (
+      field === "userId" ||
+      field === "email" ||
+      (field === "universityEmail" && isVeterinaryStudent)
+    ) {
       setDuplicateChecks((prev) => ({
         ...prev,
         [field]: { checked: false, available: false, message: "" },
@@ -110,7 +125,10 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
     }
 
     if (formData.userId.length < 4) {
-      setErrors((prev) => ({ ...prev, userId: "아이디는 4자 이상이어야 합니다." }));
+      setErrors((prev) => ({
+        ...prev,
+        userId: "아이디는 4자 이상이어야 합니다.",
+      }));
       return;
     }
 
@@ -125,7 +143,10 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
         },
       }));
     } catch (error) {
-      setErrors((prev) => ({ ...prev, userId: "중복 검사 중 오류가 발생했습니다." }));
+      setErrors((prev) => ({
+        ...prev,
+        userId: "중복 검사 중 오류가 발생했습니다.",
+      }));
     }
   };
 
@@ -138,7 +159,10 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setErrors((prev) => ({ ...prev, email: "올바른 이메일 형식을 입력해주세요." }));
+      setErrors((prev) => ({
+        ...prev,
+        email: "올바른 이메일 형식을 입력해주세요.",
+      }));
       return;
     }
 
@@ -153,41 +177,62 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
         },
       }));
     } catch (error) {
-      setErrors((prev) => ({ ...prev, email: "중복 검사 중 오류가 발생했습니다." }));
+      setErrors((prev) => ({
+        ...prev,
+        email: "중복 검사 중 오류가 발생했습니다.",
+      }));
     }
   };
 
   // 대학교 이메일 검증
   const validateUniversityEmail = (email: string): boolean => {
     const universityDomains = [
-      'snu.ac.kr', 'yonsei.ac.kr', 'korea.ac.kr', 'konkuk.ac.kr', 
-      'kangwon.ac.kr', 'chungbuk.ac.kr', 'chonnam.ac.kr', 'kyungpook.ac.kr',
-      'pusan.ac.kr', 'jnu.ac.kr', 'ac.kr'
+      "kangwon.ac.kr", // 강원대학교
+      "konkuk.ac.kr", // 건국대학교
+      "knu.ac.kr", // 경북대학교
+      "gnu.ac.kr", // 경상국립대학교
+      "snu.ac.kr", // 서울대학교
+      "jnu.ac.kr", // 전남대학교
+      "jbnu.ac.kr", // 전북대학교
+      "stu.jejunu.ac.kr", // 제주대학교
+      "o.cnu.ac.kr", // 충남대학교
+      "chungbuk.ac.kr", // 충북대학교
+      "naver.com", // 네이버
     ];
 
-    const domain = email.split('@')[1]?.toLowerCase();
-    return universityDomains.some(uniDomain => domain?.endsWith(uniDomain));
+    const domain = email.split("@")[1]?.toLowerCase();
+    return universityDomains.some((uniDomain) => domain === uniDomain);
   };
 
   // 대학교 이메일 중복 검사
   const handleUniversityEmailDuplicateCheck = async () => {
-    if (!isVeterinaryStudent || !('universityEmail' in formData)) return;
-    
-    const universityEmail = (formData as VeterinaryStudentRegistrationData).universityEmail;
-    
+    if (!isVeterinaryStudent || !("universityEmail" in formData)) return;
+
+    const universityEmail = (formData as VeterinaryStudentRegistrationData)
+      .universityEmail;
+
     if (!universityEmail) {
-      setErrors((prev) => ({ ...prev, universityEmail: "대학교 이메일을 입력해주세요." }));
+      setErrors((prev) => ({
+        ...prev,
+        universityEmail: "대학교 이메일을 입력해주세요.",
+      }));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(universityEmail)) {
-      setErrors((prev) => ({ ...prev, universityEmail: "올바른 이메일 형식을 입력해주세요." }));
+      setErrors((prev) => ({
+        ...prev,
+        universityEmail: "올바른 이메일 형식을 입력해주세요.",
+      }));
       return;
     }
 
     if (!validateUniversityEmail(universityEmail)) {
-      setErrors((prev) => ({ ...prev, universityEmail: "인증된 대학교 이메일을 입력해주세요." }));
+      setErrors((prev) => ({
+        ...prev,
+        universityEmail: "인증된 대학교 이메일을 입력해주세요.",
+      }));
       return;
     }
 
@@ -202,7 +247,10 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
         },
       }));
     } catch (error) {
-      setErrors((prev) => ({ ...prev, universityEmail: "중복 검사 중 오류가 발생했습니다." }));
+      setErrors((prev) => ({
+        ...prev,
+        universityEmail: "중복 검사 중 오류가 발생했습니다.",
+      }));
     }
   };
 
@@ -223,7 +271,8 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
     // 필수 필드 검증
     if (!formData.userId) newErrors.userId = "아이디를 입력해주세요.";
     if (!formData.password) newErrors.password = "비밀번호를 입력해주세요.";
-    if (!formData.passwordConfirm) newErrors.passwordConfirm = "비밀번호 확인을 입력해주세요.";
+    if (!formData.passwordConfirm)
+      newErrors.passwordConfirm = "비밀번호 확인을 입력해주세요.";
     if (!formData.realName) newErrors.realName = "실명을 입력해주세요.";
     if (!formData.nickname) newErrors.nickname = "닉네임을 입력해주세요.";
     if (!formData.phone) newErrors.phone = "전화번호를 입력해주세요.";
@@ -231,7 +280,7 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
     if (!formData.birthDate) newErrors.birthDate = "생년월일을 입력해주세요.";
 
     // 수의학과 학생인 경우 대학교 이메일 검증
-    if (isVeterinaryStudent && 'universityEmail' in formData) {
+    if (isVeterinaryStudent && "universityEmail" in formData) {
       if (!formData.universityEmail) {
         newErrors.universityEmail = "대학교 이메일을 입력해주세요.";
       }
@@ -254,7 +303,11 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
     if (!duplicateChecks.email.checked || !duplicateChecks.email.available) {
       newErrors.email = "이메일 중복 검사를 완료해주세요.";
     }
-    if (isVeterinaryStudent && (!duplicateChecks.universityEmail.checked || !duplicateChecks.universityEmail.available)) {
+    if (
+      isVeterinaryStudent &&
+      (!duplicateChecks.universityEmail.checked ||
+        !duplicateChecks.universityEmail.available)
+    ) {
       newErrors.universityEmail = "대학교 이메일 중복 검사를 완료해주세요.";
     }
 
@@ -263,11 +316,12 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
       newErrors.userId = newErrors.userId || "이용약관에 동의해주세요.";
     }
     if (!formData.agreements.privacy) {
-      newErrors.userId = newErrors.userId || "개인정보 처리방침에 동의해주세요.";
+      newErrors.userId =
+        newErrors.userId || "개인정보 처리방침에 동의해주세요.";
     }
 
     setErrors(newErrors);
-    return Object.values(newErrors).every(error => !error);
+    return Object.values(newErrors).every((error) => !error);
   };
 
   // 폼 제출
@@ -317,7 +371,9 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
             {duplicateChecks.userId.checked && (
               <p
                 className={`text-sm mt-1 ${
-                  duplicateChecks.userId.available ? "text-green-500" : "text-red-500"
+                  duplicateChecks.userId.available
+                    ? "text-green-500"
+                    : "text-red-500"
                 }`}
               >
                 {duplicateChecks.userId.message}
@@ -355,7 +411,9 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
               error={!!errors.passwordConfirm}
             />
             {errors.passwordConfirm && (
-              <p className="text-red-500 text-sm mt-1">{errors.passwordConfirm}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.passwordConfirm}
+              </p>
             )}
           </div>
 
@@ -439,7 +497,9 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
             {duplicateChecks.email.checked && (
               <p
                 className={`text-sm mt-1 ${
-                  duplicateChecks.email.available ? "text-green-500" : "text-red-500"
+                  duplicateChecks.email.available
+                    ? "text-green-500"
+                    : "text-red-500"
                 }`}
               >
                 {duplicateChecks.email.message}
@@ -451,7 +511,7 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
           {isVeterinaryStudent && (
             <div>
               <label className="block text-[20px] font-medium text-[#3B394D] mb-[8px]">
-                대학교 이메일 * 
+                대학교 이메일 *
                 <span className="text-sm text-gray-500 ml-2">
                   (수의학과 인증용)
                 </span>
@@ -459,7 +519,11 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
               <div className="flex gap-[8px]">
                 <div className="flex-1">
                   <InputBox
-                    value={'universityEmail' in formData ? formData.universityEmail : ''}
+                    value={
+                      "universityEmail" in formData
+                        ? formData.universityEmail
+                        : ""
+                    }
                     onChange={(value) => updateField("universityEmail", value)}
                     placeholder="대학교 이메일을 입력해주세요 (예: student@snu.ac.kr)"
                     type="email"
@@ -475,12 +539,16 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
                 </Button>
               </div>
               {errors.universityEmail && (
-                <p className="text-red-500 text-sm mt-1">{errors.universityEmail}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.universityEmail}
+                </p>
               )}
               {duplicateChecks.universityEmail.checked && (
                 <p
                   className={`text-sm mt-1 ${
-                    duplicateChecks.universityEmail.available ? "text-green-500" : "text-red-500"
+                    duplicateChecks.universityEmail.available
+                      ? "text-green-500"
+                      : "text-red-500"
                   }`}
                 >
                   {duplicateChecks.universityEmail.message}
@@ -525,7 +593,11 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
                 수의사 면허증 *
               </label>
               <LicenseImageUpload
-                value={'licenseImage' in formData ? formData.licenseImage || undefined : undefined}
+                value={
+                  "licenseImage" in formData
+                    ? formData.licenseImage || undefined
+                    : undefined
+                }
                 onChange={(url) => updateField("licenseImage", url)}
               />
             </div>
@@ -538,11 +610,14 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
         <h3 className="text-[20px] font-medium text-[#3B394D] mb-[24px]">
           약관 동의
         </h3>
-        
+
         <Checkbox
           checked={formData.agreements.terms}
           onChange={(checked) =>
-            updateField("agreements", { ...formData.agreements, terms: checked })
+            updateField("agreements", {
+              ...formData.agreements,
+              terms: checked,
+            })
           }
         >
           <span>
@@ -556,7 +631,10 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
         <Checkbox
           checked={formData.agreements.privacy}
           onChange={(checked) =>
-            updateField("agreements", { ...formData.agreements, privacy: checked })
+            updateField("agreements", {
+              ...formData.agreements,
+              privacy: checked,
+            })
           }
         >
           <span>
@@ -570,7 +648,10 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
         <Checkbox
           checked={formData.agreements.marketing}
           onChange={(checked) =>
-            updateField("agreements", { ...formData.agreements, marketing: checked })
+            updateField("agreements", {
+              ...formData.agreements,
+              marketing: checked,
+            })
           }
         >
           마케팅 정보 수신에 동의합니다. (선택)
@@ -579,11 +660,7 @@ export const CommonRegistrationForm: React.FC<CommonRegistrationFormProps> = ({
 
       {/* 버튼 */}
       <div className="flex gap-[16px] mt-[60px] justify-center">
-        <Button
-          variant="line"
-          onClick={onCancel}
-          className="w-[200px]"
-        >
+        <Button variant="line" onClick={onCancel} className="w-[200px]">
           취소
         </Button>
         <Button

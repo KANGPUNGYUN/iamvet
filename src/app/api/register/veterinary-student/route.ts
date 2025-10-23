@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const email = formData.get("email") as string;
     const universityEmail = formData.get("universityEmail") as string;
     const realName = formData.get("realName") as string;
-    
+
     // loginId 우선, 없으면 username 사용 (기존 호환성)
     const actualLoginId = loginId || username;
     const birthDate = formData.get("birthDate") as string;
@@ -44,7 +44,15 @@ export async function POST(request: NextRequest) {
     });
 
     // 필수 필드 검증
-    if (!actualLoginId || !password || !email || !universityEmail || !nickname || !phone || !birthDate) {
+    if (
+      !actualLoginId ||
+      !password ||
+      !email ||
+      !universityEmail ||
+      !nickname ||
+      !phone ||
+      !birthDate
+    ) {
       return NextResponse.json(
         createErrorResponse("필수 정보가 누락되었습니다"),
         { status: 400 }
@@ -61,13 +69,21 @@ export async function POST(request: NextRequest) {
 
     // 대학교 이메일 도메인 검증
     const universityDomains = [
-      'snu.ac.kr', 'yonsei.ac.kr', 'korea.ac.kr', 'konkuk.ac.kr', 
-      'kangwon.ac.kr', 'chungbuk.ac.kr', 'chonnam.ac.kr', 'kyungpook.ac.kr',
-      'pusan.ac.kr', 'jnu.ac.kr', 'ac.kr'
+      "kangwon.ac.kr", // 강원대학교
+      "konkuk.ac.kr", // 건국대학교
+      "knu.ac.kr", // 경북대학교
+      "gnu.ac.kr", // 경상국립대학교
+      "snu.ac.kr", // 서울대학교
+      "jnu.ac.kr", // 전남대학교
+      "jbnu.ac.kr", // 전북대학교
+      "stu.jejunu.ac.kr", // 제주대학교
+      "o.cnu.ac.kr", // 충남대학교
+      "chungbuk.ac.kr", // 충북대학교
+      "naver.com", // 네이버
     ];
-    
-    const domain = universityEmail.split('@')[1]?.toLowerCase();
-    const isValidUniversityEmail = universityDomains.some(uniDomain => 
+
+    const domain = universityEmail.split("@")[1]?.toLowerCase();
+    const isValidUniversityEmail = universityDomains.some((uniDomain) =>
       domain?.endsWith(uniDomain)
     );
 
@@ -82,7 +98,7 @@ export async function POST(request: NextRequest) {
     const existingUser = await sql`
       SELECT id FROM users WHERE username = ${actualLoginId} OR "loginId" = ${actualLoginId} OR email = ${email} OR phone = ${phone}
     `;
-    
+
     if (existingUser.length > 0) {
       return NextResponse.json(
         createErrorResponse("이미 가입된 아이디, 이메일 또는 전화번호입니다"),
@@ -142,7 +158,9 @@ export async function POST(request: NextRequest) {
       INSERT INTO veterinary_student_profiles (
         id, "userId", nickname, "birthDate", "universityEmail"
       ) VALUES (
-        ${profileId}, ${userId}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${universityEmail}
+        ${profileId}, ${userId}, ${nickname}, ${
+      birthDate ? new Date(birthDate) : null
+    }, ${universityEmail}
       )
     `;
 
