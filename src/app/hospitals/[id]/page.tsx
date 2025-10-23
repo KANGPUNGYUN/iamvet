@@ -75,7 +75,7 @@ const InteractiveStarRating = ({
     event: React.MouseEvent
   ) => {
     if (!event) return;
-    
+
     event.preventDefault();
     const newRating = isHalf ? star - 0.5 : star;
     onRatingChange(newRating);
@@ -86,7 +86,7 @@ const InteractiveStarRating = ({
     event: React.MouseEvent<HTMLDivElement>
   ) => {
     if (!event.currentTarget) return;
-    
+
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const width = rect.width;
@@ -238,27 +238,35 @@ export default function HospitalDetailPage({
   const hospitalData = hospitalResponse.data;
 
   // 실제 평가 데이터 처리 및 검증
-  const evaluationsData = (evaluationsResponse?.data || []).map((evaluation: any) => {
-    // 데이터 구조 검증 및 기본값 설정
-    const processedEvaluation = {
-      ...evaluation,
-      rating: parseFloat(evaluation.rating) || 0,
-      ratings: evaluation.ratings || { facilities: 0, staff: 0, service: 0 },
-      comments: evaluation.comments || { facilities: '', staff: '', service: '' },
-    };
+  const evaluationsData = (evaluationsResponse?.data || []).map(
+    (evaluation: any) => {
+      // 데이터 구조 검증 및 기본값 설정
+      const processedEvaluation = {
+        ...evaluation,
+        rating: parseFloat(evaluation.rating) || 0,
+        ratings: evaluation.ratings || { facilities: 0, staff: 0, service: 0 },
+        comments: evaluation.comments || {
+          facilities: "",
+          staff: "",
+          service: "",
+        },
+      };
 
-    // 개별 별점들이 유효한 숫자인지 확인
-    Object.keys(processedEvaluation.ratings).forEach(key => {
-      processedEvaluation.ratings[key] = parseFloat(processedEvaluation.ratings[key]) || 0;
-    });
+      // 개별 별점들이 유효한 숫자인지 확인
+      Object.keys(processedEvaluation.ratings).forEach((key) => {
+        processedEvaluation.ratings[key] =
+          parseFloat(processedEvaluation.ratings[key]) || 0;
+      });
 
-    // 개별 코멘트들이 문자열인지 확인
-    Object.keys(processedEvaluation.comments).forEach(key => {
-      processedEvaluation.comments[key] = processedEvaluation.comments[key] || '';
-    });
+      // 개별 코멘트들이 문자열인지 확인
+      Object.keys(processedEvaluation.comments).forEach((key) => {
+        processedEvaluation.comments[key] =
+          processedEvaluation.comments[key] || "";
+      });
 
-    return processedEvaluation;
-  });
+      return processedEvaluation;
+    }
+  );
 
   const overallAverage =
     evaluationsData.length > 0
@@ -314,7 +322,7 @@ export default function HospitalDetailPage({
         rating: roundedRating,
         ratings: ratings,
         comments: comments,
-        comment: '', // 이제 JSON 형식으로 저장되므로 별도 comment는 불필요
+        comment: "", // 이제 JSON 형식으로 저장되므로 별도 comment는 불필요
       };
 
       if (editingEvaluationId) {
@@ -334,23 +342,31 @@ export default function HospitalDetailPage({
 
   const handleEditEvaluation = (evaluation: any) => {
     setEditingEvaluationId(evaluation.id);
-    
+
     // Pre-populate existing ratings data with validation
-    const existingRatings = evaluation.ratings || { facilities: 0, staff: 0, service: 0 };
+    const existingRatings = evaluation.ratings || {
+      facilities: 0,
+      staff: 0,
+      service: 0,
+    };
     setRatings({
       facilities: parseFloat(existingRatings.facilities) || 0,
       staff: parseFloat(existingRatings.staff) || 0,
-      service: parseFloat(existingRatings.service) || 0
+      service: parseFloat(existingRatings.service) || 0,
     });
-    
+
     // Pre-populate existing comments data with validation
-    const existingComments = evaluation.comments || { facilities: "", staff: "", service: "" };
+    const existingComments = evaluation.comments || {
+      facilities: "",
+      staff: "",
+      service: "",
+    };
     setComments({
       facilities: String(existingComments.facilities || ""),
       staff: String(existingComments.staff || ""),
-      service: String(existingComments.service || "")
+      service: String(existingComments.service || ""),
     });
-    
+
     setShowRatingModal(true);
     setShowMoreMenus({});
   };
@@ -387,7 +403,11 @@ export default function HospitalDetailPage({
 
   // 평가하기 버튼을 보여줄지 확인하는 함수
   const canUserEvaluate = () => {
-    return user && ((user as any).type === "veterinarian" || (user as any).type === "veterinary_student");
+    return (
+      user &&
+      ((user as any).type === "veterinarian" ||
+        (user as any).type === "veterinary_student")
+    );
   };
 
   // 사용자가 해당 평가를 수정/삭제할 권한이 있는지 확인하는 함수
@@ -831,8 +851,8 @@ export default function HospitalDetailPage({
                           아직 평가된 기록이 없습니다.
                         </p>
                         {canUserEvaluate() && (
-                          <Button 
-                            variant="line" 
+                          <Button
+                            variant="line"
                             size="medium"
                             onClick={() => setShowRatingModal(true)}
                           >
@@ -923,7 +943,11 @@ export default function HospitalDetailPage({
                                       size="small"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (window.confirm('정말로 이 평가를 삭제하시겠습니까?')) {
+                                        if (
+                                          window.confirm(
+                                            "정말로 이 평가를 삭제하시겠습니까?"
+                                          )
+                                        ) {
                                           handleDeleteEvaluation(evaluation.id);
                                         }
                                       }}
@@ -964,14 +988,22 @@ export default function HospitalDetailPage({
                                 <div className="flex flex-col gap-[24px] pt-[20px]">
                                   {/* 평가 카테고리별 표시 */}
                                   {[
-                                    { key: 'facilities', label: '시설 및 장비' },
-                                    { key: 'staff', label: '직원 전문성' },
-                                    { key: 'service', label: '서비스 품질' }
+                                    {
+                                      key: "facilities",
+                                      label: "시설 및 장비",
+                                    },
+                                    { key: "staff", label: "직원 전문성" },
+                                    { key: "service", label: "서비스 품질" },
                                   ].map(({ key, label }) => {
                                     // 안전한 데이터 추출 및 검증
-                                    const rating = parseFloat(evaluation.ratings?.[key]) || 0;
-                                    const comment = String(evaluation.comments?.[key] || '').trim() || '-';
-                                    
+                                    const rating =
+                                      parseFloat(evaluation.ratings?.[key]) ||
+                                      0;
+                                    const comment =
+                                      String(
+                                        evaluation.comments?.[key] || ""
+                                      ).trim() || "-";
+
                                     return (
                                       <div key={key}>
                                         <div className="flex justify-between items-center mb-[12px]">
@@ -982,7 +1014,10 @@ export default function HospitalDetailPage({
                                             <span className="font-text text-[16px] font-bold text-primary">
                                               {rating.toFixed(1)}
                                             </span>
-                                            <StarRating rating={rating} size={14} />
+                                            <StarRating
+                                              rating={rating}
+                                              size={14}
+                                            />
                                           </div>
                                         </div>
                                         <div className="border border-[1px] border-[#EFEFF0] bg-box-light p-[10px] rounded-[8px]">
@@ -1015,7 +1050,7 @@ export default function HospitalDetailPage({
           <div className="hidden lg:block relative bg-white rounded-[16px] w-[968px] max-h-[80vh] overflow-y-auto">
             {/* 모달 헤더 */}
             <div className="flex justify-between items-center p-[24px] border-b border-[#EFEFF0]">
-              <h2 className="font-title text-[24px] font-light text-primary">
+              <h2 className="font-title text-[24px] title-medium text-primary">
                 {editingEvaluationId ? "병원 평가 수정하기" : "병원 평가하기"}
               </h2>
               <button
@@ -1173,7 +1208,7 @@ export default function HospitalDetailPage({
               >
                 <ArrowLeftIcon currentColor="currentColor" />
               </button>
-              <h2 className="font-title text-[16px] font-light text-primary">
+              <h2 className="font-title text-[16px] title-medium text-primary">
                 {editingEvaluationId ? "병원 평가 수정하기" : "병원 평가하기"}
               </h2>
               <div className="w-8 h-8"></div>
