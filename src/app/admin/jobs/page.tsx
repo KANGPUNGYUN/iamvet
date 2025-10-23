@@ -68,7 +68,6 @@ interface Job {
 }
 
 export default function JobPostsManagement() {
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterWorkType, setFilterWorkType] = useState<string>("");
@@ -104,7 +103,8 @@ export default function JobPostsManagement() {
       SUSPENDED: { color: "#ef4444", bg: "#fee2e2", text: "정지" },
       EXPIRED: { color: "#6b7280", bg: "#f3f4f6", text: "만료" },
     };
-    const info = statusMap[status as keyof typeof statusMap] || statusMap.PENDING;
+    const info =
+      statusMap[status as keyof typeof statusMap] || statusMap.PENDING;
     return (
       <Chip
         label={info.text}
@@ -125,22 +125,29 @@ export default function JobPostsManagement() {
       PART_TIME: { variant: 2 as const, text: "비정규직" },
       CONTRACT: { variant: 3 as const, text: "계약직" },
       INTERN: { variant: 4 as const, text: "인턴" },
-      "정규직": { variant: 1 as const, text: "정규직" },
-      "파트타임": { variant: 2 as const, text: "파트타임" },
-      "비정규직": { variant: 2 as const, text: "비정규직" },
-      "계약직": { variant: 3 as const, text: "계약직" },
-      "인턴": { variant: 4 as const, text: "인턴" },
+      정규직: { variant: 1 as const, text: "정규직" },
+      파트타임: { variant: 2 as const, text: "파트타임" },
+      비정규직: { variant: 2 as const, text: "비정규직" },
+      계약직: { variant: 3 as const, text: "계약직" },
+      인턴: { variant: 4 as const, text: "인턴" },
     };
-    const typeInfo = typeMap[workType as keyof typeof typeMap] || { variant: 6 as const, text: workType };
+    const typeInfo = typeMap[workType as keyof typeof typeMap] || {
+      variant: 6 as const,
+      text: workType,
+    };
     return <Tag variant={typeInfo.variant}>{typeInfo.text}</Tag>;
   };
 
   const getSalaryText = (salary?: string, salaryType?: string) => {
     if (!salary) return "협의";
-    const typeText = 
-      salaryType === 'HOURLY' || salaryType === '시급' ? '/시간' : 
-      salaryType === 'MONTHLY' || salaryType === '월급' ? '/월' : 
-      salaryType === 'YEARLY' || salaryType === '연봉' ? '/년' : '';
+    const typeText =
+      salaryType === "HOURLY" || salaryType === "시급"
+        ? "/시간"
+        : salaryType === "MONTHLY" || salaryType === "월급"
+        ? "/월"
+        : salaryType === "YEARLY" || salaryType === "연봉"
+        ? "/년"
+        : "";
     return `${salary}${typeText}`;
   };
 
@@ -173,7 +180,12 @@ export default function JobPostsManagement() {
   }
 
   const jobs = jobsData?.jobs || [];
-  const pagination = jobsData?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 };
+  const pagination = jobsData?.pagination || {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  };
   const stats = jobsData?.stats || {
     total: 0,
     active: 0,
@@ -188,16 +200,29 @@ export default function JobPostsManagement() {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" sx={{ mb: 3, color: "#3b394d", fontWeight: "bold" }}>
+      <Typography
+        variant="h4"
+        sx={{ mb: 3, color: "#3b394d", fontWeight: "bold" }}
+      >
         채용 공고 관리
       </Typography>
 
       {/* 통계 카드들 */}
       <Box sx={{ display: "flex", gap: 3, mb: 4, flexWrap: "wrap" }}>
-        <Card sx={{ flex: 1, minWidth: 200, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+        <Card
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            borderRadius: 3,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          }}
+        >
           <CardContent sx={{ textAlign: "center", py: 3 }}>
             <Work sx={{ fontSize: 32, color: "#ff8796", mb: 1 }} />
-            <Typography variant="h4" sx={{ fontWeight: "bold", color: "#3b394d" }}>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: "bold", color: "#3b394d" }}
+            >
               {stats.total}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -205,10 +230,20 @@ export default function JobPostsManagement() {
             </Typography>
           </CardContent>
         </Card>
-        <Card sx={{ flex: 1, minWidth: 200, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+        <Card
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            borderRadius: 3,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          }}
+        >
           <CardContent sx={{ textAlign: "center", py: 3 }}>
             <CheckCircle sx={{ fontSize: 32, color: "#10b981", mb: 1 }} />
-            <Typography variant="h4" sx={{ fontWeight: "bold", color: "#3b394d" }}>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: "bold", color: "#3b394d" }}
+            >
               {stats.active}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -216,10 +251,20 @@ export default function JobPostsManagement() {
             </Typography>
           </CardContent>
         </Card>
-        <Card sx={{ flex: 1, minWidth: 200, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+        <Card
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            borderRadius: 3,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          }}
+        >
           <CardContent sx={{ textAlign: "center", py: 3 }}>
             <Warning sx={{ fontSize: 32, color: "#f59e0b", mb: 1 }} />
-            <Typography variant="h4" sx={{ fontWeight: "bold", color: "#3b394d" }}>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: "bold", color: "#3b394d" }}
+            >
               {stats.pending}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -227,10 +272,20 @@ export default function JobPostsManagement() {
             </Typography>
           </CardContent>
         </Card>
-        <Card sx={{ flex: 1, minWidth: 200, borderRadius: 3, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+        <Card
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            borderRadius: 3,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          }}
+        >
           <CardContent sx={{ textAlign: "center", py: 3 }}>
             <Cancel sx={{ fontSize: 32, color: "#ef4444", mb: 1 }} />
-            <Typography variant="h4" sx={{ fontWeight: "bold", color: "#3b394d" }}>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: "bold", color: "#3b394d" }}
+            >
               {stats.suspended}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -355,29 +410,64 @@ export default function JobPostsManagement() {
       </Card>
 
       {/* 채용 공고 테이블 */}
-      <Card sx={{ borderRadius: 3, border: "1px solid #efeff0", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+      <Card
+        sx={{
+          borderRadius: 3,
+          border: "1px solid #efeff0",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        }}
+      >
         <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: "#f8f9fa" }}>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>제목</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>병원명</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>위치</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>근무형태</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>급여</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>상태</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }} align="center">지원자</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }} align="center">조회수</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>등록일</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }} align="center">작업</TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>
+                  제목
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>
+                  병원명
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>
+                  위치
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>
+                  근무형태
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>
+                  급여
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>
+                  상태
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "#3b394d" }}
+                  align="center"
+                >
+                  지원자
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "#3b394d" }}
+                  align="center"
+                >
+                  조회수
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#3b394d" }}>
+                  등록일
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "#3b394d" }}
+                  align="center"
+                >
+                  작업
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {jobs.map((job: Job) => (
-                <TableRow 
-                  key={job.id} 
-                  hover 
-                  sx={{ 
+                <TableRow
+                  key={job.id}
+                  hover
+                  sx={{
                     cursor: "pointer",
                     "&:hover": {
                       bgcolor: "#f8f9fa",
@@ -387,7 +477,10 @@ export default function JobPostsManagement() {
                 >
                   <TableCell>
                     <Box>
-                      <Typography variant="body1" sx={{ fontWeight: "medium", color: "#3b394d" }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "medium", color: "#3b394d" }}
+                      >
                         {job.title}
                       </Typography>
                       {job.isUrgent && (
@@ -499,24 +592,26 @@ export default function JobPostsManagement() {
         maxWidth="lg"
         fullWidth
         sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: '12px',
-            maxHeight: '90vh'
-          }
+          "& .MuiDialog-paper": {
+            borderRadius: "12px",
+            maxHeight: "90vh",
+          },
         }}
       >
-        <DialogTitle sx={{ 
-          color: "#3b394d", 
-          fontSize: "20px", 
-          fontWeight: "bold",
-          borderBottom: "1px solid #efeff0",
-          pb: 2
-        }}>
+        <DialogTitle
+          sx={{
+            color: "#3b394d",
+            fontSize: "20px",
+            fontWeight: "bold",
+            borderBottom: "1px solid #efeff0",
+            pb: 2,
+          }}
+        >
           채용 공고 상세 정보
         </DialogTitle>
         <DialogContent sx={{ p: 3 }}>
           {detailLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
               <CircularProgress size={40} sx={{ color: "#ff8796" }} />
             </Box>
           ) : detailError ? (
@@ -524,39 +619,63 @@ export default function JobPostsManagement() {
               상세 정보를 불러오는 중 오류가 발생했습니다.
             </Alert>
           ) : jobDetailData?.job ? (
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: "bold", color: "#3b394d", mb: 3 }}>
+            <Box sx={{ pt: 2 }}>
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: "bold", color: "#3b394d", mb: 3 }}
+              >
                 {jobDetailData.job.title}
               </Typography>
-              
+
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 3 }}>
-                <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" } }}>
+                <Box
+                  sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" } }}
+                >
                   <Stack spacing={2}>
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}
+                      >
                         병원 정보
                       </Typography>
                       <Typography sx={{ mb: 1 }}>
-                        <strong>병원명:</strong> {jobDetailData.job.hospitalName}
+                        <strong>병원명:</strong>{" "}
+                        {jobDetailData.job.hospitalName}
                       </Typography>
                       <Typography sx={{ mb: 1 }}>
                         <strong>위치:</strong> {jobDetailData.job.location}
                       </Typography>
                       {jobDetailData.job.hospital?.phone && (
                         <Typography sx={{ mb: 1 }}>
-                          <strong>연락처:</strong> {jobDetailData.job.hospital.phone}
+                          <strong>연락처:</strong>{" "}
+                          {jobDetailData.job.hospital.phone}
                         </Typography>
                       )}
                     </Box>
-                    
+
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}
+                      >
                         채용 조건
                       </Typography>
                       <Typography sx={{ mb: 1 }}>
-                        <strong>급여:</strong> {getSalaryText(jobDetailData.job.salary, jobDetailData.job.salaryType)}
+                        <strong>급여:</strong>{" "}
+                        {getSalaryText(
+                          jobDetailData.job.salary,
+                          jobDetailData.job.salaryType
+                        )}
                       </Typography>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 1,
+                        }}
+                      >
                         <strong>근무형태:</strong>
                         {getWorkTypeTag(jobDetailData.job.workType)}
                       </Box>
@@ -568,14 +687,26 @@ export default function JobPostsManagement() {
                     </Box>
                   </Stack>
                 </Box>
-                
-                <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" } }}>
+
+                <Box
+                  sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" } }}
+                >
                   <Stack spacing={2}>
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}
+                      >
                         공고 상태
                       </Typography>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 1,
+                        }}
+                      >
                         <strong>상태:</strong>
                         {getStatusTag(jobDetailData.job.status)}
                       </Box>
@@ -586,16 +717,21 @@ export default function JobPostsManagement() {
                         <strong>수정일:</strong> {jobDetailData.job.updatedAt}
                       </Typography>
                     </Box>
-                    
+
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: "bold", color: "#4f5866", mb: 1 }}
+                      >
                         통계
                       </Typography>
                       <Typography sx={{ mb: 1 }}>
-                        <strong>지원자 수:</strong> {jobDetailData.job.applicantCount}명
+                        <strong>지원자 수:</strong>{" "}
+                        {jobDetailData.job.applicantCount}명
                       </Typography>
                       <Typography sx={{ mb: 1 }}>
-                        <strong>조회수:</strong> {jobDetailData.job.viewCount.toLocaleString()}
+                        <strong>조회수:</strong>{" "}
+                        {jobDetailData.job.viewCount.toLocaleString()}
                       </Typography>
                       <Typography sx={{ mb: 1 }}>
                         <strong>좋아요:</strong> {jobDetailData.job.likeCount}
@@ -604,19 +740,25 @@ export default function JobPostsManagement() {
                   </Stack>
                 </Box>
               </Box>
-              
+
               <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#4f5866", mb: 2 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: "bold", color: "#4f5866", mb: 2 }}
+                >
                   공고 내용
                 </Typography>
                 <Typography sx={{ lineHeight: 1.6, color: "#4f5866" }}>
                   {jobDetailData.job.description || "설명이 없습니다."}
                 </Typography>
               </Box>
-              
+
               {jobDetailData.job.benefits && (
                 <Box sx={{ mb: 3 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#4f5866", mb: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: "bold", color: "#4f5866", mb: 2 }}
+                  >
                     복리후생
                   </Typography>
                   <Typography sx={{ lineHeight: 1.6, color: "#4f5866" }}>
@@ -624,53 +766,69 @@ export default function JobPostsManagement() {
                   </Typography>
                 </Box>
               )}
-              
-              {jobDetailData.recentApplicants && jobDetailData.recentApplicants.length > 0 && (
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "#4f5866", mb: 2 }}>
-                    최근 지원자 ({jobDetailData.recentApplicants.length}명)
-                  </Typography>
-                  <Stack spacing={1}>
-                    {jobDetailData.recentApplicants.map((applicant: any) => (
-                      <Box 
-                        key={applicant.id} 
-                        sx={{ 
-                          display: "flex", 
-                          alignItems: "center", 
-                          gap: 2, 
-                          p: 2, 
-                          border: "1px solid #efeff0", 
-                          borderRadius: 2 
-                        }}
-                      >
-                        <Avatar sx={{ bgcolor: "#ff8796" }}>
-                          {applicant.veterinarian?.name?.charAt(0) || "?"}
-                        </Avatar>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontWeight: "medium" }}>
-                            {applicant.veterinarian?.name || "이름 없음"}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            지원일: {applicant.createdAt}
-                          </Typography>
+
+              {jobDetailData.recentApplicants &&
+                jobDetailData.recentApplicants.length > 0 && (
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: "bold", color: "#4f5866", mb: 2 }}
+                    >
+                      최근 지원자 ({jobDetailData.recentApplicants.length}명)
+                    </Typography>
+                    <Stack spacing={1}>
+                      {jobDetailData.recentApplicants.map((applicant: any) => (
+                        <Box
+                          key={applicant.id}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            p: 2,
+                            border: "1px solid #efeff0",
+                            borderRadius: 2,
+                          }}
+                        >
+                          <Avatar sx={{ bgcolor: "#ff8796" }}>
+                            {applicant.veterinarian?.name?.charAt(0) || "?"}
+                          </Avatar>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography sx={{ fontWeight: "medium" }}>
+                              {applicant.veterinarian?.name || "이름 없음"}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              지원일: {applicant.createdAt}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            label={
+                              applicant.status === "PENDING"
+                                ? "대기"
+                                : applicant.status === "ACCEPTED"
+                                ? "승인"
+                                : "거절"
+                            }
+                            size="small"
+                            color={
+                              applicant.status === "PENDING"
+                                ? "warning"
+                                : applicant.status === "ACCEPTED"
+                                ? "success"
+                                : "error"
+                            }
+                          />
                         </Box>
-                        <Chip
-                          label={applicant.status === 'PENDING' ? '대기' : applicant.status === 'ACCEPTED' ? '승인' : '거절'}
-                          size="small"
-                          color={applicant.status === 'PENDING' ? 'warning' : applicant.status === 'ACCEPTED' ? 'success' : 'error'}
-                        />
-                      </Box>
-                    ))}
-                  </Stack>
-                </Box>
-              )}
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
             </Box>
           ) : (
             <Typography>데이터를 찾을 수 없습니다.</Typography>
           )}
         </DialogContent>
         <DialogActions sx={{ p: 3, borderTop: "1px solid #efeff0" }}>
-          <Button 
+          <Button
             onClick={() => setDetailModalOpen(false)}
             variant="contained"
             sx={{
