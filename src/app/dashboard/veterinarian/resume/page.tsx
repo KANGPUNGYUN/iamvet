@@ -192,7 +192,6 @@ const timeOptions = [
   { value: "20:00", label: "20:00" },
 ];
 
-
 const degreeOptions = [
   { value: "bachelor", label: "학사" },
   { value: "master", label: "석사" },
@@ -221,7 +220,7 @@ const proficiencyOptions = [
 
 export default function ResumePage() {
   const router = useRouter();
-  
+
   // 회원정보를 기본값으로 사용하지 않음
   const {
     data: existingResume,
@@ -237,9 +236,9 @@ export default function ResumePage() {
   }, [checkAuth]);
 
   const [validationErrors, setValidationErrors] = useState({
-    phone: '',
-    birthDate: '',
-    email: '',
+    phone: "",
+    birthDate: "",
+    email: "",
   });
 
   const [resumeData, setResumeData] = useState<ResumeData>({
@@ -516,32 +515,32 @@ export default function ResumePage() {
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhoneNumber(value);
     setResumeData((prev) => ({ ...prev, phone: formatted }));
-    
+
     const validation = validatePhoneNumber(formatted);
     setValidationErrors((prev) => ({
       ...prev,
-      phone: validation.isValid ? '' : validation.message || '',
+      phone: validation.isValid ? "" : validation.message || "",
     }));
   };
 
   const handleBirthDateChange = (value: string) => {
     const formatted = formatBirthDate(value);
     setResumeData((prev) => ({ ...prev, birthDate: formatted }));
-    
+
     const validation = validateBirthDate(formatted);
     setValidationErrors((prev) => ({
       ...prev,
-      birthDate: validation.isValid ? '' : validation.message || '',
+      birthDate: validation.isValid ? "" : validation.message || "",
     }));
   };
 
   const handleEmailChange = (value: string) => {
     setResumeData((prev) => ({ ...prev, email: value }));
-    
+
     const validation = validateEmail(value);
     setValidationErrors((prev) => ({
       ...prev,
-      email: validation.isValid ? '' : validation.message || '',
+      email: validation.isValid ? "" : validation.message || "",
     }));
   };
 
@@ -631,7 +630,7 @@ export default function ResumePage() {
       alert(
         existingResume ? "이력서가 수정되었습니다." : "이력서가 생성되었습니다."
       );
-      
+
       // 성공 후 대시보드로 이동
       router.push("/dashboard/veterinarian");
     } catch (error) {
@@ -1017,7 +1016,7 @@ export default function ResumePage() {
             {resumeData.experiences.map((experience, index) => (
               <div
                 key={experience.id}
-                className="flex flex-col xl:flex-row xl:items-center gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
+                className="flex flex-col xl:flex-row xl:items-end gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
               >
                 <div className="w-full">
                   <label className="block text-[20px] font-text text-[primary] mb-[10px]">
@@ -1124,7 +1123,7 @@ export default function ResumePage() {
             {resumeData.licenses.map((license, index) => (
               <div
                 key={license.id}
-                className="flex flex-col xl:flex-row xl:items-center gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
+                className="flex flex-col xl:flex-row xl:items-end gap-[10px] border border-[#EFEFF0] rounded-[12px] p-[20px] xl:p-[0px] xl:border-none bg-transparent"
               >
                 <div className="w-full">
                   <label className="block text-[20px] font-text text-[primary] mb-[10px]">
