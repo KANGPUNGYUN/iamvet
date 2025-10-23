@@ -28,23 +28,23 @@ const LectureCard: React.FC<LectureCardProps> = ({
   onClick,
 }) => {
   const { isLectureLiked } = useLikeStore();
-  
+
   // Zustand 스토어에서 좋아요 상태를 가져오고, 없으면 props에서 가져옴
   const currentIsLiked = id ? isLectureLiked(id) : isLiked;
-  
+
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (id && onLike) {
       onLike(id);
     }
   };
-  
+
   const defaultImage =
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' viewBox='0 0 400 240'%3E%3Crect width='400' height='240' fill='%23f3f4f6'/%3E%3Ctext x='200' y='120' font-family='Arial' font-size='16' fill='%239ca3af' text-anchor='middle' dominant-baseline='middle'%3E강의 이미지%3C/text%3E%3C/svg%3E";
 
   return (
     <div
-      className="max-w-[314px] xl:max-w-[343px] bg-transparent shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden cursor-pointer flex-shrink-0"
+      className="max-w-[314px] xl:max-w-[343px] bg-transparent shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer flex-shrink-0"
       onClick={onClick}
     >
       {/* 이미지 영역 */}

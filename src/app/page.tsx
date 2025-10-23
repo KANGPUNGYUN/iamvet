@@ -21,12 +21,18 @@ import LectureCard from "@/components/ui/LectureCard/LectureCard";
 import Link from "next/link";
 import { useResumes } from "@/hooks/useResumes";
 import { useJobs } from "@/hooks/useJobs";
-import { useLectures, usePopularLectureCategories } from "@/hooks/api/useLectures";
+import {
+  useLectures,
+  usePopularLectureCategories,
+} from "@/hooks/api/useLectures";
 import { useTransfers } from "@/hooks/api/useTransfers";
 import { useLikeStore } from "@/stores/likeStore";
 import { useHeroBanners, useBannerAds } from "@/hooks/api/useAdvertisements";
 import { useRouter } from "next/navigation";
-import { createResumeNavigationHandler, useHospitalAuth } from "@/utils/hospitalAuthGuard";
+import {
+  createResumeNavigationHandler,
+  useHospitalAuth,
+} from "@/utils/hospitalAuthGuard";
 import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
 import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
 import React from "react";
@@ -34,13 +40,14 @@ import React from "react";
 export default function HomePage() {
   const router = useRouter();
   const { isHospitalUser, isAuthenticated, userType } = useHospitalAuth();
-  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
-  
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } =
+    useHospitalAuthModal();
+
   // 이력서 네비게이션 핸들러
   const handleResumeNavigation = createResumeNavigationHandler(
-    router, 
-    isAuthenticated, 
-    userType, 
+    router,
+    isAuthenticated,
+    userType,
     showModal
   );
 
@@ -102,16 +109,21 @@ export default function HomePage() {
   };
 
   // 히어로 배너 조회
-  const { data: heroBannersData, isLoading: heroBannersLoading } = useHeroBanners();
-  
+  const { data: heroBannersData, isLoading: heroBannersLoading } =
+    useHeroBanners();
+
   // 일반 광고 배너 조회
   const { data: bannerAdsData, isLoading: bannerAdsLoading } = useBannerAds();
 
   // 이력서 목록 조회 (병원 사용자인 경우에만)
-  const { data: resumesData, isLoading: resumesLoading } = useResumes(isHospitalUser ? {
-    limit: 5,
-    sort: "latest",
-  } : undefined);
+  const { data: resumesData, isLoading: resumesLoading } = useResumes(
+    isHospitalUser
+      ? {
+          limit: 5,
+          sort: "latest",
+        }
+      : undefined
+  );
 
   // 채용공고 목록 조회
   const { data: jobsData, isLoading: jobsLoading } = useJobs({
@@ -120,8 +132,9 @@ export default function HomePage() {
   });
 
   // 인기 카테고리별 강의 조회 (조회수 기준으로 상위 3개 카테고리)
-  const { data: popularCategoriesData, isLoading: popularCategoriesLoading } = usePopularLectureCategories();
-  
+  const { data: popularCategoriesData, isLoading: popularCategoriesLoading } =
+    usePopularLectureCategories();
+
   // API 응답에서 실제 데이터 추출
   const popularCategories = popularCategoriesData?.data?.categories || [];
 
@@ -266,7 +279,7 @@ export default function HomePage() {
   React.useEffect(() => {
     if (popularCategories.length > 0) {
       const allLikedLectureIds: string[] = [];
-      
+
       popularCategories.forEach((category: any) => {
         if (category.lectures && category.lectures.length > 0) {
           const likedLectureIds = category.lectures
@@ -653,8 +666,18 @@ export default function HomePage() {
                 <div className="w-full h-[300px] md:h-[400px] bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
                   <div className="text-center">
                     <div className="mb-4">
-                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
                       </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -700,7 +723,9 @@ export default function HomePage() {
           >
             <Tab.List className="flex md:justify-between md:items-center flex-col md:flex-row gap-[16px] md:gap-0">
               <div className="flex gap-4">
-                {isHospitalUser && <Tab.Item value="internal">구직정보</Tab.Item>}
+                {isHospitalUser && (
+                  <Tab.Item value="internal">구직정보</Tab.Item>
+                )}
                 <Tab.Item value="surgery">구인정보</Tab.Item>
               </div>
               <button
@@ -807,7 +832,9 @@ export default function HomePage() {
                                 isLiked={isResumeLiked(resume.id)}
                                 onLike={handleResumeLike}
                                 onClick={() =>
-                                  handleResumeNavigation(`/resumes/${resume.id}`)
+                                  handleResumeNavigation(
+                                    `/resumes/${resume.id}`
+                                  )
                                 }
                               />
                             );
@@ -933,7 +960,10 @@ export default function HomePage() {
             {popularCategoriesLoading ? (
               // 로딩 상태
               [...Array(3)].map((_, index) => (
-                <div key={index} className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]">
+                <div
+                  key={index}
+                  className="relative mb-[60px] md:mb-[120px] h-auto md:h-[400px]"
+                >
                   <div className="relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] bg-gray-200 rounded-[16px] animate-pulse mb-[20px] md:mb-0"></div>
                   <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
                     {[...Array(4)].map((_, i) => (
@@ -949,7 +979,9 @@ export default function HomePage() {
               // 데이터가 없는 경우
               <div className="text-center py-[120px]">
                 <p className="text-gray-500 text-lg">등록된 강의가 없습니다.</p>
-                <p className="text-gray-400 text-sm mt-2">관리자 페이지에서 강의를 등록해주세요.</p>
+                <p className="text-gray-400 text-sm mt-2">
+                  관리자 페이지에서 강의를 등록해주세요.
+                </p>
               </div>
             ) : (
               // 인기 카테고리별 섹션 렌더링
@@ -957,61 +989,78 @@ export default function HomePage() {
                 // 교대로 핑크/흰색 스타일 적용
                 const isPinkStyle = index % 2 === 0;
                 const isLastSection = index === popularCategories.length - 1;
-                
+
                 return (
-                  <div 
-                    key={categoryData.category} 
-                    className={`relative ${isLastSection ? 'h-auto md:h-[400px]' : 'mb-[60px] md:mb-[120px] h-auto md:h-[400px]'}`}
+                  <div
+                    key={categoryData.category}
+                    className={`relative ${
+                      isLastSection
+                        ? "h-auto md:h-[400px]"
+                        : "mb-[60px] md:mb-[120px] h-auto md:h-[400px]"
+                    }`}
                   >
                     {/* 카테고리 카드 */}
                     <div
                       className={`relative md:absolute z-10 w-full md:w-[366px] h-auto md:h-[289px] p-[0px] md:p-[24px] md:pr-[113px] md:pb-[24px] flex flex-col justify-center items-start gap-[20px] md:gap-[102px] rounded-[16px] bg-transparent ${
-                        isPinkStyle 
-                          ? 'md:bg-[#FF8796]' 
-                          : 'md:bg-box'
+                        isPinkStyle ? "md:bg-[#FF8796]" : "md:bg-box"
                       } md:cursor-pointer md:shadow-lg mb-[20px] md:mb-0`}
                       onClick={() =>
                         (window.location.href = `/lectures?medicalField=${categoryData.category}`)
                       }
                     >
                       <div className="flex flex-col gap-[12px]">
-                        <h4 className={`font-title title-light text-[22px] md:text-[28px] text-[#3B394D] ${
-                          isPinkStyle ? 'md:text-white' : 'md:text-black'
-                        } mb-[px] leading-[135%]`}>
+                        <h4
+                          className={`font-title title-light text-[22px] md:text-[28px] text-[#3B394D] ${
+                            isPinkStyle ? "md:text-white" : "md:text-black"
+                          } mb-[px] leading-[135%]`}
+                        >
                           {categoryData.displayName}
                         </h4>
-                        <p className={`hidden md:block font-text text-[14px] md:text-[16px] text-regular ${
-                          isPinkStyle ? 'text-white opacity-90' : 'text-[#6B6B6B]'
-                        }`}>
-                          {categoryData.description.split('\n').map((line: string, lineIndex: number) => (
-                            <span key={lineIndex}>
-                              {line}
-                              {lineIndex < categoryData.description.split('\n').length - 1 && <br />}
-                            </span>
-                          ))}
+                        <p
+                          className={`hidden md:block font-text text-[14px] md:text-[16px] text-regular ${
+                            isPinkStyle
+                              ? "text-white opacity-90"
+                              : "text-[#6B6B6B]"
+                          }`}
+                        >
+                          {categoryData.description
+                            .split("\n")
+                            .map((line: string, lineIndex: number) => (
+                              <span key={lineIndex}>
+                                {line}
+                                {lineIndex <
+                                  categoryData.description.split("\n").length -
+                                    1 && <br />}
+                              </span>
+                            ))}
                         </p>
                       </div>
-                      <button className={`hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] ${
-                        isPinkStyle 
-                          ? 'border border-white bg-white bg-opacity-20 hover:bg-opacity-30' 
-                          : 'bg-[#F8F8F9] border border-[#FF8796] hover:bg-[#EFEFF0]'
-                      } rounded-full items-center justify-center transition-all duration-200`}>
-                        <ArrowRightIcon 
-                          currentColor={isPinkStyle ? "white" : "#3B394D"} 
-                          size="16px" 
+                      <button
+                        className={`hidden md:flex w-[40px] h-[40px] md:w-[44px] md:h-[44px] ${
+                          isPinkStyle
+                            ? "border border-white bg-white bg-opacity-20 hover:bg-opacity-30"
+                            : "bg-[#F8F8F9] border border-[#FF8796] hover:bg-[#EFEFF0]"
+                        } rounded-full items-center justify-center transition-all duration-200`}
+                      >
+                        <ArrowRightIcon
+                          currentColor={isPinkStyle ? "white" : "#3B394D"}
+                          size="16px"
                         />
                       </button>
                     </div>
 
                     {/* 강의 리스트 */}
                     <div className="relative md:absolute z-20 md:top-[150px] md:left-[213px] flex items-center gap-[16px] overflow-x-auto custom-scrollbar">
-                      {categoryData.lectures && categoryData.lectures.length > 0 ? (
+                      {categoryData.lectures &&
+                      categoryData.lectures.length > 0 ? (
                         categoryData.lectures.map((lecture: any) => (
                           <LectureCard
                             key={lecture.id}
                             id={lecture.id}
                             title={lecture.title}
-                            date={new Date(lecture.createdAt).toLocaleDateString("ko-KR")}
+                            date={new Date(
+                              lecture.createdAt
+                            ).toLocaleDateString("ko-KR")}
                             views={lecture.viewCount || 0}
                             category={lecture.category}
                             imageUrl={lecture.thumbnail || lecture1Img.src}
@@ -1025,7 +1074,9 @@ export default function HomePage() {
                       ) : (
                         // 해당 카테고리에 강의가 없는 경우
                         <div className="w-[294px] h-[240px] bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <p className="text-gray-500 text-sm">강의가 없습니다</p>
+                          <p className="text-gray-500 text-sm">
+                            강의가 없습니다
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1249,7 +1300,7 @@ export default function HomePage() {
       </div>
 
       {/* 병원 인증 모달 */}
-      <HospitalAuthModal 
+      <HospitalAuthModal
         isOpen={isModalOpen}
         onClose={closeModal}
         returnUrl={modalReturnUrl}

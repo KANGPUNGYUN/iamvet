@@ -25,18 +25,18 @@ interface TransferCardProps {
 const formatPrice = (priceString: string | number): string => {
   // 타입 체크 및 문자열 변환
   const priceStr = String(priceString);
-  
+
   // 이미 "만원" 또는 "원"이 포함된 경우 그대로 반환
-  if (priceStr.includes('만원') || priceStr.includes('원')) {
+  if (priceStr.includes("만원") || priceStr.includes("원")) {
     return priceStr;
   }
-  
+
   // 숫자만 추출
   const numbers = priceStr.match(/\d+/g);
   if (!numbers) return priceStr;
-  
-  const number = parseInt(numbers.join(''));
-  
+
+  const number = parseInt(numbers.join(""));
+
   // 만원 단위 이상인 경우
   if (number >= 10000) {
     const man = number / 10000;
@@ -47,7 +47,7 @@ const formatPrice = (priceString: string | number): string => {
     // 소수점이 있는 경우 (예: 1.5억)
     return `${man.toLocaleString()}만원`;
   }
-  
+
   // 만원 미만인 경우 원 단위로 표시
   return `${number.toLocaleString()}원`;
 };
@@ -93,8 +93,8 @@ const TransferCard: React.FC<TransferCardProps> = ({
   // 카드 내용을 렌더링하는 함수
   const renderCardContent = (isMobileLayout = false) => {
     const cardClassName = isMobileLayout
-      ? "w-full bg-transparent hover:shadow-md transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[8px] flex flex-row"
-      : "w-full bg-transparent hover:shadow-md transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[16px]";
+      ? "w-full bg-transparent shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[8px] flex flex-row"
+      : "w-full bg-transparent shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer rounded-[16px]";
 
     const cardStyle = isMobileLayout
       ? {

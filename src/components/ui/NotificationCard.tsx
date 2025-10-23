@@ -13,7 +13,7 @@ interface NotificationCardProps {
   onMarkAsRead?: (id: string) => void;
   jobId?: number;
   basePath?: string;
-  type?: 'notification' | 'inquiry';
+  type?: "notification" | "inquiry";
   notificationType?: string;
   inquiryType?: string;
 }
@@ -27,36 +27,36 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   onMarkAsRead,
   jobId,
   basePath = "/dashboard/veterinarian/messages",
-  type = 'notification',
+  type = "notification",
   notificationType,
   inquiryType,
 }) => {
   const getTagLabel = () => {
-    if (type === 'inquiry') {
+    if (type === "inquiry") {
       switch (inquiryType) {
-        case 'job':
-          return '채용 문의';
-        case 'resume':
-          return '이력서 문의';
+        case "job":
+          return "채용 문의";
+        case "resume":
+          return "이력서 문의";
         default:
-          return '일반 문의';
+          return "일반 문의";
       }
     } else {
       switch (notificationType) {
-        case 'ANNOUNCEMENT':
-          return '공지사항';
-        case 'INQUIRY':
-          return '문의 알림';
-        case 'COMMENT':
-          return '댓글 알림';
-        case 'REPLY':
-          return '답글 알림';
-        case 'APPLICATION_STATUS':
-          return '지원 결과';
-        case 'APPLICATION_NEW':
-          return '새 지원';
+        case "ANNOUNCEMENT":
+          return "공지사항";
+        case "INQUIRY":
+          return "문의 알림";
+        case "COMMENT":
+          return "댓글 알림";
+        case "REPLY":
+          return "답글 알림";
+        case "APPLICATION_STATUS":
+          return "지원 결과";
+        case "APPLICATION_NEW":
+          return "새 지원";
         default:
-          return '일반 알림';
+          return "일반 알림";
       }
     }
   };
@@ -71,7 +71,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
 
   return (
     <div
-      className={`border border-[#EFEFF0] rounded-[12px] p-6 mb-4 cursor-pointer hover:shadow-sm transition-shadow ${
+      className={`border border-[#EFEFF0] rounded-[12px] p-6 mb-4 cursor-pointer shadow-md hover:shadow-lg transition-shadow ${
         isRead ? "bg-white" : "bg-[#FFF9F9]"
       }`}
       onClick={handleCardClick}
