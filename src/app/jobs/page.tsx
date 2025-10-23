@@ -18,12 +18,8 @@ export default function JobsPage() {
   const searchParams = useSearchParams();
 
   // Zustand 스토어에서 좋아요 상태 관리
-  const {
-    setJobLike,
-    toggleJobLike,
-    initializeJobLikes,
-    isJobLiked
-  } = useLikeStore();
+  const { setJobLike, toggleJobLike, initializeJobLikes, isJobLiked } =
+    useLikeStore();
 
   // SIDE_AD 광고 데이터
   const [sideAdData, setSideAdData] = useState<{
@@ -128,9 +124,11 @@ export default function JobsPage() {
     const fetchSideAd = async () => {
       setIsLoadingAd(true);
       try {
-        const response = await fetch('/api/advertisements?type=SIDE_AD&status=ACTIVE');
+        const response = await fetch(
+          "/api/advertisements?type=SIDE_AD&status=ACTIVE"
+        );
         const data = await response.json();
-        
+
         if (data.success && data.data?.length > 0) {
           // 첫 번째 활성 광고 가져오기
           const ad = data.data[0];
@@ -139,11 +137,11 @@ export default function JobsPage() {
             title: ad.title,
             description: ad.description,
             imageUrl: ad.imageUrl,
-            linkUrl: ad.linkUrl
+            linkUrl: ad.linkUrl,
           });
         }
       } catch (error) {
-        console.error('Failed to fetch side ad:', error);
+        console.error("Failed to fetch side ad:", error);
       } finally {
         setIsLoadingAd(false);
       }
@@ -156,12 +154,21 @@ export default function JobsPage() {
   const buildApiFilters = (): JobFilters => {
     return {
       keyword: filters.searchKeyword || undefined,
-      workType: appliedFilters.workType.length > 0 ? appliedFilters.workType : undefined,
-      experience: appliedFilters.experience.length > 0 ? appliedFilters.experience : undefined,
-      region: appliedFilters.region && appliedFilters.region !== "all" ? appliedFilters.region : undefined,
+      workType:
+        appliedFilters.workType.length > 0
+          ? appliedFilters.workType
+          : undefined,
+      experience:
+        appliedFilters.experience.length > 0
+          ? appliedFilters.experience
+          : undefined,
+      region:
+        appliedFilters.region && appliedFilters.region !== "all"
+          ? appliedFilters.region
+          : undefined,
       page: currentPage,
       limit: 8,
-      sort: filters.sortBy as 'recent' | 'deadline' | 'popular',
+      sort: filters.sortBy as "recent" | "deadline" | "popular",
     };
   };
 
@@ -171,17 +178,17 @@ export default function JobsPage() {
 
   // Log error details
   if (error) {
-    console.error('[JobsPage] Error fetching jobs:', error);
-    console.error('[JobsPage] API filters:', apiFilters);
+    console.error("[JobsPage] Error fetching jobs:", error);
+    console.error("[JobsPage] API filters:", apiFilters);
   }
 
   // Log successful data
   if (jobsData) {
-    console.log('[JobsPage] Jobs data received:', {
+    console.log("[JobsPage] Jobs data received:", {
       jobsCount: jobsData.jobs.length,
       totalCount: jobsData.totalCount,
       currentPage: jobsData.currentPage,
-      totalPages: jobsData.totalPages
+      totalPages: jobsData.totalPages,
     });
   }
 
@@ -196,9 +203,9 @@ export default function JobsPage() {
       const likedJobIds = jobs
         .filter((job: any) => job.isLiked)
         .map((job: any) => job.id);
-      
+
       if (likedJobIds.length > 0) {
-        console.log('[JobsPage] 서버에서 받은 좋아요 채용공고:', likedJobIds);
+        console.log("[JobsPage] 서버에서 받은 좋아요 채용공고:", likedJobIds);
         initializeJobLikes(likedJobIds);
       }
     }
@@ -208,22 +215,28 @@ export default function JobsPage() {
   const handleJobLike = async (jobId: string | number) => {
     const id = jobId.toString();
     const isCurrentlyLiked = isJobLiked(id);
-    
-    console.log(`[JobsPage Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[JobsPage Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleJobLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[JobsPage Like] API 요청: ${method} /api/jobs/${jobId}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[JobsPage Like] API 요청: ${method} /api/jobs/${jobId}/like`
+      );
+
       const response = await fetch(`/api/jobs/${jobId}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -231,23 +244,25 @@ export default function JobsPage() {
 
       if (!response.ok) {
         console.error(`[JobsPage Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setJobLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('채용공고를 찾을 수 없습니다:', jobId);
+          console.warn("채용공고를 찾을 수 없습니다:", jobId);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[JobsPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[JobsPage Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setJobLike(id, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -255,8 +270,11 @@ export default function JobsPage() {
 
       console.log(`[JobsPage Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[JobsPage Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[JobsPage Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setJobLike(id, isCurrentlyLiked);
     }
@@ -410,7 +428,7 @@ export default function JobsPage() {
             <div className="flex-1 space-y-6">
               {/* 제목 */}
               <div className="flex justify-between items-center self-stretch">
-                <h1 className="text-[28px] font-title title-bold text-[#3B394D]">
+                <h1 className="text-[28px] font-title title-medium text-[#3B394D]">
                   채용 공고
                 </h1>
 
@@ -442,7 +460,10 @@ export default function JobsPage() {
                 {isLoading ? (
                   // Loading skeleton
                   Array.from({ length: 8 }).map((_, index) => (
-                    <div key={index} className="bg-gray-100 rounded-lg p-6 animate-pulse">
+                    <div
+                      key={index}
+                      className="bg-gray-100 rounded-lg p-6 animate-pulse"
+                    >
                       <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
                       <div className="h-6 bg-gray-300 rounded w-1/2 mb-4"></div>
                       <div className="flex gap-2 mb-3">
@@ -456,9 +477,11 @@ export default function JobsPage() {
                 ) : error ? (
                   // Error state
                   <div className="text-center py-12">
-                    <p className="text-red-500 mb-4">채용공고를 불러오는 중 오류가 발생했습니다.</p>
-                    <Button 
-                      variant="default" 
+                    <p className="text-red-500 mb-4">
+                      채용공고를 불러오는 중 오류가 발생했습니다.
+                    </p>
+                    <Button
+                      variant="default"
                       onClick={() => window.location.reload()}
                     >
                       다시 시도
@@ -467,16 +490,15 @@ export default function JobsPage() {
                 ) : jobData.length === 0 ? (
                   // Empty state
                   <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">검색 조건에 맞는 채용공고가 없습니다.</p>
+                    <p className="text-gray-500 mb-4">
+                      검색 조건에 맞는 채용공고가 없습니다.
+                    </p>
                     {/* Show filter reset button only if filters are applied */}
-                    {(appliedFilters.workType.length > 0 || 
-                      appliedFilters.experience.length > 0 || 
-                      appliedFilters.region || 
+                    {(appliedFilters.workType.length > 0 ||
+                      appliedFilters.experience.length > 0 ||
+                      appliedFilters.region ||
                       filters.searchKeyword) && (
-                      <Button 
-                        variant="text" 
-                        onClick={handleFilterReset}
-                      >
+                      <Button variant="text" onClick={handleFilterReset}>
                         필터 초기화
                       </Button>
                     )}
@@ -490,7 +512,7 @@ export default function JobsPage() {
                       hospital={job.hospital}
                       dDay={job.dDay}
                       position={job.title || job.position}
-                      location={job.location?.split(' ').slice(0, 3).join(' ')}
+                      location={job.location?.split(" ").slice(0, 3).join(" ")}
                       jobType={job.jobType}
                       tags={job.tags}
                       isBookmarked={job.isBookmarked}
@@ -520,17 +542,18 @@ export default function JobsPage() {
             {/* 오른쪽: 광고 및 인기 채용공고 */}
             <div className="flex-shrink-0 w-[308px] space-y-6">
               {/* 광고 영역 */}
-              {!isLoadingAd && (
-                sideAdData ? (
+              {!isLoadingAd &&
+                (sideAdData ? (
                   <div
                     className="flex flex-col self-stretch rounded-[16px] text-white cursor-pointer transition-all hover:scale-[1.02]"
                     style={{
                       padding: "20px",
-                      background: "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
+                      background:
+                        "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
                     }}
                     onClick={() => {
                       if (sideAdData.linkUrl) {
-                        window.open(sideAdData.linkUrl, '_blank');
+                        window.open(sideAdData.linkUrl, "_blank");
                       }
                     }}
                   >
@@ -567,16 +590,34 @@ export default function JobsPage() {
                     style={{ padding: "20px" }}
                   >
                     <div className="flex flex-col items-center justify-center text-center">
-                      <svg 
-                        width="48" 
-                        height="48" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
+                      <svg
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
                         className="mb-3 text-gray-300"
                       >
-                        <path d="M13 7H22V20H13V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2 7H11V12H2V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2 17H11V20H2V17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path
+                          d="M13 7H22V20H13V7Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M2 7H11V12H2V7Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M2 17H11V20H2V17Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       <p className="font-title text-[16px] text-gray-600 mb-1">
                         광고를 원하시나요?
@@ -586,8 +627,7 @@ export default function JobsPage() {
                       </p>
                     </div>
                   </div>
-                )
-              )}
+                ))}
 
               {/* 인기 채용공고 */}
               <JobFamousList />
@@ -667,7 +707,10 @@ export default function JobsPage() {
                 {isLoading ? (
                   // Loading skeleton for mobile
                   Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="bg-gray-100 rounded-lg p-4 animate-pulse">
+                    <div
+                      key={index}
+                      className="bg-gray-100 rounded-lg p-4 animate-pulse"
+                    >
                       <div className="h-4 bg-gray-300 rounded w-1/3 mb-2"></div>
                       <div className="h-5 bg-gray-300 rounded w-2/3 mb-3"></div>
                       <div className="flex gap-2">
@@ -678,14 +721,16 @@ export default function JobsPage() {
                   ))
                 ) : jobData.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 text-sm mb-3">검색 조건에 맞는 채용공고가 없습니다.</p>
+                    <p className="text-gray-500 text-sm mb-3">
+                      검색 조건에 맞는 채용공고가 없습니다.
+                    </p>
                     {/* Show filter reset button only if filters are applied */}
-                    {(appliedFilters.workType.length > 0 || 
-                      appliedFilters.experience.length > 0 || 
-                      appliedFilters.region || 
+                    {(appliedFilters.workType.length > 0 ||
+                      appliedFilters.experience.length > 0 ||
+                      appliedFilters.region ||
                       filters.searchKeyword) && (
-                      <Button 
-                        variant="text" 
+                      <Button
+                        variant="text"
                         size="small"
                         onClick={handleFilterReset}
                       >
@@ -694,40 +739,46 @@ export default function JobsPage() {
                     )}
                   </div>
                 ) : (
-                  jobData.slice(0, Math.ceil(jobData.length / 2)).map((job) => (
-                    <JobInfoCard
-                      key={job.id}
-                      id={job.id}
-                      hospital={job.hospital}
-                      dDay={job.dDay}
-                      position={job.title || job.position}
-                      location={job.location?.split(' ').slice(0, 3).join(' ')}
-                      jobType={job.jobType}
-                      tags={job.tags.slice(0, 3)}
-                      isBookmarked={job.isBookmarked}
-                      isLiked={isJobLiked(job.id)}
-                      onLike={handleJobLike}
-                      variant="wide"
-                      showDeadline={false}
-                      isNew={job.isNew}
-                      onClick={() => router.push(`/jobs/${job.id}`)}
-                    />
-                  ))
+                  jobData
+                    .slice(0, Math.ceil(jobData.length / 2))
+                    .map((job) => (
+                      <JobInfoCard
+                        key={job.id}
+                        id={job.id}
+                        hospital={job.hospital}
+                        dDay={job.dDay}
+                        position={job.title || job.position}
+                        location={job.location
+                          ?.split(" ")
+                          .slice(0, 3)
+                          .join(" ")}
+                        jobType={job.jobType}
+                        tags={job.tags.slice(0, 3)}
+                        isBookmarked={job.isBookmarked}
+                        isLiked={isJobLiked(job.id)}
+                        onLike={handleJobLike}
+                        variant="wide"
+                        showDeadline={false}
+                        isNew={job.isNew}
+                        onClick={() => router.push(`/jobs/${job.id}`)}
+                      />
+                    ))
                 )}
               </div>
 
               {/* 광고 영역 - 모바일 */}
-              {!isLoadingAd && (
-                sideAdData ? (
+              {!isLoadingAd &&
+                (sideAdData ? (
                   <div
                     className="flex flex-col self-stretch rounded-[16px] text-white cursor-pointer"
                     style={{
                       padding: "20px",
-                      background: "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
+                      background:
+                        "linear-gradient(90deg, #809DFF 0%, #39B3FF 100%)",
                     }}
                     onClick={() => {
                       if (sideAdData.linkUrl) {
-                        window.open(sideAdData.linkUrl, '_blank');
+                        window.open(sideAdData.linkUrl, "_blank");
                       }
                     }}
                   >
@@ -761,16 +812,34 @@ export default function JobsPage() {
                   // 광고가 없는 경우 표시할 기본 영역
                   <div className="flex flex-col self-stretch rounded-[16px] bg-gray-50 border border-gray-200 p-5">
                     <div className="flex flex-col items-center justify-center text-center">
-                      <svg 
-                        width="40" 
-                        height="40" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
+                      <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 24 24"
+                        fill="none"
                         className="mb-2 text-gray-300"
                       >
-                        <path d="M13 7H22V20H13V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2 7H11V12H2V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2 17H11V20H2V17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path
+                          d="M13 7H22V20H13V7Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M2 7H11V12H2V7Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M2 17H11V20H2V17Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       <p className="font-title text-[14px] text-gray-600 mb-1">
                         광고를 원하시나요?
@@ -780,32 +849,36 @@ export default function JobsPage() {
                       </p>
                     </div>
                   </div>
-                )
-              )}
+                ))}
 
               {/* 나머지 채용공고 카드들 */}
               <div className="space-y-3">
-                {!isLoading && jobData.length > 0 && (
-                  jobData.slice(Math.ceil(jobData.length / 2)).map((job) => (
-                    <JobInfoCard
-                      key={job.id}
-                      id={job.id}
-                      hospital={job.hospital}
-                      dDay={job.dDay}
-                      position={job.title || job.position}
-                      location={job.location?.split(' ').slice(0, 3).join(' ')}
-                      jobType={job.jobType}
-                      tags={job.tags.slice(0, 3)}
-                      isBookmarked={job.isBookmarked}
-                      isLiked={isJobLiked(job.id)}
-                      onLike={handleJobLike}
-                      variant="wide"
-                      showDeadline={false}
-                      isNew={job.isNew}
-                      onClick={() => router.push(`/jobs/${job.id}`)}
-                    />
-                  ))
-                )}
+                {!isLoading &&
+                  jobData.length > 0 &&
+                  jobData
+                    .slice(Math.ceil(jobData.length / 2))
+                    .map((job) => (
+                      <JobInfoCard
+                        key={job.id}
+                        id={job.id}
+                        hospital={job.hospital}
+                        dDay={job.dDay}
+                        position={job.title || job.position}
+                        location={job.location
+                          ?.split(" ")
+                          .slice(0, 3)
+                          .join(" ")}
+                        jobType={job.jobType}
+                        tags={job.tags.slice(0, 3)}
+                        isBookmarked={job.isBookmarked}
+                        isLiked={isJobLiked(job.id)}
+                        onLike={handleJobLike}
+                        variant="wide"
+                        showDeadline={false}
+                        isNew={job.isNew}
+                        onClick={() => router.push(`/jobs/${job.id}`)}
+                      />
+                    ))}
               </div>
 
               {/* 페이지네이션 */}
