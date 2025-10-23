@@ -100,7 +100,8 @@ const TransferCard: React.FC<TransferCardProps> = ({
       ? {
           display: "flex",
           width: "100%",
-          height: "130px",
+          height: "min(130px, 40vw)",
+          minHeight: "80px",
           alignItems: "flex-start",
         }
       : {};
@@ -219,9 +220,10 @@ const TransferCard: React.FC<TransferCardProps> = ({
       <div
         className="relative flex-shrink-0 overflow-hidden"
         style={{
-          width: "min(130px, 35vw)",
-          height: "130px",
-          minWidth: "130px",
+          width: "min(130px, 40vw)",
+          height: "min(130px, 40vw)",
+          minWidth: "80px",
+          maxWidth: "130px",
         }}
       >
         <Image
@@ -258,7 +260,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
         className="flex-1 flex flex-col justify-between self-stretch min-w-0"
         style={{
           display: "flex",
-          padding: "0px 8px",
+          padding: "8px 16px",
           flexDirection: "column",
           justifyContent: "space-between",
           alignItems: "flex-start",
@@ -308,14 +310,6 @@ const TransferCard: React.FC<TransferCardProps> = ({
           <div className="text-right">
             <span className="font-text text-[14px] text-extrabold leading-[150%] text-key1">
               {formatPrice(price)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between w-full mt-auto">
-            <span className="font-text text-[10px] text-medium text-subtext2 truncate">
-              {date}
-            </span>
-            <span className="font-text text-[10px] text-medium text-subtext2 flex-shrink-0 ml-2">
-              조회 {views.toLocaleString()}
             </span>
           </div>
         </div>
