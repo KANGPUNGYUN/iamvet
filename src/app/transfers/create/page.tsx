@@ -262,7 +262,8 @@ export default function CreateTransferPage() {
               : formData.salePrice
           ) || 0,
         area: formData.category === "병원양도" ? parseInt(formData.area) || null : null,
-        images: [...imageUrls, ...documentUrls], // 이미지와 문서를 하나의 배열로 통합
+        images: imageUrls, // 이미지 파일 URL들
+        documents: documentUrls, // 문서 파일 URL들
         status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
       };
 

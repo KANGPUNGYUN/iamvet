@@ -29,7 +29,7 @@ interface FormData {
   sido: string; // 시도 (서울, 경기, 부산 등)
   sigungu: string; // 시군구 (강남구, 분당구 등)
   images: string[]; // 양수양도 이미지 URL들 (MultiImageUpload에서 처리됨)
-  documents: File[]; // 양수양도 파일들
+  documents: File[]; // 새로 업로드할 문서 파일들
 }
 
 const categoryOptions = [
@@ -66,6 +66,7 @@ export default function EditTransferPage({
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [existingDocuments, setExistingDocuments] = useState<string[]>([]); // 기존 문서 URL들
 
   // 기존 데이터 로드
   useEffect(() => {
@@ -119,8 +120,9 @@ export default function EditTransferPage({
           sido: transferData.sido || "",
           sigungu: transferData.sigungu || "",
           images: transferData.images || [],
-          documents: [], // 문서는 File 객체가 필요하므로 빈 배열
+          documents: [], // 새로 업로드할 문서 파일들
         });
+        setExistingDocuments(transferData.documents || []); // 기존 문서 URL들
         setIsDataLoaded(true);
       } catch (error) {
         console.error("Transfer load error:", error);
@@ -162,6 +164,10 @@ export default function EditTransferPage({
       ...prev,
       documents: files,
     }));
+  };
+
+  const handleRemoveExistingDocument = (documentUrl: string) => {
+    setExistingDocuments((prev) => prev.filter(url => url !== documentUrl));
   };
 
   // 주소 검색 후 시도/시군구 추출 함수
@@ -281,8 +287,13 @@ export default function EditTransferPage({
         }
       }
 
+      // 기존 문서 URL들과 새로 업로드된 문서 URL들을 합침
+      const allDocumentUrls = [...existingDocuments, ...documentUrls];
+
       console.log("[DEBUG] 최종 이미지 URL 배열:", imageUrls);
-      console.log("[DEBUG] 최종 문서 URL 배열:", documentUrls);
+      console.log("[DEBUG] 기존 문서 URL들:", existingDocuments);
+      console.log("[DEBUG] 새 문서 URL들:", documentUrls);
+      console.log("[DEBUG] 전체 문서 URL 배열:", allDocumentUrls);
 
       // API 요청 데이터 구성
       const updateData = {
@@ -303,7 +314,8 @@ export default function EditTransferPage({
               : formData.salePrice
           ) || 0,
         area: formData.category === "병원양도" ? parseInt(formData.area) || null : null,
-        images: [...imageUrls, ...documentUrls], // 이미지와 문서를 하나의 배열로 통합
+        images: imageUrls, // 이미지 파일 URL들
+        documents: allDocumentUrls, // 기존 문서 + 새 문서 URL들
         status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
       };
 
@@ -558,7 +570,58 @@ export default function EditTransferPage({
                 이미지/파일 첨부
               </label>
 
-              {/* 양수양도 파일들 업로드 */}
+              {/* 기존 문서 파일들 표시 */}
+              {existingDocuments.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">기존 업로드된 문서</h4>
+                  <div className="space-y-2">
+                    {existingDocuments.map((documentUrl, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border">
+                        <div className="flex-shrink-0">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <rect x="2" y="1" width="10" height="14" rx="1" fill="#6B7280" />
+                            <path
+                              d="M5 5h4M5 8h3M5 11h2"
+                              stroke="white"
+                              strokeWidth="1"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {documentUrl.split('/').pop() || `문서 ${index + 1}`}
+                          </p>
+                          <p className="text-xs text-gray-500">기존 업로드 파일</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveExistingDocument(documentUrl)}
+                          className="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm hover:bg-red-200 transition-colors"
+                          aria-label="파일 제거"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="10"
+                            height="10"
+                            viewBox="0 0 10 10"
+                            fill="none"
+                          >
+                            <path
+                              d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5"
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 새 문서 파일들 업로드 */}
               <DocumentUpload
                 value={formData.documents}
                 onChange={handleDocumentUpload}

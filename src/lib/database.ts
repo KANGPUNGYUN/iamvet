@@ -4275,6 +4275,10 @@ export const updateTransfer = async (transferId: string, updateData: any) => {
     fields.push(`images = $${paramIndex++}`);
     values.push(updateData.images);
   }
+  if (updateData.documents !== undefined) {
+    fields.push(`documents = $${paramIndex++}`);
+    values.push(updateData.documents);
+  }
   if (updateData.status !== undefined) {
     fields.push(`status = $${paramIndex++}`);
     values.push(updateData.status);
@@ -4347,8 +4351,8 @@ export const createTransfer = async (transferData: any) => {
   const transferId = `transfer_${Date.now()}_${Math.random().toString(36).substring(2)}`;
   
   const query = `
-    INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, price, category, images, status, area, views, "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW())
+    INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, price, category, images, documents, status, area, views, "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), NOW())
     RETURNING *
   `;
   const values = [
@@ -4364,6 +4368,7 @@ export const createTransfer = async (transferData: any) => {
     transferData.price,
     transferData.category,
     transferData.images,
+    transferData.documents || [], // 문서 파일 URL 배열
     transferData.status || 'ACTIVE',
     transferData.area || null, // 평수 (병원양도일 때만)
     0 // views 초기값
