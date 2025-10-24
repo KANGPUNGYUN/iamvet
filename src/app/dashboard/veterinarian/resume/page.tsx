@@ -710,6 +710,7 @@ export default function ResumePage() {
           endDate: edu.endDate ? new Date(edu.endDate) : null,
         })),
         medicalCapabilities: resumeData.medicalCapabilities,
+        portfolioFiles: resumeData.portfolioFiles,
       };
 
       console.log("[VeterinarianResumePage] Saving resume data:", saveData);
