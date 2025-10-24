@@ -121,6 +121,7 @@ model detailed_resumes {
   resume_licenses             resume_licenses[]
   resume_likes                resume_likes[]
   resume_medical_capabilities resume_medical_capabilities[]
+  resume_portfolio_files      resume_portfolio_files[]
 }
 
 model forum_comments {
@@ -507,6 +508,21 @@ model resume_medical_capabilities {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
   detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model resume_portfolio_files {
+  id               String           @id
+  resumeId         String
+  fileName         String
+  fileUrl          String
+  fileType         String?
+  fileSize         Int?
+  sortOrder        Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
 }
 
 model resumes {

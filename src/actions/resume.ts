@@ -47,6 +47,15 @@ export interface ResumeMedicalCapability {
   others: string;
 }
 
+// 포트폴리오 파일 타입
+export interface ResumePortfolioFile {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType?: string;
+  fileSize?: number;
+}
+
 // 이력서 데이터 타입 정의 (detailed_resumes 테이블 스키마에 맞춤)
 export interface VeterinarianResume {
   id: string;
@@ -76,6 +85,7 @@ export interface VeterinarianResume {
   licenses: ResumeLicense[];
   educations: ResumeEducation[];
   medicalCapabilities: ResumeMedicalCapability[];
+  portfolioFiles: ResumePortfolioFile[];
   createdAt: string;
   updatedAt: string;
 }
@@ -110,6 +120,7 @@ export interface ResumeUpdateData {
   licenses: ResumeLicense[];
   educations: ResumeEducation[];
   medicalCapabilities: ResumeMedicalCapability[];
+  portfolioFiles: ResumePortfolioFile[];
 }
 
 // 수의사 이력서 조회 Server Action
@@ -237,11 +248,12 @@ export async function getVeterinarianResumeAction(token: string): Promise<{
     const resumeId = dbResume.id;
 
     // 관계 데이터 조회
-    const [experiences, licenses, educations, medicalCapabilities] = await Promise.all([
+    const [experiences, licenses, educations, medicalCapabilities, portfolioFiles] = await Promise.all([
       sql`SELECT id, "hospitalName", "mainTasks", "startDate", "endDate" FROM resume_experiences WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
       sql`SELECT id, name, issuer, "acquiredDate" FROM resume_licenses WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
       sql`SELECT id, degree, "graduationStatus", "schoolName", major, gpa, "totalGpa", "startDate", "endDate" FROM resume_educations WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
-      sql`SELECT id, field, proficiency, description, others FROM resume_medical_capabilities WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`
+      sql`SELECT id, field, proficiency, description, others FROM resume_medical_capabilities WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`,
+      sql`SELECT id, "fileName", "fileUrl", "fileType", "fileSize" FROM resume_portfolio_files WHERE "resumeId" = ${resumeId} ORDER BY "sortOrder", "createdAt"`
     ]);
     
     // Transform DB data to match frontend expectations
@@ -298,6 +310,13 @@ export async function getVeterinarianResumeAction(token: string): Promise<{
         proficiency: cap.proficiency || '',
         description: cap.description || '',
         others: cap.others || '',
+      })),
+      portfolioFiles: portfolioFiles.map(file => ({
+        id: file.id,
+        fileName: file.fileName || '',
+        fileUrl: file.fileUrl || '',
+        fileType: file.fileType,
+        fileSize: file.fileSize,
       })),
       createdAt: dbResume.createdAt,
       updatedAt: dbResume.updatedAt,
@@ -467,7 +486,8 @@ export async function saveVeterinarianResumeAction(
         sql`DELETE FROM resume_experiences WHERE "resumeId" = ${resumeId}`,
         sql`DELETE FROM resume_licenses WHERE "resumeId" = ${resumeId}`,
         sql`DELETE FROM resume_educations WHERE "resumeId" = ${resumeId}`,
-        sql`DELETE FROM resume_medical_capabilities WHERE "resumeId" = ${resumeId}`
+        sql`DELETE FROM resume_medical_capabilities WHERE "resumeId" = ${resumeId}`,
+        sql`DELETE FROM resume_portfolio_files WHERE "resumeId" = ${resumeId}`
       ]);
     } else {
       // 생성
@@ -545,6 +565,18 @@ export async function saveVeterinarianResumeAction(
               (id, "resumeId", field, proficiency, description, others, "sortOrder", "createdAt", "updatedAt")
               VALUES (${cap.id}, ${resumeId}, ${cap.field}, ${cap.proficiency}, 
                       ${cap.description}, ${cap.others}, ${index}, NOW(), NOW())`
+        );
+      }
+    });
+
+    // 포트폴리오 파일 데이터 저장
+    updateData.portfolioFiles.forEach((file, index) => {
+      if (file.fileName.trim() && file.fileUrl.trim()) {
+        insertPromises.push(
+          sql`INSERT INTO resume_portfolio_files 
+              (id, "resumeId", "fileName", "fileUrl", "fileType", "fileSize", "sortOrder", "createdAt", "updatedAt")
+              VALUES (${file.id}, ${resumeId}, ${file.fileName}, ${file.fileUrl}, 
+                      ${file.fileType || null}, ${file.fileSize || null}, ${index}, NOW(), NOW())`
         );
       }
     });

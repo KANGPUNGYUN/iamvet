@@ -83,16 +83,23 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     if (fileType.includes("pdf")) {
       return <PdfIcon currentColor="#EF4444" />;
     }
-    if (fileType.includes("word") || fileType.includes("document")) {
-      return <WordIcon currentColor="#3B82F6" />;
-    }
+    // Excel 파일을 먼저 체크 (spreadsheetml이나 xlsx, xls 포함)
     if (
       fileType.includes("xlsx") ||
       fileType.includes("xls") ||
       fileType.includes("xlsm") ||
+      fileType.includes("spreadsheetml") ||
       fileType.includes("spreadsheet")
     ) {
       return <ExcelIcon currentColor="#22C55E" />;
+    }
+    // Word 파일 체크 (wordprocessingml이나 msword 포함)
+    if (
+      fileType.includes("word") || 
+      fileType.includes("wordprocessingml") ||
+      fileType.includes("msword")
+    ) {
+      return <WordIcon currentColor="#3B82F6" />;
     }
     if (fileType.includes("image")) {
       return (

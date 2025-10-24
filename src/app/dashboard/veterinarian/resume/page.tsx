@@ -12,7 +12,8 @@ import { Textarea } from "@/components/ui/Input/Textarea";
 import { Button } from "@/components/ui/Button";
 import { ResumeImageUpload } from "@/components/features/resume/ResumeImageUpload";
 import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
-import { PlusIcon, MinusIcon } from "public/icons";
+import { PlusIcon, MinusIcon, DownloadIcon, PdfIcon, WordIcon, ExcelIcon } from "public/icons";
+import { DocumentUpload } from "@/components/features/profile/DocumentUpload";
 import {
   formatPhoneNumber,
   formatBirthDate,
@@ -78,6 +79,14 @@ interface MedicalCapability {
   others: string;
 }
 
+interface PortfolioFile {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType?: string;
+  fileSize?: number;
+}
+
 interface ResumeData {
   photo: string | null;
   name: string;
@@ -103,6 +112,7 @@ interface ResumeData {
   educations: Education[];
   medicalCapabilities: MedicalCapability[];
   selfIntroduction: string;
+  portfolioFiles: PortfolioFile[];
 }
 
 // IconButton 컴포넌트
@@ -301,6 +311,7 @@ export default function ResumePage() {
       },
     ],
     selfIntroduction: "",
+    portfolioFiles: [],
   });
 
   // 기존 이력서 데이터가 있으면 폼에 반영
@@ -380,6 +391,7 @@ export default function ResumePage() {
                 },
               ],
         selfIntroduction: existingResume.selfIntroduction || "",
+        portfolioFiles: existingResume.portfolioFiles || [],
       }));
     }
     // 회원정보를 기본값으로 사용하지 않음 - 빈 값으로 시작
@@ -544,11 +556,88 @@ export default function ResumePage() {
     }));
   };
 
+  // 포트폴리오 파일 추가 (DocumentUpload 컴포넌트와 연동)
+  const handlePortfolioUpload = async (files: File[]) => {
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'portfolios');
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('파일 업로드 실패');
+        }
+        
+        const result = await response.json();
+        return {
+          id: `portfolio_${Date.now()}_${Math.random()}`,
+          fileName: file.name,
+          fileUrl: result.url,
+          fileType: file.type,
+          fileSize: file.size,
+        };
+      });
+      
+      const uploadedFiles = await Promise.all(uploadPromises);
+      
+      setResumeData((prev) => ({
+        ...prev,
+        portfolioFiles: uploadedFiles,
+      }));
+    } catch (error) {
+      console.error('파일 업로드 오류:', error);
+      alert('파일 업로드에 실패했습니다.');
+    }
+  };
+
+  // 파일 아이콘 반환 함수
+  const getFileIcon = (fileName: string) => {
+    if (fileName.endsWith(".pdf")) {
+      return <PdfIcon currentColor="#EF4444" />;
+    } else if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) {
+      return <WordIcon currentColor="#3B82F6" />;
+    } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
+      return <ExcelIcon currentColor="#22C55E" />;
+    } else {
+      return (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="1" width="10" height="14" rx="1" fill="#6B7280" />
+          <path
+            d="M5 5h4M5 8h3M5 11h2"
+            stroke="white"
+            strokeWidth="1"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+    }
+  };
+
   const handleSave = async () => {
     try {
       // 필수 필드 검증
       if (!resumeData.name.trim()) {
         alert("이름을 입력해주세요.");
+        return;
+      }
+
+      if (!resumeData.birthDate.trim()) {
+        alert("생년월일을 입력해주세요.");
+        return;
+      }
+
+      if (!resumeData.phone.trim()) {
+        alert("연락처를 입력해주세요.");
+        return;
+      }
+
+      if (!resumeData.specialties || resumeData.specialties.length === 0) {
+        alert("전공분야를 선택해주세요.");
         return;
       }
 
@@ -692,7 +781,7 @@ export default function ResumePage() {
               <div className="lg:flex-row flex flex-col gap-[40px] lg:gap-[24px]">
                 <div>
                   <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                    이름
+                    이름 <span className="text-red-500">*</span>
                   </label>
                   <InputBox
                     value={resumeData.name}
@@ -704,7 +793,7 @@ export default function ResumePage() {
                 </div>
                 <div>
                   <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                    생년월일
+                    생년월일 <span className="text-red-500">*</span>
                   </label>
                   <InputBox
                     value={resumeData.birthDate}
@@ -723,7 +812,7 @@ export default function ResumePage() {
               <div className="lg:flex-row flex flex-col gap-[40px] lg:gap-[24px] mt-[30px]">
                 <div>
                   <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                    연락처
+                    연락처 <span className="text-red-500">*</span>
                   </label>
                   <InputBox
                     value={resumeData.phone}
@@ -820,7 +909,7 @@ export default function ResumePage() {
               </div>
               <div className="w-full">
                 <label className="block text-[20px] font-text text-[primary] mb-[10px]">
-                  전공 분야
+                  전공 분야 <span className="text-red-500">*</span>
                 </label>
                 <FilterBox.Group
                   value={resumeData.specialties}
@@ -1513,6 +1602,60 @@ export default function ResumePage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* 포트폴리오 */}
+        <div className="px-[30px] mt-[80px]">
+          <div className="flex items-center justify-between mb-[30px] pb-2 border-b">
+            <h2 className="font-text text-[20px] font-medium text-primary">
+              포트폴리오
+            </h2>
+          </div>
+          
+          {/* DocumentUpload 컴포넌트 사용 */}
+          <DocumentUpload
+            value={[]} // DocumentUpload는 새로운 파일 업로드만 처리
+            onChange={handlePortfolioUpload}
+            maxFiles={5}
+            className="mb-6"
+          />
+
+          {/* 업로드된 파일 목록 - 강의 상세 페이지 스타일 적용 */}
+          {resumeData.portfolioFiles.length > 0 && (
+            <div className="p-[20px] bg-[#FAFAFA] rounded-[16px]">
+              <h3 className="text-[20px] font-title title-light text-sub mb-[20px]">
+                첨부된 포트폴리오 파일
+              </h3>
+              <div className="space-y-3">
+                {resumeData.portfolioFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between p-4 border border-[#EFEFF0] bg-white rounded-[8px]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-[16px] h-[16px]">
+                        {getFileIcon(file.fileName)}
+                      </div>
+                      <p className="text-[14px] font-semibold text-[#3B394D]">
+                        {file.fileName}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        // 파일 다운로드 또는 보기 기능
+                        if (file.fileUrl) {
+                          window.open(file.fileUrl, '_blank');
+                        }
+                      }}
+                      className="flex items-center justify-center w-[32px] h-[32px] rounded-[8px] transition-colors hover:bg-gray-100"
+                    >
+                      <DownloadIcon currentColor="#9098A4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 자기소개 */}
