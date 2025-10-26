@@ -9,27 +9,17 @@ import { FilterBoxGroup } from "@/components/ui/FilterBox/FilterBoxGroup";
 import { FilterBoxItem } from "@/components/ui/FilterBox/FilterBoxItem";
 import { Pagination } from "@/components/ui/Pagination/Pagination";
 import JobInfoCard from "@/components/ui/JobInfoCard";
-import { useLikeStore } from "@/stores/likeStore";
+// import { useLikeStore } from "@/stores/likeStore"; // 주석 처리 - 북마크 페이지에서는 불필요
 
 interface JobData {
   id: string;
-  title: string;
-  hospital: {
-    id: string;
-    name: string;
-    address?: string;
-    city?: string;
-    district?: string;
-  };
+  hospital: string; // 새로운 API에서는 문자열로 반환
+  dDay: string; // "D-5", "신규", "상시" 등
   position: string;
-  workType: string;
-  experience: string;
-  salary?: string;
-  deadline?: string;
+  location: string; // 위치 정보
+  jobType: string; // 경력/근무형태 등
   tags: string[];
-  isLiked?: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isBookmarked: boolean;
 }
 
 const workTypeCategories = ["정규직", "계약직", "파트타임", "인턴"];
@@ -48,9 +38,8 @@ export default function VeterinarianJobBookmarksPage() {
   const [totalJobs, setTotalJobs] = useState(0);
   const itemsPerPage = 9;
 
-  // Zustand 스토어에서 좋아요 상태 관리
-  const { setJobLike, toggleJobLike, initializeJobLikes, isJobLiked } =
-    useLikeStore();
+  // Zustand 스토어에서 좋아요 상태 관리 (주석 처리 - 북마크 페이지에서는 북마크 기능만 사용)
+  // const { setJobLike, toggleJobLike, initializeJobLikes, isJobLiked } = useLikeStore();
 
   // API에서 북마크한 채용공고 정보 가져오기
   const fetchBookmarkedJobs = async () => {
@@ -58,53 +47,64 @@ export default function VeterinarianJobBookmarksPage() {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams();
-      params.set("bookmarked", "true"); // 북마크된 항목만 조회
-
-      if (searchQuery.trim()) {
-        params.set("keyword", searchQuery.trim());
-      }
-      if (selectedWorkTypes.length > 0) {
-        params.set("workType", selectedWorkTypes.join(","));
-      }
-      if (selectedExperiences.length > 0) {
-        params.set("experience", selectedExperiences.join(","));
-      }
-
-      params.set("page", currentPage.toString());
-      params.set("limit", itemsPerPage.toString());
-
-      const response = await fetch(`/api/jobs?${params.toString()}`);
+      // 북마크된 공고 전용 API 사용 (좋아요한 공고를 북마크로 표시)
+      const response = await fetch('/api/veterinarians/bookmarked-jobs', {
+        credentials: 'include'
+      });
 
       if (!response.ok) {
         throw new Error("북마크한 채용공고 목록을 불러오는데 실패했습니다.");
       }
 
       const result = await response.json();
-
-      if (result.status === "success") {
-        const jobsData = result.data.jobs || [];
-        setJobs(jobsData);
-        setTotalPages(result.data.totalPages || 0);
-        setTotalJobs(result.data.total || 0);
-
-        // 초기 좋아요 상태 동기화
-        const likedJobIds = jobsData
-          .filter((job: any) => job.isLiked)
-          .map((job: any) => job.id);
-
-        if (likedJobIds.length > 0) {
-          console.log(
-            "[VeterinarianJobBookmarks] 서버에서 받은 좋아요 채용공고:",
-            likedJobIds
-          );
-          initializeJobLikes(likedJobIds);
-        }
-      } else {
-        throw new Error(
-          result.message || "북마크한 채용공고 목록을 불러오는데 실패했습니다."
+      const jobsData = result.jobs || [];
+      
+      // 필터링 로직 (클라이언트 사이드)
+      let filteredJobs = jobsData;
+      
+      // 검색 키워드 필터링
+      if (searchQuery.trim()) {
+        const keyword = searchQuery.trim().toLowerCase();
+        filteredJobs = filteredJobs.filter((job: any) => 
+          job.position?.toLowerCase().includes(keyword) ||
+          job.hospital?.toLowerCase().includes(keyword) ||
+          job.tags?.some((tag: string) => tag.toLowerCase().includes(keyword))
         );
       }
+      
+      // 근무형태 필터링
+      if (selectedWorkTypes.length > 0) {
+        filteredJobs = filteredJobs.filter((job: any) =>
+          selectedWorkTypes.some(workType => 
+            job.tags?.includes(workType) || job.jobType?.includes(workType)
+          )
+        );
+      }
+      
+      // 경력 필터링
+      if (selectedExperiences.length > 0) {
+        filteredJobs = filteredJobs.filter((job: any) =>
+          selectedExperiences.some(exp => 
+            job.jobType?.includes(exp)
+          )
+        );
+      }
+
+      // 페이지네이션
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+      
+      setJobs(paginatedJobs);
+      setTotalPages(Math.ceil(filteredJobs.length / itemsPerPage));
+      setTotalJobs(filteredJobs.length);
+
+      // 초기 좋아요 상태 동기화 (주석 처리 - 북마크 페이지에서는 불필요)
+      // const likedJobIds = paginatedJobs.map((job: any) => job.id);
+      // if (likedJobIds.length > 0) {
+      //   console.log("[VeterinarianJobBookmarks] 서버에서 받은 좋아요 채용공고:", likedJobIds);
+      //   initializeJobLikes(likedJobIds);
+      // }
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
       console.error("북마크 채용공고 목록 조회 오류:", err);
@@ -118,19 +118,7 @@ export default function VeterinarianJobBookmarksPage() {
     fetchBookmarkedJobs();
   }, [searchQuery, selectedWorkTypes, selectedExperiences, currentPage]);
 
-  // 채용공고 데이터 변환 함수
-  const transformJobData = (job: JobData) => {
-    const location =
-      job.hospital.city && job.hospital.district
-        ? `${job.hospital.city} ${job.hospital.district}`
-        : job.hospital.address || "";
-
-    return {
-      ...job,
-      location,
-      isLiked: isJobLiked(job.id), // Zustand 스토어에서 좋아요 상태 가져오기
-    };
-  };
+  // 채용공고 데이터 변환 함수 (제거됨 - 새로운 API 구조에서는 불필요)
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -147,87 +135,30 @@ export default function VeterinarianJobBookmarksPage() {
     setCurrentPage(1); // 필터 시 첫 페이지로 리셋
   };
 
-  // 채용공고 좋아요/취소 핸들러
-  const handleLike = async (jobId: string) => {
-    const isCurrentlyLiked = isJobLiked(jobId);
+  // 채용공고 좋아요/취소 핸들러 (주석 처리 - 북마크 페이지에서는 불필요)
+  // const handleLike = async (jobId: string) => { ... };
 
-    console.log(
-      `[VeterinarianJobBookmarks Like] ${jobId} - 현재 상태: ${
-        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
-      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
-    );
-
-    // 낙관적 업데이트: UI를 먼저 변경
-    toggleJobLike(jobId);
-
+  // 북마크 해제 핸들러 (좋아요 해제와 동일한 기능)
+  const handleBookmarkToggle = async (jobId: string) => {
     try {
-      const method = isCurrentlyLiked ? "DELETE" : "POST";
-      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
-
-      console.log(
-        `[VeterinarianJobBookmarks Like] API 요청: ${method} /api/jobs/${jobId}/like`
-      );
-
       const response = await fetch(`/api/jobs/${jobId}/like`, {
-        method,
+        method: 'DELETE', // 좋아요(북마크) 해제
+        credentials: 'include',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error(
-          `[VeterinarianJobBookmarks Like] ${actionText} 실패:`,
-          result
-        );
-
-        // 오류 발생 시 상태 롤백
-        setJobLike(jobId, isCurrentlyLiked);
-
-        if (response.status === 404) {
-          console.warn("채용공고를 찾을 수 없습니다:", jobId);
-          return;
-        } else if (response.status === 400) {
-          if (result.message?.includes("이미 좋아요한")) {
-            console.log(
-              `[VeterinarianJobBookmarks Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
-            );
-            setJobLike(jobId, true);
-            return;
-          }
-          console.warn(`${actionText} 실패:`, result.message);
-          return;
-        } else if (response.status === 401) {
-          console.warn("로그인이 필요합니다.");
-          alert("로그인이 필요합니다.");
-          router.push("/login/veterinarian");
-          return;
-        }
-        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
-      }
-
-      console.log(
-        `[VeterinarianJobBookmarks Like] ${actionText} 성공:`,
-        result
-      );
-
-      // 북마크 페이지에서 좋아요 취소 시 목록 새로고침
-      if (isCurrentlyLiked) {
+      if (response.ok) {
+        // 북마크 해제 성공 시 목록 새로고침
         await fetchBookmarkedJobs();
+        console.log(`[VeterinarianJobBookmarks] 북마크 해제 성공: ${jobId}`);
+      } else {
+        throw new Error('북마크 해제에 실패했습니다.');
       }
     } catch (error) {
-      console.error(
-        `[VeterinarianJobBookmarks Like] ${
-          isCurrentlyLiked ? "좋아요 취소" : "좋아요"
-        } 오류:`,
-        error
-      );
-
-      // 오류 발생 시 상태 롤백
-      setJobLike(jobId, isCurrentlyLiked);
-      alert("좋아요 처리 중 오류가 발생했습니다.");
+      console.error('북마크 해제 실패:', error);
+      alert('북마크 해제 중 오류가 발생했습니다.');
     }
   };
 
@@ -342,27 +273,27 @@ export default function VeterinarianJobBookmarksPage() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {jobs.map((job) => {
-                  const transformedJob = transformJobData(job);
-                  const dDay = job.deadline
-                    ? Math.ceil(
-                        (new Date(job.deadline).getTime() -
-                          new Date().getTime()) /
-                          (1000 * 60 * 60 * 24)
-                      )
-                    : null;
+                  // D-Day를 숫자로 변환 (기존 dDay는 문자열 "D-5" 형태)
+                  let dDayNumber = null;
+                  if (job.dDay && job.dDay !== "신규" && job.dDay !== "상시" && job.dDay !== "마감") {
+                    const match = job.dDay.match(/D-?(\d+)/);
+                    if (match) {
+                      dDayNumber = parseInt(match[1]);
+                    }
+                  }
 
                   return (
                     <JobInfoCard
                       key={job.id}
                       id={job.id}
-                      hospital={job.hospital.name}
+                      hospital={job.hospital}
                       position={job.position}
-                      location={transformedJob.location}
-                      jobType={job.experience}
+                      location={job.location}
+                      jobType={job.jobType}
                       tags={job.tags}
-                      dDay={dDay}
-                      isLiked={transformedJob.isLiked}
-                      onLike={() => handleLike(job.id)}
+                      dDay={dDayNumber}
+                      isBookmarked={true} // 북마크된 공고 페이지이므로 항상 true
+                      onBookmark={() => handleBookmarkToggle(job.id)}
                       onClick={() => router.push(`/jobs/${job.id}`)}
                     />
                   );

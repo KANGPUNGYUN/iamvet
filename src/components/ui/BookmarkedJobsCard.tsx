@@ -58,12 +58,38 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
       setIsLoading(false);
     }
   };
+
+
+  // 북마크(좋아요) 토글 핸들러
+  const handleBookmarkToggle = async (jobId: string | number) => {
+    const jobIdString = String(jobId);
+    try {
+      // 실제로는 좋아요 API를 사용 (북마크 기능이 좋아요로 구현됨)
+      const response = await fetch(`/api/jobs/${jobIdString}/like`, {
+        method: 'DELETE', // 좋아요 해제
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // 좋아요 해제 성공 시 목록 새로고침
+        await fetchBookmarkedJobs();
+      } else {
+        throw new Error('북마크 해제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('북마크 처리 실패:', error);
+      alert('북마크 처리 중 오류가 발생했습니다.');
+    }
+  };
   return (
     <div className="bg-white w-full lg:max-w-[714px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-[20px] font-bold text-primary">찜한 공고</h2>
         <Link
-          href="/dashboard/veterinarian/bookmarks"
+          href="/dashboard/veterinarian/job-bookmarks"
           className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
         >
           전체보기
@@ -111,6 +137,7 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
           {data.slice(0, 2).map((job) => (
             <JobInfoCard
               key={job.id}
+              id={job.id}
               hospital={job.hospital}
               dDay={convertDDayToNumber(job.dDay)}
               position={job.position}
@@ -118,9 +145,9 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
               jobType={job.jobType}
               tags={job.tags}
               isBookmarked={job.isBookmarked}
-              isNew={job.dDay === "신규"}
               variant="wide"
               showDeadline={job.dDay !== "신규"}
+              onBookmark={handleBookmarkToggle}
               onClick={() => {
                 window.location.href = `/jobs/${job.id}`;
               }}

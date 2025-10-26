@@ -3201,13 +3201,13 @@ export const getUserBookmarks = async (userId: string) => {
 };
 
 export const checkJobBookmarkExists = async (userId: string, jobId: string) => {
-  const query = `SELECT id FROM job_bookmarks WHERE user_id = $1 AND job_id = $2 AND deleted_at IS NULL`;
+  const query = `SELECT id FROM job_bookmarks WHERE "userId" = $1 AND "jobId" = $2 AND "deletedAt" IS NULL`;
   const result = await pool.query(query, [userId, jobId]);
   return result.rows.length > 0;
 };
 
 export const removeJobBookmark = async (userId: string, jobId: string) => {
-  const query = `UPDATE job_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND job_id = $2`;
+  const query = `UPDATE job_bookmarks SET "deletedAt" = NOW() WHERE "userId" = $1 AND "jobId" = $2`;
   const result = await pool.query(query, [userId, jobId]);
   return (result.rowCount ?? 0) > 0;
 };
