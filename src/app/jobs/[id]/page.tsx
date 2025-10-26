@@ -789,9 +789,8 @@ export default function JobDetailPage({
                         ? job.experience
                         : [job.experience].filter(Boolean)),
                     ].filter(Boolean)}
-                    isBookmarked={false}
-                    isLiked={isJobLiked(job.id)}
-                    onLike={async (jobId) => {
+                    isBookmarked={isJobLiked(job.id)}
+                    onBookmark={async (jobId) => {
                       const jobIdStr = jobId.toString();
                       const isCurrentlyLiked = isJobLiked(jobIdStr);
 
