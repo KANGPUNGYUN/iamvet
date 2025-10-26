@@ -732,9 +732,9 @@ export default function HomePage() {
                 className="flex font-title title-light text-[16px] text-sub hover:underline self-end md:self-auto cursor-pointer"
                 onClick={() => {
                   if (activeTab === "internal") {
-                    handleResumeNavigation("/resumes");
-                  } else {
                     router.push("/jobs");
+                  } else {
+                    handleResumeNavigation("/resumes");
                   }
                 }}
               >
@@ -885,7 +885,9 @@ export default function HomePage() {
                                 location={job.location}
                                 jobType={job.employmentType || job.jobType}
                                 tags={job.specialties || job.tags || []}
-                                isBookmarked={job.isBookmarked || isJobLiked(job.id)}
+                                isBookmarked={
+                                  job.isBookmarked || isJobLiked(job.id)
+                                }
                                 onBookmark={handleJobLike}
                                 deadline={job.recruitEndDate}
                                 isAlwaysOpen={job.isUnlimitedRecruit || false}
