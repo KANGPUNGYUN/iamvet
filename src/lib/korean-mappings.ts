@@ -55,7 +55,7 @@ export const KOREAN_MAPPINGS = {
     // 일반 진료분야
     internal: "내과",
     "internal-medicine": "내과",
-    "internal_medicine": "내과",
+    internal_medicine: "내과",
     INTERNAL_MEDICINE: "내과",
     surgery: "외과",
     SURGERY: "외과",
@@ -90,13 +90,13 @@ export const KOREAN_MAPPINGS = {
     EXOTIC: "특수동물의학과",
     wildlife: "야생동물의학과",
     WILDLIFE: "야생동물의학과",
-    
+
     // 한국어 진료분야 (그대로 유지)
-    "소동물내과": "소동물내과",
-    "대동물내과": "대동물내과",
-    "영상진단": "영상진단",
-    "병리학": "병리학",
-    "응급처치": "응급처치",
+    소동물내과: "소동물내과",
+    대동물내과: "대동물내과",
+    영상진단: "영상진단",
+    병리학: "병리학",
+    응급처치: "응급처치",
   } as Record<string, string>,
 
   // 숙련도 레벨 매핑
@@ -115,8 +115,8 @@ export const KOREAN_MAPPINGS = {
 
   // 동물 유형 매핑
   animalType: {
-    DOG: "개",
-    CAT: "고양이", 
+    DOG: "강아지",
+    CAT: "고양이",
     EXOTIC: "특수동물",
     LARGE_ANIMAL: "대동물",
     BIRD: "조류",
@@ -144,9 +144,9 @@ export const KOREAN_MAPPINGS = {
     freelance: "프리랜서",
     consultant: "컨설턴트",
     volunteer: "자원봉사",
-    "정규직": "정규직", // 이미 한국어인 경우 그대로
-    "파트타임": "파트타임",
-    "계약직": "계약직",
+    정규직: "정규직", // 이미 한국어인 경우 그대로
+    파트타임: "파트타임",
+    계약직: "계약직",
   } as Record<string, string>,
 
   // 유저 타입 매핑
@@ -175,37 +175,58 @@ export const KOREAN_MAPPINGS = {
 } as const;
 
 // 매핑 헬퍼 함수들
-export function mapToKorean(category: keyof typeof KOREAN_MAPPINGS, value: string | undefined | null): string {
+export function mapToKorean(
+  category: keyof typeof KOREAN_MAPPINGS,
+  value: string | undefined | null
+): string {
   if (!value) return "";
-  
+
   const mapping = KOREAN_MAPPINGS[category];
   return mapping[value] || value; // 매핑이 없으면 원본 값 반환
 }
 
 // 배열 매핑 함수
-export function mapArrayToKorean(category: keyof typeof KOREAN_MAPPINGS, values: string[]): string[] {
-  return values.map(value => mapToKorean(category, value));
+export function mapArrayToKorean(
+  category: keyof typeof KOREAN_MAPPINGS,
+  values: string[]
+): string[] {
+  return values.map((value) => mapToKorean(category, value));
 }
 
 // 여러 카테고리를 한번에 매핑하는 함수
-export function mapMultipleToKorean(mappings: Record<string, { category: keyof typeof KOREAN_MAPPINGS; value: string }>): Record<string, string> {
+export function mapMultipleToKorean(
+  mappings: Record<
+    string,
+    { category: keyof typeof KOREAN_MAPPINGS; value: string }
+  >
+): Record<string, string> {
   const result: Record<string, string> = {};
-  
+
   Object.entries(mappings).forEach(([key, { category, value }]) => {
     result[key] = mapToKorean(category, value);
   });
-  
+
   return result;
 }
 
 // 특정 매핑 함수들 (자주 사용되는 것들)
-export const mapPosition = (value: string | undefined | null) => mapToKorean('position', value);
-export const mapDegree = (value: string | undefined | null) => mapToKorean('degree', value);
-export const mapGraduationStatus = (value: string | undefined | null) => mapToKorean('graduationStatus', value);
-export const mapSpecialty = (value: string | undefined | null) => mapToKorean('specialties', value);
-export const mapSpecialties = (values: string[]) => mapArrayToKorean('specialties', values);
-export const mapProficiency = (value: string | undefined | null) => mapToKorean('proficiency', value);
-export const mapAnimalType = (value: string | undefined | null) => mapToKorean('animalType', value);
-export const mapWorkType = (value: string | undefined | null) => mapToKorean('workType', value);
-export const mapUserType = (value: string | undefined | null) => mapToKorean('userType', value);
-export const mapStatus = (value: string | undefined | null) => mapToKorean('status', value);
+export const mapPosition = (value: string | undefined | null) =>
+  mapToKorean("position", value);
+export const mapDegree = (value: string | undefined | null) =>
+  mapToKorean("degree", value);
+export const mapGraduationStatus = (value: string | undefined | null) =>
+  mapToKorean("graduationStatus", value);
+export const mapSpecialty = (value: string | undefined | null) =>
+  mapToKorean("specialties", value);
+export const mapSpecialties = (values: string[]) =>
+  mapArrayToKorean("specialties", values);
+export const mapProficiency = (value: string | undefined | null) =>
+  mapToKorean("proficiency", value);
+export const mapAnimalType = (value: string | undefined | null) =>
+  mapToKorean("animalType", value);
+export const mapWorkType = (value: string | undefined | null) =>
+  mapToKorean("workType", value);
+export const mapUserType = (value: string | undefined | null) =>
+  mapToKorean("userType", value);
+export const mapStatus = (value: string | undefined | null) =>
+  mapToKorean("status", value);

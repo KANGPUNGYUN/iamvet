@@ -104,15 +104,15 @@ export default function ForumsPage() {
     const fetchForums = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/forums');
+        const response = await fetch("/api/forums");
         if (response.ok) {
           const data = await response.json();
-          if (data.status === 'success') {
+          if (data.status === "success") {
             const forums = data.data.forums.map((forum: any) => {
               const tags = [];
               if (forum.animalType) tags.push(forum.animalType);
               if (forum.medicalField) tags.push(forum.medicalField);
-              
+
               return {
                 id: forum.id, // parseInt 제거하여 문자열 ID 그대로 사용
                 title: forum.title,
@@ -126,7 +126,7 @@ export default function ForumsPage() {
           }
         }
       } catch (error) {
-        console.error('Failed to fetch forums:', error);
+        console.error("Failed to fetch forums:", error);
       } finally {
         setIsLoading(false);
       }
@@ -249,7 +249,6 @@ export default function ForumsPage() {
 
   return (
     <>
-
       <main className="pt-[50px] bg-white">
         <div className="max-w-[1440px] mx-auto px-[16px]">
           <div className="hidden xl:flex xl:gap-[30px] xl:py-8">
@@ -278,7 +277,7 @@ export default function ForumsPage() {
                   value={filters.animal}
                   onChange={(value) => handleFilterChange("animal", value)}
                 >
-                  <FilterBox value="개">개</FilterBox>
+                  <FilterBox value="강아지">강아지</FilterBox>
                   <FilterBox value="고양이">고양이</FilterBox>
                   <FilterBox value="대동물">대동물</FilterBox>
                   <FilterBox value="특수동물">특수동물</FilterBox>
@@ -539,7 +538,7 @@ export default function ForumsPage() {
                           handleFilterChange("animal", value)
                         }
                       >
-                        <FilterBox value="개">개</FilterBox>
+                        <FilterBox value="강아지">강아지</FilterBox>
                         <FilterBox value="고양이">고양이</FilterBox>
                         <FilterBox value="대동물">대동물</FilterBox>
                         <FilterBox value="특수동물">특수동물</FilterBox>
