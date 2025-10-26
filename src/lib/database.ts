@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 import { v4 as uuidv4 } from "uuid";
+import { getExperienceFilterConditions } from "@/lib/experienceMapping";
 
 // Type definitions
 type NotificationType =
@@ -258,14 +259,20 @@ export const getJobsWithPagination = async (params: any) => {
     queryParams.push(workTypes);
   }
 
-  // 경력 필터 (배열에서 검색)
+  // 경력 필터 (계층적 필터링)
   if (params.experience) {
     const experiences = Array.isArray(params.experience)
       ? params.experience
       : [params.experience];
-    paramCount++;
-    query += ` AND j.experience && $${paramCount}`;
-    queryParams.push(experiences);
+    
+    // 계층적으로 확장된 경험 카테고리 생성
+    const expandedExperiences = getExperienceFilterConditions(experiences);
+    
+    if (expandedExperiences.length > 0) {
+      paramCount++;
+      query += ` AND j.experience && $${paramCount}`;
+      queryParams.push(expandedExperiences);
+    }
   }
 
   // 지역 필터
@@ -364,9 +371,15 @@ export const getJobsWithPagination = async (params: any) => {
     const experiences = Array.isArray(params.experience)
       ? params.experience
       : [params.experience];
-    countParamCount++;
-    countQuery += ` AND j.experience && $${countParamCount}`;
-    countParams.push(experiences);
+    
+    // 계층적으로 확장된 경험 카테고리 생성
+    const expandedExperiences = getExperienceFilterConditions(experiences);
+    
+    if (expandedExperiences.length > 0) {
+      countParamCount++;
+      countQuery += ` AND j.experience && $${countParamCount}`;
+      countParams.push(expandedExperiences);
+    }
   }
 
   if (params.region) {

@@ -64,10 +64,10 @@ const JobsFilters: React.FC<JobsFiltersProps> = ({
           value={filters.experience}
           onChange={(value) => onFilterChange("experience", value)}
         >
-          <FilterBox value="new">신입</FilterBox>
-          <FilterBox value="junior">1~3년</FilterBox>
-          <FilterBox value="mid">3~5년</FilterBox>
-          <FilterBox value="senior">5년 이상</FilterBox>
+          <FilterBox value="신입">신입</FilterBox>
+          <FilterBox value="1년 이상">1년 이상</FilterBox>
+          <FilterBox value="3년 이상">3년 이상</FilterBox>
+          <FilterBox value="5년 이상">5년 이상</FilterBox>
         </FilterBox.Group>
       </div>
 

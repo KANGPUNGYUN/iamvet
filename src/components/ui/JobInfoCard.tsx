@@ -79,7 +79,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
   // Wide 버전일 때의 스타일
   const containerClass = isWide
     ? "bg-white rounded-lg border border-[#E5E5E5] p-6 w-full shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-    : "bg-white rounded-xl border border-gray-100 p-6 max-w-sm w-[294px] h-[310px] shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer flex-shrink-0";
+    : "bg-white rounded-xl border border-gray-100 p-6 w-full max-w-sm h-[310px] shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer flex-shrink-0";
 
   const titleClass = "font-text text-extrabold text-primary text-[16px]";
 
@@ -95,7 +95,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
           {showDeadline && dDay !== null && (
             <Tag variant={1}>{dDay >= 0 ? `D-${dDay}` : "마감"}</Tag>
           )}
-          
+
           {/* 북마크 아이콘 */}
           {onBookmark && (
             <div
