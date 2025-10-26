@@ -35,6 +35,7 @@ import {
   type VeterinarianResume,
 } from "@/hooks/useResume";
 import { useAuthStore } from "@/stores/authStore";
+import { majorOptions, workTypeOptions } from "@/constants/options";
 
 // ID 생성 유틸리티
 const generateResumeId = (
@@ -152,14 +153,8 @@ const positionOptions = [
   { value: "manager", label: "병원장" },
 ];
 
-const specialtyOptions = [
-  { value: "internal", label: "내과" },
-  { value: "surgery", label: "외과" },
-  { value: "dermatology", label: "피부과" },
-  { value: "orthopedics", label: "정형외과" },
-  { value: "ophthalmology", label: "안과" },
-  { value: "dentistry", label: "치과" },
-];
+// specialtyOptions는 majorOptions로 대체
+const specialtyOptions = majorOptions;
 
 const regionOptions = [
   { value: "seoul", label: "서울" },
@@ -180,11 +175,7 @@ const regionOptions = [
   { value: "jeju", label: "제주" },
 ];
 
-const workTypeOptions = [
-  { value: "정규직", label: "정규직" },
-  { value: "파트타임", label: "파트타임" },
-  { value: "계약직", label: "계약직" },
-];
+// workTypeOptions는 constants에서 import
 
 const startDateOptions = [
   { value: "immediate", label: "즉시 가능" },
@@ -221,12 +212,8 @@ const graduationStatusOptions = [
   { value: "attending", label: "재학중" },
 ];
 
-const medicalFieldOptions = [
-  { value: "internal", label: "내과" },
-  { value: "surgery", label: "외과" },
-  { value: "dermatology", label: "피부과" },
-  { value: "orthopedics", label: "정형외과" },
-];
+// medicalFieldOptions는 majorOptions로 대체
+const medicalFieldOptions = majorOptions;
 
 const proficiencyOptions = [
   { value: "beginner", label: "초급" },
@@ -1523,6 +1510,7 @@ export default function ResumePage() {
                       }}
                       placeholder="분야"
                       options={medicalFieldOptions}
+                      className="min-w-[100px]"
                     />
                   </div>
                   <div className="w-full">

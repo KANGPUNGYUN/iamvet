@@ -2,6 +2,7 @@ import React from "react";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { Button } from "@/components/ui/Button";
+import { workTypeOptions, experienceOptions } from "@/constants/options";
 
 interface JobsFiltersProps {
   filters: {
@@ -51,9 +52,11 @@ const JobsFilters: React.FC<JobsFiltersProps> = ({
           value={filters.workType}
           onChange={(value) => onFilterChange("workType", value)}
         >
-          <FilterBox value="fulltime">정규직</FilterBox>
-          <FilterBox value="parttime">파트타임</FilterBox>
-          <FilterBox value="contract">계약직</FilterBox>
+          {workTypeOptions.map((option) => (
+            <FilterBox key={option.value} value={option.value}>
+              {option.label}
+            </FilterBox>
+          ))}
         </FilterBox.Group>
       </div>
 
@@ -64,10 +67,11 @@ const JobsFilters: React.FC<JobsFiltersProps> = ({
           value={filters.experience}
           onChange={(value) => onFilterChange("experience", value)}
         >
-          <FilterBox value="신입">신입</FilterBox>
-          <FilterBox value="1년 이상">1년 이상</FilterBox>
-          <FilterBox value="3년 이상">3년 이상</FilterBox>
-          <FilterBox value="5년 이상">5년 이상</FilterBox>
+          {experienceOptions.map((option) => (
+            <FilterBox key={option.value} value={option.value}>
+              {option.label}
+            </FilterBox>
+          ))}
         </FilterBox.Group>
       </div>
 

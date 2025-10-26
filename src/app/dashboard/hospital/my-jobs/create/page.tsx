@@ -14,6 +14,13 @@ import { Textarea } from "@/components/ui/Input/Textarea";
 import { PlusIcon, MinusIcon } from "public/icons";
 import { useCreateJob, useSaveDraftJob } from "@/hooks/api/useJobs";
 import { useAuth } from "@/hooks/api/useAuth";
+import {
+  majorOptions,
+  workTypeOptions,
+  experienceOptions,
+  positionOptions,
+  salaryTypeOptions,
+} from "@/constants/options";
 
 interface JobFormData {
   title: string;
@@ -91,45 +98,7 @@ export default function CreateJobPage() {
     department: "",
   });
 
-  // 옵션 데이터
-  const workTypeOptions = [
-    { value: "정규직", label: "정규직" },
-    { value: "계약직", label: "계약직" },
-    { value: "인턴", label: "인턴" },
-    { value: "파트타임", label: "파트타임" },
-  ];
-
-  const majorOptions = [
-    { value: "내과", label: "내과" },
-    { value: "외과", label: "외과" },
-    { value: "치과", label: "치과" },
-    { value: "피부과", label: "피부과" },
-    { value: "안과", label: "안과" },
-    { value: "산양의학", label: "산양의학" },
-    { value: "정형외과", label: "정형외과" },
-    { value: "행동의학", label: "행동의학" },
-  ];
-
-  const experienceOptions = [
-    { value: "신입", label: "신입" },
-    { value: "1년차", label: "1년차" },
-    { value: "2-3년차", label: "2-3년차" },
-    { value: "4-5년차", label: "4-5년차" },
-    { value: "5년차 이상", label: "5년차 이상" },
-  ];
-
-  const positionOptions = [
-    { value: "수의사", label: "수의사" },
-    { value: "간호조무사", label: "간호조무사" },
-    { value: "원무과", label: "원무과" },
-    { value: "기타", label: "기타" },
-  ];
-
-  const salaryTypeOptions = [
-    { value: "연봉", label: "연봉" },
-    { value: "월급", label: "월급" },
-    { value: "시급", label: "시급" },
-  ];
+  // 옵션 데이터는 constants에서 import
 
   // 리스트 항목 추가/삭제 함수
   const addListItem = (field: keyof typeof formData) => {

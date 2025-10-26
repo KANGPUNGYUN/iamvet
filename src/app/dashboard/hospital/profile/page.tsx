@@ -12,6 +12,7 @@ import { useDetailedHospitalProfile } from "@/hooks/api/useDetailedHospitalProfi
 import { useHospitalProfile } from "@/hooks/api/useHospitalProfile";
 import { useCurrentUser } from "@/hooks/api/useAuth";
 import hospitalImage from "@/assets/images/hospital.png";
+import { majorOptions, animalTypeOptions } from "@/constants/options";
 
 interface HospitalProfileData {
   hospitalLogo?: string;
@@ -225,24 +226,7 @@ export default function HospitalProfilePage() {
     ORTHOPEDICS: "정형외과",
   };
 
-  // 진료 동물 옵션 (표시용)
-  const animalOptions = [
-    { value: "반려견", label: "반려견" },
-    { value: "고양이", label: "고양이" },
-    { value: "특수동물", label: "특수동물" },
-    { value: "대동물", label: "대동물" },
-  ];
-
-  // 진료 분야 옵션 (표시용)
-  const fieldOptions = [
-    { value: "내과", label: "내과" },
-    { value: "외과", label: "외과" },
-    { value: "피부과", label: "피부과" },
-    { value: "치과", label: "치과" },
-    { value: "안과", label: "안과" },
-    { value: "신경과", label: "신경과" },
-    { value: "정형외과", label: "정형외과" },
-  ];
+  // 진료 동물 옵션과 진료 분야 옵션은 constants에서 import
 
   // DB enum 값을 한글 표시값으로 변환
   const mappedTreatmentAnimals = hospitalData.treatmentAnimals.map(
@@ -374,7 +358,7 @@ export default function HospitalProfilePage() {
                 진료 동물
               </label>
               <FilterBox.Group value={mappedTreatmentAnimals} disabled={true}>
-                {animalOptions.map((option) => (
+                {animalTypeOptions.map((option) => (
                   <FilterBox.Item key={option.value} value={option.value}>
                     {option.label}
                   </FilterBox.Item>
@@ -388,7 +372,7 @@ export default function HospitalProfilePage() {
                 진료 분야
               </label>
               <FilterBox.Group value={mappedTreatmentFields} disabled={true}>
-                {fieldOptions.map((option) => (
+                {majorOptions.map((option) => (
                   <FilterBox.Item key={option.value} value={option.value}>
                     {option.label}
                   </FilterBox.Item>

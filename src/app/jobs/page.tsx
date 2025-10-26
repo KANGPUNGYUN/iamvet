@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import JobFamousList from "@/components/features/main/JobFamousList";
 import { useJobs, JobFilters } from "@/hooks/api/useJobs";
 import { useLikeStore } from "@/stores/likeStore";
+import { workTypeOptions } from "@/constants/options";
 
 export default function JobsPage() {
   const router = useRouter();
@@ -354,10 +355,11 @@ export default function JobsPage() {
                   value={filters.workType}
                   onChange={(value) => handleFilterChange("workType", value)}
                 >
-                  <FilterBox value="정규직">정규직</FilterBox>
-                  <FilterBox value="파트타임">파트타임</FilterBox>
-                  <FilterBox value="계약직">계약직</FilterBox>
-                  <FilterBox value="인턴">인턴</FilterBox>
+                  {workTypeOptions.map((option) => (
+                    <FilterBox key={option.value} value={option.value}>
+                      {option.label}
+                    </FilterBox>
+                  ))}
                 </FilterBox.Group>
               </div>
 
@@ -942,10 +944,11 @@ export default function JobsPage() {
                           handleFilterChange("workType", value)
                         }
                       >
-                        <FilterBox value="정규직">정규직</FilterBox>
-                        <FilterBox value="파트타임">파트타임</FilterBox>
-                        <FilterBox value="계약직">계약직</FilterBox>
-                        <FilterBox value="인턴">인턴</FilterBox>
+                        {workTypeOptions.map((option) => (
+                          <FilterBox key={option.value} value={option.value}>
+                            {option.label}
+                          </FilterBox>
+                        ))}
                       </FilterBox.Group>
                     </div>
 

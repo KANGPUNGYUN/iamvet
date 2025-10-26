@@ -20,6 +20,7 @@ import {
 import { HospitalRegistrationData } from "@/types/hospital";
 import Link from "next/link";
 import { useState } from "react";
+import { majorOptions } from "@/constants/options";
 
 interface HospitalRegistrationFormProps {
   onSubmit?: (data: HospitalRegistrationData) => void;
@@ -1145,15 +1146,7 @@ export const HospitalRegistrationForm: React.FC<
                 진료 분야 <span className="text-[#FF4A4A]">(필수)</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
-                {[
-                  { value: "INTERNAL_MEDICINE", label: "내과" },
-                  { value: "SURGERY", label: "외과" },
-                  { value: "DERMATOLOGY", label: "피부과" },
-                  { value: "DENTISTRY", label: "치과" },
-                  { value: "OPHTHALMOLOGY", label: "안과" },
-                  { value: "NEUROLOGY", label: "신경과" },
-                  { value: "ORTHOPEDICS", label: "정형외과" },
-                ].map((specialty) => (
+                {majorOptions.map((specialty) => (
                   <Checkbox
                     key={specialty.value}
                     checked={formData.treatmentSpecialties.includes(
