@@ -45,6 +45,29 @@ export async function GET(
         return Response.json({ error: "Forbidden" }, { status: 403 });
       }
 
+      // INQUIRY 타입 알림의 경우 연결된 문의 찾기
+      let relatedInquiry = null;
+      if (notification.type === "INQUIRY" && notification.senderId) {
+        relatedInquiry = await (prisma as any).contact_inquiries.findFirst({
+          where: {
+            sender_id: notification.senderId,
+            recipient_id: notification.recipientId,
+            subject: notification.content // 알림 content가 문의 subject와 같다고 가정
+          },
+          include: {
+            jobs: {
+              select: { id: true, title: true }
+            },
+            resumes: {
+              select: { id: true, title: true }
+            }
+          },
+          orderBy: {
+            created_at: 'desc'
+          }
+        });
+      }
+
       // 읽음 처리
       if (!notification.isRead) {
         await (prisma as any).notifications.update({
@@ -71,7 +94,18 @@ export async function GET(
           profileImage: notification.users_notifications_senderIdTousers.profileImage
         } : null,
         notificationType: notification.type,
-        category: getNotificationCategory(notification.type)
+        category: getNotificationCategory(notification.type),
+        // INQUIRY 타입인 경우 관련 문의 정보 포함
+        ...(relatedInquiry && {
+          subject: relatedInquiry.subject,
+          job: relatedInquiry.jobs ? {
+            id: relatedInquiry.jobs.id,
+            title: relatedInquiry.jobs.title,
+            hospitalName: null
+          } : null,
+          resume: relatedInquiry.resumes,
+          inquiryType: relatedInquiry.type
+        })
       };
     } else if (type === "inquiry") {
       // 문의 조회

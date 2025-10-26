@@ -64,8 +64,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 문의 조회
-    if (type === "inquiries" || type === "all" || !type) {
+    // 문의 조회 - type이 "inquiries"일 때만 처리
+    if (type === "inquiries") {
       let inquiryWhere: any = {
         recipient_id: payload.userId
       };

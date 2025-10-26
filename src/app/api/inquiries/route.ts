@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const inquiry = await (prisma as any).contactInquiry.create({
+    const inquiry = await (prisma as any).contact_inquiries.create({
       data: {
         id: generateId(),
         sender_id: payload.userId,
@@ -55,12 +55,38 @@ export async function POST(request: NextRequest) {
         resume_id: resumeId || null,
         type: type || "general",
         is_read: false,
+        created_at: new Date(),
         updated_at: new Date(),
       },
     });
 
-    // Inquiry notifications are handled through ContactInquiry table
-    // No need to create separate Notification records to avoid duplication
+    // 알림 생성 - 수신자 정보 조회
+    try {
+      const recipient = await (prisma as any).users.findUnique({
+        where: { id: recipientId },
+        select: { userType: true }
+      });
+
+      if (recipient) {
+        await (prisma as any).notifications.create({
+          data: {
+            id: generateId(),
+            type: "INQUIRY",
+            recipientId: recipientId,
+            recipientType: recipient.userType,
+            senderId: payload.userId,
+            title: type === "reply" ? "문의 답변이 도착했습니다" : "새로운 문의가 도착했습니다",
+            content: subject,
+            isRead: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+      }
+    } catch (notificationError) {
+      console.error("Notification creation failed:", notificationError);
+      // 알림 생성 실패는 전체 프로세스를 중단하지 않음
+    }
 
     return Response.json({
       success: true,
@@ -99,7 +125,7 @@ export async function GET(request: NextRequest) {
       whereCondition = { recipient_id: payload.userId };
     }
 
-    const inquiries = await (prisma as any).contactInquiry.findMany({
+    const inquiries = await (prisma as any).contact_inquiries.findMany({
       where: whereCondition,
       include: {
         users_contact_inquiries_sender_idTousers: {

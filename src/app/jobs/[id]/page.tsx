@@ -177,41 +177,41 @@ export default function JobDetailPage({
 
   // 24시간 형식을 AM/PM 형식으로 변환하는 함수
   const formatTimeToAmPm = (time: string): string => {
-    if (!time || !time.includes(':')) return time;
-    
-    const [hourStr, minute] = time.split(':');
+    if (!time || !time.includes(":")) return time;
+
+    const [hourStr, minute] = time.split(":");
     const hour24 = parseInt(hourStr);
-    
+
     let hour12;
     let period;
-    
+
     if (hour24 === 0) {
       hour12 = 12;
-      period = 'AM';
+      period = "AM";
     } else if (hour24 === 12) {
       hour12 = 12;
-      period = 'PM';
+      period = "PM";
     } else if (hour24 > 12) {
       hour12 = hour24 - 12;
-      period = 'PM';
+      period = "PM";
     } else {
       hour12 = hour24;
-      period = 'AM';
+      period = "AM";
     }
-    
+
     return `${hour12}:${minute} ${period}`;
   };
 
   // 근무 시간 범위를 AM/PM 형식으로 변환하는 함수
   const formatWorkHours = (workHours: string): string => {
     if (!workHours) return "09:00 AM - 06:00 PM";
-    
+
     // "09:00 - 18:00" 형식을 "9:00 AM - 6:00 PM" 형식으로 변환
-    if (workHours.includes(' - ')) {
-      const [startTime, endTime] = workHours.split(' - ');
+    if (workHours.includes(" - ")) {
+      const [startTime, endTime] = workHours.split(" - ");
       return `${formatTimeToAmPm(startTime)} - ${formatTimeToAmPm(endTime)}`;
     }
-    
+
     return workHours;
   };
 
@@ -616,7 +616,9 @@ export default function JobDetailPage({
                     근무 시간
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {formatWorkHours(jobData.workConditions?.workHours || "09:00 - 18:00")}
+                    {formatWorkHours(
+                      jobData.workConditions?.workHours || "09:00 - 18:00"
+                    )}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">
@@ -879,9 +881,8 @@ export default function JobDetailPage({
                             ? job.experience
                             : [job.experience].filter(Boolean)),
                         ].filter(Boolean)}
-                        isBookmarked={false}
-                        isLiked={isJobLiked(job.id)}
-                        onLike={async (jobId) => {
+                        isBookmarked={isJobLiked(job.id)}
+                        onBookmark={async (jobId) => {
                           const jobIdStr = jobId.toString();
                           const isCurrentlyLiked = isJobLiked(jobIdStr);
 

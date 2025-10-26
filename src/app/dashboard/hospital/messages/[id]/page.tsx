@@ -8,6 +8,7 @@ import profileImg from "@/assets/images/profile.png";
 import { useMessageDetail } from "@/hooks/api/useMessageDetail";
 import { use, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
 
 export default function HospitalMessageDetailPage({
   params,
@@ -18,6 +19,11 @@ export default function HospitalMessageDetailPage({
   const searchParams = useSearchParams();
   const router = useRouter();
   const [messageType, setMessageType] = useState<'notification' | 'inquiry'>('notification');
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [replyForm, setReplyForm] = useState({
+    subject: "",
+    message: "",
+  });
 
   // URL에서 타입 파라미터 확인
   useEffect(() => {
@@ -38,6 +44,74 @@ export default function HospitalMessageDetailPage({
       hour: '2-digit',
       minute: '2-digit'
     }).replace(/\. /g, '.').replace(/\.$/, '');
+  };
+
+  const handleReplySubmit = async () => {
+    if (!replyForm.subject || !replyForm.message) {
+      alert("제목과 답변 내용을 모두 입력해 주세요.");
+      return;
+    }
+
+    try {
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+      const response = await axios.post(
+        "/api/inquiries",
+        {
+          subject: replyForm.subject,
+          message: replyForm.message,
+          recipientId: message?.sender?.id,
+          jobId: message?.job?.id,
+          type: "reply",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        alert("답변이 성공적으로 전송되었습니다!");
+        setReplyForm({
+          subject: "",
+          message: "",
+        });
+        setReplyModalOpen(false);
+      }
+    } catch (error: any) {
+      console.error("Reply submit error:", error);
+      
+      if (error.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        router.push("/member-select");
+      } else {
+        const errorMessage =
+          error.response?.data?.error || "답변 전송 중 오류가 발생했습니다.";
+        alert(errorMessage);
+      }
+    }
+  };
+
+  const resetReplyForm = () => {
+    setReplyForm({
+      subject: "",
+      message: "",
+    });
+    setReplyModalOpen(false);
+  };
+
+  const handleReplyClick = () => {
+    if (message?.sender?.id) {
+      setReplyForm({
+        subject: `Re: ${message.subject || message.title}`,
+        message: "",
+      });
+      setReplyModalOpen(true);
+    } else {
+      alert("답변을 보낼 수 없습니다. 발신자 정보가 없습니다.");
+    }
   };
 
   if (error) {
@@ -204,6 +278,18 @@ export default function HospitalMessageDetailPage({
             )}
           </div>
 
+          {/* 답변하기 버튼 (문의인 경우에만) */}
+          {message.type === 'inquiry' && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleReplyClick}
+                className="px-6 py-2 bg-[#ff8796] text-white rounded-md hover:bg-[#ff9aa6] transition-colors font-medium"
+              >
+                답변하기
+              </button>
+            </div>
+          )}
+
           {/* 하단 네비게이션 버튼 */}
           <div className="flex justify-between items-center mt-8">
             <Link
@@ -232,6 +318,73 @@ export default function HospitalMessageDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Reply Modal */}
+      {replyModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">답변하기</h3>
+              <p className="text-gray-600 mb-6">
+                {message?.sender?.nickname || "발신자"}님의 문의에 답변하세요.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    제목 *
+                  </label>
+                  <input
+                    type="text"
+                    value={replyForm.subject}
+                    onChange={(e) =>
+                      setReplyForm((prev) => ({
+                        ...prev,
+                        subject: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent"
+                    placeholder="답변 제목을 입력하세요"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    답변 내용 *
+                  </label>
+                  <textarea
+                    value={replyForm.message}
+                    onChange={(e) =>
+                      setReplyForm((prev) => ({
+                        ...prev,
+                        message: e.target.value,
+                      }))
+                    }
+                    rows={5}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff8796] focus:border-transparent resize-none"
+                    placeholder="답변 내용을 자세히 작성해 주세요..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={resetReplyForm}
+                  className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleReplySubmit}
+                  className="flex-1 px-4 py-2 bg-[#ff8796] text-white rounded-md hover:bg-[#ff9aa6] transition-colors font-medium"
+                >
+                  답변하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
