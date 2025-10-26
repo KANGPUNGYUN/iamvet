@@ -155,7 +155,7 @@ export default function VeterinarianLectureBookmarksPage() {
     };
   };
 
-  // 강의 좋아요/취소 핸들러
+  // 강의 좋아요/취소 핸들러 (실시간 처리 개선)
   const handleLectureLike = async (lectureId: string) => {
     const isCurrentlyLiked = isLectureLiked(lectureId);
 
@@ -167,6 +167,12 @@ export default function VeterinarianLectureBookmarksPage() {
 
     // 낙관적 업데이트: UI를 먼저 변경
     toggleLectureLike(lectureId);
+    
+    // 좋아요 취소 시 즉시 목록에서 제거 (실시간 처리)
+    if (isCurrentlyLiked) {
+      setLectures(prevLectures => prevLectures.filter(lecture => lecture.id !== lectureId));
+      setTotalLectures(prev => Math.max(0, prev - 1));
+    }
 
     try {
       const method = isCurrentlyLiked ? "DELETE" : "POST";
@@ -178,21 +184,23 @@ export default function VeterinarianLectureBookmarksPage() {
 
       const response = await fetch(`/api/lectures/${lectureId}/like`, {
         method,
+        credentials: 'include',
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        console.error(
-          `[VeterinarianLectureBookmarks Like] ${actionText} 실패:`,
-          result
-        );
-
-        // 오류 발생 시 상태 롤백
+        // 에러 발생 시 상태 롤백
         setLectureLike(lectureId, isCurrentlyLiked);
+        
+        // 좋아요 취소 실패 시 목록에 다시 추가
+        if (isCurrentlyLiked) {
+          await fetchBookmarkedLectures(); // 전체 목록 새로고침
+        }
+
+        const result = await response.json();
+        console.error(`[VeterinarianLectureBookmarks Like] ${actionText} 실패:`, result);
 
         if (response.status === 404) {
           console.warn("강의를 찾을 수 없습니다:", lectureId);
@@ -213,18 +221,19 @@ export default function VeterinarianLectureBookmarksPage() {
           router.push("/login/veterinarian");
           return;
         }
-        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+        
+        alert(`${actionText} 처리 중 오류가 발생했습니다.`);
+        return;
       }
 
+      const result = await response.json();
       console.log(
         `[VeterinarianLectureBookmarks Like] ${actionText} 성공:`,
         result
       );
 
-      // 북마크 페이지에서 좋아요 취소 시 목록 새로고침
-      if (isCurrentlyLiked) {
-        await fetchBookmarkedLectures();
-      }
+      // 성공 시 추가 작업 (필요한 경우)
+      
     } catch (error) {
       console.error(
         `[VeterinarianLectureBookmarks Like] ${
@@ -233,9 +242,15 @@ export default function VeterinarianLectureBookmarksPage() {
         error
       );
 
-      // 오류 발생 시 상태 롤백
+      // 네트워크 오류 등으로 실패 시 상태 롤백
       setLectureLike(lectureId, isCurrentlyLiked);
-      alert("좋아요 처리 중 오류가 발생했습니다.");
+      
+      // 좋아요 취소 실패 시 목록에 다시 추가
+      if (isCurrentlyLiked) {
+        await fetchBookmarkedLectures(); // 전체 목록 새로고침
+      }
+      
+      alert("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 

@@ -1,4 +1,4 @@
-import { HeartFilledIcon, HeartIcon } from "public/icons";
+import { BookmarkFilledIcon, BookmarkIcon } from "public/icons";
 import React from "react";
 import { Tag } from "../Tag";
 import Image from "next/image";
@@ -64,9 +64,9 @@ const LectureCard: React.FC<LectureCardProps> = ({
           </div>
         )}
 
-        {/* 좋아요 버튼 */}
+        {/* 북마크 버튼 */}
         <button
-          className={`absolute top-[12px] right-[12px] w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-all duration-200 ${
+          className={`absolute top-[12px] right-[12px] w-[32px] h-[32px] rounded-full backdrop-blur-sm transition-all duration-200 ${
             currentIsLiked
               ? "bg-[#FF8796] hover:bg-[#FF6B7D]"
               : "bg-[rgba(121,116,126,0.34)] bg-opacity-90 hover:bg-opacity-100"
@@ -74,9 +74,9 @@ const LectureCard: React.FC<LectureCardProps> = ({
           onClick={handleLike}
         >
           {currentIsLiked ? (
-            <HeartFilledIcon size="28px" currentColor="white" />
+            <BookmarkFilledIcon currentColor="white" />
           ) : (
-            <HeartIcon size="28px" currentColor="white" />
+            <BookmarkIcon currentColor="white" />
           )}
         </button>
       </div>
