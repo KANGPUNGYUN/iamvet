@@ -511,7 +511,7 @@ export default function LectureDetailPage({
 
                 {/* 참고자료 */}
                 <div className="p-[20px] bg-[#FAFAFA] rounded-[16px]">
-                  <h2 className="text-[20px] font-title title-light text-sub mb-[20px]">
+                  <h2 className="font-text text-[16px] text-sub text-light mb-[20px]">
                     참고자료
                   </h2>
                   <div className="space-y-3">
