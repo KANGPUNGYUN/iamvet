@@ -1829,10 +1829,24 @@ export const getLecturesWithPagination = async (params: any) => {
 
   // 카테고리 필터 (medicalField를 category로 매핑) - 다중 카테고리 지원
   if (params.medicalField) {
+    const medicalFieldMapping: { [key: string]: string } = {
+      surgery: "수술 강의",
+      behavior: "행동/심리학",
+      emergency: "응급의학",
+      dermatology: "피부과",
+      internal: "내과",
+      radiology: "영상진단",
+      anesthesia: "마취학",
+      dentistry: "치과"
+    };
+
     const categories = params.medicalField
       .split(",")
       .map((cat: string) => cat.trim())
+      .filter(Boolean)
+      .map((cat: string) => medicalFieldMapping[cat] || cat) // 영어 키를 한국어로 변환
       .filter(Boolean);
+
     if (categories.length === 1) {
       paramCount++;
       countParamCount++;
