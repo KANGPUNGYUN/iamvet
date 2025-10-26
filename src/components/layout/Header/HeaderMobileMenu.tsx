@@ -102,7 +102,8 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   className = "",
 }) => {
   const pathname = usePathname();
-  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } =
+    useHospitalAuthModal();
   const [expandedGroups, setExpandedGroups] = React.useState<Set<string>>(
     new Set(["bookmarks"])
   );
@@ -116,7 +117,9 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   };
 
   // 북마크 그룹 정의
-  const getBookmarkGroup = (type: "veterinarian" | "hospital"): BookmarkMenuGroup => {
+  const getBookmarkGroup = (
+    type: "veterinarian" | "hospital"
+  ): BookmarkMenuGroup => {
     if (type === "veterinarian") {
       return {
         id: "bookmarks",
@@ -125,7 +128,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
         children: [
           {
             id: "transfer-bookmarks",
-            label: "양수양도 북마크",
+            label: "양도양수 북마크",
             href: "/dashboard/veterinarian/transfer-bookmarks",
           },
           {
@@ -148,7 +151,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
         children: [
           {
             id: "transfer-bookmarks",
-            label: "양수양도 찜 목록",
+            label: "양도양수 찜 목록",
             href: "/dashboard/hospital/transfer-bookmarks",
           },
           {
@@ -245,13 +248,15 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   const dashboardItems = actualUserType
     ? getDashboardMenuItems(actualUserType)
     : [];
-  const bookmarkGroup = actualUserType 
+  const bookmarkGroup = actualUserType
     ? getBookmarkGroup(actualUserType)
     : null;
 
   // 북마크 그룹의 활성 상태 확인
   const isGroupActive = (group: BookmarkMenuGroup) => {
-    return group.children.some((child) => actualUserType && isActive(child.href, actualUserType));
+    return group.children.some(
+      (child) => actualUserType && isActive(child.href, actualUserType)
+    );
   };
 
   // 그룹 토글 함수
@@ -392,9 +397,11 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                 }}
               >
                 {navigationItems.map((item, index) => {
-                  const isResumeRoute = item.href.startsWith('/resumes');
-                  const LinkComponent = isResumeRoute ? HospitalOnlyButton : Link;
-                  
+                  const isResumeRoute = item.href.startsWith("/resumes");
+                  const LinkComponent = isResumeRoute
+                    ? HospitalOnlyButton
+                    : Link;
+
                   return (
                     <LinkComponent
                       key={index}
@@ -407,20 +414,28 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                             ? "text-[#FF8796] bg-[#FFF7F7]"
                             : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                         }
-                        ${isResumeRoute ? "border-none bg-none cursor-pointer text-left" : ""}
+                        ${
+                          isResumeRoute
+                            ? "border-none bg-none cursor-pointer text-left"
+                            : ""
+                        }
                       `}
                       {...(isResumeRoute ? { showAuthModal: showModal } : {})}
-                      style={isResumeRoute ? {
-                        border: "none",
-                        background: "none",
-                        cursor: "pointer",
-                        textAlign: "left",
-                        width: "100%",
-                        padding: "12px 16px",
-                        fontFamily: "inherit",
-                        fontSize: "inherit",
-                        fontWeight: "inherit"
-                      } : {}}
+                      style={
+                        isResumeRoute
+                          ? {
+                              border: "none",
+                              background: "none",
+                              cursor: "pointer",
+                              textAlign: "left",
+                              width: "100%",
+                              padding: "12px 16px",
+                              fontFamily: "inherit",
+                              fontSize: "inherit",
+                              fontWeight: "inherit",
+                            }
+                          : {}
+                      }
                     >
                       {item.label}
                     </LinkComponent>
@@ -477,7 +492,9 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                           >
                             <bookmarkGroup.icon
                               currentColor={
-                                isGroupActive(bookmarkGroup) ? "#FF8796" : "#4F5866"
+                                isGroupActive(bookmarkGroup)
+                                  ? "#FF8796"
+                                  : "#4F5866"
                               }
                             />
                             <span className="ml-3">{bookmarkGroup.label}</span>
@@ -494,7 +511,9 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                           {expandedGroups.has(bookmarkGroup.id) && (
                             <div className="mt-2 ml-6 space-y-1">
                               {bookmarkGroup.children.map((child) => {
-                                const childActive = actualUserType && isActive(child.href, actualUserType);
+                                const childActive =
+                                  actualUserType &&
+                                  isActive(child.href, actualUserType);
 
                                 return (
                                   <Link
@@ -549,7 +568,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
       )}
 
       {/* 병원 인증 모달 */}
-      <HospitalAuthModal 
+      <HospitalAuthModal
         isOpen={isModalOpen}
         onClose={closeModal}
         returnUrl={modalReturnUrl}

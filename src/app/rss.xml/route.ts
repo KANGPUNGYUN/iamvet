@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 const BASE_URL = "https://www.iam-vet.com";
 const SITE_TITLE = "IAMVET - 수의사 커뮤니티";
 const SITE_DESCRIPTION =
-  "수의사를 위한 채용, 이력서, 포럼, 양수양도, 강의 플랫폼";
+  "수의사를 위한 채용, 이력서, 포럼, 양도양수, 강의 플랫폼";
 
 // RSS 피드에 포함할 최신 콘텐츠를 가져오는 함수들
 async function getLatestForums(): Promise<any[]> {

@@ -15,11 +15,11 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [isHydrated, setIsHydrated] = React.useState(false);
-  
+
   // 새로운 상태 관리 시스템 사용
   const { user, isAuthenticated, isLoading } = useAuth();
   const logoutMutation = useLogout();
-  
+
   // 병원 인증용 스토어
   const { setAuth, checkAuth, logout: hospitalLogout } = useHospitalAuthStore();
 
@@ -28,18 +28,29 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
     setIsHydrated(true);
     checkAuth(); // 병원 인증 스토어 초기화
   }, [checkAuth]);
-  
+
   // 인증 상태가 변경되면 병원 인증 스토어도 동기화
   React.useEffect(() => {
-    console.log('[ClientLayout] Auth sync:', { user: !!user, isAuthenticated, userType: user?.type });
+    console.log("[ClientLayout] Auth sync:", {
+      user: !!user,
+      isAuthenticated,
+      userType: user?.type,
+    });
     if (user) {
-      const userType = user.type === 'hospital' ? 'HOSPITAL' : 
-                      user.type === 'veterinarian' ? 'VETERINARIAN' : 
-                      'VETERINARY_STUDENT';
-      console.log('[ClientLayout] Setting hospital auth:', { isAuthenticated, userType, userId: user.id });
+      const userType =
+        user.type === "hospital"
+          ? "HOSPITAL"
+          : user.type === "veterinarian"
+          ? "VETERINARIAN"
+          : "VETERINARY_STUDENT";
+      console.log("[ClientLayout] Setting hospital auth:", {
+        isAuthenticated,
+        userType,
+        userId: user.id,
+      });
       setAuth(isAuthenticated, userType, user.id);
     } else if (!isAuthenticated) {
-      console.log('[ClientLayout] Clearing hospital auth');
+      console.log("[ClientLayout] Clearing hospital auth");
       setAuth(false);
     }
   }, [user, isAuthenticated, setAuth]);
@@ -89,14 +100,20 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
     { label: "인재정보", href: "/resumes", active: pathname === "/resumes" },
     { label: "강의영상", href: "/lectures", active: pathname === "/lectures" },
     {
-      label: "양수양도",
+      label: "양도양수",
       href: "/transfers",
       active: pathname === "/transfers",
     },
     { label: "임상포럼", href: "/forums", active: pathname === "/forums" },
     // 로그인한 사용자에게만 공지사항 메뉴 표시
     ...(isAuthenticated
-      ? [{ label: "공지사항", href: "/notices", active: pathname === "/notices" }]
+      ? [
+          {
+            label: "공지사항",
+            href: "/notices",
+            active: pathname === "/notices",
+          },
+        ]
       : []),
   ];
 

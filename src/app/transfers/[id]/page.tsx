@@ -243,7 +243,7 @@ export default function TransferDetailPage({
 
           // 좋아요 상태를 Zustand 스토어에 동기화
           if (data.data.isLiked) {
-            console.log("[Transfer Like] 서버에서 받은 좋아요 양수양도:", [id]);
+            console.log("[Transfer Like] 서버에서 받은 좋아요 양도양수:", [id]);
             initializeTransferLikes([id]);
           }
 
@@ -264,7 +264,7 @@ export default function TransferDetailPage({
             }
           }
 
-          // 추천 양수양도 카드의 좋아요 상태도 초기화
+          // 추천 양도양수 카드의 좋아요 상태도 초기화
           if (
             data.data.relatedTransfers &&
             data.data.relatedTransfers.length > 0
@@ -277,7 +277,7 @@ export default function TransferDetailPage({
 
             if (likedRelatedTransferIds.length > 0) {
               console.log(
-                "[Transfer Like] 추천 양수양도 좋아요 초기화:",
+                "[Transfer Like] 추천 양도양수 좋아요 초기화:",
                 likedRelatedTransferIds
               );
               initializeTransferLikes(likedRelatedTransferIds);
@@ -342,8 +342,8 @@ export default function TransferDetailPage({
         setTransferLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn("양수양도를 찾을 수 없습니다:", id);
-          alert("양수양도를 찾을 수 없습니다.");
+          console.warn("양도양수를 찾을 수 없습니다:", id);
+          alert("양도양수를 찾을 수 없습니다.");
           return;
         } else if (response.status === 400) {
           if (result.message?.includes("이미 좋아요한")) {
@@ -378,7 +378,7 @@ export default function TransferDetailPage({
     }
   };
 
-  // 추천 양수양도 좋아요/취소 토글 핸들러
+  // 추천 양도양수 좋아요/취소 토글 핸들러
   const handleRecommendedTransferLike = async (transferId: string | number) => {
     const transferIdStr = transferId.toString();
     const isCurrentlyLiked = isTransferLiked(transferIdStr);
@@ -416,7 +416,7 @@ export default function TransferDetailPage({
         setTransferLike(transferIdStr, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn("양수양도를 찾을 수 없습니다:", transferId);
+          console.warn("양도양수를 찾을 수 없습니다:", transferId);
           return;
         } else if (response.status === 400) {
           if (result.message?.includes("이미 좋아요한")) {
@@ -621,7 +621,7 @@ export default function TransferDetailPage({
             <div className="hidden lg:block">
               {/* 카테고리 태그 */}
               <div className="flex justify-between">
-                <Tag variant={1}>양수양도</Tag>
+                <Tag variant={1}>양도양수</Tag>
 
                 <div
                   className="flex items-center justify-end cursor-pointer w-[59px]"
@@ -693,7 +693,7 @@ export default function TransferDetailPage({
             <div className="lg:hidden">
               {/* 카테고리 태그 */}
               <div className="flex justify-between mb-3">
-                <Tag variant={1}>양수양도</Tag>
+                <Tag variant={1}>양도양수</Tag>
 
                 <div
                   className="flex items-center justify-end cursor-pointer w-[59px]"
@@ -809,7 +809,7 @@ export default function TransferDetailPage({
             </div>
           </section>
 
-          {/* 추천 양수양도 섹션 */}
+          {/* 추천 양도양수 섹션 */}
           <section className="mt-[60px] lg:mt-[100px]">
             {/* 데스크톱 버전 */}
             <div className="hidden lg:block">

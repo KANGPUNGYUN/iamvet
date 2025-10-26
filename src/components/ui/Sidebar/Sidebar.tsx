@@ -182,7 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
     children: [
       {
         id: "transfer-bookmarks",
-        label: "양수양도 찜 목록",
+        label: "양도양수 찜 목록",
         href: "/dashboard/hospital/transfer-bookmarks",
       },
       {
@@ -206,7 +206,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
     children: [
       {
         id: "transfer-bookmarks",
-        label: "양수양도 북마크",
+        label: "양도양수 북마크",
         href: "/dashboard/veterinarian/transfer-bookmarks",
       },
       {

@@ -9,7 +9,7 @@ export async function generateMetadata({
   try {
     const { id } = await params;
 
-    // API에서 양수양도 정보 가져오기
+    // API에서 양도양수 정보 가져오기
     const baseUrl =
       process.env.NODE_ENV === "production"
         ? "https://www.iam-vet.com"
@@ -21,8 +21,8 @@ export async function generateMetadata({
 
     if (!response.ok) {
       return {
-        title: "양수양도 상세",
-        description: "IAMVET 동물병원 양수양도 상세 정보를 확인하세요.",
+        title: "양도양수 상세",
+        description: "IAMVET 동물병원 양도양수 상세 정보를 확인하세요.",
       };
     }
 
@@ -36,7 +36,7 @@ export async function generateMetadata({
     };
 
     return generateTransferMetadata({
-      title: transferData.title || "양수양도",
+      title: transferData.title || "양도양수",
       type: transferData.type || transferData.category || "동물병원",
       location: transferData.location || transferData.address || "전국",
       price: transferData.price ? formatPrice(transferData.price) : undefined,
@@ -44,8 +44,8 @@ export async function generateMetadata({
   } catch (error) {
     console.error("Error generating transfer metadata:", error);
     return {
-      title: "양수양도 상세",
-      description: "IAMVET 동물병원 양수양도 상세 정보를 확인하세요.",
+      title: "양도양수 상세",
+      description: "IAMVET 동물병원 양도양수 상세 정보를 확인하세요.",
     };
   }
 }

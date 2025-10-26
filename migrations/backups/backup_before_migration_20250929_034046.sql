@@ -1700,7 +1700,7 @@ like_1759082279430_4a7znm4o0	Vb3jlzzQeX-sHIaB	transfer_1759050929888_cdxfawvpjfi
 --
 
 COPY public.transfers (id, "userId", title, description, location, price, category, images, status, "createdAt", "updatedAt", "deletedAt", area, base_address, detail_address, latitude, longitude, sido, sigungu, views) FROM stdin;
-transfer_1759050929888_cdxfawvpjfi	ExS5veE4OqwHGwkl	양수양도 테스트	팝니다!	서울 송파구 올림픽로 300 (신천동) 101호	20000000	병원양도	{https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/transfers/af110mi2auuo3177sdisxc1o.jpg,https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/transfers/hekxypz3v0s8gmm9cp9dyj1i.jpg}	ACTIVE	2025-09-28 09:15:30.475	2025-09-28 09:15:30.475	\N	21	서울 송파구 올림픽로 300 (신천동)	101호	\N	\N	서울	송파구	0
+transfer_1759050929888_cdxfawvpjfi	ExS5veE4OqwHGwkl	양도양수 테스트	팝니다!	서울 송파구 올림픽로 300 (신천동) 101호	20000000	병원양도	{https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/transfers/af110mi2auuo3177sdisxc1o.jpg,https://iamvet-bucket.s3.ap-northeast-2.amazonaws.com/transfers/hekxypz3v0s8gmm9cp9dyj1i.jpg}	ACTIVE	2025-09-28 09:15:30.475	2025-09-28 09:15:30.475	\N	21	서울 송파구 올림픽로 300 (신천동)	101호	\N	\N	서울	송파구	0
 \.
 
 

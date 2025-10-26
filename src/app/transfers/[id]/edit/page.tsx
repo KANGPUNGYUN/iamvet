@@ -28,7 +28,7 @@ interface FormData {
   detailAddress: string; // 상세주소 (사용자가 입력하는 상세 주소)
   sido: string; // 시도 (서울, 경기, 부산 등)
   sigungu: string; // 시군구 (강남구, 분당구 등)
-  images: string[]; // 양수양도 이미지 URL들 (MultiImageUpload에서 처리됨)
+  images: string[]; // 양도양수 이미지 URL들 (MultiImageUpload에서 처리됨)
   documents: File[]; // 새로 업로드할 문서 파일들
 }
 
@@ -93,7 +93,7 @@ export default function EditTransferPage({
         const isSale = transferData.category === "병원양도" ? true : true; // 기본값
         let salePrice = "";
         let rentPrice = "";
-        
+
         if (transferData.price) {
           if (transferData.category === "병원양도") {
             // TODO: 실제로는 매매/임대 정보를 별도로 저장해야 함
@@ -104,8 +104,10 @@ export default function EditTransferPage({
         }
 
         // 주소 데이터 처리 - base_address와 detail_address 필드에서 직접 가져오기
-        const baseAddress = transferData.baseAddress || transferData.base_address || "";
-        const detailAddress = transferData.detailAddress || transferData.detail_address || "";
+        const baseAddress =
+          transferData.baseAddress || transferData.base_address || "";
+        const detailAddress =
+          transferData.detailAddress || transferData.detail_address || "";
 
         setFormData({
           title: transferData.title || "",
@@ -167,7 +169,7 @@ export default function EditTransferPage({
   };
 
   const handleRemoveExistingDocument = (documentUrl: string) => {
-    setExistingDocuments((prev) => prev.filter(url => url !== documentUrl));
+    setExistingDocuments((prev) => prev.filter((url) => url !== documentUrl));
   };
 
   // 주소 검색 후 시도/시군구 추출 함수
@@ -176,7 +178,9 @@ export default function EditTransferPage({
     for (const [sido, districts] of Object.entries(regionOptions)) {
       if (address.includes(sido)) {
         // 해당 시도의 시군구 중에서 주소에 포함된 것 찾기
-        const foundDistrict = districts.find(district => address.includes(district));
+        const foundDistrict = districts.find((district) =>
+          address.includes(district)
+        );
         if (foundDistrict) {
           return { sido, sigungu: foundDistrict };
         }
@@ -270,8 +274,8 @@ export default function EditTransferPage({
       const imageUrls: string[] = [];
       const documentUrls: string[] = [];
 
-      // 양수양도 이미지들은 이미 MultiImageUpload에서 업로드됨 (첫 번째가 썸네일)
-      console.log("[DEBUG] 양수양도 이미지 URL들:", formData.images);
+      // 양도양수 이미지들은 이미 MultiImageUpload에서 업로드됨 (첫 번째가 썸네일)
+      console.log("[DEBUG] 양도양수 이미지 URL들:", formData.images);
       imageUrls.push(...formData.images);
 
       // 문서 파일들 업로드
@@ -313,7 +317,10 @@ export default function EditTransferPage({
                 : formData.rentPrice
               : formData.salePrice
           ) || 0,
-        area: formData.category === "병원양도" ? parseInt(formData.area) || null : null,
+        area:
+          formData.category === "병원양도"
+            ? parseInt(formData.area) || null
+            : null,
         images: imageUrls, // 이미지 파일 URL들
         documents: allDocumentUrls, // 기존 문서 + 새 문서 URL들
         status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
@@ -331,16 +338,16 @@ export default function EditTransferPage({
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || "양수양도 게시글 수정에 실패했습니다."
+          errorData.message || "양도양수 게시글 수정에 실패했습니다."
         );
       }
 
       // 성공 알림 및 상세 페이지로 이동
       if (isDraft) {
-        alert("양수양도 게시글이 임시저장되었습니다!");
+        alert("양도양수 게시글이 임시저장되었습니다!");
         router.push("/transfers");
       } else {
-        alert("양수양도 게시글이 성공적으로 수정되었습니다!");
+        alert("양도양수 게시글이 성공적으로 수정되었습니다!");
         router.push(`/transfers/${id}`);
       }
     } catch (error) {
@@ -387,7 +394,7 @@ export default function EditTransferPage({
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
             <h1 className="font-title text-[16px] lg:text-[36px] title-light text-primary">
-              양수양도 게시글 수정
+              양도양수 게시글 수정
             </h1>
           </div>
 
@@ -573,13 +580,30 @@ export default function EditTransferPage({
               {/* 기존 문서 파일들 표시 */}
               {existingDocuments.length > 0 && (
                 <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">기존 업로드된 문서</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    기존 업로드된 문서
+                  </h4>
                   <div className="space-y-2">
                     {existingDocuments.map((documentUrl, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border">
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border"
+                      >
                         <div className="flex-shrink-0">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <rect x="2" y="1" width="10" height="14" rx="1" fill="#6B7280" />
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                          >
+                            <rect
+                              x="2"
+                              y="1"
+                              width="10"
+                              height="14"
+                              rx="1"
+                              fill="#6B7280"
+                            />
                             <path
                               d="M5 5h4M5 8h3M5 11h2"
                               stroke="white"
@@ -590,13 +614,18 @@ export default function EditTransferPage({
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {documentUrl.split('/').pop() || `문서 ${index + 1}`}
+                            {documentUrl.split("/").pop() ||
+                              `문서 ${index + 1}`}
                           </p>
-                          <p className="text-xs text-gray-500">기존 업로드 파일</p>
+                          <p className="text-xs text-gray-500">
+                            기존 업로드 파일
+                          </p>
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleRemoveExistingDocument(documentUrl)}
+                          onClick={() =>
+                            handleRemoveExistingDocument(documentUrl)
+                          }
                           className="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm hover:bg-red-200 transition-colors"
                           aria-label="파일 제거"
                         >
@@ -628,7 +657,7 @@ export default function EditTransferPage({
                 maxFiles={3}
               />
 
-              {/* 양수양도 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
+              {/* 양도양수 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
               <MultiImageUpload
                 value={formData.images}
                 onChange={handleImageUpload}

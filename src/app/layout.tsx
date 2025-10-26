@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     default: "IAMVET - 수의사 커뮤니티",
     template: "%s | IAMVET",
   },
-  description: "수의사를 위한 채용, 이력서, 포럼, 양수양도, 강의 플랫폼",
+  description: "수의사를 위한 채용, 이력서, 포럼, 양도양수, 강의 플랫폼",
   keywords: ["수의사", "수의대", "동물병원", "채용", "구인구직", "커뮤니티"],
   authors: [{ name: "IAMVET" }],
   icons: {
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     url: "https://www.iam-vet.com",
     siteName: "IAMVET",
     title: "IAMVET - 수의사 커뮤니티",
-    description: "수의사를 위한 채용, 이력서, 포럼, 양수양도, 강의 플랫폼",
+    description: "수의사를 위한 채용, 이력서, 포럼, 양도양수, 강의 플랫폼",
     images: [
       {
         url: "https://www.iam-vet.com/opengraph.png",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "IAMVET - 수의사 커뮤니티",
-    description: "수의사를 위한 채용, 이력서, 포럼, 양수양도, 강의 플랫폼",
+    description: "수의사를 위한 채용, 이력서, 포럼, 양도양수, 강의 플랫폼",
     images: [
       {
         url: "https://www.iam-vet.com/opengraph.png",

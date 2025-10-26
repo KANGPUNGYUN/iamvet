@@ -145,11 +145,13 @@ export default function VeterinarianTransferBookmarksPage() {
 
     // 낙관적 업데이트: UI를 먼저 변경
     toggleTransferLike(transferId);
-    
+
     // 좋아요 취소 시 즉시 목록에서 제거 (실시간 처리)
     if (isCurrentlyLiked) {
-      setTransfers(prevTransfers => prevTransfers.filter(transfer => transfer.id !== transferId));
-      setTotalTransfers(prev => Math.max(0, prev - 1));
+      setTransfers((prevTransfers) =>
+        prevTransfers.filter((transfer) => transfer.id !== transferId)
+      );
+      setTotalTransfers((prev) => Math.max(0, prev - 1));
     }
 
     try {
@@ -162,7 +164,7 @@ export default function VeterinarianTransferBookmarksPage() {
 
       const response = await fetch(`/api/transfers/${transferId}/like`, {
         method,
-        credentials: 'include',
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -171,14 +173,17 @@ export default function VeterinarianTransferBookmarksPage() {
       if (!response.ok) {
         // 에러 발생 시 상태 롤백
         setTransferLike(transferId, isCurrentlyLiked);
-        
+
         // 좋아요 취소 실패 시 목록에 다시 추가
         if (isCurrentlyLiked) {
           await fetchBookmarkedTransfers(); // 전체 목록 새로고침
         }
 
         const result = await response.json();
-        console.error(`[VeterinarianTransferBookmarks Like] ${actionText} 실패:`, result);
+        console.error(
+          `[VeterinarianTransferBookmarks Like] ${actionText} 실패:`,
+          result
+        );
 
         if (response.status === 404) {
           console.warn("양도양수 정보를 찾을 수 없습니다:", transferId);
@@ -199,7 +204,7 @@ export default function VeterinarianTransferBookmarksPage() {
           router.push("/login/veterinarian");
           return;
         }
-        
+
         alert(`${actionText} 처리 중 오류가 발생했습니다.`);
         return;
       }
@@ -211,7 +216,6 @@ export default function VeterinarianTransferBookmarksPage() {
       );
 
       // 성공 시 추가 작업 (필요한 경우)
-      
     } catch (error) {
       console.error(
         `[VeterinarianTransferBookmarks Like] ${
@@ -222,12 +226,12 @@ export default function VeterinarianTransferBookmarksPage() {
 
       // 네트워크 오류 등으로 실패 시 상태 롤백
       setTransferLike(transferId, isCurrentlyLiked);
-      
+
       // 좋아요 취소 실패 시 목록에 다시 추가
       if (isCurrentlyLiked) {
         await fetchBookmarkedTransfers(); // 전체 목록 새로고침
       }
-      
+
       alert("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
@@ -248,7 +252,7 @@ export default function VeterinarianTransferBookmarksPage() {
           <div className="mb-6">
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
               <h1 className="text-primary font-text text-[24px] text-bold mb-6">
-                양수양도 북마크
+                양도양수 북마크
               </h1>
 
               {/* 검색바 */}

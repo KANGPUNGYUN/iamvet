@@ -28,8 +28,8 @@ interface FormData {
   detailAddress: string; // 상세주소 (사용자가 입력하는 상세 주소)
   sido: string; // 시도 (서울, 경기, 부산 등)
   sigungu: string; // 시군구 (강남구, 분당구 등)
-  images: string[]; // 양수양도 이미지 URL들 (MultiImageUpload에서 처리됨)
-  documents: File[]; // 양수양도 파일들
+  images: string[]; // 양도양수 이미지 URL들 (MultiImageUpload에서 처리됨)
+  documents: File[]; // 양도양수 파일들
 }
 
 const categoryOptions = [
@@ -129,7 +129,9 @@ export default function CreateTransferPage() {
     for (const [sido, districts] of Object.entries(regionOptions)) {
       if (address.includes(sido)) {
         // 해당 시도의 시군구 중에서 주소에 포함된 것 찾기
-        const foundDistrict = districts.find(district => address.includes(district));
+        const foundDistrict = districts.find((district) =>
+          address.includes(district)
+        );
         if (foundDistrict) {
           return { sido, sigungu: foundDistrict };
         }
@@ -223,8 +225,8 @@ export default function CreateTransferPage() {
       const imageUrls: string[] = [];
       const documentUrls: string[] = [];
 
-      // 양수양도 이미지들은 이미 MultiImageUpload에서 업로드됨 (첫 번째가 썸네일)
-      console.log("[DEBUG] 양수양도 이미지 URL들:", formData.images);
+      // 양도양수 이미지들은 이미 MultiImageUpload에서 업로드됨 (첫 번째가 썸네일)
+      console.log("[DEBUG] 양도양수 이미지 URL들:", formData.images);
       imageUrls.push(...formData.images);
 
       // 문서 파일들 업로드
@@ -261,7 +263,10 @@ export default function CreateTransferPage() {
                 : formData.rentPrice
               : formData.salePrice
           ) || 0,
-        area: formData.category === "병원양도" ? parseInt(formData.area) || null : null,
+        area:
+          formData.category === "병원양도"
+            ? parseInt(formData.area) || null
+            : null,
         images: imageUrls, // 이미지 파일 URL들
         documents: documentUrls, // 문서 파일 URL들
         status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
@@ -279,15 +284,15 @@ export default function CreateTransferPage() {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || "양수양도 게시글 등록에 실패했습니다."
+          errorData.message || "양도양수 게시글 등록에 실패했습니다."
         );
       }
 
       // 성공 알림 및 리스트 페이지로 이동
       if (isDraft) {
-        alert("양수양도 게시글이 임시저장되었습니다!");
+        alert("양도양수 게시글이 임시저장되었습니다!");
       } else {
-        alert("양수양도 게시글이 성공적으로 생성되었습니다!");
+        alert("양도양수 게시글이 성공적으로 생성되었습니다!");
       }
       router.push("/transfers");
     } catch (error) {
@@ -337,9 +342,12 @@ export default function CreateTransferPage() {
       {showDraftModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-xl font-semibold mb-4">임시저장된 내용이 있습니다</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              임시저장된 내용이 있습니다
+            </h2>
             <p className="text-gray-600 mb-6">
-              이전에 작성하던 양수양도 게시글이 있습니다. 해당 내용을 불러올까요?
+              이전에 작성하던 양도양수 게시글이 있습니다. 해당 내용을
+              불러올까요?
             </p>
             <div className="flex gap-3 justify-end">
               <Button
@@ -349,11 +357,7 @@ export default function CreateTransferPage() {
               >
                 아니오
               </Button>
-              <Button
-                variant="default"
-                size="medium"
-                onClick={loadDraftData}
-              >
+              <Button variant="default" size="medium" onClick={loadDraftData}>
                 예
               </Button>
             </div>
@@ -372,7 +376,7 @@ export default function CreateTransferPage() {
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
             <h1 className="font-title text-[16px] lg:text-[36px] title-light text-primary">
-              양수양도 게시글 작성
+              양도양수 게시글 작성
             </h1>
           </div>
 
@@ -555,7 +559,7 @@ export default function CreateTransferPage() {
                 이미지/파일 첨부
               </label>
 
-              {/* 양수양도 파일들 업로드 */}
+              {/* 양도양수 파일들 업로드 */}
 
               <DocumentUpload
                 value={formData.documents}
@@ -563,7 +567,7 @@ export default function CreateTransferPage() {
                 maxFiles={3}
               />
 
-              {/* 양수양도 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
+              {/* 양도양수 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
 
               <MultiImageUpload
                 value={formData.images}

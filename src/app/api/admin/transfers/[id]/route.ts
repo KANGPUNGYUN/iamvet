@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminToken } from '@/lib/auth';
-import { sql } from '@/lib/db';
+import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminToken } from "@/lib/auth";
+import { sql } from "@/lib/db";
 
-// 양수양도 상세 조회 (관리자용)
+// 양도양수 상세 조회 (관리자용)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -18,15 +18,15 @@ export async function GET(
     // }
 
     const { id } = await params;
-    
-    if (!id || id === 'null' || id === 'undefined') {
+
+    if (!id || id === "null" || id === "undefined") {
       return NextResponse.json(
-        { status: 'error', message: '유효하지 않은 전송 ID입니다.' },
+        { status: "error", message: "유효하지 않은 전송 ID입니다." },
         { status: 400 }
       );
     }
 
-    // 양수양도 상세 조회
+    // 양도양수 상세 조회
     const transferResult = await sql`
       SELECT 
         t.id,
@@ -69,7 +69,7 @@ export async function GET(
 
     if (transferResult.length === 0) {
       return NextResponse.json(
-        { status: 'error', message: '양수양도 게시물을 찾을 수 없습니다.' },
+        { status: "error", message: "양도양수 게시물을 찾을 수 없습니다." },
         { status: 404 }
       );
     }
@@ -109,16 +109,18 @@ export async function GET(
     const transferData = {
       id: transfer.id,
       title: transfer.title,
-      description: transfer.description || '',
-      hospitalName: '', // transfers에는 병원명이 없음
-      location: transfer.location || `${transfer.sido || ''} ${transfer.sigungu || ''}`.trim(),
-      price: transfer.price ? `${transfer.price.toLocaleString()}원` : '협의',
-      transferType: transfer.category === '양도' ? '양도' : '양수',
+      description: transfer.description || "",
+      hospitalName: "", // transfers에는 병원명이 없음
+      location:
+        transfer.location ||
+        `${transfer.sido || ""} ${transfer.sigungu || ""}`.trim(),
+      price: transfer.price ? `${transfer.price.toLocaleString()}원` : "협의",
+      transferType: transfer.category === "양도" ? "양도" : "양수",
       status: transfer.status,
       reportCount: 0, // TODO: 신고 시스템 구현시 추가
       inquiryCount: parseInt(transfer.like_count) || 0,
-      createdAt: transfer.createdAt?.toISOString().split('T')[0],
-      updatedAt: transfer.updatedAt?.toISOString().split('T')[0],
+      createdAt: transfer.createdAt?.toISOString().split("T")[0],
+      updatedAt: transfer.updatedAt?.toISOString().split("T")[0],
       viewCount: parseInt(transfer.views) || 0,
       images: transfer.images || [],
       area: transfer.area,
@@ -136,32 +138,31 @@ export async function GET(
       },
       likeCount: parseInt(transfer.like_count) || 0,
       relatedStats: {
-        relatedCount: parseInt(relatedStatsResult[0]?.related_count || '0'),
-        avgPrice: parseFloat(relatedStatsResult[0]?.avg_price || '0'),
+        relatedCount: parseInt(relatedStatsResult[0]?.related_count || "0"),
+        avgPrice: parseFloat(relatedStatsResult[0]?.avg_price || "0"),
       },
-      userOtherTransfers: userOtherTransfersResult.map(row => ({
+      userOtherTransfers: userOtherTransfersResult.map((row) => ({
         id: row.id,
         title: row.title,
         status: row.status,
-        createdAt: row.createdAt?.toISOString().split('T')[0],
+        createdAt: row.createdAt?.toISOString().split("T")[0],
       })),
     };
 
     return NextResponse.json({
-      status: 'success',
+      status: "success",
       data: transferData,
     });
-
   } catch (error) {
-    console.error('양수양도 상세 조회 실패:', error);
+    console.error("양도양수 상세 조회 실패:", error);
     return NextResponse.json(
-      { status: 'error', message: '서버 오류가 발생했습니다.' },
+      { status: "error", message: "서버 오류가 발생했습니다." },
       { status: 500 }
     );
   }
 }
 
-// 양수양도 상태 변경 (관리자용)
+// 양도양수 상태 변경 (관리자용)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -177,25 +178,25 @@ export async function PATCH(
     // }
 
     const { id } = await params;
-    
-    if (!id || id === 'null' || id === 'undefined') {
+
+    if (!id || id === "null" || id === "undefined") {
       return NextResponse.json(
-        { status: 'error', message: '유효하지 않은 전송 ID입니다.' },
+        { status: "error", message: "유효하지 않은 전송 ID입니다." },
         { status: 400 }
       );
     }
     const { status, reason } = await request.json();
 
     // 유효한 상태값인지 확인
-    const validStatuses = ['ACTIVE', 'PENDING', 'SUSPENDED', 'COMPLETED'];
+    const validStatuses = ["ACTIVE", "PENDING", "SUSPENDED", "COMPLETED"];
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
-        { status: 'error', message: '유효하지 않은 상태값입니다.' },
+        { status: "error", message: "유효하지 않은 상태값입니다." },
         { status: 400 }
       );
     }
 
-    // 양수양도 게시물 존재 확인
+    // 양도양수 게시물 존재 확인
     const existingTransfer = await sql`
       SELECT id, status, "userId"
       FROM transfers
@@ -204,7 +205,7 @@ export async function PATCH(
 
     if (existingTransfer.length === 0) {
       return NextResponse.json(
-        { status: 'error', message: '양수양도 게시물을 찾을 수 없습니다.' },
+        { status: "error", message: "양도양수 게시물을 찾을 수 없습니다." },
         { status: 404 }
       );
     }
@@ -232,25 +233,24 @@ export async function PATCH(
     // }
 
     return NextResponse.json({
-      status: 'success',
-      message: '상태가 성공적으로 변경되었습니다.',
+      status: "success",
+      message: "상태가 성공적으로 변경되었습니다.",
       data: {
         id,
         status,
         updatedAt: new Date().toISOString(),
       },
     });
-
   } catch (error) {
-    console.error('양수양도 상태 변경 실패:', error);
+    console.error("양도양수 상태 변경 실패:", error);
     return NextResponse.json(
-      { status: 'error', message: '서버 오류가 발생했습니다.' },
+      { status: "error", message: "서버 오류가 발생했습니다." },
       { status: 500 }
     );
   }
 }
 
-// 양수양도 삭제 (관리자용)
+// 양도양수 삭제 (관리자용)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -266,16 +266,16 @@ export async function DELETE(
     // }
 
     const { id } = await params;
-    
-    if (!id || id === 'null' || id === 'undefined') {
+
+    if (!id || id === "null" || id === "undefined") {
       return NextResponse.json(
-        { status: 'error', message: '유효하지 않은 전송 ID입니다.' },
+        { status: "error", message: "유효하지 않은 전송 ID입니다." },
         { status: 400 }
       );
     }
     const { reason } = await request.json();
 
-    // 양수양도 게시물 존재 확인
+    // 양도양수 게시물 존재 확인
     const existingTransfer = await sql`
       SELECT id, "userId"
       FROM transfers
@@ -284,7 +284,7 @@ export async function DELETE(
 
     if (existingTransfer.length === 0) {
       return NextResponse.json(
-        { status: 'error', message: '양수양도 게시물을 찾을 수 없습니다.' },
+        { status: "error", message: "양도양수 게시물을 찾을 수 없습니다." },
         { status: 404 }
       );
     }
@@ -307,18 +307,17 @@ export async function DELETE(
     // TODO: 사용자에게 삭제 알림 발송
 
     return NextResponse.json({
-      status: 'success',
-      message: '게시물이 성공적으로 삭제되었습니다.',
+      status: "success",
+      message: "게시물이 성공적으로 삭제되었습니다.",
       data: {
         id,
         deletedAt: new Date().toISOString(),
       },
     });
-
   } catch (error) {
-    console.error('양수양도 삭제 실패:', error);
+    console.error("양도양수 삭제 실패:", error);
     return NextResponse.json(
-      { status: 'error', message: '서버 오류가 발생했습니다.' },
+      { status: "error", message: "서버 오류가 발생했습니다." },
       { status: 500 }
     );
   }

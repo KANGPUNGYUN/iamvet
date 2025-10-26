@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     let total = 0;
 
     if (bookmarked && userId) {
-      // 사용자가 좋아요한 양수양도 ID들을 먼저 조회
+      // 사용자가 좋아요한 양도양수 ID들을 먼저 조회
       const userLikedTransfers = await (prisma as any).transfer_likes.findMany({
         where: { userId },
         select: { transferId: true },
@@ -60,11 +60,11 @@ export async function GET(request: NextRequest) {
       );
 
       if (likedTransferIds.length === 0) {
-        // 좋아요한 양수양도가 없는 경우
+        // 좋아요한 양도양수가 없는 경우
         transfers = [];
         total = 0;
       } else {
-        // 좋아요한 양수양도들만 조회
+        // 좋아요한 양도양수들만 조회
         const offset = (page - 1) * limit;
         const whereClause: any = {
           id: { in: likedTransferIds },
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
         }));
       }
     } else {
-      // 일반 양수양도 목록 조회
+      // 일반 양도양수 목록 조회
       transfers = await getTransfersWithPagination(page, limit);
       total = transfers.length; // TODO: 실제로는 전체 카운트를 가져와야 함
     }
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 좋아요 정보를 포함한 양수양도 데이터 변환
+    // 좋아요 정보를 포함한 양도양수 데이터 변환
     const transfersWithLikes = transfers
       ? transfers.map((transfer: any) => ({
           ...transfer,

@@ -143,7 +143,7 @@ export default function HomePage() {
   // 현재 활성화된 탭 상태
   const [activeTab, setActiveTab] = useState("internal");
 
-  // 양수양도 데이터 API 조회 (최대 32개 가져와서 카테고리별로 8개씩 분배)
+  // 양도양수 데이터 API 조회 (최대 32개 가져와서 카테고리별로 8개씩 분배)
   const {
     data: transfersData,
     isLoading: transfersLoading,
@@ -308,7 +308,7 @@ export default function HomePage() {
 
       if (likedTransferIds.length > 0) {
         console.log(
-          "[Transfer Like] 서버에서 받은 좋아요 양수양도:",
+          "[Transfer Like] 서버에서 받은 좋아요 양도양수:",
           likedTransferIds
         );
         initializeTransferLikes(likedTransferIds);
@@ -521,7 +521,7 @@ export default function HomePage() {
     }
   };
 
-  // 양수양도 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
+  // 양도양수 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
   const handleTransferLike = async (transferId: string | number) => {
     const id = transferId.toString();
     const isCurrentlyLiked = isTransferLiked(id);
@@ -559,7 +559,7 @@ export default function HomePage() {
         setTransferLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn("양수양도를 찾을 수 없습니다:", transferId);
+          console.warn("양도양수를 찾을 수 없습니다:", transferId);
           return;
         } else if (response.status === 400) {
           if (result.message?.includes("이미 좋아요한")) {
@@ -1118,7 +1118,7 @@ export default function HomePage() {
                   ) : transfersError ? (
                     // 에러 상태
                     <div className="col-span-full text-center py-8 text-red-500">
-                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                      <p>양도양수 데이터를 불러오는 중 오류가 발생했습니다.</p>
                       <p className="text-sm text-gray-500 mt-2">
                         잠시 후 다시 시도해주세요.
                       </p>
@@ -1174,7 +1174,7 @@ export default function HomePage() {
                   ) : transfersError ? (
                     // 에러 상태
                     <div className="col-span-full text-center py-8 text-red-500">
-                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                      <p>양도양수 데이터를 불러오는 중 오류가 발생했습니다.</p>
                     </div>
                   ) : machineTransfers.length === 0 ? (
                     // 빈 데이터 상태
@@ -1219,7 +1219,7 @@ export default function HomePage() {
                   ) : transfersError ? (
                     // 에러 상태
                     <div className="col-span-full text-center py-8 text-red-500">
-                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                      <p>양도양수 데이터를 불러오는 중 오류가 발생했습니다.</p>
                     </div>
                   ) : deviceTransfers.length === 0 ? (
                     // 빈 데이터 상태
@@ -1264,7 +1264,7 @@ export default function HomePage() {
                   ) : transfersError ? (
                     // 에러 상태
                     <div className="col-span-full text-center py-8 text-red-500">
-                      <p>양수양도 데이터를 불러오는 중 오류가 발생했습니다.</p>
+                      <p>양도양수 데이터를 불러오는 중 오류가 발생했습니다.</p>
                     </div>
                   ) : interiorTransfers.length === 0 ? (
                     // 빈 데이터 상태

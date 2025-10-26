@@ -13,7 +13,7 @@ const DEFAULT_NAVIGATION_ITEMS = [
   { label: "채용공고", href: "/jobs" },
   { label: "인재정보", href: "/resumes" },
   { label: "강의영상", href: "/lectures" },
-  { label: "양수양도", href: "/transfers" },
+  { label: "양도양수", href: "/transfers" },
   { label: "임상 포럼", href: "/forums" },
 ];
 

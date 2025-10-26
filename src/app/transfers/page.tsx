@@ -28,10 +28,10 @@ export default function TransfersPage() {
     setTransferLike,
     toggleTransferLike,
     initializeTransferLikes,
-    isTransferLiked
+    isTransferLiked,
   } = useLikeStore();
 
-  // API에서 가져온 양수양도 데이터
+  // API에서 가져온 양도양수 데이터
   const [transfersData, setTransfersData] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
@@ -89,7 +89,7 @@ export default function TransfersPage() {
   // 모바일 필터 모달 상태
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // API에서 양수양도 데이터 가져오기 (임시저장 제외)
+  // API에서 양도양수 데이터 가져오기 (임시저장 제외)
   useEffect(() => {
     const fetchTransfers = async () => {
       setIsLoadingData(true);
@@ -136,7 +136,7 @@ export default function TransfersPage() {
           }
         }
       } catch (error) {
-        console.error("양수양도 목록 조회 오류:", error);
+        console.error("양도양수 목록 조회 오류:", error);
       } finally {
         setIsLoadingData(false);
       }
@@ -150,9 +150,11 @@ export default function TransfersPage() {
     const fetchAdCard = async () => {
       setIsLoadingAd(true);
       try {
-        const response = await fetch('/api/advertisements?type=AD_CARD&status=ACTIVE');
+        const response = await fetch(
+          "/api/advertisements?type=AD_CARD&status=ACTIVE"
+        );
         const data = await response.json();
-        
+
         if (data.success && data.data?.length > 0) {
           // 첫 번째 활성 광고 가져오기
           const ad = data.data[0];
@@ -162,11 +164,11 @@ export default function TransfersPage() {
             description: ad.description,
             imageUrl: ad.imageUrl,
             linkUrl: ad.linkUrl,
-            variant: ad.variant || "default"
+            variant: ad.variant || "default",
           });
         }
       } catch (error) {
-        console.error('Failed to fetch ad card:', error);
+        console.error("Failed to fetch ad card:", error);
       } finally {
         setIsLoadingAd(false);
       }
@@ -181,34 +183,43 @@ export default function TransfersPage() {
       const likedTransferIds = transfersData
         .filter((transfer: any) => transfer.isLiked)
         .map((transfer: any) => transfer.id);
-      
+
       if (likedTransferIds.length > 0) {
-        console.log('[Transfer Like] 서버에서 받은 좋아요 양수양도:', likedTransferIds);
+        console.log(
+          "[Transfer Like] 서버에서 받은 좋아요 양도양수:",
+          likedTransferIds
+        );
         initializeTransferLikes(likedTransferIds);
       }
     }
   }, [transfersData, initializeTransferLikes]);
 
-  // 양수양도 좋아요/취소 토글 핸들러
+  // 양도양수 좋아요/취소 토글 핸들러
   const handleTransferLike = async (transferId: string | number) => {
     const id = transferId.toString();
     const isCurrentlyLiked = isTransferLiked(id);
-    
-    console.log(`[Transfer Like] ${id} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
+
+    console.log(
+      `[Transfer Like] ${id} - 현재 상태: ${
+        isCurrentlyLiked ? "좋아요됨" : "좋아요안됨"
+      } -> ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"}`
+    );
+
     // 낙관적 업데이트: UI를 먼저 변경
     toggleTransferLike(id);
 
     try {
-      const method = isCurrentlyLiked ? 'DELETE' : 'POST';
-      const actionText = isCurrentlyLiked ? '좋아요 취소' : '좋아요';
-      
-      console.log(`[Transfer Like] API 요청: ${method} /api/transfers/${transferId}/like`);
-      
+      const method = isCurrentlyLiked ? "DELETE" : "POST";
+      const actionText = isCurrentlyLiked ? "좋아요 취소" : "좋아요";
+
+      console.log(
+        `[Transfer Like] API 요청: ${method} /api/transfers/${transferId}/like`
+      );
+
       const response = await fetch(`/api/transfers/${transferId}/like`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -216,23 +227,25 @@ export default function TransfersPage() {
 
       if (!response.ok) {
         console.error(`[Transfer Like] ${actionText} 실패:`, result);
-        
+
         // 오류 발생 시 상태 롤백
         setTransferLike(id, isCurrentlyLiked);
 
         if (response.status === 404) {
-          console.warn('양수양도를 찾을 수 없습니다:', transferId);
+          console.warn("양도양수를 찾을 수 없습니다:", transferId);
           return;
         } else if (response.status === 400) {
-          if (result.message?.includes('이미 좋아요한')) {
-            console.log(`[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
+          if (result.message?.includes("이미 좋아요한")) {
+            console.log(
+              `[Transfer Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`
+            );
             setTransferLike(id, true);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
           return;
         } else if (response.status === 401) {
-          console.warn('로그인이 필요합니다.');
+          console.warn("로그인이 필요합니다.");
           return;
         }
         throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
@@ -240,8 +253,11 @@ export default function TransfersPage() {
 
       console.log(`[Transfer Like] ${actionText} 성공:`, result);
     } catch (error) {
-      console.error(`[Transfer Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
+      console.error(
+        `[Transfer Like] ${isCurrentlyLiked ? "좋아요 취소" : "좋아요"} 오류:`,
+        error
+      );
+
       // 오류 발생 시 상태 롤백
       setTransferLike(id, isCurrentlyLiked);
     }
@@ -423,7 +439,6 @@ export default function TransfersPage() {
 
   // 광고는 1페이지(index 0)에서만 표시
   const shouldShowAd = currentPage === 1 && transferData.length > 0;
-
 
   // URL에서 필터 상태 초기화
   useEffect(() => {
@@ -1073,22 +1088,22 @@ export default function TransfersPage() {
               // 데이터가 없는 경우
               <div className="flex flex-col items-center justify-center h-[400px] text-gray-500">
                 <div className="text-lg font-medium mb-2">
-                  등록된 양수양도가 없습니다
+                  등록된 양도양수가 없습니다
                 </div>
-                <div className="text-sm">첫 번째 양수양도를 등록해보세요!</div>
+                <div className="text-sm">첫 번째 양도양수를 등록해보세요!</div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
                 {/* 9로 나눈 나머지가 1인 위치에 광고 표시 */}
-                {shouldShowAd && (
-                  adData ? (
+                {shouldShowAd &&
+                  (adData ? (
                     <AdCard
                       title={adData.title}
                       subtitle={adData.description}
                       variant={adData.variant}
                       onClick={() => {
                         if (adData.linkUrl) {
-                          window.open(adData.linkUrl, '_blank');
+                          window.open(adData.linkUrl, "_blank");
                         }
                       }}
                     />
@@ -1096,16 +1111,34 @@ export default function TransfersPage() {
                     // 광고가 없는 경우 표시할 기본 카드
                     <div className="w-full bg-white shadow-sm rounded-[16px] border border-[#EFEFF0] p-6 flex flex-col justify-center items-center min-h-[192px]">
                       <div className="text-center">
-                        <svg 
-                          width="48" 
-                          height="48" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
+                        <svg
+                          width="48"
+                          height="48"
+                          viewBox="0 0 24 24"
+                          fill="none"
                           className="mx-auto mb-4 text-gray-300"
                         >
-                          <path d="M13 7H22V20H13V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M2 7H11V12H2V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M2 17H11V20H2V17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path
+                            d="M13 7H22V20H13V7Z"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M2 7H11V12H2V7Z"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M2 17H11V20H2V17Z"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                         <p className="text-sm text-gray-500 font-medium">
                           광고를 원하시나요?
@@ -1115,8 +1148,7 @@ export default function TransfersPage() {
                         </p>
                       </div>
                     </div>
-                  ) : null
-                )}
+                  ) : null)}
 
                 {transferData.map((transfer) => (
                   <TransferCard

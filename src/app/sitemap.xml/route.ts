@@ -30,7 +30,7 @@ async function getForumIds(): Promise<string[]> {
 }
 
 async function getTransferIds(): Promise<string[]> {
-  // TODO: 실제 API 호출로 양수양도 ID들을 가져와야 함
+  // TODO: 실제 API 호출로 양도양수 ID들을 가져와야 함
   return [];
 }
 
@@ -107,7 +107,7 @@ export async function GET() {
       });
     }
 
-    // 양수양도 상세 페이지
+    // 양도양수 상세 페이지
     const transferIds = await getTransferIds();
     for (const id of transferIds) {
       urls.push({

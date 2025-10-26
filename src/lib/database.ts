@@ -1,24 +1,24 @@
 import { Pool } from "pg";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 // Type definitions
-type NotificationType = 
-  | 'application_status'
-  | 'job_application'
-  | 'bookmark_added'
-  | 'profile_view'
-  | 'message'
-  | 'system'
-  | 'evaluation_received'
-  | 'job_posted'
-  | 'interview_scheduled';
+type NotificationType =
+  | "application_status"
+  | "job_application"
+  | "bookmark_added"
+  | "profile_view"
+  | "message"
+  | "system"
+  | "evaluation_received"
+  | "job_posted"
+  | "interview_scheduled";
 
 // Import from constants file
-import { 
+import {
   ApplicationStatus as ApplicationStatusEnum,
   mapToLegacyStatus,
-  mapFromLegacyStatus 
-} from '@/constants/applicationStatus';
+  mapFromLegacyStatus,
+} from "@/constants/applicationStatus";
 
 // Use the enum values for type safety
 type ApplicationStatus = ApplicationStatusEnum;
@@ -34,7 +34,7 @@ const pool = new Pool({
 export const getUserByEmail = async (email: string, userType?: string) => {
   // userType을 대문자로 변환 (hospital -> HOSPITAL, veterinarian -> VETERINARIAN)
   const normalizedUserType = userType ? userType.toUpperCase() : undefined;
-  
+
   const query = userType
     ? 'SELECT * FROM users WHERE email = $1 AND "userType" = $2'
     : "SELECT * FROM users WHERE email = $1";
@@ -48,7 +48,7 @@ export const getUserByEmail = async (email: string, userType?: string) => {
 export const getUserByLoginId = async (loginId: string, userType?: string) => {
   // userType을 대문자로 변환 (hospital -> HOSPITAL, veterinarian -> VETERINARIAN)
   const normalizedUserType = userType ? userType.toUpperCase() : undefined;
-  
+
   const query = userType
     ? 'SELECT * FROM users WHERE "loginId" = $1 AND "userType" = $2'
     : 'SELECT * FROM users WHERE "loginId" = $1';
@@ -59,12 +59,15 @@ export const getUserByLoginId = async (loginId: string, userType?: string) => {
   return result.rows[0] || null;
 };
 
-export const getUserByEmailOrLoginId = async (identifier: string, userType?: string) => {
+export const getUserByEmailOrLoginId = async (
+  identifier: string,
+  userType?: string
+) => {
   // userType을 대문자로 변환 (hospital -> HOSPITAL, veterinarian -> VETERINARIAN)
   const normalizedUserType = userType ? userType.toUpperCase() : undefined;
-  
+
   let query: string;
-  if (normalizedUserType === 'HOSPITAL') {
+  if (normalizedUserType === "HOSPITAL") {
     // 병원 계정인 경우 hospitals 테이블을 조인하여 hospitalName을 가져옴
     query = `
       SELECT u.*, h."hospitalName", u."profileImage" as "logoImage"
@@ -73,7 +76,8 @@ export const getUserByEmailOrLoginId = async (identifier: string, userType?: str
       WHERE (u.email = $1 OR u."loginId" = $1) AND u."userType" = $2
     `;
   } else if (userType) {
-    query = 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1) AND "userType" = $2';
+    query =
+      'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1) AND "userType" = $2';
   } else {
     query = 'SELECT * FROM users WHERE (email = $1 OR "loginId" = $1)';
   }
@@ -86,8 +90,10 @@ export const getUserByEmailOrLoginId = async (identifier: string, userType?: str
 
 export const createUser = async (userData: any) => {
   // Generate UUID for id field
-  const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-  
+  const userId = `user_${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(2)}`;
+
   const currentDate = new Date();
   const query = `
     INSERT INTO users (id, username, "loginId", nickname, email, "passwordHash", "userType", phone, "realName", "profileImage", 
@@ -136,7 +142,10 @@ export const createVeterinarianProfile = async (profileData: any) => {
     profileData.licenseImage,
   ];
 
-  console.log('[DB] Creating veterinarian profile by updating user record:', values);
+  console.log(
+    "[DB] Creating veterinarian profile by updating user record:",
+    values
+  );
   const result = await pool.query(query, values);
   return result.rows[0];
 };
@@ -159,7 +168,10 @@ export const createVeterinaryStudentProfile = async (profileData: any) => {
     null, // No license image for veterinary students
   ];
 
-  console.log('[DB] Creating veterinary student profile by updating user record:', values);
+  console.log(
+    "[DB] Creating veterinary student profile by updating user record:",
+    values
+  );
   const result = await pool.query(query, values);
   return result.rows[0];
 };
@@ -193,8 +205,8 @@ export const createHospitalProfile = async (profileData: any) => {
 };
 
 export const getJobsWithPagination = async (params: any) => {
-  console.log('[DB] getJobsWithPagination called with params:', params);
-  
+  console.log("[DB] getJobsWithPagination called with params:", params);
+
   // First, check if jobs table exists
   try {
     const tableCheck = await pool.query(`
@@ -204,20 +216,20 @@ export const getJobsWithPagination = async (params: any) => {
         AND table_name = 'jobs'
       );
     `);
-    console.log('[DB] jobs table exists:', tableCheck.rows[0].exists);
-    
+    console.log("[DB] jobs table exists:", tableCheck.rows[0].exists);
+
     if (!tableCheck.rows[0].exists) {
-      console.warn('[DB] jobs table does not exist, returning empty result');
+      console.warn("[DB] jobs table does not exist, returning empty result");
       return {
         jobs: [],
         totalCount: 0,
       };
     }
   } catch (error) {
-    console.error('[DB] Table check error:', error);
+    console.error("[DB] Table check error:", error);
     throw error;
   }
-  
+
   let query = `
     SELECT j.*, h."hospitalName" as hospital_name, h."hospitalLogo" as hospital_logo, h."hospitalAddress" as hospital_location
     FROM jobs j
@@ -238,7 +250,9 @@ export const getJobsWithPagination = async (params: any) => {
 
   // 근무 형태 필터 (배열에서 검색)
   if (params.workType) {
-    const workTypes = Array.isArray(params.workType) ? params.workType : [params.workType];
+    const workTypes = Array.isArray(params.workType)
+      ? params.workType
+      : [params.workType];
     paramCount++;
     query += ` AND j."workType" && $${paramCount}`;
     queryParams.push(workTypes);
@@ -246,7 +260,9 @@ export const getJobsWithPagination = async (params: any) => {
 
   // 경력 필터 (배열에서 검색)
   if (params.experience) {
-    const experiences = Array.isArray(params.experience) ? params.experience : [params.experience];
+    const experiences = Array.isArray(params.experience)
+      ? params.experience
+      : [params.experience];
     paramCount++;
     query += ` AND j.experience && $${paramCount}`;
     queryParams.push(experiences);
@@ -300,17 +316,20 @@ export const getJobsWithPagination = async (params: any) => {
   query += ` LIMIT $${paramCount - 1} OFFSET $${paramCount}`;
   queryParams.push(params.limit, offset);
 
-  console.log('[DB] Executing query:', query);
-  console.log('[DB] Query params:', queryParams);
-  
+  console.log("[DB] Executing query:", query);
+  console.log("[DB] Query params:", queryParams);
+
   let result;
   try {
     result = await pool.query(query, queryParams);
-    console.log('[DB] Query executed successfully, rows returned:', result.rows.length);
+    console.log(
+      "[DB] Query executed successfully, rows returned:",
+      result.rows.length
+    );
   } catch (error) {
-    console.error('[DB] Query execution error:', error);
-    console.error('[DB] Failed query:', query);
-    console.error('[DB] Failed params:', queryParams);
+    console.error("[DB] Query execution error:", error);
+    console.error("[DB] Failed query:", query);
+    console.error("[DB] Failed params:", queryParams);
     throw error;
   }
 
@@ -333,14 +352,18 @@ export const getJobsWithPagination = async (params: any) => {
   }
 
   if (params.workType) {
-    const workTypes = Array.isArray(params.workType) ? params.workType : [params.workType];
+    const workTypes = Array.isArray(params.workType)
+      ? params.workType
+      : [params.workType];
     countParamCount++;
     countQuery += ` AND j."workType" && $${countParamCount}`;
     countParams.push(workTypes);
   }
 
   if (params.experience) {
-    const experiences = Array.isArray(params.experience) ? params.experience : [params.experience];
+    const experiences = Array.isArray(params.experience)
+      ? params.experience
+      : [params.experience];
     countParamCount++;
     countQuery += ` AND j.experience && $${countParamCount}`;
     countParams.push(experiences);
@@ -359,22 +382,25 @@ export const getJobsWithPagination = async (params: any) => {
     countParams.push(majors);
   }
 
-  console.log('[DB] Executing count query:', countQuery);
-  console.log('[DB] Count params:', countParams);
-  
+  console.log("[DB] Executing count query:", countQuery);
+  console.log("[DB] Count params:", countParams);
+
   let countResult;
   try {
     countResult = await pool.query(countQuery, countParams);
-    console.log('[DB] Count query executed successfully, total:', countResult.rows[0]?.total);
+    console.log(
+      "[DB] Count query executed successfully, total:",
+      countResult.rows[0]?.total
+    );
   } catch (error) {
-    console.error('[DB] Count query execution error:', error);
-    console.error('[DB] Failed count query:', countQuery);
-    console.error('[DB] Failed count params:', countParams);
+    console.error("[DB] Count query execution error:", error);
+    console.error("[DB] Failed count query:", countQuery);
+    console.error("[DB] Failed count params:", countParams);
     throw error;
   }
 
-  const totalCount = parseInt(countResult.rows[0]?.total || '0');
-  
+  const totalCount = parseInt(countResult.rows[0]?.total || "0");
+
   return {
     jobs: result.rows,
     totalCount,
@@ -388,10 +414,10 @@ export const getJobById = async (jobId: string) => {
     WHERE id = $1 AND "isActive" = true
   `;
 
-  console.log('getJobById query:', { jobId, query });
+  console.log("getJobById query:", { jobId, query });
   const result = await pool.query(query, [jobId]);
-  console.log('getJobById result:', { found: result.rows.length > 0 });
-  
+  console.log("getJobById result:", { found: result.rows.length > 0 });
+
   if (!result.rows[0]) {
     return null;
   }
@@ -414,9 +440,9 @@ export const getJobById = async (jobId: string) => {
         JOIN hospitals h ON u.id = h."userId"
         WHERE u.id = $1 AND u."userType" = 'HOSPITAL'
       `;
-      
+
       const hospitalResult = await pool.query(hospitalQuery, [job.hospitalId]);
-      
+
       if (hospitalResult.rows[0]) {
         // 병원 정보를 job 객체에 추가
         Object.assign(job, hospitalResult.rows[0]);
@@ -428,11 +454,11 @@ export const getJobById = async (jobId: string) => {
           phone: hospitalResult.rows[0].hospital_phone,
           address: hospitalResult.rows[0].hospital_address,
           website: hospitalResult.rows[0].hospital_website,
-          logo: hospitalResult.rows[0].hospital_logo
+          logo: hospitalResult.rows[0].hospital_logo,
         };
       }
     } catch (error) {
-      console.warn('Hospital data fetch failed:', error);
+      console.warn("Hospital data fetch failed:", error);
     }
   }
 
@@ -734,7 +760,7 @@ export const incrementJobViewCount = async (
   userIdentifier: string,
   userId?: string
 ): Promise<boolean> => {
-  return incrementViewCount('job', jobId, userIdentifier, userId);
+  return incrementViewCount("job", jobId, userIdentifier, userId);
 };
 
 export const incrementJobApplicantCount = async (
@@ -815,12 +841,12 @@ export const incrementResumeViewCount = async (
   userIdentifier: string,
   userId?: string
 ): Promise<boolean> => {
-  return incrementViewCount('resume', veterinarianId, userIdentifier, userId);
+  return incrementViewCount("resume", veterinarianId, userIdentifier, userId);
 };
 
 export const getResumesWithPagination = async (params: any) => {
   console.log("[getResumesWithPagination] 파라미터:", params);
-  
+
   // detailed_resumes 테이블과 users 테이블을 JOIN하여 조회 (lastLoginAt 포함)
   let query = `
     SELECT 
@@ -870,11 +896,10 @@ export const getResumesWithPagination = async (params: any) => {
   }
 
   // 전체 개수 조회를 위한 쿼리 (LIMIT/OFFSET 없이)
-  const countQuery = query.replace(
-    /SELECT[\s\S]*?FROM/,
-    "SELECT COUNT(*) as total FROM"
-  ).replace(/ORDER BY[\s\S]*$/, "");
-  
+  const countQuery = query
+    .replace(/SELECT[\s\S]*?FROM/, "SELECT COUNT(*) as total FROM")
+    .replace(/ORDER BY[\s\S]*$/, "");
+
   console.log("[getResumesWithPagination] Count 쿼리:", countQuery);
   const countResult = await pool.query(countQuery, queryParams);
   const totalCount = parseInt(countResult.rows[0]?.total || "0");
@@ -888,15 +913,18 @@ export const getResumesWithPagination = async (params: any) => {
 
   console.log("[getResumesWithPagination] 최종 쿼리:", query);
   console.log("[getResumesWithPagination] 쿼리 파라미터:", queryParams);
-  
+
   const result = await pool.query(query, queryParams);
-  console.log("[getResumesWithPagination] 조회된 레코드 수:", result.rows.length);
-  
+  console.log(
+    "[getResumesWithPagination] 조회된 레코드 수:",
+    result.rows.length
+  );
+
   return {
     data: result.rows,
     total: totalCount,
     currentPage: params.page,
-    totalPages: Math.ceil(totalCount / params.limit)
+    totalPages: Math.ceil(totalCount / params.limit),
   };
 };
 
@@ -1031,9 +1059,9 @@ export const getApplication = async (jobId: string, veterinarianId: string) => {
 };
 
 export const createApplication = async (applicationData: any) => {
-  const { createId } = await import('@paralleldrive/cuid2');
+  const { createId } = await import("@paralleldrive/cuid2");
   const applicationId = createId();
-  
+
   const query = `
     INSERT INTO applications (id, "jobId", "veterinarianId", status, "createdAt", "updatedAt")
     VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -1171,8 +1199,8 @@ export const getStatusNotificationTitle = (
 // ============================================================================
 
 export const getVeterinarianProfile = async (userId: string) => {
-  console.log('[DB] getVeterinarianProfile called with userId:', userId);
-  
+  console.log("[DB] getVeterinarianProfile called with userId:", userId);
+
   // Query the users table directly since veterinarian profile data is now stored there
   const query = `
     SELECT id, email, phone, "profileImage", "loginId", nickname, "realName", "birthDate", 
@@ -1181,36 +1209,38 @@ export const getVeterinarianProfile = async (userId: string) => {
     WHERE id = $1 AND "isActive" = true
   `;
 
-  console.log('[DB] Executing query:', query);
+  console.log("[DB] Executing query:", query);
   const result = await pool.query(query, [userId]);
-  console.log('[DB] User query result:', result.rows);
-  console.log('[DB] Number of rows returned:', result.rows.length);
-  
+  console.log("[DB] User query result:", result.rows);
+  console.log("[DB] Number of rows returned:", result.rows.length);
+
   if (result.rows.length === 0) {
-    console.error('[DB] CRITICAL: No user found with id:', userId);
-    console.error('[DB] This suggests JWT token contains invalid userId or user was deleted');
+    console.error("[DB] CRITICAL: No user found with id:", userId);
+    console.error(
+      "[DB] This suggests JWT token contains invalid userId or user was deleted"
+    );
     return null;
   }
-  
+
   const user = result.rows[0];
-  console.log('[DB] Found user:', { 
-    userType: user.userType, 
-    nickname: user.nickname, 
-    email: user.email, 
+  console.log("[DB] Found user:", {
+    userType: user.userType,
+    nickname: user.nickname,
+    email: user.email,
     isActive: user.isActive,
     licenseImage: user.licenseImage,
-    hasLicenseImage: !!user.licenseImage
+    hasLicenseImage: !!user.licenseImage,
   });
-  
+
   const userType = user.userType;
-  console.log('[DB] User type:', userType);
-  
-  if (userType === 'VETERINARIAN' || userType === 'VETERINARY_STUDENT') {
+  console.log("[DB] User type:", userType);
+
+  if (userType === "VETERINARIAN" || userType === "VETERINARY_STUDENT") {
     // Return the user data directly as all profile data is now in the users table
     return user;
   }
-  
-  console.log('[DB] User type is not VETERINARIAN:', userType);
+
+  console.log("[DB] User type is not VETERINARIAN:", userType);
   return null;
 };
 
@@ -1249,7 +1279,10 @@ export const updateVeterinarianProfile = async (
   profileData: any
 ) => {
   try {
-    console.log('[DB] updateVeterinarianProfile called with:', { userId, profileData });
+    console.log("[DB] updateVeterinarianProfile called with:", {
+      userId,
+      profileData,
+    });
 
     // Update users table - all profile data is now stored here
     const updateFields = [];
@@ -1259,55 +1292,62 @@ export const updateVeterinarianProfile = async (
     if (profileData.email !== undefined) {
       updateFields.push(`email = $${paramIndex++}`);
       updateValues.push(profileData.email);
-      console.log('[DB] Will update user email');
+      console.log("[DB] Will update user email");
     }
     if (profileData.phone !== undefined) {
       updateFields.push(`phone = $${paramIndex++}`);
       updateValues.push(profileData.phone);
-      console.log('[DB] Will update user phone');
+      console.log("[DB] Will update user phone");
     }
     if (profileData.profileImage !== undefined) {
       updateFields.push(`"profileImage" = $${paramIndex++}`);
       updateValues.push(profileData.profileImage);
-      console.log('[DB] Will update user profileImage');
+      console.log("[DB] Will update user profileImage");
     }
     if (profileData.realName !== undefined) {
       updateFields.push(`"realName" = $${paramIndex++}`);
       updateValues.push(profileData.realName);
-      console.log('[DB] Will update user realName');
+      console.log("[DB] Will update user realName");
     }
     if (profileData.nickname !== undefined) {
       updateFields.push(`nickname = $${paramIndex++}`);
       updateValues.push(profileData.nickname);
-      console.log('[DB] Will update user nickname');
+      console.log("[DB] Will update user nickname");
     }
     if (profileData.birthDate !== undefined) {
       updateFields.push(`"birthDate" = $${paramIndex++}`);
       updateValues.push(profileData.birthDate);
-      console.log('[DB] Will update user birthDate');
+      console.log("[DB] Will update user birthDate");
     }
     if (profileData.licenseImage !== undefined) {
       updateFields.push(`"licenseImage" = $${paramIndex++}`);
       updateValues.push(profileData.licenseImage);
-      console.log('[DB] Will update user licenseImage');
+      console.log("[DB] Will update user licenseImage");
     }
 
     if (updateFields.length > 0) {
       updateFields.push(`"updatedAt" = NOW()`);
       updateValues.push(userId);
-      
-      const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = $${paramIndex}`;
-      console.log('[DB] Executing update query:', query, 'with values:', updateValues);
-      
+
+      const query = `UPDATE users SET ${updateFields.join(
+        ", "
+      )} WHERE id = $${paramIndex}`;
+      console.log(
+        "[DB] Executing update query:",
+        query,
+        "with values:",
+        updateValues
+      );
+
       await pool.query(query, updateValues);
-      console.log('[DB] Updated user profile in users table');
+      console.log("[DB] Updated user profile in users table");
     }
 
     // licenseImage is now managed only in users table for simplicity
 
     return { success: true };
   } catch (error) {
-    console.error('[DB] Error updating veterinarian profile:', error);
+    console.error("[DB] Error updating veterinarian profile:", error);
     throw error;
   }
 };
@@ -1407,12 +1447,12 @@ export const getVeterinarianApplications = async (
   userId: string,
   sort: string = "latest"
 ) => {
-  let orderBy = "a.\"appliedAt\" DESC";
+  let orderBy = 'a."appliedAt" DESC';
 
   if (sort === "oldest") {
-    orderBy = "a.\"appliedAt\" ASC";
+    orderBy = 'a."appliedAt" ASC';
   } else if (sort === "status") {
-    orderBy = "a.status, a.\"appliedAt\" DESC";
+    orderBy = 'a.status, a."appliedAt" DESC';
   }
 
   const query = `
@@ -1582,29 +1622,29 @@ export const updateJobPosting = async (jobId: string, jobData: any) => {
 
   // 필드명 매핑 (camelCase -> database column name)
   const fieldMapping: Record<string, string> = {
-    title: 'title',
+    title: "title",
     workType: '"workType"',
     isUnlimitedRecruit: '"isUnlimitedRecruit"',
     recruitEndDate: '"recruitEndDate"',
-    major: 'major',
-    experience: 'experience',
-    position: 'position',
+    major: "major",
+    experience: "experience",
+    position: "position",
     salaryType: '"salaryType"',
-    salary: 'salary',
+    salary: "salary",
     workDays: '"workDays"',
     isWorkDaysNegotiable: '"isWorkDaysNegotiable"',
     workStartTime: '"workStartTime"',
     workEndTime: '"workEndTime"',
     isWorkTimeNegotiable: '"isWorkTimeNegotiable"',
-    benefits: 'benefits',
-    education: 'education',
-    certifications: 'certifications',
+    benefits: "benefits",
+    education: "education",
+    certifications: "certifications",
     experienceDetails: '"experienceDetails"',
-    preferences: 'preferences',
+    preferences: "preferences",
     managerName: '"managerName"',
     managerPhone: '"managerPhone"',
     managerEmail: '"managerEmail"',
-    department: 'department'
+    department: "department",
   };
 
   // 동적으로 업데이트할 필드 구성
@@ -1617,7 +1657,7 @@ export const updateJobPosting = async (jobId: string, jobData: any) => {
   });
 
   if (fields.length === 0) {
-    console.log('updateJobPosting: 업데이트할 필드가 없습니다');
+    console.log("updateJobPosting: 업데이트할 필드가 없습니다");
     return null;
   }
 
@@ -1628,11 +1668,14 @@ export const updateJobPosting = async (jobId: string, jobData: any) => {
     RETURNING *
   `;
 
-  console.log('updateJobPosting 쿼리:', { query, values: [...values, jobId] });
+  console.log("updateJobPosting 쿼리:", { query, values: [...values, jobId] });
 
   const result = await pool.query(query, [...values, jobId]);
-  console.log('updateJobPosting 결과:', { rowCount: result.rowCount, hasResult: !!result.rows[0] });
-  
+  console.log("updateJobPosting 결과:", {
+    rowCount: result.rowCount,
+    hasResult: !!result.rows[0],
+  });
+
   return result.rows[0];
 };
 
@@ -1729,7 +1772,10 @@ export const getLecturesWithPagination = async (params: any) => {
 
   // 카테고리 필터 (medicalField를 category로 매핑) - 다중 카테고리 지원
   if (params.medicalField) {
-    const categories = params.medicalField.split(',').map((cat: string) => cat.trim()).filter(Boolean);
+    const categories = params.medicalField
+      .split(",")
+      .map((cat: string) => cat.trim())
+      .filter(Boolean);
     if (categories.length === 1) {
       paramCount++;
       countParamCount++;
@@ -1740,16 +1786,18 @@ export const getLecturesWithPagination = async (params: any) => {
     } else if (categories.length > 1) {
       paramCount++;
       countParamCount++;
-      const placeholders = categories.map((_: string, index: number) => `$${paramCount + index}`).join(',');
+      const placeholders = categories
+        .map((_: string, index: number) => `$${paramCount + index}`)
+        .join(",");
       query += ` AND category IN (${placeholders})`;
       countQuery += ` AND category IN (${placeholders})`;
-      
+
       // 배열의 모든 요소를 개별적으로 추가
       categories.forEach((category: string) => {
         queryParams.push(category);
         countParams.push(category);
       });
-      
+
       // paramCount를 올바르게 업데이트
       paramCount += categories.length - 1;
       countParamCount += categories.length - 1;
@@ -1783,13 +1831,13 @@ export const getLecturesWithPagination = async (params: any) => {
 
   // 데이터 조회
   const result = await pool.query(query, queryParams);
-  
+
   return {
     data: result.rows,
     total,
     page: params.page,
     limit: params.limit,
-    totalPages: Math.ceil(total / params.limit)
+    totalPages: Math.ceil(total / params.limit),
   };
 };
 
@@ -1804,7 +1852,7 @@ export const incrementLectureViewCount = async (
   userIdentifier: string,
   userId?: string
 ): Promise<boolean> => {
-  return incrementViewCount('lecture', lectureId, userIdentifier, userId);
+  return incrementViewCount("lecture", lectureId, userIdentifier, userId);
 };
 
 export const getRecommendedLectures = async (
@@ -1855,33 +1903,36 @@ export const getLectureComments = async (lectureId: string) => {
       ORDER BY lc."createdAt" DESC
     `;
     const result = await pool.query(query, [lectureId]);
-    
+
     // 디버깅을 위한 로그 출력
     console.log(`getLectureComments: Found ${result.rows.length} comments`);
-    
+
     // 댓글을 계층구조로 정리
     const commentMap = new Map();
     const rootComments: any[] = [];
-    
+
     // 모든 댓글을 맵에 저장
     result.rows.forEach((comment: any) => {
       // 사용자 타입에 따라 적절한 이름 사용
       let displayName;
-      if (comment.userType === 'HOSPITAL') {
-        // 병원 계정: hospitalName을 무조건 우선적으로 사용 
+      if (comment.userType === "HOSPITAL") {
+        // 병원 계정: hospitalName을 무조건 우선적으로 사용
         displayName = comment.hospitalName || "병원명 미설정";
-        console.log(`Successfully using hospitalName: ${displayName} - this will be set as author_display_name`);
-      } else if (comment.userType === 'VETERINARIAN') {
+        console.log(
+          `Successfully using hospitalName: ${displayName} - this will be set as author_display_name`
+        );
+      } else if (comment.userType === "VETERINARIAN") {
         displayName = comment.vet_real_name || "익명 사용자";
-      } else if (comment.userType === 'VETERINARY_STUDENT') {
+      } else if (comment.userType === "VETERINARY_STUDENT") {
         displayName = comment.vs_real_name || "익명 사용자";
       } else {
         displayName = "익명 사용자";
       }
-      
-      const profileImage = comment.userType === 'HOSPITAL' && comment.hospitalLogo
-        ? comment.hospitalLogo
-        : comment.author_profile_image || null;
+
+      const profileImage =
+        comment.userType === "HOSPITAL" && comment.hospitalLogo
+          ? comment.hospitalLogo
+          : comment.author_profile_image || null;
 
       const mappedComment = {
         id: comment.id,
@@ -1894,15 +1945,15 @@ export const getLectureComments = async (lectureId: string) => {
         author_name: displayName,
         author_profile_image: profileImage,
         author_display_name: displayName, // 병원 계정의 경우 hospitalName이 여기에 설정됨
-        replies: []
+        replies: [],
       };
       commentMap.set(comment.id, mappedComment);
     });
-    
+
     // 부모-자식 관계 설정
     result.rows.forEach((comment: any) => {
       const mappedComment = commentMap.get(comment.id);
-      
+
       if (comment.parentId) {
         // 대댓글인 경우 부모 댓글의 replies에 추가
         const parentComment = commentMap.get(comment.parentId);
@@ -1914,10 +1965,13 @@ export const getLectureComments = async (lectureId: string) => {
         rootComments.push(mappedComment);
       }
     });
-    
+
     return rootComments;
   } catch (error) {
-    console.log("Comments table not found or error:", error instanceof Error ? error.message : error);
+    console.log(
+      "Comments table not found or error:",
+      error instanceof Error ? error.message : error
+    );
     // 댓글 테이블이 없으면 빈 배열 반환
     return [];
   }
@@ -2133,12 +2187,8 @@ export const calculateApplicationsStats = (applications: any[]) => {
     pending: applications.filter((app) =>
       ["PENDING", "REVIEWING"].includes(app.status)
     ).length,
-    accepted: applications.filter((app) =>
-      app.status === "ACCEPTED"
-    ).length,
-    rejected: applications.filter((app) =>
-      app.status === "REJECTED"
-    ).length,
+    accepted: applications.filter((app) => app.status === "ACCEPTED").length,
+    rejected: applications.filter((app) => app.status === "REJECTED").length,
   };
 };
 
@@ -2676,7 +2726,6 @@ export const validatePhone = (phone: string): boolean => {
   return phoneRegex.test(phone);
 };
 
-
 export const validateResumeData = (
   resumeData: any
 ): { isValid: boolean; errors: string[] } => {
@@ -2961,7 +3010,10 @@ export const getRecentTalents = async (limit: number = 10) => {
 // ============================================================================
 
 // 누락된 함수들 구현
-export const getUserBySocialProvider = async (provider: string, providerId: string) => {
+export const getUserBySocialProvider = async (
+  provider: string,
+  providerId: string
+) => {
   const query = `
     SELECT u.*, sa.* FROM users u 
     JOIN social_accounts sa ON u.id = sa."userId" 
@@ -2983,8 +3035,8 @@ export const getUserSocialAccounts = async (userId: string) => {
 };
 
 export const linkSocialAccount = async (userId: string, socialData: any) => {
-  console.log('[linkSocialAccount] Called with:', { userId, socialData });
-  
+  console.log("[linkSocialAccount] Called with:", { userId, socialData });
+
   const query = `
     INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, $6, NOW())
@@ -2998,21 +3050,21 @@ export const linkSocialAccount = async (userId: string, socialData: any) => {
   `;
   const values = [
     uuidv4(), // ID를 명시적으로 생성
-    userId, 
-    socialData.provider, 
-    socialData.providerId, 
-    socialData.accessToken || null, 
-    socialData.refreshToken || null
+    userId,
+    socialData.provider,
+    socialData.providerId,
+    socialData.accessToken || null,
+    socialData.refreshToken || null,
   ];
-  
-  console.log('[linkSocialAccount] Query values:', values);
-  
+
+  console.log("[linkSocialAccount] Query values:", values);
+
   try {
     const result = await pool.query(query, values);
-    console.log('[linkSocialAccount] Success:', result.rows[0]);
+    console.log("[linkSocialAccount] Success:", result.rows[0]);
     return result.rows[0];
   } catch (error) {
-    console.error('[linkSocialAccount] Error:', error);
+    console.error("[linkSocialAccount] Error:", error);
     throw error;
   }
 };
@@ -3037,32 +3089,39 @@ export const createSocialUser = async (userData: any) => {
     accessToken: userData.accessToken,
     refreshToken: userData.refreshToken,
   });
-  
+
   // 마지막 로그인 시간 업데이트
   await updateLastLogin(user.id);
 
   return user;
 };
 
-export const isUserProfileComplete = async (userId: string, userType: string) => {
-  if (userType === 'VETERINARIAN' || userType === 'VETERINARY_STUDENT' || userType === 'veterinary-student') {
+export const isUserProfileComplete = async (
+  userId: string,
+  userType: string
+) => {
+  if (
+    userType === "VETERINARIAN" ||
+    userType === "VETERINARY_STUDENT" ||
+    userType === "veterinary-student"
+  ) {
     // Check if the user has basic profile information in the users table
     const profileQuery = `
       SELECT id, nickname, "birthDate", "realName" 
       FROM users 
       WHERE id = $1 AND "isActive" = true
     `;
-    
+
     const profileResult = await pool.query(profileQuery, [userId]);
-    
+
     if (profileResult.rows.length === 0) {
       return false;
     }
-    
+
     const user = profileResult.rows[0];
     // Profile is complete if user has nickname and realName (birthDate is optional)
     return !!(user.nickname && user.realName);
-  } else if (userType === 'HOSPITAL' || userType === 'hospital') {
+  } else if (userType === "HOSPITAL" || userType === "hospital") {
     const query = `SELECT id FROM hospitals WHERE user_id = $1 OR "userId" = $1`;
     const result = await pool.query(query, [userId]);
     return result.rows.length > 0;
@@ -3070,7 +3129,10 @@ export const isUserProfileComplete = async (userId: string, userType: string) =>
   return false;
 };
 
-export const getSocialUserInfo = async (provider: string, accessToken: string) => {
+export const getSocialUserInfo = async (
+  provider: string,
+  accessToken: string
+) => {
   // 소셜 로그인 제공자별 사용자 정보 조회 로직
   return { provider, id: "sample_id", email: "sample@email.com" };
 };
@@ -3110,13 +3172,13 @@ export const getApplicationById = async (applicationId: string) => {
     WHERE a.id = $1
   `;
   const result = await pool.query(query, [applicationId]);
-  
+
   if (result.rows.length === 0) {
     return null;
   }
-  
+
   const application = result.rows[0];
-  
+
   // 구조를 맞춰서 반환
   return {
     id: application.id,
@@ -3131,8 +3193,8 @@ export const getApplicationById = async (applicationId: string) => {
       hospitalId: application.hospitalId,
       hospital: {
         id: application.hospitalId,
-        name: application.hospital_name
-      }
+        name: application.hospital_name,
+      },
     },
     veterinarian: {
       id: application.veterinarianId,
@@ -3140,8 +3202,8 @@ export const getApplicationById = async (applicationId: string) => {
       email: application.veterinarian_email,
       phone: application.veterinarian_phone,
       realName: application.veterinarian_realName,
-      resumeId: application.resume_id
-    }
+      resumeId: application.resume_id,
+    },
   };
 };
 
@@ -3180,7 +3242,10 @@ export const verifyPassword = async (password: string, hash: string) => {
   return password === hash;
 };
 
-export const updateUserPassword = async (userId: string, newPasswordHash: string) => {
+export const updateUserPassword = async (
+  userId: string,
+  newPasswordHash: string
+) => {
   const query = `UPDATE users SET "passwordHash" = $1 WHERE id = $2`;
   const result = await pool.query(query, [newPasswordHash, userId]);
   return (result.rowCount ?? 0) > 0;
@@ -3212,19 +3277,28 @@ export const removeJobBookmark = async (userId: string, jobId: string) => {
   return (result.rowCount ?? 0) > 0;
 };
 
-export const checkLectureBookmarkExists = async (userId: string, lectureId: string) => {
+export const checkLectureBookmarkExists = async (
+  userId: string,
+  lectureId: string
+) => {
   const query = `SELECT id FROM lecture_bookmarks WHERE user_id = $1 AND lecture_id = $2 AND deleted_at IS NULL`;
   const result = await pool.query(query, [userId, lectureId]);
   return result.rows.length > 0;
 };
 
-export const createLectureBookmark = async (userId: string, lectureId: string) => {
+export const createLectureBookmark = async (
+  userId: string,
+  lectureId: string
+) => {
   const query = `INSERT INTO lecture_bookmarks (user_id, lecture_id) VALUES ($1, $2) RETURNING *`;
   const result = await pool.query(query, [userId, lectureId]);
   return result.rows[0];
 };
 
-export const removeLectureBookmark = async (userId: string, lectureId: string) => {
+export const removeLectureBookmark = async (
+  userId: string,
+  lectureId: string
+) => {
   const query = `UPDATE lecture_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND lecture_id = $2`;
   const result = await pool.query(query, [userId, lectureId]);
   return (result.rowCount ?? 0) > 0;
@@ -3268,30 +3342,31 @@ export const getLectureCommentReplies = async (commentId: string) => {
     ORDER BY lc."createdAt" ASC
   `;
   const result = await pool.query(query, [commentId]);
-  
+
   // 답글도 병원명 우선 표시 로직 적용
   return result.rows.map((reply: any) => {
     let displayName;
-    if (reply.userType === 'HOSPITAL') {
+    if (reply.userType === "HOSPITAL") {
       displayName = reply.hospitalName || "병원명 미설정";
       console.log(`Reply - Using hospitalName: ${displayName}`);
-    } else if (reply.userType === 'VETERINARIAN') {
+    } else if (reply.userType === "VETERINARIAN") {
       displayName = reply.vet_real_name || "익명 사용자";
-    } else if (reply.userType === 'VETERINARY_STUDENT') {
+    } else if (reply.userType === "VETERINARY_STUDENT") {
       displayName = reply.vs_real_name || "익명 사용자";
     } else {
       displayName = "익명 사용자";
     }
 
-    const profileImage = reply.userType === 'HOSPITAL' && reply.hospitalLogo
-      ? reply.hospitalLogo
-      : reply.author_profile_image || null;
+    const profileImage =
+      reply.userType === "HOSPITAL" && reply.hospitalLogo
+        ? reply.hospitalLogo
+        : reply.author_profile_image || null;
 
     return {
       ...reply,
       author_name: displayName,
       author_display_name: displayName,
-      author_profile_image: profileImage
+      author_profile_image: profileImage,
     };
   });
 };
@@ -3302,19 +3377,30 @@ export const createLectureComment = async (commentData: {
   content: string;
   parentId?: string;
 }) => {
-  const commentId = `comment_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-  
+  const commentId = `comment_${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(2)}`;
+
   const query = `
     INSERT INTO lecture_comments (id, "lectureId", "userId", "parentId", content, "createdAt", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
     RETURNING *
   `;
-  const values = [commentId, commentData.lectureId, commentData.userId, commentData.parentId || null, commentData.content];
+  const values = [
+    commentId,
+    commentData.lectureId,
+    commentData.userId,
+    commentData.parentId || null,
+    commentData.content,
+  ];
   const result = await pool.query(query, values);
   return result.rows[0];
 };
 
-export const updateLectureComment = async (commentId: string, content: string) => {
+export const updateLectureComment = async (
+  commentId: string,
+  content: string
+) => {
   const query = `
     UPDATE lecture_comments 
     SET content = $1, "updatedAt" = NOW() 
@@ -3356,21 +3442,21 @@ export const getForumById = async (forumId: string) => {
     WHERE fp.id = $1 AND fp."deletedAt" IS NULL
   `;
   const result = await pool.query(query, [forumId]);
-  
+
   if (!result.rows[0]) return null;
-  
+
   const post = result.rows[0];
   let displayName;
   let profileImage = post.author_profile_image;
-  
-  if (post.userType === 'HOSPITAL') {
+
+  if (post.userType === "HOSPITAL") {
     // 병원 계정: hospitalName을 무조건 우선 사용
     displayName = post.hospitalName || "병원명 미설정";
     profileImage = post.hospitalLogo || post.author_profile_image;
     console.log(`Forum post - Using hospitalName: ${displayName}`);
-  } else if (post.userType === 'VETERINARIAN') {
+  } else if (post.userType === "VETERINARIAN") {
     displayName = post.vet_real_name || "익명 사용자";
-  } else if (post.userType === 'VETERINARY_STUDENT') {
+  } else if (post.userType === "VETERINARY_STUDENT") {
     displayName = post.vs_real_name || "익명 사용자";
   } else {
     displayName = "익명 사용자";
@@ -3379,13 +3465,19 @@ export const getForumById = async (forumId: string) => {
   return {
     ...post,
     author_display_name: displayName,
-    author_profile_image: profileImage
+    author_profile_image: profileImage,
   };
 };
 
 // 범용 조회수 증가 함수
 export const incrementViewCount = async (
-  contentType: 'forum' | 'job' | 'lecture' | 'resume' | 'transfer' | 'detailed_resume',
+  contentType:
+    | "forum"
+    | "job"
+    | "lecture"
+    | "resume"
+    | "transfer"
+    | "detailed_resume",
   contentId: string,
   userIdentifier: string,
   userId?: string
@@ -3399,12 +3491,12 @@ export const incrementViewCount = async (
       AND (user_id = $3 OR user_identifier = $4)
       AND created_at > NOW() - INTERVAL '24 hours'
     `;
-    
+
     const existingView = await pool.query(checkQuery, [
       contentType,
-      contentId, 
-      userId || null, 
-      userIdentifier
+      contentId,
+      userId || null,
+      userIdentifier,
     ]);
 
     // 이미 24시간 내에 조회한 기록이 있으면 조회수 증가하지 않음
@@ -3413,31 +3505,31 @@ export const incrementViewCount = async (
     }
 
     // 트랜잭션 시작
-    await pool.query('BEGIN');
+    await pool.query("BEGIN");
 
     // 콘텐츠 유형에 따른 테이블명과 컬럼명 매핑
     const tableMap = {
-      forum: 'forum_posts',
-      job: 'jobs', 
-      lecture: 'lectures',
-      resume: 'users', // Changed from veterinarian_profiles to users
-      transfer: 'transfers',
-      detailed_resume: 'detailed_resumes'
+      forum: "forum_posts",
+      job: "jobs",
+      lecture: "lectures",
+      resume: "users", // Changed from veterinarian_profiles to users
+      transfer: "transfers",
+      detailed_resume: "detailed_resumes",
     };
 
     const tableName = tableMap[contentType];
-    
+
     // 조회수 증가 (테이블에 따라 컬럼명 다르게 처리)
     let updateQuery: string;
-    if (contentType === 'forum') {
+    if (contentType === "forum") {
       updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
-    } else if (contentType === 'detailed_resume') {
+    } else if (contentType === "detailed_resume") {
       updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
-    } else if (contentType === 'transfer') {
+    } else if (contentType === "transfer") {
       updateQuery = `UPDATE ${tableName} SET views = views + 1 WHERE id = $1`;
-    } else if (contentType === 'job') {
+    } else if (contentType === "job") {
       updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
-    } else if (contentType === 'lecture') {
+    } else if (contentType === "lecture") {
       updateQuery = `UPDATE ${tableName} SET "viewCount" = "viewCount" + 1 WHERE id = $1`;
     } else {
       updateQuery = `UPDATE ${tableName} SET view_count = view_count + 1 WHERE id = $1`;
@@ -3445,18 +3537,25 @@ export const incrementViewCount = async (
     await pool.query(updateQuery, [contentId]);
 
     // 조회 기록 저장 (ID는 Prisma의 cuid() 기본값을 사용)
-    const { createId } = await import('@paralleldrive/cuid2');
+    const { createId } = await import("@paralleldrive/cuid2");
     const logId = createId();
     const logQuery = `
       INSERT INTO view_logs (id, content_type, content_id, user_id, user_identifier, ip_address, created_at)
       VALUES ($1, $2, $3, $4, $5, $6, NOW())
     `;
-    await pool.query(logQuery, [logId, contentType, contentId, userId || null, userIdentifier, userIdentifier]);
+    await pool.query(logQuery, [
+      logId,
+      contentType,
+      contentId,
+      userId || null,
+      userIdentifier,
+      userIdentifier,
+    ]);
 
-    await pool.query('COMMIT');
+    await pool.query("COMMIT");
     return true;
   } catch (error) {
-    await pool.query('ROLLBACK');
+    await pool.query("ROLLBACK");
     console.error(`Error incrementing ${contentType} view count:`, error);
     return false;
   }
@@ -3464,11 +3563,11 @@ export const incrementViewCount = async (
 
 // 기존 함수들은 새로운 범용 함수를 사용하도록 수정
 export const incrementForumViewCount = async (
-  forumId: string, 
+  forumId: string,
   userIdentifier: string,
   userId?: string
 ) => {
-  return incrementViewCount('forum', forumId, userIdentifier, userId);
+  return incrementViewCount("forum", forumId, userIdentifier, userId);
 };
 
 export const incrementDetailedResumeViewCount = async (
@@ -3476,7 +3575,12 @@ export const incrementDetailedResumeViewCount = async (
   userIdentifier: string,
   userId?: string
 ): Promise<boolean> => {
-  return incrementViewCount('detailed_resume', resumeId, userIdentifier, userId);
+  return incrementViewCount(
+    "detailed_resume",
+    resumeId,
+    userIdentifier,
+    userId
+  );
 };
 
 export const getForumComments = async (forumId: string) => {
@@ -3500,20 +3604,20 @@ export const getForumComments = async (forumId: string) => {
     ORDER BY fc."createdAt" ASC
   `;
   const result = await pool.query(query, [forumId]);
-  
+
   // 병원명 우선 표시 로직 적용
   return result.rows.map((comment: any) => {
     let displayName;
     let profileImage = comment.author_profile_image;
-    
-    if (comment.userType === 'HOSPITAL') {
+
+    if (comment.userType === "HOSPITAL") {
       // 병원 계정: hospitalName을 무조건 우선 사용
       displayName = comment.hospitalName || "병원명 미설정";
       profileImage = comment.hospitalLogo || comment.author_profile_image;
       console.log(`Forum comment - Using hospitalName: ${displayName}`);
-    } else if (comment.userType === 'VETERINARIAN') {
+    } else if (comment.userType === "VETERINARIAN") {
       displayName = comment.vet_real_name || "익명 사용자";
-    } else if (comment.userType === 'VETERINARY_STUDENT') {
+    } else if (comment.userType === "VETERINARY_STUDENT") {
       displayName = comment.vs_real_name || "익명 사용자";
     } else {
       displayName = "익명 사용자";
@@ -3522,7 +3626,7 @@ export const getForumComments = async (forumId: string) => {
     return {
       ...comment,
       author_display_name: displayName,
-      author_profile_image: profileImage
+      author_profile_image: profileImage,
     };
   });
 };
@@ -3534,35 +3638,40 @@ export const createForumComment = async (commentData: {
   content: string;
   parentId?: string;
 }) => {
-  const commentId = `comment_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-  
+  const commentId = `comment_${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(2)}`;
+
   const query = `
     INSERT INTO forum_comments (id, forum_id, user_id, parent_id, content, "createdAt", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
     RETURNING *
   `;
-  
+
   const values = [
     commentId,
     commentData.forumId,
     commentData.userId,
     commentData.parentId || null,
-    commentData.content
+    commentData.content,
   ];
-  
+
   const result = await pool.query(query, values);
   return result.rows[0];
 };
 
 // 댓글 수정
-export const updateForumComment = async (commentId: string, content: string) => {
+export const updateForumComment = async (
+  commentId: string,
+  content: string
+) => {
   const query = `
     UPDATE forum_comments 
     SET content = $1, "updatedAt" = NOW() 
     WHERE id = $2 AND "deletedAt" IS NULL
     RETURNING *
   `;
-  
+
   const result = await pool.query(query, [content, commentId]);
   return result.rows[0] || null;
 };
@@ -3575,7 +3684,7 @@ export const deleteForumComment = async (commentId: string) => {
     WHERE id = $1 AND "deletedAt" IS NULL
     RETURNING id
   `;
-  
+
   const result = await pool.query(query, [commentId]);
   return (result.rowCount ?? 0) > 0;
 };
@@ -3595,7 +3704,7 @@ export const getForumCommentById = async (commentId: string) => {
     LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE fc.id = $1 AND fc."deletedAt" IS NULL
   `;
-  
+
   const result = await pool.query(query, [commentId]);
   return result.rows[0];
 };
@@ -3607,11 +3716,11 @@ export const updateForum = async (forumId: string, updateData: any) => {
     WHERE id = $5
   `;
   const result = await pool.query(query, [
-    updateData.title, 
-    updateData.content, 
-    updateData.animalType, 
-    updateData.medicalField, 
-    forumId
+    updateData.title,
+    updateData.content,
+    updateData.animalType,
+    updateData.medicalField,
+    forumId,
   ]);
   return (result.rowCount ?? 0) > 0;
 };
@@ -3660,14 +3769,16 @@ export const getForumsWithPagination = async (page = 1, limit = 10) => {
 };
 
 export const createForum = async (forumData: any) => {
-  const forumId = `forum_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-  
+  const forumId = `forum_${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(2)}`;
+
   const query = `
     INSERT INTO forum_posts (id, "userId", title, content, "animalType", "medicalField", "viewCount", "createdAt", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
     RETURNING *
   `;
-  
+
   const values = [
     forumId,
     forumData.userId,
@@ -3675,9 +3786,9 @@ export const createForum = async (forumData: any) => {
     forumData.content,
     forumData.animalType,
     forumData.medicalField,
-    0
+    0,
   ];
-  
+
   const result = await pool.query(query, values);
   return result.rows[0];
 };
@@ -3710,36 +3821,47 @@ export const getHospitalEvaluationById = async (evaluationId: string) => {
   return result.rows[0] || null;
 };
 
-export const updateHospitalEvaluation = async (evaluationId: string, updateData: any) => {
+export const updateHospitalEvaluation = async (
+  evaluationId: string,
+  updateData: any
+) => {
   // Prepare the combined comment field with ratings and comments data (same format as resume evaluation)
-  let combinedComment = '';
-  
+  let combinedComment = "";
+
   if (updateData.ratings && updateData.comments) {
     // Convert ratings to integers for storage if they're in decimal format
     const ratingsForStorage = {
-      facilities: parseFloat(updateData.ratings.facilities) <= 5 
-        ? Math.round(parseFloat(updateData.ratings.facilities) * 10) 
-        : Math.round(parseFloat(updateData.ratings.facilities)),
-      staff: parseFloat(updateData.ratings.staff) <= 5 
-        ? Math.round(parseFloat(updateData.ratings.staff) * 10) 
-        : Math.round(parseFloat(updateData.ratings.staff)),
-      service: parseFloat(updateData.ratings.service) <= 5 
-        ? Math.round(parseFloat(updateData.ratings.service) * 10) 
-        : Math.round(parseFloat(updateData.ratings.service))
+      facilities:
+        parseFloat(updateData.ratings.facilities) <= 5
+          ? Math.round(parseFloat(updateData.ratings.facilities) * 10)
+          : Math.round(parseFloat(updateData.ratings.facilities)),
+      staff:
+        parseFloat(updateData.ratings.staff) <= 5
+          ? Math.round(parseFloat(updateData.ratings.staff) * 10)
+          : Math.round(parseFloat(updateData.ratings.staff)),
+      service:
+        parseFloat(updateData.ratings.service) <= 5
+          ? Math.round(parseFloat(updateData.ratings.service) * 10)
+          : Math.round(parseFloat(updateData.ratings.service)),
     };
-    
+
     const ratingsJson = JSON.stringify(ratingsForStorage);
     const commentsJson = JSON.stringify(updateData.comments);
     combinedComment = `평가: ${ratingsJson} | 코멘트: ${commentsJson}`;
   } else if (updateData.comment) {
     combinedComment = updateData.comment;
   }
-  
+
   const query = `UPDATE hospital_evaluations SET rating = $1, comment = $2, "updatedAt" = NOW() WHERE id = $3 RETURNING *`;
   // Convert rating to integer for storage if it's in decimal format
   const ratingVal = parseFloat(updateData.rating);
-  const ratingAsInteger = ratingVal <= 5 ? Math.round(ratingVal * 10) : Math.round(ratingVal);
-  const result = await pool.query(query, [ratingAsInteger, combinedComment, evaluationId]);
+  const ratingAsInteger =
+    ratingVal <= 5 ? Math.round(ratingVal * 10) : Math.round(ratingVal);
+  const result = await pool.query(query, [
+    ratingAsInteger,
+    combinedComment,
+    evaluationId,
+  ]);
   return result.rows[0];
 };
 
@@ -3763,102 +3885,134 @@ export const getHospitalEvaluations = async (hospitalId: string) => {
     ORDER BY he."createdAt" DESC
   `;
   const result = await pool.query(query, [hospitalId]);
-  
-  return result.rows.map(row => {
+
+  return result.rows.map((row) => {
     // Parse JSON data from combined comment field
     let ratings = { facilities: 0, staff: 0, service: 0 };
-    let comments = { facilities: '', staff: '', service: '' };
-    
+    let comments = { facilities: "", staff: "", service: "" };
+
     try {
-      if (row.comment && row.comment.includes('평가: ') && row.comment.includes(' | 코멘트: ')) {
+      if (
+        row.comment &&
+        row.comment.includes("평가: ") &&
+        row.comment.includes(" | 코멘트: ")
+      ) {
         // Parse structured comment in same format as resume evaluation
-        const parts = row.comment.split(' | 코멘트: ');
+        const parts = row.comment.split(" | 코멘트: ");
         if (parts.length === 2) {
-          const ratingsStr = parts[0].replace('평가: ', '');
+          const ratingsStr = parts[0].replace("평가: ", "");
           const commentsStr = parts[1];
-          
+
           try {
             // Clean the strings before parsing to remove control characters
-            const cleanRatingsStr = ratingsStr.replace(/[\u0000-\u001F\u007F]/g, '');
-            const cleanCommentsStr = commentsStr.replace(/[\u0000-\u001F\u007F]/g, '');
-            
+            const cleanRatingsStr = ratingsStr.replace(
+              /[\u0000-\u001F\u007F]/g,
+              ""
+            );
+            const cleanCommentsStr = commentsStr.replace(
+              /[\u0000-\u001F\u007F]/g,
+              ""
+            );
+
             const parsedRatings = JSON.parse(cleanRatingsStr);
             const parsedComments = JSON.parse(cleanCommentsStr);
-            
+
             // Map the parsed data to expected structure
-            if (parsedRatings && typeof parsedRatings === 'object') {
+            if (parsedRatings && typeof parsedRatings === "object") {
               // Check if values are already in correct format (1-5) or need conversion (10-50)
               const facilitiesVal = parseFloat(parsedRatings.facilities) || 0;
               const staffVal = parseFloat(parsedRatings.staff) || 0;
               const serviceVal = parseFloat(parsedRatings.service) || 0;
-              
+
               ratings = {
-                facilities: facilitiesVal > 5 ? facilitiesVal / 10 : facilitiesVal,
+                facilities:
+                  facilitiesVal > 5 ? facilitiesVal / 10 : facilitiesVal,
                 staff: staffVal > 5 ? staffVal / 10 : staffVal,
-                service: serviceVal > 5 ? serviceVal / 10 : serviceVal
+                service: serviceVal > 5 ? serviceVal / 10 : serviceVal,
               };
             }
-            
-            if (parsedComments && typeof parsedComments === 'object') {
+
+            if (parsedComments && typeof parsedComments === "object") {
               comments = {
-                facilities: parsedComments.facilities || '',
-                staff: parsedComments.staff || '',
-                service: parsedComments.service || ''
+                facilities: parsedComments.facilities || "",
+                staff: parsedComments.staff || "",
+                service: parsedComments.service || "",
               };
             }
           } catch (jsonError) {
-            console.log('JSON 파싱 실패:', jsonError);
-            console.log('Original ratingsStr:', ratingsStr);
-            console.log('Original commentsStr:', commentsStr);
-            
+            console.log("JSON 파싱 실패:", jsonError);
+            console.log("Original ratingsStr:", ratingsStr);
+            console.log("Original commentsStr:", commentsStr);
+
             // Fallback: try to extract data manually if JSON parsing fails
             try {
-              if (ratingsStr.includes('{') && ratingsStr.includes('}')) {
-                const facilityMatch = ratingsStr.match(/"facilities"?\s*:\s*([0-9.]+)/);
+              if (ratingsStr.includes("{") && ratingsStr.includes("}")) {
+                const facilityMatch = ratingsStr.match(
+                  /"facilities"?\s*:\s*([0-9.]+)/
+                );
                 const staffMatch = ratingsStr.match(/"staff"?\s*:\s*([0-9.]+)/);
-                const serviceMatch = ratingsStr.match(/"service"?\s*:\s*([0-9.]+)/);
-                
+                const serviceMatch = ratingsStr.match(
+                  /"service"?\s*:\s*([0-9.]+)/
+                );
+
                 if (facilityMatch || staffMatch || serviceMatch) {
-                  const facilitiesVal = facilityMatch ? parseFloat(facilityMatch[1]) : 0;
+                  const facilitiesVal = facilityMatch
+                    ? parseFloat(facilityMatch[1])
+                    : 0;
                   const staffVal = staffMatch ? parseFloat(staffMatch[1]) : 0;
-                  const serviceVal = serviceMatch ? parseFloat(serviceMatch[1]) : 0;
-                  
+                  const serviceVal = serviceMatch
+                    ? parseFloat(serviceMatch[1])
+                    : 0;
+
                   ratings = {
-                    facilities: facilitiesVal > 5 ? facilitiesVal / 10 : facilitiesVal,
+                    facilities:
+                      facilitiesVal > 5 ? facilitiesVal / 10 : facilitiesVal,
                     staff: staffVal > 5 ? staffVal / 10 : staffVal,
-                    service: serviceVal > 5 ? serviceVal / 10 : serviceVal
+                    service: serviceVal > 5 ? serviceVal / 10 : serviceVal,
                   };
                 }
               }
-              
-              if (commentsStr.includes('{') && commentsStr.includes('}')) {
-                const facilityCommentMatch = commentsStr.match(/"facilities"?\s*:\s*"([^"]*?)"/);
-                const staffCommentMatch = commentsStr.match(/"staff"?\s*:\s*"([^"]*?)"/);
-                const serviceCommentMatch = commentsStr.match(/"service"?\s*:\s*"([^"]*?)"/);
-                
-                if (facilityCommentMatch || staffCommentMatch || serviceCommentMatch) {
+
+              if (commentsStr.includes("{") && commentsStr.includes("}")) {
+                const facilityCommentMatch = commentsStr.match(
+                  /"facilities"?\s*:\s*"([^"]*?)"/
+                );
+                const staffCommentMatch = commentsStr.match(
+                  /"staff"?\s*:\s*"([^"]*?)"/
+                );
+                const serviceCommentMatch = commentsStr.match(
+                  /"service"?\s*:\s*"([^"]*?)"/
+                );
+
+                if (
+                  facilityCommentMatch ||
+                  staffCommentMatch ||
+                  serviceCommentMatch
+                ) {
                   comments = {
-                    facilities: facilityCommentMatch ? facilityCommentMatch[1] : '',
-                    staff: staffCommentMatch ? staffCommentMatch[1] : '',
-                    service: serviceCommentMatch ? serviceCommentMatch[1] : ''
+                    facilities: facilityCommentMatch
+                      ? facilityCommentMatch[1]
+                      : "",
+                    staff: staffCommentMatch ? staffCommentMatch[1] : "",
+                    service: serviceCommentMatch ? serviceCommentMatch[1] : "",
                   };
                 }
               }
             } catch (fallbackError) {
-              console.log('Fallback parsing also failed:', fallbackError);
+              console.log("Fallback parsing also failed:", fallbackError);
             }
           }
         }
       }
     } catch (error) {
-      console.log('평가 데이터 파싱 오류:', error);
+      console.log("평가 데이터 파싱 오류:", error);
     }
 
     return {
       id: row.id,
       hospitalId: row.hospitalId,
       evaluatorId: row.evaluatorId,
-      evaluatorName: row.evaluatorName || '익명',
+      evaluatorName: row.evaluatorName || "익명",
       rating: (() => {
         const ratingVal = parseFloat(row.rating) || 0;
         return ratingVal > 5 ? ratingVal / 10 : ratingVal; // Only convert if it's > 5 (stored as integer)
@@ -3867,7 +4021,7 @@ export const getHospitalEvaluations = async (hospitalId: string) => {
       comments,
       comment: row.comment,
       createdAt: row.createdAt,
-      updatedAt: row.updatedAt
+      updatedAt: row.updatedAt,
     };
   });
 };
@@ -3879,27 +4033,30 @@ export const createHospitalEvaluation = async (evaluationData: any) => {
     WHERE "hospitalId" = $1 AND "userId" = $2
   `;
   const existingResult = await pool.query(existingEvaluationQuery, [
-    evaluationData.hospitalId, 
-    evaluationData.evaluatorId
+    evaluationData.hospitalId,
+    evaluationData.evaluatorId,
   ]);
 
   // Prepare the combined comment field with ratings and comments data (same format as resume evaluation)
-  let combinedComment = '';
-  
+  let combinedComment = "";
+
   if (evaluationData.ratings && evaluationData.comments) {
     // Convert ratings to integers for storage if they're in decimal format
     const ratingsForStorage = {
-      facilities: parseFloat(evaluationData.ratings.facilities) <= 5 
-        ? Math.round(parseFloat(evaluationData.ratings.facilities) * 10) 
-        : Math.round(parseFloat(evaluationData.ratings.facilities)),
-      staff: parseFloat(evaluationData.ratings.staff) <= 5 
-        ? Math.round(parseFloat(evaluationData.ratings.staff) * 10) 
-        : Math.round(parseFloat(evaluationData.ratings.staff)),
-      service: parseFloat(evaluationData.ratings.service) <= 5 
-        ? Math.round(parseFloat(evaluationData.ratings.service) * 10) 
-        : Math.round(parseFloat(evaluationData.ratings.service))
+      facilities:
+        parseFloat(evaluationData.ratings.facilities) <= 5
+          ? Math.round(parseFloat(evaluationData.ratings.facilities) * 10)
+          : Math.round(parseFloat(evaluationData.ratings.facilities)),
+      staff:
+        parseFloat(evaluationData.ratings.staff) <= 5
+          ? Math.round(parseFloat(evaluationData.ratings.staff) * 10)
+          : Math.round(parseFloat(evaluationData.ratings.staff)),
+      service:
+        parseFloat(evaluationData.ratings.service) <= 5
+          ? Math.round(parseFloat(evaluationData.ratings.service) * 10)
+          : Math.round(parseFloat(evaluationData.ratings.service)),
     };
-    
+
     const ratingsJson = JSON.stringify(ratingsForStorage);
     const commentsJson = JSON.stringify(evaluationData.comments);
     combinedComment = `평가: ${ratingsJson} | 코멘트: ${commentsJson}`;
@@ -3909,7 +4066,8 @@ export const createHospitalEvaluation = async (evaluationData: any) => {
 
   // Convert rating to integer for storage if it's in decimal format
   const ratingVal = parseFloat(evaluationData.rating);
-  const ratingAsInteger = ratingVal <= 5 ? Math.round(ratingVal * 10) : Math.round(ratingVal);
+  const ratingAsInteger =
+    ratingVal <= 5 ? Math.round(ratingVal * 10) : Math.round(ratingVal);
 
   if (existingResult.rows.length > 0) {
     // Update existing evaluation (restore if deleted)
@@ -3920,17 +4078,29 @@ export const createHospitalEvaluation = async (evaluationData: any) => {
       WHERE id = $3
       RETURNING *
     `;
-    const result = await pool.query(updateQuery, [ratingAsInteger, combinedComment, existingId]);
+    const result = await pool.query(updateQuery, [
+      ratingAsInteger,
+      combinedComment,
+      existingId,
+    ]);
     return result.rows[0];
   } else {
     // Create new evaluation
-    const evaluationId = `evaluation_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const evaluationId = `evaluation_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2)}`;
     const insertQuery = `
       INSERT INTO hospital_evaluations (id, "hospitalId", "userId", rating, comment, "createdAt", "updatedAt")
       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
       RETURNING *
     `;
-    const values = [evaluationId, evaluationData.hospitalId, evaluationData.evaluatorId, ratingAsInteger, combinedComment];
+    const values = [
+      evaluationId,
+      evaluationData.hospitalId,
+      evaluationData.evaluatorId,
+      ratingAsInteger,
+      combinedComment,
+    ];
     const result = await pool.query(insertQuery, values);
     return result.rows[0];
   }
@@ -3943,9 +4113,9 @@ export const getHospitalById = async (hospitalId: string) => {
     WHERE u.id = $1 AND u."deletedAt" IS NULL AND u."userType" = 'HOSPITAL'
   `;
   const result = await pool.query(query, [hospitalId]);
-  
+
   if (!result.rows[0]) return null;
-  
+
   // Get hospital images
   const imagesQuery = `
     SELECT id, "imageUrl"
@@ -3954,16 +4124,23 @@ export const getHospitalById = async (hospitalId: string) => {
     ORDER BY "createdAt" ASC
   `;
   const imagesResult = await pool.query(imagesQuery, [result.rows[0].id]);
-  
+
   return {
     ...result.rows[0],
-    images: imagesResult.rows
+    images: imagesResult.rows,
   };
 };
 
-export const updateHospitalProfile = async (hospitalId: string, updateData: any) => {
+export const updateHospitalProfile = async (
+  hospitalId: string,
+  updateData: any
+) => {
   const query = `UPDATE hospital_profiles SET hospital_name = $1, description = $2 WHERE user_id = $3`;
-  const result = await pool.query(query, [updateData.hospitalName, updateData.description, hospitalId]);
+  const result = await pool.query(query, [
+    updateData.hospitalName,
+    updateData.description,
+    hospitalId,
+  ]);
   return (result.rowCount ?? 0) > 0;
 };
 
@@ -3988,18 +4165,21 @@ export const deleteJobPosting = async (jobId: string) => {
 export const getResumeEvaluationById = async (evaluationId: string) => {
   const query = `SELECT * FROM resume_evaluations WHERE id = $1 AND "deletedAt" IS NULL`;
   const result = await pool.query(query, [evaluationId]);
-  
+
   if (result.rows[0]) {
     // userId를 evaluatorId로도 반환하여 일관성 유지
     return {
       ...result.rows[0],
-      evaluatorId: result.rows[0].userId
+      evaluatorId: result.rows[0].userId,
     };
   }
   return null;
 };
 
-export const updateResumeEvaluation = async (evaluationId: string, updateData: any) => {
+export const updateResumeEvaluation = async (
+  evaluationId: string,
+  updateData: any
+) => {
   // JSON 형태로 데이터 저장
   const ratingsJson = JSON.stringify(updateData.ratings || {});
   const commentsJson = JSON.stringify(updateData.comments || {});
@@ -4013,13 +4193,13 @@ export const updateResumeEvaluation = async (evaluationId: string, updateData: a
     WHERE id = $3 AND "deletedAt" IS NULL
     RETURNING *
   `;
-  
+
   const values = [
     Math.round(updateData.overallRating || 0),
     combinedComment,
-    evaluationId
+    evaluationId,
   ];
-  
+
   const result = await pool.query(query, values);
   return result.rows[0];
 };
@@ -4043,25 +4223,37 @@ export const getResumeEvaluations = async (resumeId: string) => {
     ORDER BY re."createdAt" DESC
   `;
   const result = await pool.query(query, [resumeId]);
-  
+
   // Transform the data to match the expected format
-  return result.rows.map(row => {
-    let ratings = { stressManagement: 0, growth: 0, care: 0, documentation: 0, contribution: 0 };
-    let comments = { stressManagement: '', growth: '', care: '', documentation: '', contribution: '' };
-    
+  return result.rows.map((row) => {
+    let ratings = {
+      stressManagement: 0,
+      growth: 0,
+      care: 0,
+      documentation: 0,
+      contribution: 0,
+    };
+    let comments = {
+      stressManagement: "",
+      growth: "",
+      care: "",
+      documentation: "",
+      contribution: "",
+    };
+
     // JSON에서 평가 데이터 파싱 시도
     try {
-      if (row.comment && row.comment.includes('평가: ')) {
-        const parts = row.comment.split(' | 코멘트: ');
+      if (row.comment && row.comment.includes("평가: ")) {
+        const parts = row.comment.split(" | 코멘트: ");
         if (parts.length === 2) {
-          const ratingsStr = parts[0].replace('평가: ', '');
+          const ratingsStr = parts[0].replace("평가: ", "");
           const commentsStr = parts[1];
           ratings = JSON.parse(ratingsStr);
           comments = JSON.parse(commentsStr);
         }
       }
     } catch (error) {
-      console.log('평가 데이터 파싱 오류:', error);
+      console.log("평가 데이터 파싱 오류:", error);
     }
 
     // 평가 항목별 기본값 설정
@@ -4071,7 +4263,7 @@ export const getResumeEvaluations = async (resumeId: string) => {
       growth: ratings.growth || defaultRating,
       care: ratings.care || defaultRating,
       documentation: ratings.documentation || defaultRating,
-      contribution: ratings.contribution || defaultRating
+      contribution: ratings.contribution || defaultRating,
     };
 
     return {
@@ -4079,7 +4271,7 @@ export const getResumeEvaluations = async (resumeId: string) => {
       hospitalId: row.hospital_id,
       hospitalName: row.hospitalName,
       veterinarianId: row.userId,
-      evaluatorId: row.userId,  // 평가자 ID 추가
+      evaluatorId: row.userId, // 평가자 ID 추가
       ratings,
       comments,
       overallRating: row.rating || 0,
@@ -4087,12 +4279,32 @@ export const getResumeEvaluations = async (resumeId: string) => {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       detailedEvaluations: [
-        { category: '스트레스 관리', rating: ratings.stressManagement, comment: comments.stressManagement || '' },
-        { category: '성장 잠재력', rating: ratings.growth, comment: comments.growth || '' },
-        { category: '소통 능력', rating: ratings.care, comment: comments.care || '' },
-        { category: '업무 역량', rating: ratings.documentation, comment: comments.documentation || '' },
-        { category: '협업 능력', rating: ratings.contribution, comment: comments.contribution || '' }
-      ]
+        {
+          category: "스트레스 관리",
+          rating: ratings.stressManagement,
+          comment: comments.stressManagement || "",
+        },
+        {
+          category: "성장 잠재력",
+          rating: ratings.growth,
+          comment: comments.growth || "",
+        },
+        {
+          category: "소통 능력",
+          rating: ratings.care,
+          comment: comments.care || "",
+        },
+        {
+          category: "업무 역량",
+          rating: ratings.documentation,
+          comment: comments.documentation || "",
+        },
+        {
+          category: "협업 능력",
+          rating: ratings.contribution,
+          comment: comments.contribution || "",
+        },
+      ],
     };
   });
 };
@@ -4108,11 +4320,14 @@ export const createResumeEvaluation = async (evaluationData: any) => {
     SELECT id, "deletedAt" FROM resume_evaluations 
     WHERE "resumeId" = $1 AND "userId" = $2
   `;
-  const checkResult = await pool.query(checkQuery, [evaluationData.resumeId, evaluationData.evaluatorId]);
-  
+  const checkResult = await pool.query(checkQuery, [
+    evaluationData.resumeId,
+    evaluationData.evaluatorId,
+  ]);
+
   if (checkResult.rows.length > 0) {
     const existingEval = checkResult.rows[0];
-    
+
     // 삭제된 평가가 있다면 기존 ID로 업데이트
     const updateQuery = `
       UPDATE resume_evaluations SET 
@@ -4124,16 +4339,18 @@ export const createResumeEvaluation = async (evaluationData: any) => {
       WHERE id = $3
       RETURNING *
     `;
-    
+
     const result = await pool.query(updateQuery, [
       Math.round(evaluationData.overallRating || 0),
       combinedComment,
-      existingEval.id
+      existingEval.id,
     ]);
     return result.rows[0];
   } else {
     // 새로운 평가 생성
-    const evaluationId = `eval_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const evaluationId = `eval_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2)}`;
 
     const query = `
       INSERT INTO resume_evaluations (
@@ -4148,15 +4365,15 @@ export const createResumeEvaluation = async (evaluationData: any) => {
       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
       RETURNING *
     `;
-    
+
     const values = [
       evaluationId,
       evaluationData.resumeId,
       evaluationData.evaluatorId,
       Math.round(evaluationData.overallRating || 0),
-      combinedComment
+      combinedComment,
     ];
-    
+
     const result = await pool.query(query, values);
     return result.rows[0];
   }
@@ -4177,7 +4394,7 @@ export const getTransferById = async (transferId: string) => {
   `;
   const result = await pool.query(query, [transferId]);
   if (!result.rows[0]) return null;
-  
+
   const transfer = result.rows[0];
   return {
     ...transfer,
@@ -4185,26 +4402,35 @@ export const getTransferById = async (transferId: string) => {
       id: transfer.userId,
       hospitalName: transfer.hospitalName,
       profileImage: transfer.profileImage,
-      hospitalAddress: transfer.hospitalAddress
+      hospitalAddress: transfer.hospitalAddress,
     },
     latitude: transfer.latitude,
-    longitude: transfer.longitude
+    longitude: transfer.longitude,
   };
 };
 
-export const checkTransferBookmarkExists = async (userId: string, transferId: string) => {
+export const checkTransferBookmarkExists = async (
+  userId: string,
+  transferId: string
+) => {
   const query = `SELECT id FROM transfer_bookmarks WHERE user_id = $1 AND transfer_id = $2 AND "deletedAt" IS NULL`;
   const result = await pool.query(query, [userId, transferId]);
   return result.rows.length > 0;
 };
 
-export const createTransferBookmark = async (userId: string, transferId: string) => {
+export const createTransferBookmark = async (
+  userId: string,
+  transferId: string
+) => {
   const query = `INSERT INTO transfer_bookmarks (user_id, transfer_id) VALUES ($1, $2) RETURNING *`;
   const result = await pool.query(query, [userId, transferId]);
   return result.rows[0];
 };
 
-export const removeTransferBookmark = async (userId: string, transferId: string) => {
+export const removeTransferBookmark = async (
+  userId: string,
+  transferId: string
+) => {
   const query = `UPDATE transfer_bookmarks SET "deletedAt" = NOW() WHERE user_id = $1 AND transfer_id = $2`;
   const result = await pool.query(query, [userId, transferId]);
   return (result.rowCount ?? 0) > 0;
@@ -4215,7 +4441,7 @@ export const incrementTransferViewCount = async (
   userIdentifier: string,
   userId?: string
 ): Promise<boolean> => {
-  return incrementViewCount('transfer', transferId, userIdentifier, userId);
+  return incrementViewCount("transfer", transferId, userIdentifier, userId);
 };
 
 export const getRelatedTransfers = async (transferId: string, limit = 5) => {
@@ -4290,13 +4516,16 @@ export const updateTransfer = async (transferId: string, updateData: any) => {
 
   // Always update updatedAt
   fields.push(`"updatedAt" = NOW()`);
-  
-  if (fields.length === 1) { // Only updatedAt field
+
+  if (fields.length === 1) {
+    // Only updatedAt field
     return false;
   }
 
   values.push(transferId);
-  const query = `UPDATE transfers SET ${fields.join(', ')} WHERE id = $${paramIndex}`;
+  const query = `UPDATE transfers SET ${fields.join(
+    ", "
+  )} WHERE id = $${paramIndex}`;
   const result = await pool.query(query, values);
   return (result.rowCount ?? 0) > 0;
 };
@@ -4323,8 +4552,10 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
 
 export const createLecture = async (lectureData: any) => {
   // Generate unique ID for the lecture
-  const lectureId = `lecture_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-  
+  const lectureId = `lecture_${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(2)}`;
+
   const query = `
     INSERT INTO lectures (id, title, description, "videoUrl", thumbnail, duration, category, tags, "viewCount", instructor, "createdAt", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
@@ -4340,7 +4571,7 @@ export const createLecture = async (lectureData: any) => {
     lectureData.category,
     lectureData.tags || [],
     0, // 초기 조회수
-    lectureData.instructor || "강사명" // instructor 필드 추가
+    lectureData.instructor || "강사명", // instructor 필드 추가
   ];
   const result = await pool.query(query, values);
   return result.rows[0];
@@ -4348,8 +4579,10 @@ export const createLecture = async (lectureData: any) => {
 
 export const createTransfer = async (transferData: any) => {
   // Generate unique ID for the transfer
-  const transferId = `transfer_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-  
+  const transferId = `transfer_${Date.now()}_${Math.random()
+    .toString(36)
+    .substring(2)}`;
+
   const query = `
     INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, price, category, images, documents, status, area, views, "createdAt", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), NOW())
@@ -4369,15 +4602,15 @@ export const createTransfer = async (transferData: any) => {
     transferData.category,
     transferData.images,
     transferData.documents || [], // 문서 파일 URL 배열
-    transferData.status || 'ACTIVE',
+    transferData.status || "ACTIVE",
     transferData.area || null, // 평수 (병원양도일 때만)
-    0 // views 초기값
+    0, // views 초기값
   ];
   const result = await pool.query(query, values);
   return result.rows[0];
 };
 
-// 편집을 위한 양수양도 조회 (disabled 포함)
+// 편집을 위한 양도양수 조회 (disabled 포함)
 export const getTransferByIdForEdit = async (transferId: string) => {
   const query = `
     SELECT t.*, h."hospitalName", u."profileImage", h."hospitalAddress"
@@ -4390,7 +4623,7 @@ export const getTransferByIdForEdit = async (transferId: string) => {
   return result.rows[0] || null;
 };
 
-// 사용자의 임시저장된 양수양도 조회
+// 사용자의 임시저장된 양도양수 조회
 export const getDraftTransferByUserId = async (userId: string) => {
   const query = `
     SELECT * FROM transfers 
@@ -4401,11 +4634,13 @@ export const getDraftTransferByUserId = async (userId: string) => {
     LIMIT 1
   `;
   const result = await pool.query(query, [userId]);
-  
+
   // 필수 필드가 비어있으면 임시저장으로 간주
-  return result.rows.find(row => {
-    return !row.description || !row.base_address || row.price === null;
-  }) || null;
+  return (
+    result.rows.find((row) => {
+      return !row.description || !row.base_address || row.price === null;
+    }) || null
+  );
 };
 
 // ============================================================================
@@ -4414,65 +4649,83 @@ export const getDraftTransferByUserId = async (userId: string) => {
 
 export const softDeleteUser = async (userId: string, reason?: string) => {
   const deletedAt = new Date();
-  
+
   const query = `
     UPDATE users 
     SET deleted_at = $1, withdraw_reason = $2, is_active = false
     WHERE id = $3
     RETURNING *
   `;
-  
+
   const result = await pool.query(query, [deletedAt, reason, userId]);
   return result.rows[0];
 };
 
 export const softDeleteUserData = async (userId: string) => {
   const deletedAt = new Date();
-  
+
   await pool.query("BEGIN");
-  
+
   try {
     // 수의사 프로필 관련 데이터 soft delete
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE veterinarians 
       SET deleted_at = $1 
       WHERE user_id = $2
-    `, [deletedAt, userId]);
-    
+    `,
+      [deletedAt, userId]
+    );
+
     // 병원 프로필 관련 데이터 soft delete
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE hospitals 
       SET deleted_at = $1 
       WHERE user_id = $2
-    `, [deletedAt, userId]);
-    
+    `,
+      [deletedAt, userId]
+    );
+
     // 채용공고 soft delete
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE jobs 
       SET deleted_at = $1 
       WHERE hospital_id IN (SELECT id FROM hospitals WHERE user_id = $2)
-    `, [deletedAt, userId]);
-    
+    `,
+      [deletedAt, userId]
+    );
+
     // 북마크 soft delete
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE job_bookmarks 
       SET deleted_at = $1 
       WHERE user_id = $2
-    `, [deletedAt, userId]);
-    
-    await pool.query(`
+    `,
+      [deletedAt, userId]
+    );
+
+    await pool.query(
+      `
       UPDATE resume_bookmarks 
       SET deleted_at = $1 
       WHERE user_id = $2
-    `, [deletedAt, userId]);
-    
+    `,
+      [deletedAt, userId]
+    );
+
     // 지원서 soft delete
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE applications 
       SET deleted_at = $1 
       WHERE veterinarian_id IN (SELECT id FROM veterinarians WHERE user_id = $2)
-    `, [deletedAt, userId]);
-    
+    `,
+      [deletedAt, userId]
+    );
+
     await pool.query("COMMIT");
   } catch (error) {
     await pool.query("ROLLBACK");
@@ -4487,72 +4740,90 @@ export const findDeletedAccount = async (phone: string) => {
     ORDER BY deleted_at DESC
     LIMIT 1
   `;
-  
+
   const result = await pool.query(query, [phone]);
   return result.rows[0] || null;
 };
 
 export const restoreAccount = async (userId: string) => {
   const restoredAt = new Date();
-  
+
   const query = `
     UPDATE users 
     SET deleted_at = NULL, withdraw_reason = NULL, is_active = true, restored_at = $1
     WHERE id = $2
     RETURNING *
   `;
-  
+
   const result = await pool.query(query, [restoredAt, userId]);
   return result.rows[0];
 };
 
 export const restoreUserData = async (userId: string) => {
   await pool.query("BEGIN");
-  
+
   try {
     // 수의사 프로필 복구
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE veterinarians 
       SET deleted_at = NULL 
       WHERE user_id = $1 AND deleted_at IS NOT NULL
-    `, [userId]);
-    
+    `,
+      [userId]
+    );
+
     // 병원 프로필 복구
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE hospitals 
       SET deleted_at = NULL 
       WHERE user_id = $1 AND deleted_at IS NOT NULL
-    `, [userId]);
-    
+    `,
+      [userId]
+    );
+
     // 채용공고 복구
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE jobs 
       SET deleted_at = NULL 
       WHERE hospital_id IN (SELECT id FROM hospitals WHERE user_id = $1) 
       AND deleted_at IS NOT NULL
-    `, [userId]);
-    
+    `,
+      [userId]
+    );
+
     // 북마크 복구
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE job_bookmarks 
       SET deleted_at = NULL 
       WHERE user_id = $1 AND deleted_at IS NOT NULL
-    `, [userId]);
-    
-    await pool.query(`
+    `,
+      [userId]
+    );
+
+    await pool.query(
+      `
       UPDATE resume_bookmarks 
       SET deleted_at = NULL 
       WHERE user_id = $1 AND deleted_at IS NOT NULL
-    `, [userId]);
-    
+    `,
+      [userId]
+    );
+
     // 지원서 복구
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE applications 
       SET deleted_at = NULL 
       WHERE veterinarian_id IN (SELECT id FROM veterinarians WHERE user_id = $1) 
       AND deleted_at IS NOT NULL
-    `, [userId]);
-    
+    `,
+      [userId]
+    );
+
     await pool.query("COMMIT");
   } catch (error) {
     await pool.query("ROLLBACK");
@@ -4561,23 +4832,27 @@ export const restoreUserData = async (userId: string) => {
 };
 
 export const generateTokens = async (user: any) => {
-  const jwt = require('jsonwebtoken');
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-  
+  const jwt = require("jsonwebtoken");
+  const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
   // 데이터베이스의 대문자 userType을 JWT용 소문자로 변환
-  const normalizedUserType = user.userType === "HOSPITAL" ? "hospital" : 
-                            (user.userType === "VETERINARIAN" || user.userType === "VETERINARY_STUDENT") ? "veterinarian" :
-                            user.userType.toLowerCase();
-  
+  const normalizedUserType =
+    user.userType === "HOSPITAL"
+      ? "hospital"
+      : user.userType === "VETERINARIAN" ||
+        user.userType === "VETERINARY_STUDENT"
+      ? "veterinarian"
+      : user.userType.toLowerCase();
+
   const payload = {
     userId: user.id,
     userType: normalizedUserType,
     email: user.email,
   };
-  
-  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
-  const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
-  
+
+  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });
+
   return {
     accessToken,
     refreshToken,
