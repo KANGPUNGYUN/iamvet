@@ -227,7 +227,7 @@ export default function HospitalTransferBookmarksPage() {
           <div className="mb-6">
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
               <h1 className="text-primary font-text text-[24px] text-bold mb-6">
-                양도양수 찜 목록
+                양도양수 북마크
               </h1>
 
               {/* 검색바 */}

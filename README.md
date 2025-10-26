@@ -108,7 +108,7 @@ src/
 
 - `/dashboard/hospital` - 병원 대시보드
 - `/dashboard/hospital/applicants` - 지원자 정보
-- `/dashboard/hospital/transfer-bookmarks` - 양도양수 찜 목록
+- `/dashboard/hospital/transfer-bookmarks` - 양도양수 북마크
 - `/dashboard/hospital/messages` - 메시지
 - `/dashboard/hospital/profile` - 프로필 설정
 - `/dashboard/hospital/my-jobs` - 올린 공고 관리
@@ -164,9 +164,9 @@ src/
 
 - `GET /api/applications` - 지원내역 목록
 
-### 찜 목록
+### 북마크
 
-- `GET /api/bookmarks` - 찜 목록
+- `GET /api/bookmarks` - 북마크
 
 ### 메시지
 

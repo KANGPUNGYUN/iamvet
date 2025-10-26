@@ -1,3 +1,3 @@
 export function BookmarkList() {
-  return <div>찜 목록</div>;
+  return <div>북마크</div>;
 }

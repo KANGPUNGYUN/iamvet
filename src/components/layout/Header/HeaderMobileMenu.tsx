@@ -151,7 +151,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
         children: [
           {
             id: "transfer-bookmarks",
-            label: "양도양수 찜 목록",
+            label: "양도양수 북마크",
             href: "/dashboard/hospital/transfer-bookmarks",
           },
           {
