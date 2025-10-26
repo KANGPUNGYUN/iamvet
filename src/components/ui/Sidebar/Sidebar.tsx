@@ -9,9 +9,30 @@ import {
   ListIcon,
   BellOutlineIcon,
   UsersIcon,
-  HeartMenuIcon,
+  BookmarkIcon,
   SettingsIcon,
 } from "public/icons";
+
+// 사이드바용 북마크 아이콘 (0.8배 크기로 조정)
+const BookmarkMenuIcon: React.FC<{ currentColor?: string }> = ({
+  currentColor = "currentColor",
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16.8"
+    height="16"
+    viewBox="0 0 21 20"
+    fill="none"
+  >
+    <path
+      d="M17.375 18.75L10.5 14.375L3.625 18.75V4.6875C3.625 4.20707 3.81532 3.74622 4.15273 3.40881C4.49014 3.0714 4.95099 2.88108 5.43142 2.88108H15.5686C16.049 2.88108 16.5099 3.0714 16.8473 3.40881C17.1847 3.74622 17.375 4.20707 17.375 4.6875V18.75Z"
+      stroke={currentColor}
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 // 간단한 펼침/접힘 아이콘 컴포넌트
 const ChevronDownIcon: React.FC<{ className?: string }> = ({
@@ -157,7 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
   const hospitalBookmarkGroup: SidebarMenuGroup = {
     id: "bookmarks",
     label: "북마크 관리",
-    icon: HeartMenuIcon,
+    icon: BookmarkMenuIcon,
     children: [
       {
         id: "transfer-bookmarks",
@@ -181,7 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
   const veterinarianBookmarkGroup: SidebarMenuGroup = {
     id: "bookmarks",
     label: "북마크 관리",
-    icon: HeartMenuIcon,
+    icon: BookmarkMenuIcon,
     children: [
       {
         id: "transfer-bookmarks",
@@ -333,7 +354,9 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
               >
                 <veterinarianBookmarkGroup.icon
                   currentColor={
-                    isGroupActive(veterinarianBookmarkGroup) ? "#FF8796" : "#4F5866"
+                    isGroupActive(veterinarianBookmarkGroup)
+                      ? "#FF8796"
+                      : "#4F5866"
                   }
                 />
                 <span className="ml-3">{veterinarianBookmarkGroup.label}</span>
