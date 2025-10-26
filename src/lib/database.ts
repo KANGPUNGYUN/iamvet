@@ -276,10 +276,32 @@ export const getJobsWithPagination = async (params: any) => {
   }
 
   // 지역 필터
-  if (params.region) {
-    paramCount++;
-    query += ` AND h."hospitalAddress" ILIKE $${paramCount}`;
-    queryParams.push(`%${params.region}%`);
+  if (params.region && params.region !== 'all') {
+    const regionMapping: { [key: string]: string } = {
+      seoul: "서울",
+      busan: "부산", 
+      daegu: "대구",
+      incheon: "인천",
+      gwangju: "광주",
+      daejeon: "대전",
+      ulsan: "울산",
+      gyeonggi: "경기",
+      gangwon: "강원",
+      chungbuk: "충북",
+      chungnam: "충남",
+      jeonbuk: "전북",
+      jeonnam: "전남",
+      gyeongbuk: "경북",
+      gyeongnam: "경남",
+      jeju: "제주"
+    };
+    
+    const koreanRegion = regionMapping[params.region];
+    if (koreanRegion) {
+      paramCount++;
+      query += ` AND h."hospitalAddress" ILIKE $${paramCount}`;
+      queryParams.push(`${koreanRegion}%`);
+    }
   }
 
   // 전공 필터 (배열에서 검색)
@@ -382,10 +404,32 @@ export const getJobsWithPagination = async (params: any) => {
     }
   }
 
-  if (params.region) {
-    countParamCount++;
-    countQuery += ` AND h."hospitalAddress" ILIKE $${countParamCount}`;
-    countParams.push(`%${params.region}%`);
+  if (params.region && params.region !== 'all') {
+    const regionMapping: { [key: string]: string } = {
+      seoul: "서울",
+      busan: "부산", 
+      daegu: "대구",
+      incheon: "인천",
+      gwangju: "광주",
+      daejeon: "대전",
+      ulsan: "울산",
+      gyeonggi: "경기",
+      gangwon: "강원",
+      chungbuk: "충북",
+      chungnam: "충남",
+      jeonbuk: "전북",
+      jeonnam: "전남",
+      gyeongbuk: "경북",
+      gyeongnam: "경남",
+      jeju: "제주"
+    };
+    
+    const koreanRegion = regionMapping[params.region];
+    if (koreanRegion) {
+      countParamCount++;
+      countQuery += ` AND h."hospitalAddress" ILIKE $${countParamCount}`;
+      countParams.push(`${koreanRegion}%`);
+    }
   }
 
   if (params.major) {
