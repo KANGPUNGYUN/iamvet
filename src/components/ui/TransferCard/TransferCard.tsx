@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Tag } from "../Tag";
 import Image from "next/image";
 import Link from "next/link";
+import { formatNumberWithCommas } from "@/utils/validation";
 
 interface TransferCardProps {
   id?: number | string; // transfer ID for navigation
@@ -26,9 +27,15 @@ const formatPrice = (priceString: string | number): string => {
   // 타입 체크 및 문자열 변환
   const priceStr = String(priceString);
 
-  // 이미 "만원" 또는 "원"이 포함된 경우 그대로 반환
+  // 이미 "만원" 또는 "원"이 포함된 경우 숫자 부분을 추출해서 콤마 포맷팅
   if (priceStr.includes("만원") || priceStr.includes("원")) {
-    return priceStr;
+    // "1234만원" -> "1,234만원" 또는 "50000원" -> "50,000원"
+    const match = priceStr.match(/(\d+)(만원|원)/);
+    if (match) {
+      const [, number, unit] = match;
+      return `${formatNumberWithCommas(number)}${unit}`;
+    }
+    return priceStr; // 매치되지 않으면 원본 반환
   }
 
   // 숫자만 추출
@@ -42,14 +49,14 @@ const formatPrice = (priceString: string | number): string => {
     const man = number / 10000;
     // 정수로 떨어지는 경우
     if (number % 10000 === 0) {
-      return `${man.toLocaleString()}만원`;
+      return `${formatNumberWithCommas(man.toString())}만원`;
     }
     // 소수점이 있는 경우 (예: 1.5억)
-    return `${man.toLocaleString()}만원`;
+    return `${formatNumberWithCommas(man.toString())}만원`;
   }
 
   // 만원 미만인 경우 원 단위로 표시
-  return `${number.toLocaleString()}원`;
+  return `${formatNumberWithCommas(number.toString())}원`;
 };
 
 const TransferCard: React.FC<TransferCardProps> = ({
@@ -188,7 +195,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
             {categories === "병원양도" && area > 0 && (
               <>
                 <span className="mx-1">·</span>
-                <span>{area}평</span>
+                <span>{formatNumberWithCommas(area.toString())}평</span>
               </>
             )}
           </div>
@@ -299,7 +306,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
             {categories === "병원양도" && area > 0 && (
               <>
                 <span className="mx-1 flex-shrink-0">·</span>
-                <span className="flex-shrink-0">{area}평</span>
+                <span className="flex-shrink-0">{formatNumberWithCommas(area.toString())}평</span>
               </>
             )}
           </div>

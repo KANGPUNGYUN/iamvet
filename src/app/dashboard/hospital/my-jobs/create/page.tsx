@@ -21,6 +21,7 @@ import {
   positionOptions,
   salaryTypeOptions,
 } from "@/constants/options";
+import { handleNumberInputChange } from "@/utils/validation";
 
 interface JobFormData {
   title: string;
@@ -166,7 +167,7 @@ export default function CreateJobPage() {
       experience: data.experience,
       position: data.position,
       salaryType: data.salaryType,
-      salary: data.salary,
+      salary: data.salary.replace(/,/g, ''),
       workDays: data.workDays,
       isWorkDaysNegotiable: data.isWorkDaysNegotiable,
       workStartTime: data.workStartTime ? formatTime(data.workStartTime) : null,
@@ -346,7 +347,9 @@ export default function CreateJobPage() {
                   <InputBox
                     value={formData.salary}
                     onChange={(value) =>
-                      setFormData({ ...formData, salary: value })
+                      handleNumberInputChange(value, (formattedValue) =>
+                        setFormData({ ...formData, salary: formattedValue })
+                      )
                     }
                     placeholder="급여를 입력해 주세요"
                     suffix="만원"

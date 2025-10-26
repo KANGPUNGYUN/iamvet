@@ -15,6 +15,7 @@ import { PlusIcon, MinusIcon } from "public/icons";
 import { useJobDetail } from "@/hooks/api/useJobDetail";
 import { useAuth } from "@/hooks/api/useAuth";
 import axios from "axios";
+import { handleNumberInputChange, formatNumberWithCommas } from "@/utils/validation";
 
 interface JobFormData {
   title: string;
@@ -156,7 +157,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
           : [jobData.experience].filter(Boolean),
         position: jobData.position || "",
         salaryType: jobData.salaryType || "",
-        salary: jobData.salary || "",
+        salary: formatNumberWithCommas(jobData.salary || ""),
         workDays: Array.isArray(jobData.workDays) ? jobData.workDays : [],
         isWorkDaysNegotiable: jobData.isWorkDaysNegotiable || false,
         workStartTime: timeToObject(jobData.workStartTime),
@@ -486,7 +487,9 @@ export default function EditJobPage({ params }: EditJobPageProps) {
                   <InputBox
                     value={formData.salary}
                     onChange={(value) =>
-                      setFormData({ ...formData, salary: value })
+                      handleNumberInputChange(value, (formattedValue) =>
+                        setFormData({ ...formData, salary: formattedValue })
+                      )
                     }
                     placeholder="급여를 입력해 주세요"
                     suffix="만원"

@@ -25,6 +25,7 @@ import { useHasDetailedResume } from "@/hooks/api/useDetailedResume";
 import { useLikeStore } from "@/stores/likeStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
 import axios from "axios";
+import { formatNumberWithCommas } from "@/utils/validation";
 
 // 토큰 만료 시 localStorage 정리
 const clearExpiredAuth = () => {
@@ -626,7 +627,31 @@ export default function JobDetailPage({
                     급여
                   </span>
                   <span className="font-text text-[16px] text-sub">
-                    {jobData.workConditions?.salary || "협의"}
+                    {(() => {
+                      // workConditions.salary가 이미 포맷된 텍스트인 경우 그대로 사용
+                      if (jobData.workConditions?.salary) {
+                        const salaryText = jobData.workConditions.salary;
+                        // "월급 1243124만원" 형태에서 숫자 부분만 추출해서 콤마 포맷팅
+                        const match = salaryText.match(/(\S+)\s+(\d+)(만원|원)/);
+                        if (match) {
+                          const [, type, amount, unit] = match;
+                          return `${type} ${formatNumberWithCommas(amount)}${unit}`;
+                        }
+                        return salaryText; // 매치되지 않으면 원본 그대로
+                      }
+                      
+                      // salary와 salaryType을 조합
+                      if (jobData.salary && jobData.salaryType) {
+                        return `${jobData.salaryType} ${formatNumberWithCommas(jobData.salary)}만원`;
+                      }
+                      
+                      // salary만 있는 경우
+                      if (jobData.salary) {
+                        return `${formatNumberWithCommas(jobData.salary)}만원`;
+                      }
+                      
+                      return "협의";
+                    })()}
                   </span>
                 </div>
                 <div className="flex gap-[40px]">

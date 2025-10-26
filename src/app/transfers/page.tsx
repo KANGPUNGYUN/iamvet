@@ -18,6 +18,7 @@ import { regionOptions } from "@/data/regionOptions";
 import { CloseIcon, ArrowRightIcon, EditIcon } from "public/icons";
 import Link from "next/link";
 import { useLikeStore } from "@/stores/likeStore";
+import { handleNumberInputChange } from "@/utils/validation";
 
 export default function TransfersPage() {
   const router = useRouter();
@@ -930,22 +931,24 @@ export default function TransfersPage() {
                     <InputBox
                       value={tempFilters.minPrice}
                       onChange={(value) =>
-                        handleTempFilterChange("minPrice", value)
+                        handleNumberInputChange(value, (formattedValue) =>
+                          handleTempFilterChange("minPrice", formattedValue)
+                        )
                       }
                       placeholder="0"
                       suffix="만원"
-                      type="number"
                       variant="compact"
                     />
                     <span className="text-[#9098A4]">-</span>
                     <InputBox
                       value={tempFilters.maxPrice}
                       onChange={(value) =>
-                        handleTempFilterChange("maxPrice", value)
+                        handleNumberInputChange(value, (formattedValue) =>
+                          handleTempFilterChange("maxPrice", formattedValue)
+                        )
                       }
                       placeholder="0"
                       suffix="만원"
-                      type="number"
                       variant="compact"
                     />
                   </div>
@@ -969,22 +972,24 @@ export default function TransfersPage() {
                     <InputBox
                       value={tempFilters.minArea}
                       onChange={(value) =>
-                        handleTempFilterChange("minArea", value)
+                        handleNumberInputChange(value, (formattedValue) =>
+                          handleTempFilterChange("minArea", formattedValue)
+                        )
                       }
                       placeholder="0"
                       suffix="평"
-                      type="number"
                       variant="compact"
                     />
                     <span className="text-[#9098A4]">-</span>
                     <InputBox
                       value={tempFilters.maxArea}
                       onChange={(value) =>
-                        handleTempFilterChange("maxArea", value)
+                        handleNumberInputChange(value, (formattedValue) =>
+                          handleTempFilterChange("maxArea", formattedValue)
+                        )
                       }
                       placeholder="0"
                       suffix="평"
-                      type="number"
                       variant="compact"
                     />
                   </div>

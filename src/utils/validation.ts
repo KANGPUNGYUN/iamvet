@@ -109,3 +109,38 @@ export const validateEmail = (email: string): { isValid: boolean; message?: stri
   
   return { isValid: true };
 };
+
+// Number formatting utilities
+export const formatNumberWithCommas = (value: string | number): string => {
+  if (!value) return '';
+  
+  // Convert to string and remove all non-numeric characters except decimal point
+  const str = String(value).replace(/[^\d.]/g, '');
+  
+  // Split by decimal point to handle decimal numbers
+  const parts = str.split('.');
+  
+  // Add commas to the integer part
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  
+  // Join back with decimal point if there was one
+  return parts.join('.');
+};
+
+export const parseNumberFromCommaString = (value: string): number => {
+  if (!value) return 0;
+  
+  // Remove commas and convert to number
+  const cleanValue = value.replace(/,/g, '');
+  return Number(cleanValue) || 0;
+};
+
+export const handleNumberInputChange = (
+  value: string,
+  onChange: (value: string) => void
+): void => {
+  // Remove commas, validate numeric input, reformat with commas
+  const numericValue = value.replace(/[^0-9]/g, '');
+  const formattedValue = formatNumberWithCommas(numericValue);
+  onChange(formattedValue);
+};

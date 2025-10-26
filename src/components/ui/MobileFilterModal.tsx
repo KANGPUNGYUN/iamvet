@@ -7,6 +7,7 @@ import { InputBox } from "@/components/ui/Input/InputBox";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { regionOptions } from "@/data/regionOptions";
+import { handleNumberInputChange } from "@/utils/validation";
 
 interface MobileFilterModalProps {
   isOpen: boolean;
@@ -248,10 +249,13 @@ export default function MobileFilterModal({
               <div className="flex-1">
                 <InputBox
                   value={filters.minPrice}
-                  onChange={(value) => handleFilterChange("minPrice", value)}
+                  onChange={(value) =>
+                    handleNumberInputChange(value, (formattedValue) =>
+                      handleFilterChange("minPrice", formattedValue)
+                    )
+                  }
                   placeholder="0"
                   suffix="만원"
-                  type="number"
                   variant="default"
                 />
               </div>
@@ -259,10 +263,13 @@ export default function MobileFilterModal({
               <div className="flex-1">
                 <InputBox
                   value={filters.maxPrice}
-                  onChange={(value) => handleFilterChange("maxPrice", value)}
+                  onChange={(value) =>
+                    handleNumberInputChange(value, (formattedValue) =>
+                      handleFilterChange("maxPrice", formattedValue)
+                    )
+                  }
                   placeholder="0"
                   suffix="만원"
-                  type="number"
                   variant="default"
                 />
               </div>
@@ -277,10 +284,13 @@ export default function MobileFilterModal({
               <div className="flex-1">
                 <InputBox
                   value={filters.minArea}
-                  onChange={(value) => handleFilterChange("minArea", value)}
+                  onChange={(value) =>
+                    handleNumberInputChange(value, (formattedValue) =>
+                      handleFilterChange("minArea", formattedValue)
+                    )
+                  }
                   placeholder="0"
                   suffix="평"
-                  type="number"
                   variant="default"
                 />
               </div>
@@ -288,10 +298,13 @@ export default function MobileFilterModal({
               <div className="flex-1">
                 <InputBox
                   value={filters.maxArea}
-                  onChange={(value) => handleFilterChange("maxArea", value)}
+                  onChange={(value) =>
+                    handleNumberInputChange(value, (formattedValue) =>
+                      handleFilterChange("maxArea", formattedValue)
+                    )
+                  }
                   placeholder="0"
                   suffix="평"
-                  type="number"
                   variant="default"
                 />
               </div>

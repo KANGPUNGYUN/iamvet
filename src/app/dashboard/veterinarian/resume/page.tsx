@@ -27,6 +27,9 @@ import {
   validatePhoneNumber,
   validateBirthDate,
   validateEmail,
+  formatNumberWithCommas,
+  handleNumberInputChange,
+  parseNumberFromCommaString,
 } from "@/utils/validation";
 import {
   useVeterinarianResume,
@@ -325,7 +328,7 @@ export default function ResumePage() {
         position: existingResume.position || "",
         specialties: existingResume.specialties || [],
         preferredRegions: existingResume.preferredRegions || [],
-        expectedSalary: existingResume.expectedSalary || "",
+        expectedSalary: formatNumberWithCommas(existingResume.expectedSalary || ""),
         workTypes: existingResume.workTypes || [],
         startDate: existingResume.startDate || "",
         preferredWeekdays: existingResume.preferredWeekdays || [],
@@ -358,7 +361,11 @@ export default function ResumePage() {
               ],
         educations:
           existingResume.educations?.length > 0
-            ? existingResume.educations
+            ? existingResume.educations.map(edu => ({
+                ...edu,
+                gpa: formatNumberWithCommas(edu.gpa || ""),
+                totalGpa: formatNumberWithCommas(edu.totalGpa || ""),
+              }))
             : [
                 {
                   id: "default-1",
@@ -679,7 +686,7 @@ export default function ResumePage() {
         position: resumeData.position,
         specialties: resumeData.specialties,
         preferredRegions: resumeData.preferredRegions,
-        expectedSalary: resumeData.expectedSalary,
+        expectedSalary: resumeData.expectedSalary.replace(/,/g, ''),
         workTypes: resumeData.workTypes,
         startDate: resumeData.startDate,
         preferredWeekdays: resumeData.preferredWeekdays,
@@ -700,6 +707,8 @@ export default function ResumePage() {
         })),
         educations: resumeData.educations.map((edu) => ({
           ...edu,
+          gpa: edu.gpa.replace(/,/g, ''),
+          totalGpa: edu.totalGpa.replace(/,/g, ''),
           startDate: edu.startDate ? new Date(edu.startDate) : null,
           endDate: edu.endDate ? new Date(edu.endDate) : null,
         })),
@@ -951,14 +960,15 @@ export default function ResumePage() {
                 <InputBox
                   value={resumeData.expectedSalary}
                   onChange={(value) =>
-                    setResumeData((prev) => ({
-                      ...prev,
-                      expectedSalary: value,
-                    }))
+                    handleNumberInputChange(value, (formattedValue) =>
+                      setResumeData((prev) => ({
+                        ...prev,
+                        expectedSalary: formattedValue,
+                      }))
+                    )
                   }
                   placeholder="희망 연봉"
                   suffix="만원"
-                  type="number"
                 />
               </div>
             </div>
@@ -1383,17 +1393,18 @@ export default function ResumePage() {
                     <InputBox
                       value={education.gpa}
                       onChange={(value) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          educations: prev.educations.map((edu) =>
-                            edu.id === education.id
-                              ? { ...edu, gpa: value }
-                              : edu
-                          ),
-                        }));
+                        handleNumberInputChange(value, (formattedValue) => {
+                          setResumeData((prev) => ({
+                            ...prev,
+                            educations: prev.educations.map((edu) =>
+                              edu.id === education.id
+                                ? { ...edu, gpa: formattedValue }
+                                : edu
+                            ),
+                          }));
+                        });
                       }}
                       placeholder="학점"
-                      type="number"
                     />
                   </div>
                   <div className="w-full">
@@ -1403,17 +1414,18 @@ export default function ResumePage() {
                     <InputBox
                       value={education.totalGpa}
                       onChange={(value) => {
-                        setResumeData((prev) => ({
-                          ...prev,
-                          educations: prev.educations.map((edu) =>
-                            edu.id === education.id
-                              ? { ...edu, totalGpa: value }
-                              : edu
-                          ),
-                        }));
+                        handleNumberInputChange(value, (formattedValue) => {
+                          setResumeData((prev) => ({
+                            ...prev,
+                            educations: prev.educations.map((edu) =>
+                              edu.id === education.id
+                                ? { ...edu, totalGpa: formattedValue }
+                                : edu
+                            ),
+                          }));
+                        });
                       }}
                       placeholder="만점"
-                      type="number"
                     />
                   </div>
                 </div>
