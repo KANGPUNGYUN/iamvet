@@ -828,9 +828,8 @@ export default function HomePage() {
                                 location={location}
                                 jobType="구직자"
                                 tags={tags}
-                                isBookmarked={false}
-                                isLiked={isResumeLiked(resume.id)}
-                                onLike={handleResumeLike}
+                                isBookmarked={isResumeLiked(resume.id)}
+                                onBookmark={handleResumeLike}
                                 onClick={() =>
                                   handleResumeNavigation(
                                     `/resumes/${resume.id}`
@@ -886,9 +885,8 @@ export default function HomePage() {
                                 location={job.location}
                                 jobType={job.employmentType || job.jobType}
                                 tags={job.specialties || job.tags || []}
-                                isBookmarked={job.isBookmarked || false}
-                                isLiked={isJobLiked(job.id)}
-                                onLike={handleJobLike}
+                                isBookmarked={job.isBookmarked || isJobLiked(job.id)}
+                                onBookmark={handleJobLike}
                                 deadline={job.recruitEndDate}
                                 isAlwaysOpen={job.isUnlimitedRecruit || false}
                                 onClick={() =>

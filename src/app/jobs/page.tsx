@@ -515,9 +515,8 @@ export default function JobsPage() {
                       location={job.location?.split(" ").slice(0, 3).join(" ")}
                       jobType={job.jobType}
                       tags={job.tags}
-                      isBookmarked={job.isBookmarked}
-                      isLiked={isJobLiked(job.id)}
-                      onLike={handleJobLike}
+                      isBookmarked={job.isBookmarked || isJobLiked(job.id)}
+                      onBookmark={handleJobLike}
                       variant="wide"
                       showDeadline={true}
                       isNew={job.isNew}
@@ -756,9 +755,8 @@ export default function JobsPage() {
                           .join(" ")}
                         jobType={job.jobType}
                         tags={job.tags.slice(0, 3)}
-                        isBookmarked={job.isBookmarked}
-                        isLiked={isJobLiked(job.id)}
-                        onLike={handleJobLike}
+                        isBookmarked={job.isBookmarked || isJobLiked(job.id)}
+                        onBookmark={handleJobLike}
                         deadline={job.recruitEndDate}
                         isAlwaysOpen={job.isUnlimitedRecruit || false}
                         variant="wide"
@@ -874,9 +872,8 @@ export default function JobsPage() {
                           .join(" ")}
                         jobType={job.jobType}
                         tags={job.tags.slice(0, 3)}
-                        isBookmarked={job.isBookmarked}
-                        isLiked={isJobLiked(job.id)}
-                        onLike={handleJobLike}
+                        isBookmarked={job.isBookmarked || isJobLiked(job.id)}
+                        onBookmark={handleJobLike}
                         deadline={job.recruitEndDate}
                         isAlwaysOpen={job.isUnlimitedRecruit || false}
                         variant="wide"

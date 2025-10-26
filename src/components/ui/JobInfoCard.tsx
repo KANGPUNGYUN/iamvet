@@ -4,8 +4,6 @@ import {
   DocumentIcon,
   LocationIcon,
   WalletIcon,
-  HeartIcon,
-  HeartFilledIcon,
 } from "public/icons";
 import React, { useState } from "react";
 import { Tag } from "./Tag";
@@ -18,10 +16,8 @@ interface JobInfoCardProps {
   jobType: string;
   tags: string[];
   isBookmarked?: boolean;
-  isLiked?: boolean; // 좋아요 여부 추가
   onClick?: () => void;
-  onLike?: (id: string | number) => void; // 좋아요 핸들러 추가
-  onBookmark?: (id: string | number) => void; // 북마크 핸들러 추가
+  onBookmark?: (id: string | number) => void; // 북마크 핸들러 (좋아요 기능 통합)
   variant?: "default" | "wide"; // 기본 스타일과 넓은 스타일 선택
   showDeadline?: boolean; // 마감일 표시 여부
   isNew?: boolean; // 신규 공고 여부
@@ -39,9 +35,7 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
   jobType = "신입",
   tags = ["내과", "외과", "정규직", "케어직", "파트타임"],
   isBookmarked = false,
-  isLiked = false,
   onClick,
-  onLike,
   onBookmark,
   variant = "default",
   showDeadline = false,
@@ -117,25 +111,6 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
                 <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
               ) : (
                 <BookmarkIcon currentColor="var(--Subtext2)" />
-              )}
-            </div>
-          )}
-          
-          {/* 좋아요 아이콘 */}
-          {onLike && (
-            <div
-              className="w-6 h-6 flex items-center justify-center cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onLike && id) {
-                  onLike(id);
-                }
-              }}
-            >
-              {isLiked ? (
-                <HeartFilledIcon currentColor="var(--Keycolor1)" />
-              ) : (
-                <HeartIcon currentColor="var(--Subtext2)" />
               )}
             </div>
           )}
