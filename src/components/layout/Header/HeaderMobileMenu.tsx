@@ -11,9 +11,82 @@ import {
   ListIcon,
   BellOutlineIcon,
   UsersIcon,
-  HeartMenuIcon,
+  BookmarkIcon,
   SettingsIcon,
 } from "public/icons";
+
+// 모바일용 북마크 아이콘 (Sidebar와 동일한 크기)
+const BookmarkMenuIcon: React.FC<{ currentColor?: string }> = ({
+  currentColor = "currentColor",
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16.8"
+    height="16"
+    viewBox="0 0 21 20"
+    fill="none"
+  >
+    <path
+      d="M17.375 18.75L10.5 14.375L3.625 18.75V4.6875C3.625 4.20707 3.81532 3.74622 4.15273 3.40881C4.49014 3.0714 4.95099 2.88108 5.43142 2.88108H15.5686C16.049 2.88108 16.5099 3.0714 16.8473 3.40881C17.1847 3.74622 17.375 4.20707 17.375 4.6875V18.75Z"
+      stroke={currentColor}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+// 펼침/접힘 아이콘 컴포넌트
+const ChevronDownIcon: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 9l-7 7-7-7"
+    />
+  </svg>
+);
+
+const ChevronRightIcon: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 5l7 7-7 7"
+    />
+  </svg>
+);
+
+interface BookmarkChildMenuItem {
+  id: string;
+  label: string;
+  href: string;
+}
+
+interface BookmarkMenuGroup {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ currentColor?: string }>;
+  children: BookmarkChildMenuItem[];
+}
 
 export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   isOpen,
@@ -30,6 +103,9 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
 }) => {
   const pathname = usePathname();
   const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
+  const [expandedGroups, setExpandedGroups] = React.useState<Set<string>>(
+    new Set(["bookmarks"])
+  );
 
   // active 상태 확인 함수 (Sidebar와 동일한 로직)
   const isActive = (href: string, userType: "veterinarian" | "hospital") => {
@@ -39,7 +115,58 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
     return pathname.startsWith(href);
   };
 
-  // 사용자 타입에 따른 마이페이지 메뉴 데이터
+  // 북마크 그룹 정의
+  const getBookmarkGroup = (type: "veterinarian" | "hospital"): BookmarkMenuGroup => {
+    if (type === "veterinarian") {
+      return {
+        id: "bookmarks",
+        label: "북마크 관리",
+        icon: BookmarkMenuIcon,
+        children: [
+          {
+            id: "transfer-bookmarks",
+            label: "양수양도 북마크",
+            href: "/dashboard/veterinarian/transfer-bookmarks",
+          },
+          {
+            id: "lecture-bookmarks",
+            label: "강의 북마크",
+            href: "/dashboard/veterinarian/lecture-bookmarks",
+          },
+          {
+            id: "job-bookmarks",
+            label: "채용공고 북마크",
+            href: "/dashboard/veterinarian/job-bookmarks",
+          },
+        ],
+      };
+    } else {
+      return {
+        id: "bookmarks",
+        label: "북마크 관리",
+        icon: BookmarkMenuIcon,
+        children: [
+          {
+            id: "transfer-bookmarks",
+            label: "양수양도 찜 목록",
+            href: "/dashboard/hospital/transfer-bookmarks",
+          },
+          {
+            id: "lecture-bookmarks",
+            label: "강의 북마크",
+            href: "/dashboard/hospital/lecture-bookmarks",
+          },
+          {
+            id: "favorite-talents",
+            label: "이력서 북마크",
+            href: "/dashboard/hospital/favorite-talents",
+          },
+        ],
+      };
+    }
+  };
+
+  // 사용자 타입에 따른 마이페이지 메뉴 데이터 (북마크 관련 제거)
   const getDashboardMenuItems = (
     type: "veterinarian" | "hospital"
   ): DashboardMenuItem[] => {
@@ -56,12 +183,6 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           label: "나의 이력서",
           icon: UserPlusIcon,
           href: "/dashboard/veterinarian/resume",
-        },
-        {
-          id: "bookmarks",
-          label: "찜한 공고 목록",
-          icon: HeartMenuIcon,
-          href: "/dashboard/veterinarian/bookmarks",
         },
         {
           id: "applications",
@@ -91,22 +212,16 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           href: "/dashboard/hospital",
         },
         {
-          id: "transfer-bookmarks",
-          label: "양수양도 찜 목록",
-          icon: HeartMenuIcon,
-          href: "/dashboard/hospital/transfer-bookmarks",
-        },
-        {
           id: "my-jobs",
           label: "올린 공고 관리",
           icon: ListIcon,
           href: "/dashboard/hospital/my-jobs",
         },
         {
-          id: "favorite-talents",
-          label: "관심 인재 목록",
+          id: "applicants",
+          label: "지원자 목록",
           icon: UsersIcon,
-          href: "/dashboard/hospital/favorite-talents",
+          href: "/dashboard/hospital/applicants",
         },
         {
           id: "messages",
@@ -130,6 +245,27 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   const dashboardItems = actualUserType
     ? getDashboardMenuItems(actualUserType)
     : [];
+  const bookmarkGroup = actualUserType 
+    ? getBookmarkGroup(actualUserType)
+    : null;
+
+  // 북마크 그룹의 활성 상태 확인
+  const isGroupActive = (group: BookmarkMenuGroup) => {
+    return group.children.some((child) => actualUserType && isActive(child.href, actualUserType));
+  };
+
+  // 그룹 토글 함수
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupId)) {
+        newSet.delete(groupId);
+      } else {
+        newSet.add(groupId);
+      }
+      return newSet;
+    });
+  };
 
   // 메뉴가 열렸을 때 body 스크롤 방지
   useEffect(() => {
@@ -327,6 +463,58 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                           </Link>
                         );
                       })}
+
+                      {/* 북마크 그룹 */}
+                      {bookmarkGroup && (
+                        <div className="mt-2">
+                          <button
+                            onClick={() => toggleGroup(bookmarkGroup.id)}
+                            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                              isGroupActive(bookmarkGroup)
+                                ? "text-[#FF8796] bg-[#FFF7F7]"
+                                : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                            }`}
+                          >
+                            <bookmarkGroup.icon
+                              currentColor={
+                                isGroupActive(bookmarkGroup) ? "#FF8796" : "#4F5866"
+                              }
+                            />
+                            <span className="ml-3">{bookmarkGroup.label}</span>
+                            <span className="ml-auto">
+                              {expandedGroups.has(bookmarkGroup.id) ? (
+                                <ChevronDownIcon className="w-4 h-4" />
+                              ) : (
+                                <ChevronRightIcon className="w-4 h-4" />
+                              )}
+                            </span>
+                          </button>
+
+                          {/* 하위 메뉴 */}
+                          {expandedGroups.has(bookmarkGroup.id) && (
+                            <div className="mt-2 ml-6 space-y-1">
+                              {bookmarkGroup.children.map((child) => {
+                                const childActive = actualUserType && isActive(child.href, actualUserType);
+
+                                return (
+                                  <Link
+                                    key={child.id}
+                                    href={child.href}
+                                    onClick={onToggle}
+                                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                      childActive
+                                        ? "text-[#FF8796] bg-[#FFF7F7]"
+                                        : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                                    }`}
+                                  >
+                                    <span>{child.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}

@@ -12,7 +12,14 @@ import { Textarea } from "@/components/ui/Input/Textarea";
 import { Button } from "@/components/ui/Button";
 import { ResumeImageUpload } from "@/components/features/resume/ResumeImageUpload";
 import { WeekdaySelector } from "@/components/features/resume/WeekdaySelector";
-import { PlusIcon, MinusIcon, DownloadIcon, PdfIcon, WordIcon, ExcelIcon } from "public/icons";
+import {
+  PlusIcon,
+  MinusIcon,
+  DownloadIcon,
+  PdfIcon,
+  WordIcon,
+  ExcelIcon,
+} from "public/icons";
 import { DocumentUpload } from "@/components/features/profile/DocumentUpload";
 import {
   formatPhoneNumber,
@@ -561,18 +568,18 @@ export default function ResumePage() {
     try {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('folder', 'portfolios');
-        
-        const response = await fetch('/api/upload', {
-          method: 'POST',
+        formData.append("file", file);
+        formData.append("folder", "portfolios");
+
+        const response = await fetch("/api/upload", {
+          method: "POST",
           body: formData,
         });
-        
+
         if (!response.ok) {
-          throw new Error('파일 업로드 실패');
+          throw new Error("파일 업로드 실패");
         }
-        
+
         const result = await response.json();
         return {
           id: `portfolio_${Date.now()}_${Math.random()}`,
@@ -582,16 +589,16 @@ export default function ResumePage() {
           fileSize: file.size,
         };
       });
-      
+
       const uploadedFiles = await Promise.all(uploadPromises);
-      
+
       setResumeData((prev) => ({
         ...prev,
         portfolioFiles: uploadedFiles,
       }));
     } catch (error) {
-      console.error('파일 업로드 오류:', error);
-      alert('파일 업로드에 실패했습니다.');
+      console.error("파일 업로드 오류:", error);
+      alert("파일 업로드에 실패했습니다.");
     }
   };
 
@@ -755,7 +762,7 @@ export default function ResumePage() {
     <div className="bg-white">
       <div className="max-w-5xl mx-auto p-4 min-h-screen">
         <div className="mb-6">
-          <h1 className="font-title text-[36px] text-primary mb-1">
+          <h1 className="font-title title-medium text-[36px] mb-1">
             나의 이력서
           </h1>
         </div>
@@ -1612,7 +1619,7 @@ export default function ResumePage() {
               포트폴리오
             </h2>
           </div>
-          
+
           {/* DocumentUpload 컴포넌트 사용 */}
           <DocumentUpload
             value={[]} // DocumentUpload는 새로운 파일 업로드만 처리
@@ -1641,11 +1648,11 @@ export default function ResumePage() {
                         {file.fileName}
                       </p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => {
                         // 파일 다운로드 또는 보기 기능
                         if (file.fileUrl) {
-                          window.open(file.fileUrl, '_blank');
+                          window.open(file.fileUrl, "_blank");
                         }
                       }}
                       className="flex items-center justify-center w-[32px] h-[32px] rounded-[8px] transition-colors hover:bg-gray-100"
