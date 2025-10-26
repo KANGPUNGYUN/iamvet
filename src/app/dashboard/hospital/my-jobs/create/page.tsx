@@ -64,7 +64,7 @@ export default function CreateJobPage() {
       </div>
     );
   }
-  
+
   const [formData, setFormData] = useState<JobFormData>({
     title: "",
     workType: [],
@@ -96,7 +96,7 @@ export default function CreateJobPage() {
     { value: "정규직", label: "정규직" },
     { value: "계약직", label: "계약직" },
     { value: "인턴", label: "인턴" },
-    { value: "아르바이트", label: "아르바이트" },
+    { value: "파트타임", label: "파트타임" },
   ];
 
   const majorOptions = [
@@ -161,7 +161,9 @@ export default function CreateJobPage() {
 
   const handleSaveDraft = async () => {
     try {
-      const result = await saveDraftJobMutation.mutateAsync(transformFormData(formData));
+      const result = await saveDraftJobMutation.mutateAsync(
+        transformFormData(formData)
+      );
       console.log("임시저장 성공:", result);
       alert("임시저장이 완료되었습니다.");
     } catch (error) {
@@ -172,7 +174,9 @@ export default function CreateJobPage() {
 
   const handleSave = async () => {
     try {
-      const result = await createJobMutation.mutateAsync(transformFormData(formData));
+      const result = await createJobMutation.mutateAsync(
+        transformFormData(formData)
+      );
       console.log("등록 성공:", result);
       alert("채용공고가 등록되었습니다.");
       // 성공 시 HospitalMyJobsPage로 이동
@@ -200,10 +204,12 @@ export default function CreateJobPage() {
       workEndTime: data.workEndTime ? formatTime(data.workEndTime) : null,
       isWorkTimeNegotiable: data.isWorkTimeNegotiable,
       benefits: data.benefits,
-      education: data.education.filter(item => item.trim() !== ""),
-      certifications: data.certifications.filter(item => item.trim() !== ""),
-      experienceDetails: data.experienceDetails.filter(item => item.trim() !== ""),
-      preferences: data.preferences.filter(item => item.trim() !== ""),
+      education: data.education.filter((item) => item.trim() !== ""),
+      certifications: data.certifications.filter((item) => item.trim() !== ""),
+      experienceDetails: data.experienceDetails.filter(
+        (item) => item.trim() !== ""
+      ),
+      preferences: data.preferences.filter((item) => item.trim() !== ""),
       managerName: data.managerName,
       managerPhone: data.managerPhone,
       managerEmail: data.managerEmail,
@@ -213,7 +219,7 @@ export default function CreateJobPage() {
 
   const formatTime = (timeObj: any): string => {
     if (!timeObj) return "";
-    
+
     let hour = timeObj.hour;
     const minute = timeObj.minute;
     const period = timeObj.period;
@@ -227,7 +233,9 @@ export default function CreateJobPage() {
       }
     }
 
-    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    return `${hour.toString().padStart(2, "0")}:${minute
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   return (

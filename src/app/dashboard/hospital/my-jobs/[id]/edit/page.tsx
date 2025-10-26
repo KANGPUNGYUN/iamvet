@@ -51,7 +51,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
   const { id } = use(params);
   const { user, isAuthenticated } = useAuth();
   const { data: jobData, isLoading, error } = useJobDetail(id);
-  
+
   const [formData, setFormData] = useState<JobFormData>({
     title: "",
     workType: [],
@@ -80,27 +80,28 @@ export default function EditJobPage({ params }: EditJobPageProps) {
 
   // 권한 체크 및 데이터 로드
   useEffect(() => {
-    console.log('EditJobPage 권한 체크:', {
+    console.log("EditJobPage 권한 체크:", {
       isAuthenticated,
       userType: user?.type,
       userId: user?.id,
       jobDataIsOwner: jobData?.isOwner,
-      hospitalUserId: jobData?.hospitalUserId
+      hospitalUserId: jobData?.hospitalUserId,
     });
-    
-    if (!isAuthenticated || user?.type !== 'hospital') {
-      alert('권한이 없습니다.');
-      router.push('/');
+
+    if (!isAuthenticated || user?.type !== "hospital") {
+      alert("권한이 없습니다.");
+      router.push("/");
       return;
     }
 
     // 권한 체크: API의 isOwner 또는 클라이언트 측 체크
     if (jobData) {
-      const isOwner = jobData.isOwner === true || 
+      const isOwner =
+        jobData.isOwner === true ||
         (user?.id && jobData.hospitalUserId === user.id);
-      
-      console.log('권한 체크 결과:', { isOwner, shouldBlock: !isOwner });
-      
+
+      console.log("권한 체크 결과:", { isOwner, shouldBlock: !isOwner });
+
       // 임시로 권한 체크 우회
       // if (!isOwner) {
       //   alert('이 채용공고를 수정할 권한이 없습니다.');
@@ -113,40 +114,46 @@ export default function EditJobPage({ params }: EditJobPageProps) {
       // API 데이터를 폼 데이터로 변환
       const timeToObject = (time: string | null) => {
         if (!time) return null;
-        const [hourStr, minute] = time.split(':');
+        const [hourStr, minute] = time.split(":");
         const hour24 = parseInt(hourStr);
-        
+
         let hour12;
         let period;
-        
+
         if (hour24 === 0) {
           hour12 = 12; // 0시 → 12 AM
-          period = 'AM';
+          period = "AM";
         } else if (hour24 === 12) {
           hour12 = 12; // 12시 → 12 PM
-          period = 'PM';
+          period = "PM";
         } else if (hour24 > 12) {
           hour12 = hour24 - 12; // 13시 → 1 PM
-          period = 'PM';
+          period = "PM";
         } else {
           hour12 = hour24; // 1-11시 → 1-11 AM
-          period = 'AM';
+          period = "AM";
         }
-        
+
         return {
           hour: hour12,
           minute: parseInt(minute),
-          period: period
+          period: period,
         };
       };
 
       setFormData({
         title: jobData.title || "",
-        workType: Array.isArray(jobData.workType) ? jobData.workType : [jobData.workType].filter(Boolean),
+        workType: Array.isArray(jobData.workType)
+          ? jobData.workType
+          : [jobData.workType].filter(Boolean),
         isUnlimitedRecruit: !jobData.recruitEndDate,
-        recruitEndDate: jobData.recruitEndDate ? new Date(jobData.recruitEndDate) : null,
+        recruitEndDate: jobData.recruitEndDate
+          ? new Date(jobData.recruitEndDate)
+          : null,
         major: jobData.major || [],
-        experience: Array.isArray(jobData.experience) ? jobData.experience : [jobData.experience].filter(Boolean),
+        experience: Array.isArray(jobData.experience)
+          ? jobData.experience
+          : [jobData.experience].filter(Boolean),
         position: jobData.position || "",
         salaryType: jobData.salaryType || "",
         salary: jobData.salary || "",
@@ -156,9 +163,15 @@ export default function EditJobPage({ params }: EditJobPageProps) {
         workEndTime: timeToObject(jobData.workEndTime),
         isWorkTimeNegotiable: jobData.isWorkTimeNegotiable || false,
         benefits: jobData.benefits || "",
-        education: jobData.qualifications?.education ? [jobData.qualifications.education] : [""],
-        certifications: jobData.qualifications?.certificates ? [jobData.qualifications.certificates] : [""],
-        experienceDetails: jobData.qualifications?.experience ? [jobData.qualifications.experience] : [""],
+        education: jobData.qualifications?.education
+          ? [jobData.qualifications.education]
+          : [""],
+        certifications: jobData.qualifications?.certificates
+          ? [jobData.qualifications.certificates]
+          : [""],
+        experienceDetails: jobData.qualifications?.experience
+          ? [jobData.qualifications.experience]
+          : [""],
         preferences: jobData.preferredQualifications || [""],
         managerName: jobData.managerName || "",
         managerPhone: jobData.managerPhone || "",
@@ -173,7 +186,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     { value: "정규직", label: "정규직" },
     { value: "계약직", label: "계약직" },
     { value: "인턴", label: "인턴" },
-    { value: "아르바이트", label: "아르바이트" },
+    { value: "파트타임", label: "파트타임" },
   ];
 
   const majorOptions = [
@@ -245,7 +258,7 @@ export default function EditJobPage({ params }: EditJobPageProps) {
       // 시간 포맷 변환 (AM/PM을 24시간 형식으로)
       const formatTime = (timeObj: any) => {
         if (!timeObj) return null;
-        
+
         let hour = timeObj.hour;
         const minute = timeObj.minute;
         const period = timeObj.period;
@@ -259,34 +272,43 @@ export default function EditJobPage({ params }: EditJobPageProps) {
           }
         }
 
-        return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        return `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
       };
 
       const requestData = {
         ...formData,
         workStartTime: formatTime(formData.workStartTime),
         workEndTime: formatTime(formData.workEndTime),
-        recruitEndDate: formData.isUnlimitedRecruit ? null : formData.recruitEndDate,
-        education: formData.education.filter(e => e),
-        certifications: formData.certifications.filter(c => c),
-        experienceDetails: formData.experienceDetails.filter(e => e),
-        preferences: formData.preferences.filter(p => p),
+        recruitEndDate: formData.isUnlimitedRecruit
+          ? null
+          : formData.recruitEndDate,
+        education: formData.education.filter((e) => e),
+        certifications: formData.certifications.filter((c) => c),
+        experienceDetails: formData.experienceDetails.filter((e) => e),
+        preferences: formData.preferences.filter((p) => p),
       };
 
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
-      
-      console.log('토큰 체크:', { 
-        token: token ? 'exists' : 'null', 
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+      console.log("토큰 체크:", {
+        token: token ? "exists" : "null",
         length: token?.length,
-        tokenKey: localStorage.getItem("token") ? 'token' : localStorage.getItem("accessToken") ? 'accessToken' : 'none',
-        allKeys: Object.keys(localStorage)
+        tokenKey: localStorage.getItem("token")
+          ? "token"
+          : localStorage.getItem("accessToken")
+          ? "accessToken"
+          : "none",
+        allKeys: Object.keys(localStorage),
       });
-      
+
       if (!token) {
-        alert('인증 토큰이 없습니다. 다시 로그인해주세요.');
+        alert("인증 토큰이 없습니다. 다시 로그인해주세요.");
         return;
       }
-      
+
       const response = await axios.put(`/api/jobs/${id}`, requestData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -317,7 +339,9 @@ export default function EditJobPage({ params }: EditJobPageProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">채용공고를 찾을 수 없습니다</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            채용공고를 찾을 수 없습니다
+          </h1>
         </div>
       </div>
     );
