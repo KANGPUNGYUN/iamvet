@@ -871,7 +871,7 @@ export default function LectureDetailPage({
 
               {/* 모바일 추천 강의 섹션 */}
               <div className="xl:hidden mt-8">
-                <h3 className="text-[24px] font-title font-light text-sub mb-4">
+                <h3 className="text-[24px] font-title text-sub mb-4">
                   추천 강의
                 </h3>
                 <div className="overflow-x-auto">
@@ -943,7 +943,7 @@ export default function LectureDetailPage({
             {/* 데스크톱 추천 강의 사이드바 */}
             <aside className="hidden xl:block w-[343px] flex-shrink-0">
               <div className="sticky top-[70px]">
-                <h3 className="text-[24px] font-title font-light text-sub mb-4">
+                <h3 className="text-[24px] font-title text-sub mb-4">
                   추천 강의
                 </h3>
                 <div className="space-y-4">
