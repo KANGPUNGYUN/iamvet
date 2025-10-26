@@ -63,7 +63,7 @@ export default function VeterinarianProfilePage() {
       <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
         <div className="max-w-md mx-auto w-full">
           {/* 페이지 제목 */}
-          <h1 className="font-title text-[28px] font-light text-primary text-center mb-[60px]">
+          <h1 className="font-title text-[28px] text-primary text-center mb-[60px]">
             프로필 설정
           </h1>
 
