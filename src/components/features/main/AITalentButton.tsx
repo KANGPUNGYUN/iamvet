@@ -37,8 +37,8 @@ const AITalentButton: React.FC<AITalentButtonProps> = ({
   const isHospital = variant === "hospital";
   const backgroundColor = isHospital ? "#698CFC" : "#FF8796";
   const shadowColor = isHospital
-    ? "rgba(105,140,252,0.3)"
-    : "rgba(255,135,150,0.3)";
+    ? "rgba(105,140,252,0.1)"
+    : "rgba(255,135,150,0.1)";
 
   return (
     <button
