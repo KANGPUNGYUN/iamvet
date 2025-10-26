@@ -133,7 +133,7 @@ export default function VeterinarianTransferBookmarksPage() {
     setCurrentPage(1); // 필터 시 첫 페이지로 리셋
   };
 
-  // 양도양수 좋아요/취소 핸들러
+  // 양도양수 좋아요/취소 핸들러 (실시간 처리 개선)
   const handleLike = async (transferId: string) => {
     const isCurrentlyLiked = isTransferLiked(transferId);
 
@@ -145,6 +145,12 @@ export default function VeterinarianTransferBookmarksPage() {
 
     // 낙관적 업데이트: UI를 먼저 변경
     toggleTransferLike(transferId);
+    
+    // 좋아요 취소 시 즉시 목록에서 제거 (실시간 처리)
+    if (isCurrentlyLiked) {
+      setTransfers(prevTransfers => prevTransfers.filter(transfer => transfer.id !== transferId));
+      setTotalTransfers(prev => Math.max(0, prev - 1));
+    }
 
     try {
       const method = isCurrentlyLiked ? "DELETE" : "POST";
@@ -156,21 +162,23 @@ export default function VeterinarianTransferBookmarksPage() {
 
       const response = await fetch(`/api/transfers/${transferId}/like`, {
         method,
+        credentials: 'include',
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        console.error(
-          `[VeterinarianTransferBookmarks Like] ${actionText} 실패:`,
-          result
-        );
-
-        // 오류 발생 시 상태 롤백
+        // 에러 발생 시 상태 롤백
         setTransferLike(transferId, isCurrentlyLiked);
+        
+        // 좋아요 취소 실패 시 목록에 다시 추가
+        if (isCurrentlyLiked) {
+          await fetchBookmarkedTransfers(); // 전체 목록 새로고침
+        }
+
+        const result = await response.json();
+        console.error(`[VeterinarianTransferBookmarks Like] ${actionText} 실패:`, result);
 
         if (response.status === 404) {
           console.warn("양도양수 정보를 찾을 수 없습니다:", transferId);
@@ -191,18 +199,19 @@ export default function VeterinarianTransferBookmarksPage() {
           router.push("/login/veterinarian");
           return;
         }
-        throw new Error(result.message || `${actionText} 요청에 실패했습니다.`);
+        
+        alert(`${actionText} 처리 중 오류가 발생했습니다.`);
+        return;
       }
 
+      const result = await response.json();
       console.log(
         `[VeterinarianTransferBookmarks Like] ${actionText} 성공:`,
         result
       );
 
-      // 북마크 페이지에서 좋아요 취소 시 목록 새로고침
-      if (isCurrentlyLiked) {
-        await fetchBookmarkedTransfers();
-      }
+      // 성공 시 추가 작업 (필요한 경우)
+      
     } catch (error) {
       console.error(
         `[VeterinarianTransferBookmarks Like] ${
@@ -211,9 +220,15 @@ export default function VeterinarianTransferBookmarksPage() {
         error
       );
 
-      // 오류 발생 시 상태 롤백
+      // 네트워크 오류 등으로 실패 시 상태 롤백
       setTransferLike(transferId, isCurrentlyLiked);
-      alert("좋아요 처리 중 오류가 발생했습니다.");
+      
+      // 좋아요 취소 실패 시 목록에 다시 추가
+      if (isCurrentlyLiked) {
+        await fetchBookmarkedTransfers(); // 전체 목록 새로고침
+      }
+      
+      alert("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 

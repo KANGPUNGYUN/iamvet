@@ -1,4 +1,4 @@
-import { HeartFilledIcon, HeartIcon } from "public/icons";
+import { BookmarkFilledIcon, BookmarkIcon } from "public/icons";
 import React, { useState, useEffect } from "react";
 import { Tag } from "../Tag";
 import Image from "next/image";
@@ -154,9 +154,9 @@ const TransferCard: React.FC<TransferCardProps> = ({
           </Tag>
         </div>
 
-        {/* 좋아요 버튼 */}
+        {/* 북마크 버튼 */}
         <button
-          className={`absolute top-[12px] right-[12px] w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-all duration-200 ${
+          className={`absolute top-[12px] right-[12px] w-[32px] h-[32px] rounded-full backdrop-blur-sm transition-all duration-200 ${
             localIsLiked
               ? "bg-[#FF8796] hover:bg-[#FF6B7D]"
               : "bg-[rgba(121,116,126,0.34)] bg-opacity-90 hover:bg-opacity-100"
@@ -168,9 +168,9 @@ const TransferCard: React.FC<TransferCardProps> = ({
           }}
         >
           {localIsLiked ? (
-            <HeartFilledIcon size="28px" currentColor="white" />
+            <BookmarkFilledIcon currentColor="white" />
           ) : (
-            <HeartIcon size="28px" currentColor="white" />
+            <BookmarkIcon currentColor="white" />
           )}
         </button>
       </div>
@@ -234,9 +234,9 @@ const TransferCard: React.FC<TransferCardProps> = ({
           className="w-full h-full object-cover rounded-[8px]"
         />
 
-        {/* 좋아요 버튼 - 작은 화면에서는 더 작게 */}
+        {/* 북마크 버튼 - 작은 화면에서는 더 작게 */}
         <button
-          className={`absolute left-[6px] top-[6px] w-[24px] h-[24px] min-[400px]:left-[8px] min-[400px]:top-[7px] rounded-full backdrop-blur-sm transition-all duration-200 ${
+          className={`absolute left-[6px] top-[6px] w-[28px] h-[28px] min-[400px]:left-[8px] min-[400px]:top-[7px] rounded-full backdrop-blur-sm transition-all duration-200 ${
             localIsLiked
               ? "bg-[#FF8796] hover:bg-[#FF6B7D]"
               : "bg-[rgba(121,116,126,0.34)] bg-opacity-90 hover:bg-opacity-100"
@@ -248,9 +248,9 @@ const TransferCard: React.FC<TransferCardProps> = ({
           }}
         >
           {localIsLiked ? (
-            <HeartFilledIcon size="24px" currentColor="white" />
+            <BookmarkFilledIcon currentColor="white" />
           ) : (
-            <HeartIcon size="24px" currentColor="white" />
+            <BookmarkIcon currentColor="white" />
           )}
         </button>
       </div>
