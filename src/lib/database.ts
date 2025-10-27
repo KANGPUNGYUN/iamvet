@@ -1847,7 +1847,8 @@ export const getLecturesWithPagination = async (params: any) => {
       internal: "내과",
       radiology: "영상진단",
       anesthesia: "마취학",
-      dentistry: "치과"
+      dentistry: "치과",
+      other: "기타"
     };
 
     const categories = params.medicalField

@@ -394,6 +394,7 @@ export default function LecturesPage() {
                   <FilterBox value="radiology">영상진단</FilterBox>
                   <FilterBox value="anesthesia">마취학</FilterBox>
                   <FilterBox value="dentistry">치과</FilterBox>
+                  <FilterBox value="other">기타</FilterBox>
                 </FilterBox.Group>
               </div>
 
@@ -764,6 +765,7 @@ export default function LecturesPage() {
                         <FilterBox value="radiology">영상진단</FilterBox>
                         <FilterBox value="anesthesia">마취학</FilterBox>
                         <FilterBox value="dentistry">치과</FilterBox>
+                        <FilterBox value="other">기타</FilterBox>
                       </FilterBox.Group>
                     </div>
 

@@ -107,26 +107,26 @@ export default function LecturesManagement() {
   const fetchLectures = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/lectures?limit=1000');
+      const response = await fetch("/api/lectures?limit=1000");
       const data = await response.json();
-      
-      if (data.status === 'success') {
+
+      if (data.status === "success") {
         const lecturesData = data.data?.lectures?.data || [];
         const mappedLectures = lecturesData.map((lecture: any) => ({
           ...lecture,
           instructor: lecture.instructor || "강사명",
           youtubeUrl: lecture.videoUrl,
           isActive: !lecture.deletedAt,
-          referenceMaterials: lecture.referenceMaterials || []
+          referenceMaterials: lecture.referenceMaterials || [],
         }));
         setLectures(mappedLectures);
       } else {
-        console.error('Failed to fetch lectures:', data.message);
-        alert('강의 목록을 불러오는데 실패했습니다.');
+        console.error("Failed to fetch lectures:", data.message);
+        alert("강의 목록을 불러오는데 실패했습니다.");
       }
     } catch (error) {
-      console.error('Error fetching lectures:', error);
-      alert('강의 목록을 불러오는데 실패했습니다.');
+      console.error("Error fetching lectures:", error);
+      alert("강의 목록을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,9 @@ export default function LecturesManagement() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -199,8 +201,8 @@ export default function LecturesManagement() {
 
         try {
           // S3에 파일 업로드
-          const result = await uploadImage(file, 'lecture-materials');
-          
+          const result = await uploadImage(file, "lecture-materials");
+
           if (result.success && result.url) {
             return {
               id: `file_${Date.now()}_${Math.random()
@@ -212,11 +214,15 @@ export default function LecturesManagement() {
               url: result.url,
             };
           } else {
-            alert(`파일 업로드 실패: ${file.name} - ${result.error || '알 수 없는 오류'}`);
+            alert(
+              `파일 업로드 실패: ${file.name} - ${
+                result.error || "알 수 없는 오류"
+              }`
+            );
             return null;
           }
         } catch (uploadError) {
-          console.error('File upload error:', uploadError);
+          console.error("File upload error:", uploadError);
           alert(`파일 업로드 중 오류 발생: ${file.name}`);
           return null;
         }
@@ -238,8 +244,8 @@ export default function LecturesManagement() {
         }));
       }
     } catch (error) {
-      console.error('File upload process error:', error);
-      alert('파일 업로드 중 오류가 발생했습니다.');
+      console.error("File upload process error:", error);
+      alert("파일 업로드 중 오류가 발생했습니다.");
     }
 
     // Reset the file input
@@ -247,17 +253,19 @@ export default function LecturesManagement() {
   };
 
   const removeReferenceMaterial = async (fileId: string) => {
-    const fileToRemove = newLecture.referenceMaterials.find(file => file.id === fileId);
-    
+    const fileToRemove = newLecture.referenceMaterials.find(
+      (file) => file.id === fileId
+    );
+
     if (fileToRemove && isS3Url(fileToRemove.url)) {
       try {
         await deleteImage(fileToRemove.url);
       } catch (error) {
-        console.error('Failed to delete file from S3:', error);
+        console.error("Failed to delete file from S3:", error);
         // 에러가 발생해도 UI에서는 제거 (사용자 경험을 위해)
       }
     }
-    
+
     setNewLecture((prev) => ({
       ...prev,
       referenceMaterials: prev.referenceMaterials.filter(
@@ -327,7 +335,9 @@ export default function LecturesManagement() {
   const filteredLectures = lectures.filter((lecture) => {
     const matchesSearch =
       lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lecture.instructor || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (lecture.instructor || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     const matchesStatus =
       filterStatus === "ALL" ||
       (filterStatus === "ACTIVE" && lecture.isActive === true) ||
@@ -351,7 +361,7 @@ export default function LecturesManagement() {
   ) => {
     setSelectedLecture(lecture);
     setActionType(action);
-    
+
     if (action === "edit" && lecture) {
       setNewLecture({
         title: lecture.title,
@@ -362,7 +372,7 @@ export default function LecturesManagement() {
         referenceMaterials: lecture.referenceMaterials || [],
       });
     }
-    
+
     setModalVisible(true);
   };
 
@@ -394,7 +404,11 @@ export default function LecturesManagement() {
               return lecture;
             })
           );
-          alert(`강의가 ${actionType === "activate" ? "활성화" : "비활성화"}되었습니다.`);
+          alert(
+            `강의가 ${
+              actionType === "activate" ? "활성화" : "비활성화"
+            }되었습니다.`
+          );
           break;
 
         case "delete":
@@ -429,7 +443,7 @@ export default function LecturesManagement() {
     console.log("제목:", newLecture.title);
     console.log("강사명:", newLecture.instructor);
     console.log("카테고리:", newLecture.category);
-    
+
     if (!newLecture.title || !newLecture.instructor || !newLecture.category) {
       alert("제목, 강사명, 카테고리는 필수 필드입니다.");
       return;
@@ -450,18 +464,21 @@ export default function LecturesManagement() {
       }
 
       const isEdit = actionType === "edit" && selectedLecture;
-      const url = isEdit ? `/api/lectures/${selectedLecture.id}` : '/api/lectures';
-      const method = isEdit ? 'PUT' : 'POST';
+      const url = isEdit
+        ? `/api/lectures/${selectedLecture.id}`
+        : "/api/lectures";
+      const method = isEdit ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           title: newLecture.title,
           instructor: newLecture.instructor,
-          description: newLecture.description || "강의 설명이 입력되지 않았습니다.",
+          description:
+            newLecture.description || "강의 설명이 입력되지 않았습니다.",
           category: newLecture.category,
           videoUrl: newLecture.youtubeUrl,
           thumbnail: thumbnailUrl,
@@ -471,7 +488,7 @@ export default function LecturesManagement() {
 
       const result = await response.json();
 
-      if (response.ok && result.status === 'success') {
+      if (response.ok && result.status === "success") {
         if (isEdit) {
           // 수정 모드 - 전체 목록 다시 불러오기
           await fetchLectures();
@@ -483,7 +500,7 @@ export default function LecturesManagement() {
           alert("강의가 성공적으로 생성되었습니다.");
           setCreateModalVisible(false);
         }
-        
+
         // 폼 초기화
         setNewLecture({
           title: "",
@@ -495,7 +512,9 @@ export default function LecturesManagement() {
         });
         setSelectedLecture(null);
       } else {
-        alert(result.message || `강의 ${isEdit ? '수정' : '생성'}에 실패했습니다.`);
+        alert(
+          result.message || `강의 ${isEdit ? "수정" : "생성"}에 실패했습니다.`
+        );
       }
     } catch (error) {
       console.error("강의 저장 오류:", error);
@@ -1286,64 +1305,66 @@ export default function LecturesManagement() {
               ) : currentLectures.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
-                    <Typography color="text.secondary">등록된 강의가 없습니다.</Typography>
+                    <Typography color="text.secondary">
+                      등록된 강의가 없습니다.
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
                 currentLectures.map((lecture) => (
-                <TableRow
-                  key={lecture.id}
-                  hover
-                  sx={{
-                    "&:hover": {
-                      bgcolor: "rgba(0, 0, 0, 0.02)",
-                    },
-                    "& .MuiTableCell-root": {
-                      py: 2,
-                    },
-                  }}
-                >
-                  <TableCell>
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight="600"
-                        sx={{ color: "text.primary", mb: 0.5 }}
-                      >
-                        {lecture.title}
+                  <TableRow
+                    key={lecture.id}
+                    hover
+                    sx={{
+                      "&:hover": {
+                        bgcolor: "rgba(0, 0, 0, 0.02)",
+                      },
+                      "& .MuiTableCell-root": {
+                        py: 2,
+                      },
+                    }}
+                  >
+                    <TableCell>
+                      <Box>
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="600"
+                          sx={{ color: "text.primary", mb: 0.5 }}
+                        >
+                          {lecture.title}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ lineHeight: 1.3 }}
+                        >
+                          {lecture.description}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {lecture.instructor || "강사명"}
                       </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ lineHeight: 1.3 }}
-                      >
-                        {lecture.description}
+                    </TableCell>
+                    <TableCell>{getCategoryTag(lecture.category)}</TableCell>
+                    <TableCell>{getStatusTag(lecture.isActive)}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {lecture.viewCount.toLocaleString()}
                       </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {lecture.instructor || "강사명"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{getCategoryTag(lecture.category)}</TableCell>
-                  <TableCell>{getStatusTag(lecture.isActive)}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {lecture.viewCount.toLocaleString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      color="#9098a4"
-                      sx={{ fontSize: "0.875rem" }}
-                    >
-                      {lecture.createdAt}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{renderActionButtons(lecture)}</TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        color="#9098a4"
+                        sx={{ fontSize: "0.875rem" }}
+                      >
+                        {lecture.createdAt}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>{renderActionButtons(lecture)}</TableCell>
+                  </TableRow>
                 ))
               )}
             </TableBody>
@@ -1419,7 +1440,8 @@ export default function LecturesManagement() {
                     >
                       <Stack spacing={1}>
                         <Typography>
-                          <strong>강사:</strong> {selectedLecture.instructor || "강사명"}
+                          <strong>강사:</strong>{" "}
+                          {selectedLecture.instructor || "강사명"}
                         </Typography>
                         <Typography>
                           <strong>카테고리:</strong> {selectedLecture.category}
@@ -1638,7 +1660,10 @@ export default function LecturesManagement() {
                     fullWidth
                     value={newLecture.title}
                     onChange={(e) =>
-                      setNewLecture((prev) => ({ ...prev, title: e.target.value }))
+                      setNewLecture((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
                     }
                     required
                   />
@@ -1752,10 +1777,18 @@ export default function LecturesManagement() {
               수정 완료
             </Button>
           )}
-          {(actionType === "activate" || actionType === "deactivate" || actionType === "delete") && (
+          {(actionType === "activate" ||
+            actionType === "deactivate" ||
+            actionType === "delete") && (
             <Button
               onClick={confirmAction}
-              color={actionType === "activate" ? "success" : actionType === "delete" ? "error" : "warning"}
+              color={
+                actionType === "activate"
+                  ? "success"
+                  : actionType === "delete"
+                  ? "error"
+                  : "warning"
+              }
               variant="contained"
             >
               {actionType === "activate" && "활성화"}
@@ -1833,54 +1866,62 @@ export default function LecturesManagement() {
             />
 
             {/* 썸네일 미리보기 */}
-            {newLecture.youtubeUrl && (() => {
-              const videoId = extractYouTubeVideoId(newLecture.youtubeUrl);
-              if (videoId) {
-                const thumbnailUrl = getYouTubeThumbnail(videoId);
-                return (
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                      썸네일 미리보기
-                    </Typography>
-                    <Box
-                      sx={{
-                        position: "relative",
-                        display: "inline-block",
-                        borderRadius: 2,
-                        overflow: "hidden",
-                        border: "1px solid #efeff0",
-                        bgcolor: "#fafafa",
-                      }}
-                    >
-                      <img
-                        src={thumbnailUrl}
-                        alt="유튜브 썸네일"
-                        style={{
-                          width: "200px",
-                          height: "112px",
-                          objectFit: "cover",
+            {newLecture.youtubeUrl &&
+              (() => {
+                const videoId = extractYouTubeVideoId(newLecture.youtubeUrl);
+                if (videoId) {
+                  const thumbnailUrl = getYouTubeThumbnail(videoId);
+                  return (
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ mb: 1, fontWeight: 600 }}
+                      >
+                        썸네일 미리보기
+                      </Typography>
+                      <Box
+                        sx={{
+                          position: "relative",
+                          display: "inline-block",
+                          borderRadius: 2,
+                          overflow: "hidden",
+                          border: "1px solid #efeff0",
+                          bgcolor: "#fafafa",
                         }}
-                        onError={(e) => {
-                          // 고화질 썸네일이 없으면 기본 썸네일로 fallback
-                          const target = e.target as HTMLImageElement;
-                          if (target.src.includes('maxresdefault')) {
-                            target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                          } else if (target.src.includes('hqdefault')) {
-                            target.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-                          } else if (target.src.includes('mqdefault')) {
-                            target.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
-                          }
-                        }}
-                      />
+                      >
+                        <img
+                          src={thumbnailUrl}
+                          alt="유튜브 썸네일"
+                          style={{
+                            width: "200px",
+                            height: "112px",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            // 고화질 썸네일이 없으면 기본 썸네일로 fallback
+                            const target = e.target as HTMLImageElement;
+                            if (target.src.includes("maxresdefault")) {
+                              target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            } else if (target.src.includes("hqdefault")) {
+                              target.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                            } else if (target.src.includes("mqdefault")) {
+                              target.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
+                            }
+                          }}
+                        />
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mt: 1, display: "block" }}
+                      >
+                        이 썸네일이 자동으로 저장됩니다
+                      </Typography>
                     </Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                      이 썸네일이 자동으로 저장됩니다
-                    </Typography>
-                  </Box>
-                );
-              }
-              return null;
-            })()}
+                  );
+                }
+                return null;
+              })()}
             <TextField
               label="강의 설명"
               fullWidth
