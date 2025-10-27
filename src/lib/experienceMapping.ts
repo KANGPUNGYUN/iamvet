@@ -5,12 +5,29 @@ export interface ExperienceMapping {
 }
 
 // 경험 카테고리를 계층적으로 매핑
-// "1년 이상"을 선택하면 "1년 이상", "3년 이상", "5년 이상" 모두 포함
+// 필터 선택 시 포함할 수 있는 경험 범위들
 export const EXPERIENCE_HIERARCHY: ExperienceMapping = {
-  "신입": ["신입"],
-  "1년 이상": ["1년 이상", "3년 이상", "5년 이상"],
-  "3년 이상": ["3년 이상", "5년 이상"],
-  "5년 이상": ["5년 이상"]
+  "신입": ["신입", "경력무관", "신입/경력무관"],
+  "1~3년": [
+    "1~3년", "1년", "2년", "3년", "1-3년", "1~2년", "2~3년", 
+    "경력무관", "신입/경력무관"
+  ],
+  "3~5년": [
+    "3~5년", "3년", "4년", "5년", "3-5년", "3~4년", "4~5년",
+    "경력무관"
+  ],
+  "5년이상": [
+    "5년이상", "5년", "6년", "7년", "8년", "9년", "10년", "10년이상",
+    "5-10년", "5~10년", "10년이상", "경력무관"
+  ]
+};
+
+// 추가 매핑 (다양한 형식 지원)
+export const EXPERIENCE_ALIASES: { [key: string]: string } = {
+  "1년 이상": "1~3년",
+  "3년 이상": "3~5년", 
+  "5년 이상": "5년이상",
+  "경력무관": "신입"
 };
 
 // 레거시 매핑 (기존 코드와의 호환성을 위해)
@@ -30,14 +47,17 @@ export function expandExperienceCategories(selectedExperiences: string[]): strin
   const expandedCategories = new Set<string>();
   
   selectedExperiences.forEach(experience => {
+    // Alias 매핑 처리 (다양한 형식 지원)
+    const normalizedExperience = EXPERIENCE_ALIASES[experience] || experience;
+    
     // 레거시 매핑 처리
-    if (LEGACY_EXPERIENCE_MAPPING[experience]) {
-      const mappedExperience = LEGACY_EXPERIENCE_MAPPING[experience][0];
+    if (LEGACY_EXPERIENCE_MAPPING[normalizedExperience]) {
+      const mappedExperience = LEGACY_EXPERIENCE_MAPPING[normalizedExperience][0];
       const hierarchicalCategories = EXPERIENCE_HIERARCHY[mappedExperience] || [mappedExperience];
       hierarchicalCategories.forEach(cat => expandedCategories.add(cat));
     } else {
       // 직접 매핑
-      const hierarchicalCategories = EXPERIENCE_HIERARCHY[experience] || [experience];
+      const hierarchicalCategories = EXPERIENCE_HIERARCHY[normalizedExperience] || [normalizedExperience];
       hierarchicalCategories.forEach(cat => expandedCategories.add(cat));
     }
   });

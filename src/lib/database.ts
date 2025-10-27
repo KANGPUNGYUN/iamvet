@@ -265,13 +265,17 @@ export const getJobsWithPagination = async (params: any) => {
       ? params.experience
       : [params.experience];
     
+    console.log("[DB] Original experience filter:", experiences);
+    
     // 계층적으로 확장된 경험 카테고리 생성
     const expandedExperiences = getExperienceFilterConditions(experiences);
+    console.log("[DB] Expanded experience filter:", expandedExperiences);
     
     if (expandedExperiences.length > 0) {
       paramCount++;
       query += ` AND j.experience && $${paramCount}`;
       queryParams.push(expandedExperiences);
+      console.log("[DB] Experience filter applied:", expandedExperiences);
     }
   }
 
@@ -457,6 +461,17 @@ export const getJobsWithPagination = async (params: any) => {
   }
 
   const totalCount = parseInt(countResult.rows[0]?.total || "0");
+
+  // Experience 값들을 로그로 출력하여 디버깅
+  if (result.rows.length > 0) {
+    console.log('[DB] Sample job experience values:', 
+      result.rows.slice(0, 3).map(job => ({
+        id: job.id,
+        title: job.title,
+        experience: job.experience
+      }))
+    );
+  }
 
   return {
     jobs: result.rows,
