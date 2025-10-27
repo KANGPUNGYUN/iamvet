@@ -1286,7 +1286,7 @@ export default function ResumeDetailPage({
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
                       {resumeData.expectedSalary
-                        ? `${resumeData.expectedSalary}만원`
+                        ? `${Number(resumeData.expectedSalary).toLocaleString()}만원`
                         : "협의"}
                     </span>
                   </div>
@@ -1406,7 +1406,7 @@ export default function ResumeDetailPage({
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
                               {resumeData.expectedSalary
-                                ? `${resumeData.expectedSalary}만원`
+                                ? `${Number(resumeData.expectedSalary).toLocaleString()}만원`
                                 : "협의"}
                             </span>
                           </div>
