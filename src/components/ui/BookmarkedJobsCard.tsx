@@ -20,9 +20,7 @@ interface BookmarkedJobsCardProps {
   jobs?: JobData[];
 }
 
-const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
-  jobs,
-}) => {
+const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({ jobs }) => {
   const [data, setData] = React.useState<JobData[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -40,25 +38,24 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
     try {
       setIsLoading(true);
       setError(null);
-      
-      const response = await fetch('/api/veterinarians/bookmarked-jobs', {
-        credentials: 'include'
+
+      const response = await fetch("/api/veterinarians/bookmarked-jobs", {
+        credentials: "include",
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         setData(result.jobs || []);
       } else {
-        throw new Error('북마크한 공고를 불러오는데 실패했습니다.');
+        throw new Error("북마크한 공고를 불러오는데 실패했습니다.");
       }
     } catch (error) {
-      console.error('북마크한 공고 조회 실패:', error);
-      setError(error instanceof Error ? error.message : '오류가 발생했습니다.');
+      console.error("북마크한 공고 조회 실패:", error);
+      setError(error instanceof Error ? error.message : "오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
   };
-
 
   // 북마크(좋아요) 토글 핸들러
   const handleBookmarkToggle = async (jobId: string | number) => {
@@ -66,10 +63,10 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
     try {
       // 실제로는 좋아요 API를 사용 (북마크 기능이 좋아요로 구현됨)
       const response = await fetch(`/api/jobs/${jobIdString}/like`, {
-        method: 'DELETE', // 좋아요 해제
-        credentials: 'include',
+        method: "DELETE", // 좋아요 해제
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -77,17 +74,17 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
         // 좋아요 해제 성공 시 목록 새로고침
         await fetchBookmarkedJobs();
       } else {
-        throw new Error('북마크 해제에 실패했습니다.');
+        throw new Error("북마크 해제에 실패했습니다.");
       }
     } catch (error) {
-      console.error('북마크 처리 실패:', error);
-      alert('북마크 처리 중 오류가 발생했습니다.');
+      console.error("북마크 처리 실패:", error);
+      alert("북마크 처리 중 오류가 발생했습니다.");
     }
   };
   return (
     <div className="bg-white w-full lg:max-w-[714px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-[20px] font-bold text-primary">찜한 공고</h2>
+        <h2 className="text-[20px] font-bold text-primary">북마크한 공고</h2>
         <Link
           href="/dashboard/veterinarian/job-bookmarks"
           className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
@@ -101,7 +98,9 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff8796] mx-auto mb-2"></div>
-            <p className="text-[#9098A4] text-sm">북마크한 공고를 불러오는 중...</p>
+            <p className="text-[#9098A4] text-sm">
+              북마크한 공고를 불러오는 중...
+            </p>
           </div>
         </div>
       )}
@@ -125,8 +124,12 @@ const BookmarkedJobsCard: React.FC<BookmarkedJobsCardProps> = ({
       {!isLoading && !error && data.length === 0 && (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <p className="text-[#9098A4] text-lg">북마크한 채용공고가 없습니다</p>
-            <p className="text-[#9098A4] text-sm mt-2">관심있는 공고를 북마크해보세요.</p>
+            <p className="text-[#9098A4] text-lg">
+              북마크한 채용공고가 없습니다
+            </p>
+            <p className="text-[#9098A4] text-sm mt-2">
+              관심있는 공고를 북마크해보세요.
+            </p>
           </div>
         </div>
       )}
