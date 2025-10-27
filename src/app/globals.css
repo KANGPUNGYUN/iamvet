@@ -1,6 +1,7 @@
 /* src/app/globals.css */
 @import url("../styles/colors.css");
 @import url("../styles/components/index.css");
+@import url("../styles/html-content.css");
 
 /* Next.js localFont를 사용하므로 수동 @font-face 선언 제거 */
 

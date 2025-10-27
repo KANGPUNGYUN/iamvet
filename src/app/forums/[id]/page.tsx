@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/api/useAuth";
 import { Toast } from "@/components/ui/Toast";
 import { useCommentStore, Comment } from "@/store/commentStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
+// Quill CSS를 동적으로 import하여 production에서도 스타일이 적용되도록 함
+import 'quill/dist/quill.snow.css';
 
 const HTMLContent = dynamic(
   () =>
@@ -418,7 +420,7 @@ export default function ForumDetailPage({
 
             {/* 댓글 작성 */}
             {isAuthenticated ? (
-              <form onSubmit={handleCommentSubmit} className="mb-8">
+              <form onSubmit={handleCommentSubmit} className="mb-8" noValidate>
                 <div className="flex gap-3">
                   <Image
                     src={currentUser?.profileImage || profileImg}
@@ -433,6 +435,10 @@ export default function ForumDetailPage({
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="댓글을 입력하세요"
                       className="w-full min-h-[80px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck="false"
                     />
                     <div className="flex justify-end mt-2">
                       <button
@@ -505,6 +511,10 @@ export default function ForumDetailPage({
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
                             className="w-full min-h-[60px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            spellCheck="false"
                           />
                           <div className="flex justify-end gap-2 mt-2">
                             <button
@@ -629,6 +639,10 @@ export default function ForumDetailPage({
                                       setEditContent(e.target.value)
                                     }
                                     className="w-full min-h-[60px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    autoCapitalize="off"
+                                    spellCheck="false"
                                   />
                                   <div className="flex justify-end gap-2 mt-2">
                                     <button
@@ -678,6 +692,10 @@ export default function ForumDetailPage({
                             }
                             placeholder="답글을 입력하세요"
                             className="w-full min-h-[60px] p-3 border border-[#EFEFF0] rounded-[8px] resize-none focus:outline-none focus:border-[#FF8796] transition-colors"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            spellCheck="false"
                           />
                           <div className="flex justify-end gap-2 mt-2">
                             <button

@@ -16,9 +16,10 @@ export const HTMLContent: React.FC<HTMLContentProps> = ({
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // 링크를 새창으로 열도록 설정
+  // 링크를 새창으로 열도록 설정 및 Quill 스타일 보정
   useEffect(() => {
     if (contentRef.current) {
+      // 링크 처리
       const links = contentRef.current.querySelectorAll('a');
       links.forEach(link => {
         const href = link.getAttribute('href');
@@ -56,6 +57,30 @@ export const HTMLContent: React.FC<HTMLContentProps> = ({
               window.open(fullUrl, '_blank', 'noopener,noreferrer');
             });
           }
+        }
+      });
+
+      // Quill 정렬 클래스가 있는 요소에 인라인 스타일 추가 (production 환경 대비)
+      const alignedElements = contentRef.current.querySelectorAll('[class*="ql-align"]');
+      alignedElements.forEach((element) => {
+        if (element.classList.contains('ql-align-center')) {
+          (element as HTMLElement).style.textAlign = 'center';
+        } else if (element.classList.contains('ql-align-right')) {
+          (element as HTMLElement).style.textAlign = 'right';
+        } else if (element.classList.contains('ql-align-justify')) {
+          (element as HTMLElement).style.textAlign = 'justify';
+        }
+      });
+
+      // Quill 폰트 크기 클래스 처리
+      const sizedElements = contentRef.current.querySelectorAll('[class*="ql-size"]');
+      sizedElements.forEach((element) => {
+        if (element.classList.contains('ql-size-small')) {
+          (element as HTMLElement).style.fontSize = '0.75em';
+        } else if (element.classList.contains('ql-size-large')) {
+          (element as HTMLElement).style.fontSize = '1.5em';
+        } else if (element.classList.contains('ql-size-huge')) {
+          (element as HTMLElement).style.fontSize = '2.5em';
         }
       });
     }

@@ -261,3 +261,141 @@
 .html-content br {
   line-height: 1.6;
 }
+
+/* Quill Editor Specific Styles */
+/* Text alignment - Quill classes */
+.html-content .ql-align-center {
+  text-align: center !important;
+}
+
+.html-content .ql-align-right {
+  text-align: right !important;
+}
+
+.html-content .ql-align-justify {
+  text-align: justify !important;
+}
+
+/* Quill font sizes */
+.html-content .ql-size-small {
+  font-size: 0.75em !important;
+}
+
+.html-content .ql-size-large {
+  font-size: 1.5em !important;
+}
+
+.html-content .ql-size-huge {
+  font-size: 2.5em !important;
+}
+
+/* Quill text colors */
+.html-content .ql-color-red {
+  color: #e60000 !important;
+}
+
+.html-content .ql-color-green {
+  color: #008a00 !important;
+}
+
+.html-content .ql-color-blue {
+  color: #006ae6 !important;
+}
+
+.html-content .ql-color-orange {
+  color: #f90 !important;
+}
+
+.html-content .ql-color-yellow {
+  color: #ff0 !important;
+}
+
+.html-content .ql-color-white {
+  color: #fff !important;
+}
+
+/* Quill background colors */
+.html-content .ql-bg-red {
+  background-color: #e60000 !important;
+}
+
+.html-content .ql-bg-green {
+  background-color: #008a00 !important;
+}
+
+.html-content .ql-bg-blue {
+  background-color: #006ae6 !important;
+}
+
+.html-content .ql-bg-orange {
+  background-color: #f90 !important;
+}
+
+.html-content .ql-bg-yellow {
+  background-color: #ff0 !important;
+}
+
+.html-content .ql-bg-black {
+  background-color: #000 !important;
+}
+
+/* Quill indentation levels */
+.html-content .ql-indent-1 {
+  padding-left: 3em !important;
+}
+
+.html-content .ql-indent-2 {
+  padding-left: 6em !important;
+}
+
+.html-content .ql-indent-3 {
+  padding-left: 9em !important;
+}
+
+.html-content .ql-indent-4 {
+  padding-left: 12em !important;
+}
+
+.html-content .ql-indent-5 {
+  padding-left: 15em !important;
+}
+
+.html-content .ql-indent-6 {
+  padding-left: 18em !important;
+}
+
+.html-content .ql-indent-7 {
+  padding-left: 21em !important;
+}
+
+.html-content .ql-indent-8 {
+  padding-left: 24em !important;
+}
+
+/* Quill fonts */
+.html-content .ql-font-serif {
+  font-family: Georgia, Times New Roman, serif !important;
+}
+
+.html-content .ql-font-monospace {
+  font-family: Monaco, Courier New, monospace !important;
+}
+
+/* Ensure proper display of aligned content */
+.html-content p.ql-align-center,
+.html-content div.ql-align-center {
+  text-align: center !important;
+  width: 100%;
+}
+
+.html-content p.ql-align-right,
+.html-content div.ql-align-right {
+  text-align: right !important;
+  width: 100%;
+}
+
+.html-content p.ql-align-justify,
+.html-content div.ql-align-justify {
+  text-align: justify !important;
+  width: 100%;
+}
