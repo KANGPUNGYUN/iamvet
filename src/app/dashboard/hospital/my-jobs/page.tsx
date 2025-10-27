@@ -107,12 +107,6 @@ export default function HospitalMyJobsPage() {
             <h1 className="text-primary font-title text-[28px] mb-2">
               올린 공고 관리
             </h1>
-            <Link
-              href="/dashboard/hospital/my-jobs/create"
-              className="h-[44px] w-[140px] bg-subtext hover:bg-[#3b394d] p-[10px] gap-[10px] flex items-center justify-center text-[white] rounded-[6px] font-text text-semibold text-[18px]"
-            >
-              <EditIcon size="20" /> 글쓰기
-            </Link>
           </div>
 
           {/* 필터링 및 정렬 */}

@@ -14,6 +14,8 @@ import { useJobs, JobFilters } from "@/hooks/api/useJobs";
 import { useLikeStore } from "@/stores/likeStore";
 import { workTypeOptions } from "@/constants/options";
 import { useAuth } from "@/hooks/api/useAuth";
+import Link from "next/link";
+import { EditIcon } from "public/icons";
 
 export default function JobsPage() {
   const router = useRouter();
@@ -439,12 +441,24 @@ export default function JobsPage() {
                   채용 공고
                 </h1>
 
-                {/* 검색바 */}
-                <SearchBar
-                  value={filters.searchKeyword}
-                  onChange={handleSearchChange}
-                  placeholder="키워드로 검색"
-                />
+                <div className="flex items-center gap-4">
+                  {/* 검색바 */}
+                  <SearchBar
+                    value={filters.searchKeyword}
+                    onChange={handleSearchChange}
+                    placeholder="키워드로 검색"
+                  />
+
+                  {/* 병원 계정일 때 글쓰기 버튼 */}
+                  {isHospitalUser && (
+                    <Link
+                      href="/dashboard/hospital/my-jobs/create"
+                      className="h-[44px] w-[140px] bg-subtext hover:bg-[#3b394d] p-[10px] gap-[10px] flex items-center justify-center text-[white] rounded-[6px] font-text text-semibold text-[18px] whitespace-nowrap"
+                    >
+                      <EditIcon size="20" /> 글쓰기
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {/* 결과 정보 및 정렬 */}
@@ -686,6 +700,16 @@ export default function JobsPage() {
                 onChange={handleSearchChange}
                 placeholder="키워드로 검색"
               />
+
+              {/* 병원 계정일 때 글쓰기 버튼 */}
+              {isHospitalUser && (
+                <Link
+                  href="/dashboard/hospital/my-jobs/create"
+                  className="h-[44px] max-w-[200px] px-4 bg-subtext hover:bg-[#3b394d] flex items-center justify-center text-[white] rounded-[6px] font-text text-[16px] gap-2 whitespace-nowrap"
+                >
+                  <EditIcon size="20" /> 채용공고 작성하기
+                </Link>
+              )}
 
               {/* 총 결과 수와 정렬 */}
               <div className="flex justify-between items-center">
