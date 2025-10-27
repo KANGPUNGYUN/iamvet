@@ -18,6 +18,15 @@ interface Resume {
   createdAt: string;
   updatedAt: string;
   isLiked?: boolean;
+  profileImage?: string;
+  experience?: string;
+  preferredLocation?: string;
+  keywords?: string[];
+  lastAccessDate?: string;
+  lastLoginAt?: Date;
+  isNew?: boolean;
+  isBookmarked?: boolean;
+  viewCount?: number;
 }
 
 interface ResumesData {

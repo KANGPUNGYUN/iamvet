@@ -133,6 +133,9 @@ export async function GET(request: NextRequest) {
           isNew: false,
           isBookmarked: true, // 북마크된 항목이므로 true
           viewCount: resume.users.veterinarian_profiles?.viewCount || 0,
+          workTypes: resume.workTypes || [], // 근무형태 정보 추가
+          expectedSalary: resume.expectedSalary || null, // 희망 급여 정보 추가
+          startDate: resume.startDate || null, // 입사 가능일 정보 추가
           createdAt: resume.createdAt,
           updatedAt: resume.updatedAt
         }));

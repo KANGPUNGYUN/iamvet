@@ -14,6 +14,7 @@ import { useLikeStore } from "@/stores/likeStore";
 import { useHospitalAuth } from "@/utils/hospitalAuthGuard";
 import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
 import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
+import { workTypeOptions } from "@/constants/options";
 
 export default function ResumesPage() {
   const router = useRouter();
@@ -230,9 +231,12 @@ export default function ResumesPage() {
       // 근무 형태 (workTypes)
       "full-time": "정규직",
       "part-time": "파트타임",
+      full_time: "정규직",
+      part_time: "파트타임",
       contract: "계약직",
       freelance: "프리랜서",
-      internship: "인턴십",
+      internship: "인턴",
+      intern: "인턴",
 
       // 숙련도 (proficiency)
       beginner: "초급",
@@ -241,7 +245,7 @@ export default function ResumesPage() {
       expert: "전문가",
     };
 
-    return labelMap[keyword.toLowerCase()] || keyword;
+    return keyword ? (labelMap[keyword.toLowerCase()] || keyword) : "";
   };
 
   // 필터링 로직 (API 데이터 직접 사용, 빈 값으로 기본값 설정)
@@ -318,17 +322,18 @@ export default function ResumesPage() {
 
     // 근무 형태 필터
     if (appliedFilters.workType.length > 0) {
-      filtered = filtered.filter((resume) =>
-        appliedFilters.workType.some((type) => {
-          const workTypes = resume.originalData.workTypes || [];
-          // 한국어로 저장되므로 직접 비교
-          return (
-            workTypes.includes(type) ||
-            // 영어로 저장된 경우를 위한 변환
-            workTypes.some((wt: string) => getKoreanLabel(wt) === type)
-          );
-        })
-      );
+      filtered = filtered.filter((resume) => {
+        const workTypes = resume.originalData.workTypes || [];
+        
+        return appliedFilters.workType.some((filterType) => {
+          return workTypes.some((workType: string) => {
+            const hasDirectMatch = workType === filterType;
+            const hasLabelMatch = getKoreanLabel(workType) === filterType;
+            
+            return hasDirectMatch || hasLabelMatch;
+          });
+        });
+      });
     }
 
     // 경력 필터
@@ -655,9 +660,11 @@ export default function ResumesPage() {
                       handleTempFilterChange("workType", value)
                     }
                   >
-                    <FilterBox value="정규직">정규직</FilterBox>
-                    <FilterBox value="파트타임">파트타임</FilterBox>
-                    <FilterBox value="계약직">계약직</FilterBox>
+                    {workTypeOptions.map((option) => (
+                      <FilterBox key={option.value} value={option.value}>
+                        {option.label}
+                      </FilterBox>
+                    ))}
                   </FilterBox.Group>
                 </div>
 
@@ -970,9 +977,11 @@ export default function ResumesPage() {
                             handleTempFilterChange("workType", value)
                           }
                         >
-                          <FilterBox value="정규직">정규직</FilterBox>
-                          <FilterBox value="파트타임">파트타임</FilterBox>
-                          <FilterBox value="계약직">계약직</FilterBox>
+                          {workTypeOptions.map((option) => (
+                            <FilterBox key={option.value} value={option.value}>
+                              {option.label}
+                            </FilterBox>
+                          ))}
                         </FilterBox.Group>
                       </div>
 

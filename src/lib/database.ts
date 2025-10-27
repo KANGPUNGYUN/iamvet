@@ -915,6 +915,9 @@ export const getResumesWithPagination = async (params: any) => {
       dr.position,
       dr.specialties,
       dr."preferredRegions",
+      dr."workTypes",
+      dr."expectedSalary",
+      dr."startDate",
       dr."createdAt",
       dr."updatedAt",
       u."lastLoginAt"
@@ -938,6 +941,13 @@ export const getResumesWithPagination = async (params: any) => {
     paramCount++;
     query += ` AND $${paramCount} = ANY(dr."preferredRegions")`;
     queryParams.push(params.region);
+  }
+
+  // 근무 형태 필터
+  if (params.workType) {
+    paramCount++;
+    query += ` AND $${paramCount} = ANY(dr."workTypes")`;
+    queryParams.push(params.workType);
   }
 
   // 정렬
