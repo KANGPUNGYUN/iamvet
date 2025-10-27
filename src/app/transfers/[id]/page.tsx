@@ -35,6 +35,8 @@ import { Button } from "@/components/ui/Button";
 // 이미지 슬라이더 컴포넌트
 const ImageSlider = ({ images }: { images: string[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) =>
@@ -48,10 +50,42 @@ const ImageSlider = ({ images }: { images: string[] }) => {
     );
   };
 
+  // 터치 시작
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  // 터치 중
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  // 터치 끝
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && images.length > 1) {
+      goToNext();
+    }
+    if (isRightSwipe && images.length > 1) {
+      goToPrevious();
+    }
+  };
+
   return (
     <div className="w-full">
       {/* 메인 이미지 */}
-      <div className="relative w-full h-full max-w-[970px] lg:h-[646px] min-h-[310px] rounded-[8px] bg-gray-100 overflow-hidden mb-4">
+      <div 
+        className="relative w-full h-full max-w-[970px] lg:h-[646px] min-h-[310px] rounded-[8px] bg-gray-100 overflow-hidden mb-4"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <Image
           src={images[currentIndex]}
           alt={`슬라이드 ${currentIndex + 1}`}
