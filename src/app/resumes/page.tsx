@@ -294,7 +294,7 @@ export default function ResumesPage() {
         .toLocaleDateString("ko-KR")
         .replace(/\//g, "."),
       lastLoginAt: resume.lastLoginAt || null, // 최근 로그인 정보 추가
-      profileImage: resume.photo || undefined,
+      profileImage: resume.photo || undefined, // 이력서 사진만 사용 (users.profileImage 제외)
       createdAt: new Date(resume.createdAt),
       // 원본 데이터도 보관 (필터링용)
       originalData: resume,
