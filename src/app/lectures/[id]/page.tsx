@@ -498,7 +498,7 @@ export default function LectureDetailPage({
               </div>
 
               {/* 영상 소개 */}
-              <section className="border border-[#EFEFF0] rounded-[16px] p-[40px]">
+              <section className="border border-[#EFEFF0] rounded-[16px] p-[20px] xl:p-[40px]">
                 <div>
                   <h2 className="text-[24px] font-title title-medium text-sub">
                     영상 소개
@@ -568,7 +568,7 @@ export default function LectureDetailPage({
               </section>
 
               {/* 댓글 섹션 */}
-              <div className="border border-[#EFEFF0] rounded-[16px] p-[40px] mt-[30px]">
+              <div className="border border-[#EFEFF0] rounded-[16px] p-[20px] xl:p-[40px] mt-[30px]">
                 <h2 className="text-[24px] font-title title-medium text-sub mb-4">
                   댓글 ({getTotalCommentCount()}개)
                 </h2>
