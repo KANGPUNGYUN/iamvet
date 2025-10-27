@@ -9,7 +9,7 @@ import { Toast } from "@/components/ui/Toast";
 import { useCommentStore, Comment } from "@/store/commentStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
 // Quill CSS를 동적으로 import하여 production에서도 스타일이 적용되도록 함
-import 'quill/dist/quill.snow.css';
+import "quill/dist/quill.snow.css";
 
 const HTMLContent = dynamic(
   () =>
@@ -75,6 +75,59 @@ export default function ForumDetailPage({
   const [currentForum, setCurrentForum] = useState<ForumDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 조회수 증가 함수
+  const incrementViewCount = async () => {
+    try {
+      console.log(`[ForumDetail] 조회수 증가 API 호출 시작 - Forum ID: ${id}`);
+
+      const token = localStorage.getItem("accessToken");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        console.log("[ForumDetail] 인증 토큰 포함하여 요청");
+      } else {
+        console.log("[ForumDetail] 익명 사용자로 요청");
+      }
+
+      const apiUrl = `/api/forums/${id}/view`;
+      console.log(`[ForumDetail] API URL: ${apiUrl}`);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers,
+      });
+
+      console.log(`[ForumDetail] API 응답 상태: ${response.status}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[ForumDetail] API 응답 데이터:", data);
+
+        if (data.status === "success" && data.data?.viewCount) {
+          console.log("[ForumDetail] 조회수 증가 성공:", data.data.viewCount);
+          setForumViewCount(id, data.data.viewCount);
+        } else {
+          console.warn(
+            "[ForumDetail] 조회수 증가 실패 - 응답 데이터 이상:",
+            data
+          );
+        }
+      } else {
+        const errorData = await response.text();
+        console.error(
+          "[ForumDetail] 조회수 증가 실패:",
+          response.status,
+          errorData
+        );
+      }
+    } catch (error) {
+      console.error("[ForumDetail] 조회수 증가 중 오류:", error);
+    }
+  };
+
   // Zustand 스토어와 로그인 상태 사용
   const {
     comments,
@@ -89,13 +142,7 @@ export default function ForumDetailPage({
   const { user: currentUser, isAuthenticated } = useAuth();
 
   // 조회수 상태 관리 (Zustand 스토어)
-  const {
-    setForumViewCount,
-    incrementForumViewCount,
-    getForumViewCount,
-    markAsViewed,
-    isAlreadyViewed,
-  } = useViewCountStore();
+  const { setForumViewCount, getForumViewCount } = useViewCountStore();
 
   // 포럼 상세 데이터 가져오기
   useEffect(() => {
@@ -111,21 +158,14 @@ export default function ForumDetailPage({
             console.log("Current user id:", currentUser?.id);
             setCurrentForum(data.data);
 
-            // 조회수 초기화 및 실시간 증가 처리
+            // 조회수 설정
             if (data.data?.viewCount !== undefined) {
               console.log(
                 "[ForumDetail] 서버에서 받은 조회수:",
                 data.data.viewCount
               );
-              // 서버에서 받은 조회수로 초기화
+              // 서버에서 받은 초기 조회수 설정
               setForumViewCount(id, data.data.viewCount);
-
-              // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
-              if (!isAlreadyViewed("forum", id)) {
-                console.log("[ForumDetail] 조회수 실시간 증가:", id);
-                incrementForumViewCount(id);
-                markAsViewed("forum", id);
-              }
             }
 
             // 댓글은 별도로 로드
@@ -142,7 +182,15 @@ export default function ForumDetailPage({
     };
 
     fetchForumDetail();
-  }, [id, fetchComments, currentUser]);
+  }, [id, fetchComments]);
+
+  // 조회수 증가를 위한 별도 useEffect
+  useEffect(() => {
+    if (currentForum) {
+      console.log("[ForumDetail] 포럼 데이터 로드 완료, 조회수 증가 API 호출");
+      incrementViewCount();
+    }
+  }, [currentForum?.id]); // currentForum이 설정될 때마다 실행
 
   if (isLoading) {
     return (

@@ -10,10 +10,12 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { EditIcon } from "public/icons";
+import { useViewCountStore } from "@/stores/viewCountStore";
 
 export default function ForumsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setForumViewCount } = useViewCountStore();
 
   // 필터 상태 관리 (UI용 - 아직 적용되지 않은 상태)
   const [filters, setFilters] = useState({
@@ -113,11 +115,15 @@ export default function ForumsPage() {
               if (forum.animalType) tags.push(forum.animalType);
               if (forum.medicalField) tags.push(forum.medicalField);
 
+              // 조회수를 스토어에 설정
+              const viewCount = forum.viewCount || 0;
+              setForumViewCount(forum.id, viewCount);
+
               return {
                 id: forum.id, // parseInt 제거하여 문자열 ID 그대로 사용
                 title: forum.title,
                 tags,
-                viewCount: forum.viewCount || 0,
+                viewCount,
                 commentCount: forum.commentCount || 0,
                 createdAt: new Date(forum.createdAt),
               };

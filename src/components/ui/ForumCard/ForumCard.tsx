@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EyeIcon, CommentIcon } from "public/icons";
 import { Tag } from "../Tag";
+import { useViewCountStore } from "@/stores/viewCountStore";
 
 export interface ForumCardProps {
   id: string;
@@ -23,6 +24,8 @@ export default function ForumCard({
   updatedAt,
   onClick,
 }: ForumCardProps) {
+  const { getForumViewCount } = useViewCountStore();
+  
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("ko-KR", {
       year: "numeric",
@@ -32,6 +35,9 @@ export default function ForumCard({
   };
 
   const displayDate = updatedAt ? updatedAt : createdAt;
+  
+  // 스토어에서 조회수를 가져오되, 없으면 props의 viewCount 사용
+  const currentViewCount = getForumViewCount(id) || viewCount;
 
   return (
     <Link href={`/forums/${id}`} onClick={onClick}>
@@ -55,7 +61,7 @@ export default function ForumCard({
             <div className="flex items-center gap-4 text-[#9CA3AF]">
               <div className="flex items-center gap-1">
                 <EyeIcon currentColor="#9CA3AF" />
-                <span className="text-[14px]">{viewCount}</span>
+                <span className="text-[14px]">{currentViewCount.toLocaleString()}</span>
               </div>
               <div className="flex items-center gap-1">
                 <CommentIcon currentColor="#9CA3AF" />

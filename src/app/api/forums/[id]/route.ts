@@ -3,13 +3,11 @@ import { withAuth } from "@/lib/middleware";
 import {
   createApiResponse,
   createErrorResponse,
-  generateUserIdentifier,
 } from "@/lib/utils";
 import {
   getForumById,
   updateForum,
   deleteForum,
-  incrementForumViewCount,
   getForumComments,
 } from "@/lib/database";
 import { verifyToken } from "@/lib/auth";
@@ -27,7 +25,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const forumId = params.id;
 
     // 임상포럼 게시글 조회
-    const forum = await getForumById(forumId);
+    let forum = await getForumById(forumId);
     if (!forum) {
       return NextResponse.json(
         createErrorResponse("임상포럼 게시글을 찾을 수 없습니다"),
@@ -46,13 +44,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       }
     }
 
-    // 조회수 증가 (회원/비회원 모두 처리, 24시간 중복 방지)
-    try {
-      const userIdentifier = generateUserIdentifier(request, userId);
-      await incrementForumViewCount(forumId, userIdentifier, userId);
-    } catch (error) {
-      console.warn("View count increment failed (table may not exist):", error);
-    }
+    // 조회수 증가는 별도의 /view API에서 처리하므로 여기서는 제거
+    console.log(`[Forum ${forumId}] Forum data retrieved, viewCount: ${forum.viewCount}`);
 
     // 좋아요 여부 확인 (로그인한 경우에만)
     let isLiked = false;
