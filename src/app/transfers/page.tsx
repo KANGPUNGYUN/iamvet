@@ -185,13 +185,11 @@ export default function TransfersPage() {
         .filter((transfer: any) => transfer.isLiked)
         .map((transfer: any) => transfer.id);
 
-      if (likedTransferIds.length > 0) {
-        console.log(
-          "[Transfer Like] 서버에서 받은 좋아요 양도양수:",
-          likedTransferIds
-        );
-        initializeTransferLikes(likedTransferIds);
-      }
+      console.log(
+        "[Transfer Like] 서버에서 받은 좋아요 양도양수:",
+        likedTransferIds
+      );
+      initializeTransferLikes(likedTransferIds);
     }
   }, [transfersData, initializeTransferLikes]);
 

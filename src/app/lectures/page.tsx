@@ -186,13 +186,11 @@ export default function LecturesPage() {
           .filter((lecture: any) => lecture.isLiked)
           .map((lecture: any) => lecture.id);
 
-        if (likedLectureIds.length > 0) {
-          console.log(
-            "[LecturesPage] 서버에서 받은 좋아요 강의:",
-            likedLectureIds
-          );
-          initializeLectureLikes(likedLectureIds);
-        }
+        console.log(
+          "[LecturesPage] 서버에서 받은 좋아요 강의:",
+          likedLectureIds
+        );
+        initializeLectureLikes(likedLectureIds);
       } else {
         throw new Error(
           result.message || "강의 목록을 불러오는데 실패했습니다."

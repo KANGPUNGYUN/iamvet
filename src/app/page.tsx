@@ -245,33 +245,29 @@ export default function HomePage() {
 
   // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
   React.useEffect(() => {
-    const resumes = resumesData?.data || [];
-    if (resumes.length > 0) {
+    if (resumesData) {
+      const resumes = resumesData.data || [];
       const likedResumeIds = resumes
         .filter((resume: any) => resume.isLiked)
         .map((resume: any) => resume.id);
 
-      if (likedResumeIds.length > 0) {
-        console.log(
-          "[Resume Like] 서버에서 받은 좋아요 이력서:",
-          likedResumeIds
-        );
-        initializeResumeLikes(likedResumeIds);
-      }
+      console.log(
+        "[Resume Like] 서버에서 받은 좋아요 이력서:",
+        likedResumeIds
+      );
+      initializeResumeLikes(likedResumeIds);
     }
   }, [resumesData, initializeResumeLikes]);
 
   React.useEffect(() => {
-    const jobs = jobsData?.data?.jobs || [];
-    if (jobs.length > 0) {
+    if (jobsData?.data?.jobs) {
+      const jobs = jobsData.data.jobs || [];
       const likedJobIds = jobs
         .filter((job: any) => job.isLiked)
         .map((job: any) => job.id);
 
-      if (likedJobIds.length > 0) {
-        console.log("[Job Like] 서버에서 받은 좋아요 채용공고:", likedJobIds);
-        initializeJobLikes(likedJobIds);
-      }
+      console.log("[Job Like] 서버에서 받은 좋아요 채용공고:", likedJobIds);
+      initializeJobLikes(likedJobIds);
     }
   }, [jobsData, initializeJobLikes]);
 
@@ -289,32 +285,29 @@ export default function HomePage() {
         }
       });
 
-      if (allLikedLectureIds.length > 0) {
-        console.log(
-          "[Popular Categories Lecture Like] 서버에서 받은 좋아요 강의:",
-          allLikedLectureIds
-        );
-        initializeLectureLikes(allLikedLectureIds);
-      }
+      console.log(
+        "[Popular Categories Lecture Like] 서버에서 받은 좋아요 강의:",
+        allLikedLectureIds
+      );
+      initializeLectureLikes(allLikedLectureIds);
     }
   }, [popularCategories, initializeLectureLikes]);
 
   // Transfer 좋아요 상태 동기화
   React.useEffect(() => {
-    if (allTransfers.length > 0) {
+    if (transfersData?.data?.transfers) {
+      const allTransfers = transfersData.data.transfers || [];
       const likedTransferIds = allTransfers
         .filter((transfer: any) => transfer.isLiked)
         .map((transfer: any) => transfer.id);
 
-      if (likedTransferIds.length > 0) {
-        console.log(
-          "[Transfer Like] 서버에서 받은 좋아요 양도양수:",
-          likedTransferIds
-        );
-        initializeTransferLikes(likedTransferIds);
-      }
+      console.log(
+        "[Transfer Like] 서버에서 받은 좋아요 양도양수:",
+        likedTransferIds
+      );
+      initializeTransferLikes(likedTransferIds);
     }
-  }, [allTransfers, initializeTransferLikes]);
+  }, [transfersData, initializeTransferLikes]);
 
   // 이력서 좋아요/취소 토글 핸들러 (Zustand 스토어 사용)
   const handleResumeLike = async (resumeId: string | number) => {

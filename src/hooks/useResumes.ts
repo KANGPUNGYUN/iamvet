@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface Resume {
   id: string;
@@ -36,7 +36,25 @@ export function useResumes(params?: {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 파라미터 메모이제이션
+  const memoizedParams = useMemo(() => {
+    if (!params) return null;
+    return {
+      page: params.page,
+      limit: params.limit,
+      sort: params.sort
+    };
+  }, [params?.page, params?.limit, params?.sort]);
+
   useEffect(() => {
+    // params가 없으면 API 호출하지 않음
+    if (!memoizedParams) {
+      setData(null);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
     async function fetchResumes() {
       try {
         console.log("[useResumes] 이력서 데이터 조회 시작");
@@ -44,9 +62,9 @@ export function useResumes(params?: {
         
         // API 라우트를 직접 호출하여 좋아요 정보를 포함한 데이터 가져오기
         const queryParams = new URLSearchParams();
-        if (params?.page) queryParams.append('page', params.page.toString());
-        if (params?.limit) queryParams.append('limit', params.limit.toString());
-        if (params?.sort) queryParams.append('sort', params.sort);
+        if (memoizedParams?.page) queryParams.append('page', memoizedParams.page.toString());
+        if (memoizedParams?.limit) queryParams.append('limit', memoizedParams.limit.toString());
+        if (memoizedParams?.sort) queryParams.append('sort', memoizedParams.sort);
         
         const url = `/api/resumes?${queryParams.toString()}`;
         console.log("[useResumes] 요청 URL:", url);
@@ -74,7 +92,7 @@ export function useResumes(params?: {
     }
 
     fetchResumes();
-  }, [params?.page, params?.limit, params?.sort]);
+  }, [memoizedParams]);
 
   return { data, isLoading, error };
 }

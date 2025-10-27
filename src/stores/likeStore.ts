@@ -92,8 +92,8 @@ export const useLikeStore = create<LikeState>((set, get) => ({
   },
   
   initializeJobLikes: (jobIds: string[]) => {
-    set((state) => {
-      const newLikedJobs = new Set([...Array.from(state.likedJobs), ...jobIds]);
+    set(() => {
+      const newLikedJobs = new Set(jobIds);
       console.log(`[LikeStore] Job 좋아요 초기화:`, Array.from(newLikedJobs));
       return { likedJobs: newLikedJobs };
     });
@@ -122,8 +122,8 @@ export const useLikeStore = create<LikeState>((set, get) => ({
   },
   
   initializeLectureLikes: (lectureIds: string[]) => {
-    set((state) => {
-      const newLikedLectures = new Set([...Array.from(state.likedLectures), ...lectureIds]);
+    set(() => {
+      const newLikedLectures = new Set(lectureIds);
       console.log(`[LikeStore] Lecture 좋아요 초기화:`, Array.from(newLikedLectures));
       return { likedLectures: newLikedLectures };
     });
@@ -152,8 +152,8 @@ export const useLikeStore = create<LikeState>((set, get) => ({
   },
   
   initializeTransferLikes: (transferIds: string[]) => {
-    set((state) => {
-      const newLikedTransfers = new Set([...Array.from(state.likedTransfers), ...transferIds]);
+    set(() => {
+      const newLikedTransfers = new Set(transferIds);
       console.log(`[LikeStore] Transfer 좋아요 초기화:`, Array.from(newLikedTransfers));
       return { likedTransfers: newLikedTransfers };
     });

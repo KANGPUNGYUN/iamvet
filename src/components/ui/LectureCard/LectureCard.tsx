@@ -2,7 +2,6 @@ import { BookmarkFilledIcon, BookmarkIcon } from "public/icons";
 import React from "react";
 import { Tag } from "../Tag";
 import Image from "next/image";
-import { useLikeStore } from "@/stores/likeStore";
 
 interface LectureCardProps {
   id: string;
@@ -27,10 +26,8 @@ const LectureCard: React.FC<LectureCardProps> = ({
   onLike,
   onClick,
 }) => {
-  const { isLectureLiked } = useLikeStore();
-
-  // Zustand 스토어에서 좋아요 상태를 가져오고, 없으면 props에서 가져옴
-  const currentIsLiked = id ? isLectureLiked(id) : isLiked;
+  // props로 전달받은 isLiked 값을 그대로 사용 (중복 호출 방지)
+  const currentIsLiked = isLiked;
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();

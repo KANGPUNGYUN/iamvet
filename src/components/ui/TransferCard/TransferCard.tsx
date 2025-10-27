@@ -83,6 +83,11 @@ const TransferCard: React.FC<TransferCardProps> = ({
     onLike?.();
   };
 
+  // props의 isLiked 변경을 감지하여 로컬 상태 동기화
+  useEffect(() => {
+    setLocalIsLiked(isLiked);
+  }, [isLiked]);
+
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 640);
