@@ -328,7 +328,9 @@ export default function ResumePage() {
         position: existingResume.position || "",
         specialties: existingResume.specialties || [],
         preferredRegions: existingResume.preferredRegions || [],
-        expectedSalary: formatNumberWithCommas(existingResume.expectedSalary || ""),
+        expectedSalary: formatNumberWithCommas(
+          existingResume.expectedSalary || ""
+        ),
         workTypes: existingResume.workTypes || [],
         startDate: existingResume.startDate || "",
         preferredWeekdays: existingResume.preferredWeekdays || [],
@@ -361,7 +363,7 @@ export default function ResumePage() {
               ],
         educations:
           existingResume.educations?.length > 0
-            ? existingResume.educations.map(edu => ({
+            ? existingResume.educations.map((edu) => ({
                 ...edu,
                 gpa: formatNumberWithCommas(edu.gpa || ""),
                 totalGpa: formatNumberWithCommas(edu.totalGpa || ""),
@@ -686,7 +688,7 @@ export default function ResumePage() {
         position: resumeData.position,
         specialties: resumeData.specialties,
         preferredRegions: resumeData.preferredRegions,
-        expectedSalary: resumeData.expectedSalary.replace(/,/g, ''),
+        expectedSalary: resumeData.expectedSalary.replace(/,/g, ""),
         workTypes: resumeData.workTypes,
         startDate: resumeData.startDate,
         preferredWeekdays: resumeData.preferredWeekdays,
@@ -707,8 +709,8 @@ export default function ResumePage() {
         })),
         educations: resumeData.educations.map((edu) => ({
           ...edu,
-          gpa: edu.gpa.replace(/,/g, ''),
-          totalGpa: edu.totalGpa.replace(/,/g, ''),
+          gpa: edu.gpa.replace(/,/g, ""),
+          totalGpa: edu.totalGpa.replace(/,/g, ""),
           startDate: edu.startDate ? new Date(edu.startDate) : null,
           endDate: edu.endDate ? new Date(edu.endDate) : null,
         })),
@@ -756,9 +758,9 @@ export default function ResumePage() {
 
   return (
     <div className="bg-white">
-      <div className="max-w-5xl mx-auto p-4 min-h-screen">
+      <div className="max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">
         <div className="mb-6">
-          <h1 className="font-title title-medium text-[36px] mb-1">
+          <h1 className="text-primary font-title text-[28px] mb-1">
             나의 이력서
           </h1>
         </div>
