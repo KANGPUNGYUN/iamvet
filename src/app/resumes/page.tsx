@@ -234,9 +234,7 @@ export default function ResumesPage() {
       full_time: "정규직",
       part_time: "파트타임",
       contract: "계약직",
-      freelance: "프리랜서",
       internship: "인턴",
-      intern: "인턴",
 
       // 숙련도 (proficiency)
       beginner: "초급",
@@ -245,7 +243,7 @@ export default function ResumesPage() {
       expert: "전문가",
     };
 
-    return keyword ? (labelMap[keyword.toLowerCase()] || keyword) : "";
+    return keyword ? labelMap[keyword.toLowerCase()] || keyword : "";
   };
 
   // 필터링 로직 (API 데이터 직접 사용, 빈 값으로 기본값 설정)
@@ -320,16 +318,25 @@ export default function ResumesPage() {
       );
     }
 
-    // 근무 형태 필터
+    // 근무 형태 필터 (현재 API에서 workTypes 데이터를 제공하지 않으므로 비활성화)
     if (appliedFilters.workType.length > 0) {
+      console.log("근무형태 필터링 시도:", appliedFilters.workType);
+      console.log("API 응답 샘플:", apiData?.data?.[0]);
+
       filtered = filtered.filter((resume) => {
         const workTypes = resume.originalData.workTypes || [];
-        
+        console.log(`Resume ${resume.id} workTypes:`, workTypes);
+
+        // workTypes가 비어있으면 모든 항목 통과 (API에서 데이터를 제공하지 않음)
+        if (workTypes.length === 0) {
+          return true;
+        }
+
         return appliedFilters.workType.some((filterType) => {
           return workTypes.some((workType: string) => {
             const hasDirectMatch = workType === filterType;
             const hasLabelMatch = getKoreanLabel(workType) === filterType;
-            
+
             return hasDirectMatch || hasLabelMatch;
           });
         });
