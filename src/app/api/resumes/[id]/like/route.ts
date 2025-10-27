@@ -57,6 +57,8 @@ export const DELETE = withAuth(async (
     const resolvedParams = await params;
     const resumeId = resolvedParams.id;
 
+    console.log(`[Resume Like DELETE] 사용자: ${user.userId}, 이력서: ${resumeId}`);
+
     const existingLike = await (prisma as any).resume_likes.findUnique({
       where: {
         userId_resumeId: {
@@ -66,8 +68,12 @@ export const DELETE = withAuth(async (
       }
     });
 
+    console.log(`[Resume Like DELETE] 기존 좋아요 확인:`, existingLike);
+
     if (!existingLike) {
-      return NextResponse.json(createErrorResponse('좋아요하지 않은 이력서입니다.'), { status: 400 });
+      const errorResponse = createErrorResponse('좋아요하지 않은 이력서입니다.');
+      console.log(`[Resume Like DELETE] 좋아요 없음 에러 응답:`, errorResponse);
+      return NextResponse.json(errorResponse, { status: 400 });
     }
 
     await (prisma as any).resume_likes.delete({

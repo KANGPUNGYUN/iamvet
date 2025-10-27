@@ -103,16 +103,12 @@ export default function TalentManagementPage() {
         setTotalPages(pages);
         setTotalResumes(totalCount);
         
-        // 초기 좋아요 상태 동기화
+        // 북마크된 이력서 페이지이므로 모든 이력서를 좋아요 상태로 초기화
         if (Array.isArray(resumesData)) {
-          const likedResumeIds = resumesData
-            .filter((resume: any) => resume.isLiked)
-            .map((resume: any) => resume.userId || resume.id);
+          const allResumeUserIds = resumesData.map((resume: any) => resume.userId || resume.id);
           
-          if (likedResumeIds.length > 0) {
-            console.log('[TalentManagement] 서버에서 받은 좋아요 이력서:', likedResumeIds);
-            initializeResumeLikes(likedResumeIds);
-          }
+          console.log('[TalentManagement] 모든 북마크된 이력서 ID:', allResumeUserIds);
+          initializeResumeLikes(allResumeUserIds);
         }
       } else {
         throw new Error(result.message || "북마크한 이력서 목록을 불러오는데 실패했습니다.");
@@ -132,9 +128,12 @@ export default function TalentManagementPage() {
 
   // 이력서 데이터 변환 함수
   const transformResumeData = (resume: ResumeData) => {
+    // 서버에서 북마크 정보가 있는지 확인 (isBookmarked, isLiked 등)
+    const serverBookmarkStatus = (resume as any).isBookmarked || (resume as any).isLiked;
+    
     return {
       ...resume,
-      isBookmarked: isResumeLiked((resume as any).userId || resume.id), // Zustand 스토어에서 좋아요 상태 가져오기 (userId 기준)
+      isBookmarked: serverBookmarkStatus !== undefined ? serverBookmarkStatus : true, // 북마크 페이지이므로 기본값은 true
     };
   };
 
@@ -147,9 +146,7 @@ export default function TalentManagementPage() {
     const isCurrentlyLiked = isResumeLiked(userId);
     
     console.log(`[TalentManagement Like] ${resumeId} - 현재 상태: ${isCurrentlyLiked ? '좋아요됨' : '좋아요안됨'} -> ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'}`);
-    
-    // 낙관적 업데이트: UI를 먼저 변경
-    toggleResumeLike(userId);
+    console.log(`[TalentManagement Like] userId: ${userId}, resumeId: ${resumeId}`);
 
     try {
       const method = isCurrentlyLiked ? 'DELETE' : 'POST';
@@ -164,13 +161,16 @@ export default function TalentManagementPage() {
         },
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('JSON 파싱 오류:', jsonError);
+        result = { message: 'API 응답을 파싱할 수 없습니다.' };
+      }
 
       if (!response.ok) {
         console.error(`[TalentManagement Like] ${actionText} 실패:`, result);
-        
-        // 오류 발생 시 상태 롤백
-        setResumeLike(userId, isCurrentlyLiked);
 
         if (response.status === 404) {
           console.warn('이력서를 찾을 수 없습니다:', resumeId);
@@ -179,6 +179,13 @@ export default function TalentManagementPage() {
           if (result.message?.includes('이미 좋아요한')) {
             console.log(`[TalentManagement Like] 서버에 이미 좋아요가 존재함. 상태를 동기화`);
             setResumeLike(userId, true);
+            return;
+          } else if (result.message?.includes('좋아요하지 않은')) {
+            console.log(`[TalentManagement Like] 서버에 좋아요가 없음. 상태를 동기화`);
+            setResumeLike(userId, false);
+            // 북마크 페이지에서 좋아요가 없는 이력서는 목록에서 제거
+            setResumes(prev => prev.filter(r => r.id !== resumeId));
+            setTotalResumes(prev => prev - 1);
             return;
           }
           console.warn(`${actionText} 실패:`, result.message);
@@ -194,15 +201,16 @@ export default function TalentManagementPage() {
 
       console.log(`[TalentManagement Like] ${actionText} 성공:`, result);
       
-      // 북마크 페이지에서 좋아요 취소 시 목록 새로고침
+      // API 성공 후 상태 업데이트
+      toggleResumeLike(userId);
+      
+      // 북마크 취소인 경우 목록에서 즉시 제거
       if (isCurrentlyLiked) {
-        await fetchBookmarkedResumes();
+        setResumes(prev => prev.filter(r => r.id !== resumeId));
+        setTotalResumes(prev => prev - 1);
       }
     } catch (error) {
       console.error(`[TalentManagement Like] ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} 오류:`, error);
-      
-      // 오류 발생 시 상태 롤백
-      setResumeLike(userId, isCurrentlyLiked);
       alert('좋아요 처리 중 오류가 발생했습니다.');
     }
   };
