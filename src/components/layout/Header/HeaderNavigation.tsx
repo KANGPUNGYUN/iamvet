@@ -12,17 +12,18 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
   className = "",
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } =
+    useHospitalAuthModal();
 
   return (
-    <nav className={`flex gap-[26px] items-center ${className}`}>
+    <nav className={`ml-[26px] flex gap-[26px] items-center ${className}`}>
       {items.map((item, index) => {
         const isHovered = hoveredIndex === index;
         const isActive = item.active;
         const shouldShowLine = isHovered || isActive;
 
-        const isResumeRoute = item.href.startsWith('/resumes');
-        
+        const isResumeRoute = item.href.startsWith("/resumes");
+
         const linkStyle = {
           position: "relative" as const,
           display: "flex",
@@ -73,9 +74,9 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
           </LinkComponent>
         );
       })}
-      
+
       {/* 병원 인증 모달 */}
-      <HospitalAuthModal 
+      <HospitalAuthModal
         isOpen={isModalOpen}
         onClose={closeModal}
         returnUrl={modalReturnUrl}
