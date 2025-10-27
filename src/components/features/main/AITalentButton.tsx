@@ -64,9 +64,10 @@ const AITalentButton: React.FC<AITalentButtonProps> = ({
       {/* SVG 그라디언트 오버레이 */}
       <div className="absolute inset-0 pointer-events-none z-10">
         <div
-          className="absolute top-1/2 left-1/2 w-[170px] h-[170px] rounded-full"
+          className="absolute top-1/2 w-[170px] h-[170px] rounded-full"
           style={{
-            transform: "translate(-60%, -50%) rotate(-44deg)",
+            left: isWideScreen ? "10px" : "24px",
+            transform: "translateY(-50%) rotate(-44deg)",
             background:
               "linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%)",
           }}
