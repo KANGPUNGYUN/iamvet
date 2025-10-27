@@ -7,6 +7,7 @@ import {
 } from "public/icons";
 import React, { useState } from "react";
 import { Tag } from "./Tag";
+import { useAuth } from "@/hooks/api/useAuth";
 
 interface JobInfoCardProps {
   hospital: string;
@@ -45,7 +46,11 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
   deadline = null,
   isAlwaysOpen = false,
 }) => {
+  const { user, isAuthenticated } = useAuth();
   const isWide = variant === "wide";
+  
+  // 병원 계정인지 확인
+  const isHospitalUser = isAuthenticated && user?.type === "hospital";
 
   // 마감일 포맷팅 함수 (~mm/dd(월) 형식)
   const formatDeadline = (
@@ -96,8 +101,8 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
             <Tag variant={1}>{dDay >= 0 ? `D-${dDay}` : "마감"}</Tag>
           )}
 
-          {/* 북마크 아이콘 */}
-          {onBookmark && (
+          {/* 북마크 아이콘 - 병원 계정이 아닐 때만 표시 */}
+          {onBookmark && !isHospitalUser && (
             <div
               className="w-6 h-6 flex items-center justify-center cursor-pointer"
               onClick={(e) => {

@@ -13,10 +13,15 @@ import JobFamousList from "@/components/features/main/JobFamousList";
 import { useJobs, JobFilters } from "@/hooks/api/useJobs";
 import { useLikeStore } from "@/stores/likeStore";
 import { workTypeOptions } from "@/constants/options";
+import { useAuth } from "@/hooks/api/useAuth";
 
 export default function JobsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, isAuthenticated } = useAuth();
+
+  // 병원 계정인지 확인
+  const isHospitalUser = isAuthenticated && user?.type === "hospital";
 
   // Zustand 스토어에서 좋아요 상태 관리
   const { setJobLike, toggleJobLike, initializeJobLikes, isJobLiked } =
@@ -758,7 +763,7 @@ export default function JobsPage() {
                         jobType={job.jobType}
                         tags={job.tags.slice(0, 3)}
                         isBookmarked={job.isBookmarked || isJobLiked(job.id)}
-                        onBookmark={handleJobLike}
+                        onBookmark={!isHospitalUser ? handleJobLike : undefined}
                         deadline={job.recruitEndDate}
                         isAlwaysOpen={job.isUnlimitedRecruit || false}
                         variant="wide"
@@ -875,7 +880,7 @@ export default function JobsPage() {
                         jobType={job.jobType}
                         tags={job.tags.slice(0, 3)}
                         isBookmarked={job.isBookmarked || isJobLiked(job.id)}
-                        onBookmark={handleJobLike}
+                        onBookmark={!isHospitalUser ? handleJobLike : undefined}
                         deadline={job.recruitEndDate}
                         isAlwaysOpen={job.isUnlimitedRecruit || false}
                         variant="wide"
