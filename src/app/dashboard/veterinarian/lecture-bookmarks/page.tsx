@@ -167,11 +167,13 @@ export default function VeterinarianLectureBookmarksPage() {
 
     // 낙관적 업데이트: UI를 먼저 변경
     toggleLectureLike(lectureId);
-    
+
     // 좋아요 취소 시 즉시 목록에서 제거 (실시간 처리)
     if (isCurrentlyLiked) {
-      setLectures(prevLectures => prevLectures.filter(lecture => lecture.id !== lectureId));
-      setTotalLectures(prev => Math.max(0, prev - 1));
+      setLectures((prevLectures) =>
+        prevLectures.filter((lecture) => lecture.id !== lectureId)
+      );
+      setTotalLectures((prev) => Math.max(0, prev - 1));
     }
 
     try {
@@ -184,7 +186,7 @@ export default function VeterinarianLectureBookmarksPage() {
 
       const response = await fetch(`/api/lectures/${lectureId}/like`, {
         method,
-        credentials: 'include',
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -193,14 +195,17 @@ export default function VeterinarianLectureBookmarksPage() {
       if (!response.ok) {
         // 에러 발생 시 상태 롤백
         setLectureLike(lectureId, isCurrentlyLiked);
-        
+
         // 좋아요 취소 실패 시 목록에 다시 추가
         if (isCurrentlyLiked) {
           await fetchBookmarkedLectures(); // 전체 목록 새로고침
         }
 
         const result = await response.json();
-        console.error(`[VeterinarianLectureBookmarks Like] ${actionText} 실패:`, result);
+        console.error(
+          `[VeterinarianLectureBookmarks Like] ${actionText} 실패:`,
+          result
+        );
 
         if (response.status === 404) {
           console.warn("강의를 찾을 수 없습니다:", lectureId);
@@ -221,7 +226,7 @@ export default function VeterinarianLectureBookmarksPage() {
           router.push("/login/veterinarian");
           return;
         }
-        
+
         alert(`${actionText} 처리 중 오류가 발생했습니다.`);
         return;
       }
@@ -233,7 +238,6 @@ export default function VeterinarianLectureBookmarksPage() {
       );
 
       // 성공 시 추가 작업 (필요한 경우)
-      
     } catch (error) {
       console.error(
         `[VeterinarianLectureBookmarks Like] ${
@@ -244,12 +248,12 @@ export default function VeterinarianLectureBookmarksPage() {
 
       // 네트워크 오류 등으로 실패 시 상태 롤백
       setLectureLike(lectureId, isCurrentlyLiked);
-      
+
       // 좋아요 취소 실패 시 목록에 다시 추가
       if (isCurrentlyLiked) {
         await fetchBookmarkedLectures(); // 전체 목록 새로고침
       }
-      
+
       alert("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
@@ -314,7 +318,7 @@ export default function VeterinarianLectureBookmarksPage() {
             <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px] flex-1 space-y-6">
               {/* 제목 */}
               <div className="flex justify-between items-center self-stretch">
-                <h1 className="text-[28px] font-title title-medium text-[#3B394D]">
+                <h1 className="text-[28px] font-text text-medium text-[#3B394D]">
                   강의 북마크
                 </h1>
 
@@ -434,7 +438,7 @@ export default function VeterinarianLectureBookmarksPage() {
             <div className="space-y-4">
               {/* 제목과 필터 버튼 */}
               <div className="flex justify-between items-center">
-                <h1 className="font-title text-[28px] title-light text-[#3B394D]">
+                <h1 className="font-text text-[28px] text-light text-[#3B394D]">
                   강의 북마크
                 </h1>
                 <button
