@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,6 +12,7 @@ import {
   BookmarkIcon,
   SettingsIcon,
 } from "public/icons";
+import { useNotificationStore } from "@/store/notificationStore";
 
 // 사이드바용 북마크 아이콘 (0.8배 크기로 조정)
 const BookmarkMenuIcon: React.FC<{ currentColor?: string }> = ({
@@ -105,6 +106,14 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
     new Set(["bookmarks"])
   );
 
+  // 알림 store에서 읽지 않은 알림 수 가져오기
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
+
+  // 컴포넌트 마운트시 읽지 않은 알림 수 가져오기
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [fetchUnreadCount]);
+
   // 수의사용 메뉴
   const veterinarianMenu: SidebarMenuItem[] = [
     {
@@ -130,6 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
       label: "알림/메시지 관리",
       icon: BellOutlineIcon,
       href: "/dashboard/veterinarian/messages",
+      badge: unreadCount,
     },
     {
       id: "profile",
@@ -164,7 +174,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
       label: "알림/메시지 관리",
       icon: BellOutlineIcon,
       href: "/dashboard/hospital/messages",
-      badge: 3, // 예시 배지
+      badge: unreadCount,
     },
     {
       id: "profile",
@@ -281,8 +291,8 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
 
                   {/* Badge */}
                   {item.badge && item.badge > 0 && (
-                    <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {item.badge}
+                    <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center font-semibold">
+                      {item.badge > 9 ? "9+" : item.badge}
                     </span>
                   )}
                 </Link>

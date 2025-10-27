@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { useMessages } from "@/hooks/api/useMessages";
+import { useNotificationStore } from "@/store/notificationStore";
 
 interface NotificationsCardProps {
   className?: string;
@@ -17,6 +18,16 @@ const NotificationsCard: React.FC<NotificationsCardProps> = ({
     limit: 3,
     sort: 'recent'
   });
+  
+  // 알림 store 사용
+  const { fetchUnreadCount } = useNotificationStore();
+
+  // 메시지가 로드되면 알림 카운트 업데이트
+  useEffect(() => {
+    if (!isLoading && !error && messages) {
+      fetchUnreadCount();
+    }
+  }, [messages, isLoading, error, fetchUnreadCount]);
 
   // Transform API data to display format
   const notifications = messages.map(msg => ({

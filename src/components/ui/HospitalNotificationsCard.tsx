@@ -12,11 +12,34 @@ interface Notification {
 
 interface HospitalNotificationsCardProps {
   notifications?: Notification[];
+  isLoading?: boolean;
 }
 
 const HospitalNotificationsCard: React.FC<HospitalNotificationsCardProps> = ({
   notifications = [],
+  isLoading = false,
 }) => {
+  // 시간을 상대적으로 표시하는 함수
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return '방금 전';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes}분 전`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours}시간 전`;
+    } else if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days}일 전`;
+    } else {
+      return date.toLocaleDateString('ko-KR');
+    }
+  };
   return (
     <div className="bg-white w-full lg:max-w-[395px] mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] lg:p-[20px]">
       <div className="flex items-center justify-between mb-6">
@@ -30,7 +53,27 @@ const HospitalNotificationsCard: React.FC<HospitalNotificationsCardProps> = ({
       </div>
 
       <div className="flex flex-col">
-        {notifications.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col gap-3">
+            {/* Loading skeleton */}
+            <div className="animate-pulse">
+              <div className="flex items-start gap-[10px] p-[12px]">
+                <div className="w-2 h-2 bg-gray-200 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+              <div className="flex items-start gap-[10px] p-[12px]">
+                <div className="w-2 h-2 bg-gray-200 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-[40px]">
             <div className="w-[60px] h-[60px] bg-[#F5F5F5] rounded-full flex items-center justify-center mb-[16px]">
               <svg width="24" height="24" viewBox="0 0 24 24" className="text-gray-400">
@@ -45,16 +88,29 @@ const HospitalNotificationsCard: React.FC<HospitalNotificationsCardProps> = ({
             </p>
           </div>
         ) : (
-          notifications.slice(0, 3).map((notification) => (
-            <div
+          notifications.map((notification) => (
+            <Link
               key={notification.id}
-              className="flex items-start gap-[10px] p-[12px] hover:bg-gray-50 rounded-lg cursor-pointer"
+              href="/dashboard/hospital/messages"
+              className="no-underline"
             >
-              <div className="w-2 h-2 bg-key1 rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-sm text-gray-900 font-medium mb-1">
-                {notification.title}
-              </p>
-            </div>
+              <div className="flex flex-col p-[12px] hover:bg-gray-50 rounded-lg cursor-pointer border-b border-[#EFEFF0] last:border-b-0">
+                <div className="flex items-start gap-[10px]">
+                  <div className="w-2 h-2 bg-key1 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <p className="text-[14px] text-gray-900 font-semibold mb-1">
+                      {notification.title}
+                    </p>
+                    <p className="text-[13px] text-gray-600 line-clamp-2">
+                      {notification.message}
+                    </p>
+                    <p className="text-[12px] text-gray-400 mt-1">
+                      {formatTimeAgo(notification.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Link>
           ))
         )}
       </div>
