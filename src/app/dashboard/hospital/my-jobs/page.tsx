@@ -104,7 +104,7 @@ export default function HospitalMyJobsPage() {
         <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
           {/* 헤더: 제목과 정렬 SelectBox */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-primary font-title text-[28px] text-bold mb-2">
+            <h1 className="text-primary font-title text-[28px] mb-2">
               올린 공고 관리
             </h1>
             <Link

@@ -255,7 +255,7 @@ export default function HospitalProfilePage() {
         {/* 메인 컨텐츠 */}
         <div className="max-w-[758px] mx-auto w-full">
           {/* 페이지 제목 */}
-          <h1 className="font-title text-[28px] font-light text-primary text-center mb-[60px]">
+          <h1 className="font-title text-[28px] text-primary text-center mb-[60px]">
             프로필 설정
           </h1>
 
