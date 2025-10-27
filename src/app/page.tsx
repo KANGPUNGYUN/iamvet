@@ -235,7 +235,7 @@ export default function HomePage() {
     toggleTransferLike,
     initializeResumeLikes,
     initializeJobLikes,
-    initializeLectureLikes,
+    syncLectureLikes,
     initializeTransferLikes,
     isResumeLiked,
     isJobLiked,
@@ -289,9 +289,9 @@ export default function HomePage() {
         "[Popular Categories Lecture Like] 서버에서 받은 좋아요 강의:",
         allLikedLectureIds
       );
-      initializeLectureLikes(allLikedLectureIds);
+      syncLectureLikes(allLikedLectureIds);
     }
-  }, [popularCategories, initializeLectureLikes]);
+  }, [popularCategories, syncLectureLikes]);
 
   // Transfer 좋아요 상태 동기화
   React.useEffect(() => {

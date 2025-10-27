@@ -235,7 +235,7 @@ export default function LecturesPage() {
       views: lecture.viewCount,
       imageUrl: lecture.thumbnail || "/assets/images/lecture/default.png",
       category: lecture.category,
-      isLiked: isLectureLiked(lecture.id), // Zustand 스토어에서 좋아요 상태 가져오기
+      isLiked: lecture.isLiked, // API에서 받은 값 직접 사용
     };
   };
 
@@ -518,7 +518,7 @@ export default function LecturesPage() {
                         views={transformedLecture.views}
                         imageUrl={transformedLecture.imageUrl}
                         category={transformedLecture.category}
-                        isLiked={transformedLecture.isLiked}
+                        isLiked={isLectureLiked(lecture.id)}
                         onLike={handleLectureLike}
                         onClick={() => {
                           window.location.href = `/lectures/${lecture.id}`;
@@ -658,7 +658,7 @@ export default function LecturesPage() {
                         views={transformedLecture.views}
                         imageUrl={transformedLecture.imageUrl}
                         category={transformedLecture.category}
-                        isLiked={transformedLecture.isLiked}
+                        isLiked={isLectureLiked(lecture.id)}
                         onLike={handleLectureLike}
                         onClick={() => {
                           window.location.href = `/lectures/${lecture.id}`;

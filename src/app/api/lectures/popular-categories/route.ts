@@ -1,9 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
+import { verifyToken } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
+    // 사용자 정보 확인 (선택적) - Bearer token과 쿠키 인증 모두 지원
+    let userId: string | undefined;
+    
+    // Authorization 헤더 확인
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
+    }
+    
+    // Authorization 헤더가 없으면 쿠키에서 확인
+    if (!userId) {
+      const authTokenCookie = request.cookies.get("auth-token")?.value;
+      if (authTokenCookie) {
+        const payload = verifyToken(authTokenCookie);
+        if (payload) {
+          userId = payload.userId;
+        }
+      }
+    }
+
+    console.log("[Popular Categories API] 사용자 ID:", userId);
+
     // 카테고리별 조회수 상위 3개 조회
     const topCategories = await prisma.lectures.groupBy({
       by: ['category'],
@@ -58,6 +85,30 @@ export async function GET(request: NextRequest) {
             description: true
           }
         });
+
+        // 좋아요 정보 조회 (로그인한 경우에만)
+        let userLikes: string[] = [];
+        if (userId && lectures.length > 0) {
+          const lectureIds = lectures.map(lecture => lecture.id).filter(Boolean);
+          
+          if (lectureIds.length > 0) {
+            const likes = await (prisma as any).lecture_likes.findMany({
+              where: { 
+                userId,
+                lectureId: { in: lectureIds }
+              },
+              select: { lectureId: true }
+            });
+            userLikes = likes.map((like: any) => like.lectureId);
+            console.log(`[Popular Categories API] ${category} 카테고리 좋아요:`, userLikes);
+          }
+        }
+
+        // 좋아요 정보를 포함한 강의 데이터 변환
+        const lecturesWithLikes = lectures.map(lecture => ({
+          ...lecture,
+          isLiked: userId ? userLikes.includes(lecture.id) : false
+        }));
 
         // 카테고리 한국어 이름 매핑
         const categoryNameMap: { [key: string]: string } = {
@@ -117,7 +168,7 @@ export async function GET(request: NextRequest) {
           description: categoryDescription,
           totalViews: categoryGroup._sum.viewCount || 0,
           lectureCount: categoryGroup._count.id,
-          lectures: lectures
+          lectures: lecturesWithLikes
         };
       })
     );

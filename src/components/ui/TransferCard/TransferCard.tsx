@@ -76,17 +76,27 @@ const TransferCard: React.FC<TransferCardProps> = ({
   onClick,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  // LectureCard처럼 props를 직접 사용하되, 낙관적 업데이트를 위한 로컬 상태는 유지
   const [localIsLiked, setLocalIsLiked] = useState(isLiked);
+  const [isOptimisticUpdate, setIsOptimisticUpdate] = useState(false);
 
   const handleLike = () => {
+    setIsOptimisticUpdate(true);
     setLocalIsLiked(!localIsLiked);
     onLike?.();
+    
+    // 짧은 시간 후 낙관적 업데이트 플래그 리셋 (API 응답을 기다림)
+    setTimeout(() => {
+      setIsOptimisticUpdate(false);
+    }, 1000);
   };
 
-  // props의 isLiked 변경을 감지하여 로컬 상태 동기화
+  // props의 isLiked 변경을 즉시 로컬 상태에 반영 (낙관적 업데이트 중이 아닐 때만)
   useEffect(() => {
-    setLocalIsLiked(isLiked);
-  }, [isLiked]);
+    if (!isOptimisticUpdate) {
+      setLocalIsLiked(isLiked);
+    }
+  }, [isLiked, isOptimisticUpdate]);
 
   useEffect(() => {
     const checkScreenSize = () => {
