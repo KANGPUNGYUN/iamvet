@@ -265,6 +265,9 @@ export default function ForumsPage() {
                 >
                   <FilterBox value="내과">내과</FilterBox>
                   <FilterBox value="외과">외과</FilterBox>
+                  <FilterBox value="피부과">피부과</FilterBox>
+                  <FilterBox value="응급의학">응급의학</FilterBox>
+                  <FilterBox value="예방의학">예방의학</FilterBox>
                 </FilterBox.Group>
               </div>
 
@@ -524,6 +527,9 @@ export default function ForumsPage() {
                       >
                         <FilterBox value="내과">내과</FilterBox>
                         <FilterBox value="외과">외과</FilterBox>
+                        <FilterBox value="피부과">피부과</FilterBox>
+                        <FilterBox value="응급의학">응급의학</FilterBox>
+                        <FilterBox value="예방의학">예방의학</FilterBox>
                       </FilterBox.Group>
                     </div>
 
