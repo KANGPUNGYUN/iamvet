@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="lg:hidden"></div>
 
           {/* 우측 영역 */}
-          <div className="flex items-center gap-[5px]">
+          <div className="flex items-center gap-[8px]">
             {isLoggedIn && user ? (
               <>
                 {/* 로그인된 상태 - 데스크톱에서만 HeaderProfile 표시 */}
