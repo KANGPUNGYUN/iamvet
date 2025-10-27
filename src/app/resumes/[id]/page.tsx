@@ -147,8 +147,13 @@ export default function ResumeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
-  const { isAuthenticated, userType, isLoading: isAuthLoading } = useHospitalAuth();
-  const { showModal, isModalOpen, closeModal, modalReturnUrl } = useHospitalAuthModal();
+  const {
+    isAuthenticated,
+    userType,
+    isLoading: isAuthLoading,
+  } = useHospitalAuth();
+  const { showModal, isModalOpen, closeModal, modalReturnUrl } =
+    useHospitalAuthModal();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
@@ -188,14 +193,13 @@ export default function ResumeDetailPage({
   });
 
   const { id } = use(params);
-  
+
   // 병원 사용자가 아닌 경우에만 모달 표시
   React.useEffect(() => {
-    if (!isAuthLoading && (!isAuthenticated || userType !== 'HOSPITAL')) {
+    if (!isAuthLoading && (!isAuthenticated || userType !== "HOSPITAL")) {
       showModal(`/resumes/${id}`);
     }
   }, [isAuthenticated, userType, showModal, id, isAuthLoading]);
-
 
   const { data: resumeData, isLoading, error } = useResumeDetail(id);
   const { data: relatedResumes, isLoading: relatedLoading } =
@@ -1286,7 +1290,9 @@ export default function ResumeDetailPage({
                     </span>
                     <span className="font-text text-key1 text-[18px] lg:text-[24px] font-semibold">
                       {resumeData.expectedSalary
-                        ? `${Number(resumeData.expectedSalary).toLocaleString()}만원`
+                        ? `${Number(
+                            resumeData.expectedSalary
+                          ).toLocaleString()}만원`
                         : "협의"}
                     </span>
                   </div>
@@ -1406,7 +1412,9 @@ export default function ResumeDetailPage({
                             </span>
                             <span className="font-text text-[14px] lg:text-[16px] text-primary">
                               {resumeData.expectedSalary
-                                ? `${Number(resumeData.expectedSalary).toLocaleString()}만원`
+                                ? `${Number(
+                                    resumeData.expectedSalary
+                                  ).toLocaleString()}만원`
                                 : "협의"}
                             </span>
                           </div>
@@ -1914,7 +1922,7 @@ export default function ResumeDetailPage({
 
           {/* 관련 인재 정보 섹션 */}
           <section className="mt-[60px] lg:mt-[100px]">
-            <h2 className="font-title text-[18px] lg:text-[20px] title-light text-primary mb-[20px]">
+            <h2 className="text-[24px] font-title text-sub mb-[20px]">
               관련 인재 정보
             </h2>
             {/* 데스크톱 그리드 */}
@@ -2584,9 +2592,9 @@ export default function ResumeDetailPage({
           </div>
         </div>
       )}
-      
+
       {/* 병원 인증 모달 */}
-      <HospitalAuthModal 
+      <HospitalAuthModal
         isOpen={isModalOpen}
         onClose={closeModal}
         returnUrl={modalReturnUrl}

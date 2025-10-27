@@ -64,7 +64,7 @@ const ImageSlider = ({ images }: { images: string[] }) => {
   // 터치 끝
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
@@ -80,7 +80,7 @@ const ImageSlider = ({ images }: { images: string[] }) => {
   return (
     <div className="w-full">
       {/* 메인 이미지 */}
-      <div 
+      <div
         className="relative w-full h-full max-w-[970px] lg:h-[646px] min-h-[310px] rounded-[8px] bg-gray-100 overflow-hidden mb-4"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -879,7 +879,7 @@ export default function TransferDetailPage({
                   }}
                 >
                   {/* 제목 */}
-                  <h2 className="font-title text-[20px] title-light text-primary">
+                  <h2 className="text-[24px] font-title text-sub mb-4">
                     다른 매물 둘러보기
                   </h2>
 
@@ -946,7 +946,7 @@ export default function TransferDetailPage({
 
             {/* 모바일 버전 */}
             <div className="lg:hidden">
-              <h2 className="font-title text-[16px] title-light text-primary mb-[15px]">
+              <h2 className="text-[24px] font-title text-sub mb-4">
                 다른 매물 둘러보기
               </h2>
 

@@ -632,24 +632,29 @@ export default function JobDetailPage({
                       if (jobData.workConditions?.salary) {
                         const salaryText = jobData.workConditions.salary;
                         // "월급 1243124만원" 형태에서 숫자 부분만 추출해서 콤마 포맷팅
-                        const match = salaryText.match(/(\S+)\s+(\d+)(만원|원)/);
+                        const match =
+                          salaryText.match(/(\S+)\s+(\d+)(만원|원)/);
                         if (match) {
                           const [, type, amount, unit] = match;
-                          return `${type} ${formatNumberWithCommas(amount)}${unit}`;
+                          return `${type} ${formatNumberWithCommas(
+                            amount
+                          )}${unit}`;
                         }
                         return salaryText; // 매치되지 않으면 원본 그대로
                       }
-                      
+
                       // salary와 salaryType을 조합
                       if (jobData.salary && jobData.salaryType) {
-                        return `${jobData.salaryType} ${formatNumberWithCommas(jobData.salary)}만원`;
+                        return `${jobData.salaryType} ${formatNumberWithCommas(
+                          jobData.salary
+                        )}만원`;
                       }
-                      
+
                       // salary만 있는 경우
                       if (jobData.salary) {
                         return `${formatNumberWithCommas(jobData.salary)}만원`;
                       }
-                      
+
                       return "협의";
                     })()}
                   </span>
@@ -777,7 +782,7 @@ export default function JobDetailPage({
 
           {/* 관련 채용 정보 */}
           <section className="mt-[60px]">
-            <h2 className="font-title text-[20px] title-light text-primary mb-[20px]">
+            <h2 className="text-[24px] font-title text-sub mb-4 mb-[20px]">
               관련 채용 정보
             </h2>
 
