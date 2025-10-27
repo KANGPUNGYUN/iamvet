@@ -57,7 +57,6 @@ export const Header: React.FC<HeaderProps> = ({
             justifyContent: "space-between",
             alignItems: "center",
             flex: 1,
-            marginLeft: "60px",
           }}
         >
           {/* 데스크톱 네비게이션 (1024px 이상에서만 표시) */}
@@ -70,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="lg:hidden"></div>
 
           {/* 우측 영역 */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-[5px]">
             {isLoggedIn && user ? (
               <>
                 {/* 로그인된 상태 - 데스크톱에서만 HeaderProfile 표시 */}
