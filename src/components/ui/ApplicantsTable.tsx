@@ -103,7 +103,7 @@ const MobileApplicantCard: React.FC<{ applicant: ApplicantData }> = ({
 
       <div className="mt-[20px] flex items-center justify-between">
         <span className="text-[12px] text-gray-500">
-          {new Date(applicant.appliedAt).toLocaleDateString('ko-KR')}
+          {new Date(applicant.appliedAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
         </span>
         <Tag variant={getStatusVariant(applicant.status)}>
           {getStatusText(applicant.status)}
@@ -253,7 +253,7 @@ const ApplicantsTable: React.FC<ApplicantsTableProps> = ({
         <table className="w-full border-separate border-spacing-0">
           <thead>
             <tr className="bg-box-light">
-              <th className="text-left py-[22px] pl-[30px] text-sm font-medium text-gray-500 border border-[#EFEFF0] border-r-0 rounded-l-[8px]">
+              <th className="text-left py-[22px] pl-[30px] text-sm font-medium text-gray-500 border border-[#EFEFF0] border-r-0 rounded-l-[8px] w-[120px]">
                 지원일자
               </th>
               <th className="text-left py-[22px] text-sm font-medium text-gray-500 border-t border-b border-[#EFEFF0]">
@@ -276,8 +276,8 @@ const ApplicantsTable: React.FC<ApplicantsTableProps> = ({
           <tbody>
             {applicants.map((applicant) => (
               <tr key={applicant.id} className="border-b border-gray-100">
-                <td className="py-[22px] pl-[30px] text-sm text-gray-900">
-                  {new Date(applicant.appliedAt).toLocaleDateString('ko-KR')}
+                <td className="py-[22px] pl-[30px] text-sm text-gray-900 w-[120px]">
+                  {new Date(applicant.appliedAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
                 </td>
                 <td className="py-[22px] text-sm text-gray-900">
                   {applicant.realName || applicant.nickname}
