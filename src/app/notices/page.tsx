@@ -115,24 +115,28 @@ export default function NoticesPage() {
     // 중요도 필터링
     if (priorityFilter !== "all") {
       console.log("Priority filter selected:", priorityFilter);
-      console.log("Available announcements:", announcements.map(item => ({
-        id: item.id,
-        title: item.title,
-        priority: item.announcements?.priority || "NORMAL",
-        fullAnnouncement: item.announcements
-      })));
-      
-      filtered = filtered.filter(
-        (item) => {
-          // announcements가 없는 경우 NORMAL로 기본값 설정
-          const priority = item.announcements?.priority || "NORMAL";
-          // Prisma enum 값을 문자열로 변환하여 비교
-          const priorityString = String(priority);
-          console.log(`Comparing: "${priorityString}" === "${priorityFilter}"`, priorityString === priorityFilter);
-          return priorityString === priorityFilter;
-        }
+      console.log(
+        "Available announcements:",
+        announcements.map((item) => ({
+          id: item.id,
+          title: item.title,
+          priority: item.announcements?.priority || "NORMAL",
+          fullAnnouncement: item.announcements,
+        }))
       );
-      
+
+      filtered = filtered.filter((item) => {
+        // announcements가 없는 경우 NORMAL로 기본값 설정
+        const priority = item.announcements?.priority || "NORMAL";
+        // Prisma enum 값을 문자열로 변환하여 비교
+        const priorityString = String(priority);
+        console.log(
+          `Comparing: "${priorityString}" === "${priorityFilter}"`,
+          priorityString === priorityFilter
+        );
+        return priorityString === priorityFilter;
+      });
+
       console.log("Filtered results:", filtered.length);
     }
 
@@ -233,13 +237,13 @@ export default function NoticesPage() {
         {/* 컨텐츠 영역 */}
         <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
           {/* 헤더: 제목과 SelectBox들 */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               <h1 className="text-primary font-text text-[24px] font-bold">
                 공지사항
               </h1>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap sm:flex-nowrap">
               <SelectBox
                 value={priorityFilter}
                 onChange={(value) => {
