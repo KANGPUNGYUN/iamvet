@@ -290,7 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
                   <span className="ml-3">{item.label}</span>
 
                   {/* Badge */}
-                  {item.badge && item.badge > 0 && (
+                  {item.badge !== undefined && item.badge > 0 && (
                     <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center font-semibold">
                       {item.badge > 9 ? "9+" : item.badge}
                     </span>
