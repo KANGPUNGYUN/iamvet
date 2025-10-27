@@ -45,14 +45,17 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
   // 최근 로그인 날짜 포맷팅 함수
   const formatLastLoginDate = (lastLoginAt: string | Date | null) => {
     if (!lastLoginAt) return "로그인 정보 없음";
-    
+
     const loginDate = new Date(lastLoginAt);
-    return loginDate.toLocaleDateString('ko-KR').replace(/\. /g, '.').replace(/\.$/, '');
+    return loginDate
+      .toLocaleDateString("ko-KR")
+      .replace(/\. /g, ".")
+      .replace(/\.$/, "");
   };
 
   return (
     <div
-      className="bg-white flex-1 min-w-[300px] max-w-sm rounded-xl border border-[#E5E5E5] w-full max-w-[343px] max-h-[414px] mx-auto hover:shadow-md transition-shadow duration-200 cursor-pointer p-[20px] flex flex-col gap-[8px] justify-between"
+      className="bg-white flex-1 min-w-[300px] max-w-sm rounded-xl border border-[#E5E5E5] w-full max-w-[343px] max-h-[414px] mx-auto shadow-md hover:shadow-lg duration-200 cursor-pointer p-[20px] flex flex-col gap-[8px] justify-between"
       onClick={onClick}
     >
       {/* 헤더 - 신규 태그와 북마크 */}
