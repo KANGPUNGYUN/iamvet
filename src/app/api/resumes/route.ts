@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
         const resumeData = resumes.map((resume: any) => ({
           id: resume.id, // Resume ID를 반환 (상세 페이지 URL용)
           userId: resume.users.id, // User ID도 포함 (좋아요 체크용)
-          name: resume.users.veterinarians?.realName || resume.users.veterinary_students?.realName || '익명',
+          name: resume.name || '익명',
           profileImage: resume.photo || null, // 이력서 사진만 사용
           experience: resume.users.veterinarian_profiles?.experienceType || '신규',
           preferredLocation: resume.users.veterinarian_profiles?.preferredLocation || '전국',
