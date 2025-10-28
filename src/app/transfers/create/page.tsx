@@ -102,6 +102,25 @@ export default function CreateTransferPage() {
     }
   };
 
+  // 가격 입력 필드 전용 핸들러 (숫자 포맷팅)
+  const handlePriceInputChange = (field: 'salePrice' | 'rentPrice') => (value: string) => {
+    // 숫자만 추출
+    const numericValue = value.replace(/[^\d]/g, '');
+    
+    // 숫자를 천 단위 콤마 형식으로 변환
+    const formattedValue = numericValue ? parseInt(numericValue).toLocaleString() : '';
+    
+    setFormData((prev) => ({
+      ...prev,
+      [field]: formattedValue,
+    }));
+    
+    // 에러 제거
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
   const handleSaleTypeChange = (isSale: boolean) => {
     setFormData((prev) => ({
       ...prev,
@@ -257,11 +276,12 @@ export default function CreateTransferPage() {
         sigungu: formData.sigungu, // 시군구
         price:
           parseInt(
-            formData.category === "병원양도"
+            (formData.category === "병원양도"
               ? formData.isSale
                 ? formData.salePrice
                 : formData.rentPrice
               : formData.salePrice
+            ).replace(/[^\d]/g, '') // 콤마 제거 후 숫자만 추출
           ) || 0,
         area:
           formData.category === "병원양도"
@@ -446,7 +466,7 @@ export default function CreateTransferPage() {
                     <div className="mb-4">
                       <InputBox
                         value={formData.salePrice}
-                        onChange={handleInputChange("salePrice")}
+                        onChange={handlePriceInputChange("salePrice")}
                         placeholder={getSalePricePlaceholder()}
                         suffix="원"
                         error={!!errors.salePrice}
@@ -462,7 +482,7 @@ export default function CreateTransferPage() {
                     <div className="mb-4">
                       <InputBox
                         value={formData.rentPrice}
-                        onChange={handleInputChange("rentPrice")}
+                        onChange={handlePriceInputChange("rentPrice")}
                         placeholder={getRentPricePlaceholder()}
                         suffix="원/월"
                         error={!!errors.rentPrice}
@@ -479,7 +499,7 @@ export default function CreateTransferPage() {
                 <div className="mb-4">
                   <InputBox
                     value={formData.salePrice}
-                    onChange={handleInputChange("salePrice")}
+                    onChange={handlePriceInputChange("salePrice")}
                     placeholder={getSalePricePlaceholder()}
                     suffix="원"
                     error={!!errors.salePrice}
