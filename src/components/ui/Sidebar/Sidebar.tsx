@@ -201,6 +201,11 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
         href: "/dashboard/hospital/lecture-bookmarks",
       },
       {
+        id: "forum-bookmarks",
+        label: "임상포럼 북마크",
+        href: "/dashboard/hospital/forum-bookmarks",
+      },
+      {
         id: "favorite-talents",
         label: "이력서 북마크",
         href: "/dashboard/hospital/favorite-talents",
@@ -223,6 +228,11 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
         id: "lecture-bookmarks",
         label: "강의 북마크",
         href: "/dashboard/veterinarian/lecture-bookmarks",
+      },
+      {
+        id: "forum-bookmarks",
+        label: "임상포럼 북마크",
+        href: "/dashboard/veterinarian/forum-bookmarks",
       },
       {
         id: "job-bookmarks",

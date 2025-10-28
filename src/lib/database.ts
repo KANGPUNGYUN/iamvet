@@ -4956,6 +4956,69 @@ export const generateTokens = async (user: any) => {
   };
 };
 
+// Forum bookmark functions
+export const checkForumBookmarkExists = async (
+  userId: string,
+  forumId: string
+) => {
+  const query = `SELECT id FROM forum_bookmarks WHERE user_id = $1 AND forum_id = $2 AND deleted_at IS NULL`;
+  const result = await pool.query(query, [userId, forumId]);
+  return result.rows.length > 0;
+};
+
+export const createForumBookmark = async (
+  userId: string,
+  forumId: string
+) => {
+  // First, try to restore a soft-deleted bookmark
+  const restoreQuery = `
+    UPDATE forum_bookmarks 
+    SET deleted_at = NULL, created_at = NOW() 
+    WHERE user_id = $1 AND forum_id = $2 AND deleted_at IS NOT NULL 
+    RETURNING *
+  `;
+  const restoreResult = await pool.query(restoreQuery, [userId, forumId]);
+  
+  if (restoreResult.rows.length > 0) {
+    return restoreResult.rows[0];
+  }
+  
+  // If no soft-deleted bookmark exists, create a new one
+  const insertQuery = `INSERT INTO forum_bookmarks (user_id, forum_id) VALUES ($1, $2) RETURNING *`;
+  const result = await pool.query(insertQuery, [userId, forumId]);
+  return result.rows[0];
+};
+
+export const removeForumBookmark = async (
+  userId: string,
+  forumId: string
+) => {
+  const query = `UPDATE forum_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND forum_id = $2`;
+  const result = await pool.query(query, [userId, forumId]);
+  return (result.rowCount ?? 0) > 0;
+};
+
+export const getForumBookmarks = async (userId: string) => {
+  const query = `
+    SELECT 
+      f.*,
+      u."profileImage" as author_profile_image,
+      COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
+      COALESCE(v."realName", vs."realName", h."representativeName", h."hospitalName") as author_display_name,
+      fb.created_at as bookmarked_date
+    FROM forum_bookmarks fb
+    JOIN forum_posts f ON fb.forum_id = f.id
+    LEFT JOIN users u ON f."userId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId"
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
+    LEFT JOIN hospitals h ON u.id = h."userId"
+    WHERE fb.user_id = $1 AND fb.deleted_at IS NULL AND f."deletedAt" IS NULL
+    ORDER BY fb.created_at DESC
+  `;
+  const result = await pool.query(query, [userId]);
+  return result.rows;
+};
+
 // Export query function for direct database access
 export const query = async (text: string, params?: any[]) => {
   const result = await pool.query(text, params);

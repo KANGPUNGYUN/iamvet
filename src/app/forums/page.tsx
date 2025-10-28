@@ -11,11 +11,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { EditIcon } from "public/icons";
 import { useViewCountStore } from "@/stores/viewCountStore";
+import { useBookmarkStore } from "@/stores/bookmarkStore";
+import { useAuth } from "@/hooks/api/useAuth";
 
 export default function ForumsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setForumViewCount } = useViewCountStore();
+  const { initializeForumBookmarks, syncForumBookmarks } = useBookmarkStore();
+  const { user } = useAuth();
 
   // 필터 상태 관리 (UI용 - 아직 적용되지 않은 상태)
   const [filters, setFilters] = useState({
@@ -100,6 +104,7 @@ export default function ForumsPage() {
 
   const [forumData, setForumData] = useState<ForumPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [bookmarkedForumIds, setBookmarkedForumIds] = useState<string[]>([]);
 
   // 포럼 데이터 가져오기
   useEffect(() => {
@@ -140,6 +145,32 @@ export default function ForumsPage() {
 
     fetchForums();
   }, []);
+
+  // 사용자 북마크 데이터 가져오기
+  useEffect(() => {
+    const fetchUserBookmarks = async () => {
+      if (!user) return;
+      
+      try {
+        const response = await fetch('/api/forums/bookmarks', {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success') {
+            const forumIds = data.data.map((bookmark: any) => bookmark.id);
+            setBookmarkedForumIds(forumIds);
+            initializeForumBookmarks(forumIds);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user bookmarks:', error);
+      }
+    };
+
+    fetchUserBookmarks();
+  }, [user, initializeForumBookmarks]);
 
   // 필터링 및 정렬 로직 (검색과 정렬은 즉시 적용, 나머지는 appliedFilters 사용)
   const getFilteredData = () => {
@@ -253,6 +284,17 @@ export default function ForumsPage() {
     updateURL(appliedFilters, page);
   };
 
+  // 북마크 변경 핸들러
+  const handleBookmarkChange = (forumId: string, isBookmarked: boolean) => {
+    setBookmarkedForumIds(prev => {
+      if (isBookmarked) {
+        return [...prev, forumId];
+      } else {
+        return prev.filter(id => id !== forumId);
+      }
+    });
+  };
+
   return (
     <>
       <main className="pt-[50px] bg-white">
@@ -364,6 +406,8 @@ export default function ForumsPage() {
                       viewCount={post.viewCount}
                       commentCount={post.commentCount}
                       createdAt={post.createdAt}
+                      isBookmarked={bookmarkedForumIds.includes(post.id)}
+                      onBookmarkChange={handleBookmarkChange}
                     />
                   ))
                 ) : (
@@ -468,6 +512,8 @@ export default function ForumsPage() {
                       viewCount={post.viewCount}
                       commentCount={post.commentCount}
                       createdAt={post.createdAt}
+                      isBookmarked={bookmarkedForumIds.includes(post.id)}
+                      onBookmarkChange={handleBookmarkChange}
                     />
                   ))
                 ) : (

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/api/useAuth";
 import { Toast } from "@/components/ui/Toast";
 import { useCommentStore, Comment } from "@/store/commentStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
+import { useBookmarkStore } from "@/stores/bookmarkStore";
 // Quill CSS를 동적으로 import하여 production에서도 스타일이 적용되도록 함
 import "quill/dist/quill.snow.css";
 
@@ -33,6 +34,8 @@ import {
   EditIcon,
   TrashIcon,
   CommentIcon,
+  BookmarkIcon,
+  BookmarkFilledIcon,
 } from "public/icons";
 import Image from "next/image";
 import Link from "next/link";
@@ -74,6 +77,10 @@ export default function ForumDetailPage({
 
   const [currentForum, setCurrentForum] = useState<ForumDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+
+  const { isForumBookmarked, toggleForumBookmark } = useBookmarkStore();
 
   // 조회수 증가 함수
   const incrementViewCount = async () => {
@@ -141,6 +148,36 @@ export default function ForumDetailPage({
   // useAuth 훅으로 현재 로그인한 사용자 정보 가져오기
   const { user: currentUser, isAuthenticated } = useAuth();
 
+  // 북마크 핸들러
+  const handleBookmarkClick = async () => {
+    if (!currentUser || isBookmarkLoading) return;
+
+    setIsBookmarkLoading(true);
+
+    try {
+      const method = isBookmarked ? "DELETE" : "POST";
+      const response = await fetch(`/api/forums/${id}/bookmark`, {
+        method,
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // 스토어 상태 업데이트
+        const newState = toggleForumBookmark(id);
+        setIsBookmarked(newState);
+      } else {
+        console.error("북마크 처리 실패:", await response.text());
+      }
+    } catch (error) {
+      console.error("북마크 처리 중 오류:", error);
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
+
   // 조회수 상태 관리 (Zustand 스토어)
   const { setForumViewCount, getForumViewCount } = useViewCountStore();
 
@@ -183,6 +220,14 @@ export default function ForumDetailPage({
 
     fetchForumDetail();
   }, [id, fetchComments]);
+
+  // 북마크 상태 초기화
+  useEffect(() => {
+    if (currentUser && id) {
+      const currentBookmarkState = isForumBookmarked(id);
+      setIsBookmarked(currentBookmarkState);
+    }
+  }, [currentUser, id, isForumBookmarked]);
 
   // 조회수 증가를 위한 별도 useEffect
   useEffect(() => {
@@ -437,7 +482,7 @@ export default function ForumDetailPage({
               />
             </div>
 
-            {/* 조회수, 댓글 수, 공유하기 */}
+            {/* 조회수, 댓글 수, 북마크, 공유하기 */}
             <div className="flex items-center justify-between py-[16px] px-[20px]">
               <div className="flex items-center gap-6 text-[14px] text-[#9098A4]">
                 <div className="flex items-center gap-1">
@@ -450,13 +495,32 @@ export default function ForumDetailPage({
                 </div>
               </div>
 
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2 text-[14px] text-[#9098A4] hover:bg-[#F8F9FA] rounded-[8px] transition-colors"
-              >
-                <ShareIcon currentColor="#9098A4" />
-                공유
-              </button>
+              <div className="flex items-center gap-2">
+                {/* 북마크 버튼 */}
+                {isAuthenticated && (
+                  <button
+                    onClick={handleBookmarkClick}
+                    disabled={isBookmarkLoading}
+                    className="flex items-center gap-2 px-4 py-2 text-[14px] hover:bg-[#F8F9FA] rounded-[8px] transition-colors disabled:opacity-50"
+                    aria-label={isBookmarked ? "북마크 해제" : "북마크 추가"}
+                  >
+                    {isBookmarked ? (
+                      <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
+                    ) : (
+                      <BookmarkIcon currentColor="#9098A4" />
+                    )}
+                  </button>
+                )}
+
+                {/* 공유 버튼 */}
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 px-4 py-2 text-[14px] text-[#9098A4] hover:bg-[#F8F9FA] rounded-[8px] transition-colors"
+                >
+                  <ShareIcon currentColor="#9098A4" />
+                  공유
+                </button>
+              </div>
             </div>
           </section>
 

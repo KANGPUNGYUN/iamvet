@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { EyeIcon, CommentIcon } from "public/icons";
+import { EyeIcon, CommentIcon, BookmarkIcon, BookmarkFilledIcon } from "public/icons";
 import { Tag } from "../Tag";
 import { useViewCountStore } from "@/stores/viewCountStore";
+import { useBookmarkStore } from "@/stores/bookmarkStore";
+import { useAuth } from "@/hooks/api/useAuth";
+import { useState } from "react";
 
 export interface ForumCardProps {
   id: string;
@@ -12,6 +15,8 @@ export interface ForumCardProps {
   createdAt: Date;
   updatedAt?: Date;
   onClick?: () => void;
+  isBookmarked?: boolean;
+  onBookmarkChange?: (id: string, isBookmarked: boolean) => void;
 }
 
 export default function ForumCard({
@@ -23,8 +28,13 @@ export default function ForumCard({
   createdAt,
   updatedAt,
   onClick,
+  isBookmarked: propIsBookmarked,
+  onBookmarkChange,
 }: ForumCardProps) {
   const { getForumViewCount } = useViewCountStore();
+  const { isForumBookmarked, toggleForumBookmark } = useBookmarkStore();
+  const { user } = useAuth();
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
   
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("ko-KR", {
@@ -38,6 +48,45 @@ export default function ForumCard({
   
   // 스토어에서 조회수를 가져오되, 없으면 props의 viewCount 사용
   const currentViewCount = getForumViewCount(id) || viewCount;
+  
+  // 북마크 상태 - prop > 스토어 순으로 우선순위
+  const isBookmarked = propIsBookmarked !== undefined ? propIsBookmarked : isForumBookmarked(id);
+  
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user || isBookmarkLoading) return;
+    
+    setIsBookmarkLoading(true);
+    
+    try {
+      const method = isBookmarked ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/forums/${id}/bookmark`, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        // 스토어 상태 업데이트
+        const newState = toggleForumBookmark(id);
+        
+        // 부모 컴포넌트에 변경사항 알림
+        if (onBookmarkChange) {
+          onBookmarkChange(id, newState);
+        }
+      } else {
+        console.error('북마크 처리 실패:', await response.text());
+      }
+    } catch (error) {
+      console.error('북마크 처리 중 오류:', error);
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
 
   return (
     <Link href={`/forums/${id}`} onClick={onClick}>
@@ -56,7 +105,7 @@ export default function ForumCard({
           <h3 className="text-[20px] font-text text-bold text-primary leading-[1.4] mb-2">
             {title}
           </h3>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             {/* Stats */}
             <div className="flex items-center gap-4 text-[#9CA3AF]">
               <div className="flex items-center gap-1">
@@ -68,9 +117,28 @@ export default function ForumCard({
                 <span className="text-[14px]">{commentCount}</span>
               </div>
             </div>
-            {/* Date */}
-            <div className="text-[14px] text-[#9CA3AF] ml-4">
-              {formatDate(displayDate)}
+            
+            <div className="flex items-center gap-3">
+              {/* Date */}
+              <div className="text-[14px] text-[#9CA3AF]">
+                {formatDate(displayDate)}
+              </div>
+              
+              {/* Bookmark Button */}
+              {user && (
+                <button
+                  onClick={handleBookmarkClick}
+                  disabled={isBookmarkLoading}
+                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
+                  aria-label={isBookmarked ? "북마크 해제" : "북마크 추가"}
+                >
+                  {isBookmarked ? (
+                    <BookmarkFilledIcon currentColor="var(--Keycolor1)" />
+                  ) : (
+                    <BookmarkIcon currentColor="var(--Subtext2)" />
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
