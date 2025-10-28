@@ -95,9 +95,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       
       // 성공 응답 반환
       return NextResponse.json(
-        createApiResponse({
-          viewCount: updateResult.viewCount,
-          message: "조회수가 증가되었습니다."
+        createApiResponse("success", "조회수가 증가되었습니다.", {
+          viewCount: updateResult.viewCount
         })
       );
     } catch (error) {
