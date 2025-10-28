@@ -15,7 +15,10 @@ import { PlusIcon, MinusIcon } from "public/icons";
 import { useJobDetail } from "@/hooks/api/useJobDetail";
 import { useAuth } from "@/hooks/api/useAuth";
 import axios from "axios";
-import { handleNumberInputChange, formatNumberWithCommas } from "@/utils/validation";
+import {
+  handleNumberInputChange,
+  formatNumberWithCommas,
+} from "@/utils/validation";
 
 interface JobFormData {
   title: string;
@@ -203,10 +206,9 @@ export default function EditJobPage({ params }: EditJobPageProps) {
 
   const experienceOptions = [
     { value: "신입", label: "신입" },
-    { value: "1년차", label: "1년차" },
-    { value: "2-3년차", label: "2-3년차" },
-    { value: "4-5년차", label: "4-5년차" },
-    { value: "5년차 이상", label: "5년차 이상" },
+    { value: "1-3년", label: "1-3년" },
+    { value: "3-5년", label: "3-5년" },
+    { value: "5년 이상", label: "5년 이상" },
   ];
 
   const positionOptions = [

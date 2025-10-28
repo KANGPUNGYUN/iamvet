@@ -21,8 +21,8 @@ export const workTypeOptions = [
 // 경력 옵션
 export const experienceOptions = [
   { value: "신입", label: "신입" },
-  { value: "1~3년", label: "1~3년" },
-  { value: "3~5년", label: "3~5년" },
+  { value: "1-3년", label: "1-3년" },
+  { value: "3-5년", label: "3-5년" },
   { value: "5년이상", label: "5년이상" },
 ];
 

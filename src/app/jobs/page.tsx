@@ -380,8 +380,8 @@ export default function JobsPage() {
                   onChange={(value) => handleFilterChange("experience", value)}
                 >
                   <FilterBox value="신입">신입</FilterBox>
-                  <FilterBox value="1~3년">1~3년</FilterBox>
-                  <FilterBox value="3~5년">3~5년</FilterBox>
+                  <FilterBox value="1-3년">1-3년</FilterBox>
+                  <FilterBox value="3-5년">3-5년</FilterBox>
                   <FilterBox value="5년이상">5년 이상</FilterBox>
                 </FilterBox.Group>
               </div>
@@ -993,8 +993,8 @@ export default function JobsPage() {
                         }
                       >
                         <FilterBox value="신입">신입</FilterBox>
-                        <FilterBox value="1~3년">1~3년</FilterBox>
-                        <FilterBox value="3~5년">3~5년</FilterBox>
+                        <FilterBox value="1-3년">1-3년</FilterBox>
+                        <FilterBox value="3-5년">3-5년</FilterBox>
                         <FilterBox value="5년이상">5년 이상</FilterBox>
                       </FilterBox.Group>
                     </div>
