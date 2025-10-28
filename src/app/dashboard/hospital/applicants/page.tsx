@@ -57,7 +57,7 @@ const getStatusText = (status: string) => {
   }
 };
 
-const MobileApplicationCard: React.FC<{ 
+const MobileApplicationCard: React.FC<{
   application: ApplicationData;
 }> = ({ application }) => {
   return (
@@ -75,7 +75,11 @@ const MobileApplicationCard: React.FC<{
             {application.realName || application.nickname}
           </span>
         </div>
-        <Link href={`/resumes/${application.resume_id || application.veterinarianId}`}>
+        <Link
+          href={`/resumes/${
+            application.resume_id || application.veterinarianId
+          }`}
+        >
           <ArrowRightIcon currentColor="currentColor" size="20" />
         </Link>
       </div>
@@ -101,7 +105,9 @@ const MobileApplicationCard: React.FC<{
 
       <div className="mt-[20px] flex items-center justify-between">
         <span className="text-[12px] text-gray-500">
-          {new Date(application.appliedAt).toLocaleDateString('ko-KR')}
+          {new Date(application.appliedAt)
+            .toLocaleDateString("ko-KR")
+            .replace(/\.$/, "")}
         </span>
         <Tag variant={getStatusVariant(application.status)}>
           {getStatusText(application.status)}
@@ -124,7 +130,7 @@ export default function HospitalApplicantsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 10;
-  
+
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -136,7 +142,8 @@ export default function HospitalApplicantsPage() {
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
       const response = await axios.get("/api/dashboard/hospital/applicants", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -154,7 +161,6 @@ export default function HospitalApplicantsPage() {
     }
   };
 
-
   // 정렬 로직
   const sortedApplications = useMemo(() => {
     const sorted = [...applications];
@@ -162,16 +168,16 @@ export default function HospitalApplicantsPage() {
       case "recent":
         return sorted.sort(
           (a, b) =>
-            new Date(b.appliedAt).getTime() -
-            new Date(a.appliedAt).getTime()
+            new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
         );
       case "popular":
-        return sorted.sort((a, b) => (a.realName || a.nickname).localeCompare(b.realName || b.nickname));
+        return sorted.sort((a, b) =>
+          (a.realName || a.nickname).localeCompare(b.realName || b.nickname)
+        );
       case "deadline":
         return sorted.sort(
           (a, b) =>
-            new Date(a.appliedAt).getTime() -
-            new Date(b.appliedAt).getTime()
+            new Date(a.appliedAt).getTime() - new Date(b.appliedAt).getTime()
         );
       default:
         return sorted;
@@ -190,8 +196,13 @@ export default function HospitalApplicantsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-bold mb-4">병원 계정만 접근 가능합니다</h1>
-          <Link href="/login/hospital" className="text-blue-600 hover:underline">
+          <h1 className="text-xl font-bold mb-4">
+            병원 계정만 접근 가능합니다
+          </h1>
+          <Link
+            href="/login/hospital"
+            className="text-blue-600 hover:underline"
+          >
             병원 로그인
           </Link>
         </div>
@@ -203,7 +214,9 @@ export default function HospitalApplicantsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-bold mb-4">지원자 목록을 불러오는 중...</h1>
+          <h1 className="text-xl font-bold mb-4">
+            지원자 목록을 불러오는 중...
+          </h1>
         </div>
       </div>
     );
@@ -214,7 +227,7 @@ export default function HospitalApplicantsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-xl font-bold mb-4 text-red-600">{error}</h1>
-          <button 
+          <button
             onClick={fetchApplications}
             className="text-blue-600 hover:underline"
           >
@@ -249,7 +262,7 @@ export default function HospitalApplicantsPage() {
               options={sortOptions}
             />
           </div>
-          
+
           {applications.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-gray-500 text-lg">아직 지원자가 없습니다.</p>
@@ -293,9 +306,14 @@ export default function HospitalApplicantsPage() {
                   </thead>
                   <tbody>
                     {currentApplications.map((application) => (
-                      <tr key={application.id} className="border-b border-gray-100">
+                      <tr
+                        key={application.id}
+                        className="border-b border-gray-100"
+                      >
                         <td className="py-[22px] pl-[30px] text-sm text-gray-900">
-                          {new Date(application.appliedAt).toLocaleDateString('ko-KR')}
+                          {new Date(application.appliedAt)
+                            .toLocaleDateString("ko-KR")
+                            .replace(/\.$/, "")}
                         </td>
                         <td className="py-[22px] text-sm text-gray-900">
                           {application.realName || application.nickname}
@@ -313,7 +331,10 @@ export default function HospitalApplicantsPage() {
                         </td>
                         <td className="py-[22px] pr-[30px]">
                           <Link
-                            href={`/resumes/${application.resume_id || application.veterinarianId}`}
+                            href={`/resumes/${
+                              application.resume_id ||
+                              application.veterinarianId
+                            }`}
                             className="text-key1 text-[16px] font-bold no-underline hover:underline hover:underline-offset-[3px]"
                           >
                             이력서 보기

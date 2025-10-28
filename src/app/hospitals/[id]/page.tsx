@@ -919,7 +919,9 @@ export default function HospitalDetailPage({
                                     {new Date(
                                       evaluation.createdAt ||
                                         evaluation.evaluationDate
-                                    ).toLocaleDateString()}
+                                    )
+                                      .toLocaleDateString("ko-KR")
+                                      .replace(/\.$/, "")}
                                   </span>
                                 </div>
                               </div>

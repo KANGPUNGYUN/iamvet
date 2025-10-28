@@ -1817,9 +1817,9 @@ export default function ResumeDetailPage({
                                     {evaluation.hospitalName}
                                   </span>
                                   <span className="font-text text-[12px] lg:text-[14px] text-subtext2 truncate">
-                                    {new Date(
-                                      evaluation.evaluationDate
-                                    ).toLocaleDateString("ko-KR")}
+                                    {new Date(evaluation.evaluationDate)
+                                      .toLocaleDateString("ko-KR")
+                                      .replace(/\.$/, "")}
                                   </span>
                                 </div>
                               </div>

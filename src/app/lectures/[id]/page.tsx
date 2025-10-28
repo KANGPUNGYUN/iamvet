@@ -468,9 +468,9 @@ export default function LectureDetailPage({
                   </div>
                   <div className="flex gap-[12px]">
                     <span>
-                      {new Date(lectureDetail.uploadDate).toLocaleDateString(
-                        "ko-KR"
-                      )}
+                      {new Date(lectureDetail.uploadDate)
+                        .toLocaleDateString("ko-KR")
+                        .replace(/\.$/, "")}
                     </span>
                     <span>|</span>
                     <span>조회 {getLectureViewCount(id).toLocaleString()}</span>
@@ -622,9 +622,9 @@ export default function LectureDetailPage({
                                 {comment.author_name || "익명 사용자"}
                               </span>
                               <span className="text-[12px] text-[#9098A4]">
-                                {new Date(comment.createdAt).toLocaleDateString(
-                                  "ko-KR"
-                                )}
+                                {new Date(comment.createdAt)
+                                  .toLocaleDateString("ko-KR")
+                                  .replace(/\.$/, "")}
                               </span>
                             </div>
                             {comment.user_id === currentUser?.id && (
@@ -884,9 +884,9 @@ export default function LectureDetailPage({
                         <LectureCard
                           id={lecture.id}
                           title={lecture.title}
-                          date={new Date(lecture.uploadDate).toLocaleDateString(
-                            "ko-KR"
-                          )}
+                          date={new Date(lecture.uploadDate)
+                            .toLocaleDateString("ko-KR")
+                            .replace(/\.$/, "")}
                           views={lecture.viewCount}
                           imageUrl={lecture.thumbnailUrl}
                           category={lecture.category}
@@ -952,9 +952,9 @@ export default function LectureDetailPage({
                       key={lecture.id}
                       id={lecture.id}
                       title={lecture.title}
-                      date={new Date(lecture.uploadDate).toLocaleDateString(
-                        "ko-KR"
-                      )}
+                      date={new Date(lecture.uploadDate)
+                        .toLocaleDateString("ko-KR")
+                        .replace(/\.$/, "")}
                       views={lecture.viewCount}
                       imageUrl={lecture.thumbnailUrl}
                       category={lecture.category}

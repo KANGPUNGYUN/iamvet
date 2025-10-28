@@ -1164,7 +1164,9 @@ export default function TransfersPage() {
                       transfer.category === "병원양도" ? transfer.area || 0 : 0
                     }
                     price={`${(transfer.price / 10000).toFixed(0)}만원`}
-                    date={new Date(transfer.createdAt).toLocaleDateString()}
+                    date={new Date(transfer.createdAt)
+                      .toLocaleDateString("ko-KR")
+                      .replace(/\.$/, "")}
                     views={transfer.views || 0}
                     imageUrl={transfer.images?.[0] || ""}
                     categories={transfer.category}

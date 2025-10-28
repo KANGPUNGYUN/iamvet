@@ -92,8 +92,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // });
 
       console.log(`[ViewAPI] 조회수 증가 완료`);
+      
+      // 성공 응답 반환
+      return NextResponse.json(
+        createApiResponse({
+          viewCount: updateResult.viewCount,
+          message: "조회수가 증가되었습니다."
+        })
+      );
     } catch (error) {
       console.error(`[ViewAPI] 조회수 증가 실패 - 상세 오류:`, error);
+      return NextResponse.json(
+        createErrorResponse("조회수 증가 중 오류가 발생했습니다"),
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("Forum view increment error:", error);

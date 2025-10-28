@@ -711,7 +711,9 @@ export default function TransferDetailPage({
                   </div>
                   <span className="text-sm">
                     {transferData.createdAt
-                      ? new Date(transferData.createdAt).toLocaleDateString()
+                      ? new Date(transferData.createdAt)
+                          .toLocaleDateString("ko-KR")
+                          .replace(/\.$/, "")
                       : ""}
                   </span>
                 </div>
@@ -781,7 +783,9 @@ export default function TransferDetailPage({
                   </div>
                   <span className="text-[12px]">
                     {transferData.createdAt
-                      ? new Date(transferData.createdAt).toLocaleDateString()
+                      ? new Date(transferData.createdAt)
+                          .toLocaleDateString("ko-KR")
+                          .replace(/\.$/, "")
                       : ""}
                   </span>
                 </div>
@@ -909,9 +913,9 @@ export default function TransferDetailPage({
                             price={formatPrice(transfer.price)}
                             date={
                               transfer.createdAt
-                                ? new Date(
-                                    transfer.createdAt
-                                  ).toLocaleDateString()
+                                ? new Date(transfer.createdAt)
+                                    .toLocaleDateString("ko-KR")
+                                    .replace(/\.$/, "")
                                 : ""
                             }
                             views={transfer.viewCount || 0}
@@ -968,7 +972,9 @@ export default function TransferDetailPage({
                       price={formatPrice(transfer.price)}
                       date={
                         transfer.createdAt
-                          ? new Date(transfer.createdAt).toLocaleDateString()
+                          ? new Date(transfer.createdAt)
+                              .toLocaleDateString("ko-KR")
+                              .replace(/\.$/, "")
                           : ""
                       }
                       views={transfer.viewCount || 0}

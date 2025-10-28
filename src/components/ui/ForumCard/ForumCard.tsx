@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { EyeIcon, CommentIcon, BookmarkIcon, BookmarkFilledIcon } from "public/icons";
+import {
+  EyeIcon,
+  CommentIcon,
+  BookmarkIcon,
+  BookmarkFilledIcon,
+} from "public/icons";
 import { Tag } from "../Tag";
 import { useViewCountStore } from "@/stores/viewCountStore";
 import { useBookmarkStore } from "@/stores/bookmarkStore";
@@ -35,54 +40,57 @@ export default function ForumCard({
   const { isForumBookmarked, toggleForumBookmark } = useBookmarkStore();
   const { user } = useAuth();
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
-  
+
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+    return date
+      .toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/\.$/, ""); // 마지막 온점 제거
   };
 
   const displayDate = updatedAt ? updatedAt : createdAt;
-  
+
   // 스토어에서 조회수를 가져오되, 없으면 props의 viewCount 사용
   const currentViewCount = getForumViewCount(id) || viewCount;
-  
+
   // 북마크 상태 - prop > 스토어 순으로 우선순위
-  const isBookmarked = propIsBookmarked !== undefined ? propIsBookmarked : isForumBookmarked(id);
-  
+  const isBookmarked =
+    propIsBookmarked !== undefined ? propIsBookmarked : isForumBookmarked(id);
+
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!user || isBookmarkLoading) return;
-    
+
     setIsBookmarkLoading(true);
-    
+
     try {
-      const method = isBookmarked ? 'DELETE' : 'POST';
+      const method = isBookmarked ? "DELETE" : "POST";
       const response = await fetch(`/api/forums/${id}/bookmark`, {
         method,
-        credentials: 'include',
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
-      
+
       if (response.ok) {
         // 스토어 상태 업데이트
         const newState = toggleForumBookmark(id);
-        
+
         // 부모 컴포넌트에 변경사항 알림
         if (onBookmarkChange) {
           onBookmarkChange(id, newState);
         }
       } else {
-        console.error('북마크 처리 실패:', await response.text());
+        console.error("북마크 처리 실패:", await response.text());
       }
     } catch (error) {
-      console.error('북마크 처리 중 오류:', error);
+      console.error("북마크 처리 중 오류:", error);
     } finally {
       setIsBookmarkLoading(false);
     }
@@ -110,20 +118,22 @@ export default function ForumCard({
             <div className="flex items-center gap-4 text-[#9CA3AF]">
               <div className="flex items-center gap-1">
                 <EyeIcon currentColor="#9CA3AF" />
-                <span className="text-[14px]">{currentViewCount.toLocaleString()}</span>
+                <span className="text-[14px]">
+                  {currentViewCount.toLocaleString()}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <CommentIcon currentColor="#9CA3AF" />
                 <span className="text-[14px]">{commentCount}</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               {/* Date */}
               <div className="text-[14px] text-[#9CA3AF]">
                 {formatDate(displayDate)}
               </div>
-              
+
               {/* Bookmark Button */}
               {user && (
                 <button

@@ -25,41 +25,38 @@ export default function HospitalMessagesPage() {
   const [filterBy, setFilterBy] = useState("all");
   const itemsPerPage = 6;
 
-  const { 
-    messages, 
-    pagination, 
-    isLoading, 
-    error, 
-    markAsRead 
-  } = useMessages({
-    type: 'all',
-    filter: filterBy as 'all' | 'read' | 'unread',
-    sort: sortBy as 'recent' | 'oldest',
+  const { messages, pagination, isLoading, error, markAsRead } = useMessages({
+    type: "all",
+    filter: filterBy as "all" | "read" | "unread",
+    sort: sortBy as "recent" | "oldest",
     page: currentPage,
-    limit: itemsPerPage
+    limit: itemsPerPage,
   });
 
-  const handleMarkAsRead = async (messageId: string, messageData: MessageData) => {
+  const handleMarkAsRead = async (
+    messageId: string,
+    messageData: MessageData
+  ) => {
     const success = await markAsRead(messageId, messageData.type);
     if (!success) {
       // 에러 처리 (필요시 토스트 메시지 등)
-      console.error('Failed to mark message as read');
+      console.error("Failed to mark message as read");
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getJobId = (message: MessageData) => {
-    if (message.type === 'inquiry' && message.job) {
+    if (message.type === "inquiry" && message.job) {
       return message.job.id;
     }
     return undefined;
@@ -76,7 +73,9 @@ export default function HospitalMessagesPage() {
           </div>
           <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
             <div className="text-center py-10">
-              <p className="text-red-600 mb-4">메시지를 불러오는 중 오류가 발생했습니다.</p>
+              <p className="text-red-600 mb-4">
+                메시지를 불러오는 중 오류가 발생했습니다.
+              </p>
               <p className="text-gray-600">{error}</p>
             </div>
           </div>
@@ -99,7 +98,9 @@ export default function HospitalMessagesPage() {
         <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px]">
           {/* 헤더: 제목과 SelectBox들 */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-primary font-text text-[24px] text-bold">알림 및 문의</h1>
+            <h1 className="text-primary font-text text-[24px] text-bold">
+              알림 및 문의
+            </h1>
             <div className="flex gap-3">
               <SelectBox
                 value={filterBy}
@@ -141,7 +142,11 @@ export default function HospitalMessagesPage() {
                       content={message.content}
                       createdAt={formatDate(message.createdAt)}
                       isRead={message.isRead}
-                      jobId={getJobId(message) ? parseInt(getJobId(message)!) : undefined}
+                      jobId={
+                        getJobId(message)
+                          ? parseInt(getJobId(message)!)
+                          : undefined
+                      }
                       onMarkAsRead={() => handleMarkAsRead(message.id, message)}
                       basePath="/dashboard/hospital/messages"
                       type={message.type}

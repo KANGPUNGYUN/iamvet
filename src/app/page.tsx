@@ -251,10 +251,7 @@ export default function HomePage() {
         .filter((resume: any) => resume.isLiked)
         .map((resume: any) => resume.id);
 
-      console.log(
-        "[Resume Like] 서버에서 받은 좋아요 이력서:",
-        likedResumeIds
-      );
+      console.log("[Resume Like] 서버에서 받은 좋아요 이력서:", likedResumeIds);
       initializeResumeLikes(likedResumeIds);
     }
   }, [resumesData, initializeResumeLikes]);
@@ -1053,9 +1050,9 @@ export default function HomePage() {
                             key={lecture.id}
                             id={lecture.id}
                             title={lecture.title}
-                            date={new Date(
-                              lecture.createdAt
-                            ).toLocaleDateString("ko-KR")}
+                            date={new Date(lecture.createdAt)
+                              .toLocaleDateString("ko-KR")
+                              .replace(/\.$/, "")}
                             views={lecture.viewCount || 0}
                             category={lecture.category}
                             imageUrl={lecture.thumbnail || lecture1Img.src}
@@ -1133,7 +1130,9 @@ export default function HomePage() {
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={new Date(transfer.createdAt).toLocaleDateString()}
+                        date={new Date(transfer.createdAt)
+                          .toLocaleDateString("ko-KR")
+                          .replace(/\.$/, "")}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
                         isLiked={isTransferLiked(transfer.id)}
@@ -1186,7 +1185,9 @@ export default function HomePage() {
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={new Date(transfer.createdAt).toLocaleDateString()}
+                        date={new Date(transfer.createdAt)
+                          .toLocaleDateString("ko-KR")
+                          .replace(/\.$/, "")}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
                         isLiked={isTransferLiked(transfer.id)}
@@ -1231,7 +1232,9 @@ export default function HomePage() {
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={new Date(transfer.createdAt).toLocaleDateString()}
+                        date={new Date(transfer.createdAt)
+                          .toLocaleDateString("ko-KR")
+                          .replace(/\.$/, "")}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
                         isLiked={isTransferLiked(transfer.id)}
@@ -1276,7 +1279,9 @@ export default function HomePage() {
                         price={transfer.price}
                         categories={transfer.categories}
                         isAd={transfer.isAd}
-                        date={new Date(transfer.createdAt).toLocaleDateString()}
+                        date={new Date(transfer.createdAt)
+                          .toLocaleDateString("ko-KR")
+                          .replace(/\.$/, "")}
                         views={transfer.views}
                         imageUrl={transfer.images?.[0] || ""}
                         isLiked={isTransferLiked(transfer.id)}

@@ -466,7 +466,9 @@ export default function ForumDetailPage({
                 </div>
 
                 <div className="text-[14px] text-[#9098A4]">
-                  {new Date(currentForum.createdAt).toLocaleDateString("ko-KR")}
+                  {new Date(currentForum.createdAt)
+                    .toLocaleDateString("ko-KR")
+                    .replace(/\.$/, "")}
                 </div>
               </div>
             </div>
@@ -592,9 +594,9 @@ export default function ForumDetailPage({
                             {comment.author_name || "User"}
                           </span>
                           <span className="text-[12px] text-[#9098A4]">
-                            {new Date(comment.createdAt).toLocaleDateString(
-                              "ko-KR"
-                            )}
+                            {new Date(comment.createdAt)
+                              .toLocaleDateString("ko-KR")
+                              .replace(/\.$/, "")}
                           </span>
                         </div>
                         {isAuthenticated &&
@@ -710,9 +712,9 @@ export default function ForumDetailPage({
                                     {reply.author_name || "User"}
                                   </span>
                                   <span className="text-[12px] text-[#9098A4]">
-                                    {new Date(
-                                      reply.createdAt
-                                    ).toLocaleDateString("ko-KR")}
+                                    {new Date(reply.createdAt)
+                                      .toLocaleDateString("ko-KR")
+                                      .replace(/\.$/, "")}
                                   </span>
                                 </div>
                                 {isAuthenticated &&

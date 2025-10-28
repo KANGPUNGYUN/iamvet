@@ -231,7 +231,9 @@ export default function LecturesPage() {
     return {
       id: lecture.id,
       title: lecture.title,
-      date: new Date(lecture.createdAt).toLocaleDateString("ko-KR"),
+      date: new Date(lecture.createdAt)
+        .toLocaleDateString("ko-KR")
+        .replace(/\.$/, ""),
       views: lecture.viewCount,
       imageUrl: lecture.thumbnail || "/assets/images/lecture/default.png",
       category: lecture.category,
