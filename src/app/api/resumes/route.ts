@@ -125,9 +125,13 @@ export async function GET(request: NextRequest) {
           userId: resume.users.id, // User ID도 포함 (좋아요 체크용)
           name: resume.name || '익명',
           profileImage: resume.photo || null, // 이력서 사진만 사용
-          experience: resume.users.veterinarian_profiles?.experienceType || '신규',
-          preferredLocation: resume.users.veterinarian_profiles?.preferredLocation || '전국',
-          keywords: [resume.users.veterinarian_profiles?.specialty || '일반진료'],
+          experience: resume.position || resume.users.veterinarian_profiles?.experienceType || '신규',
+          preferredLocation: (resume.preferredRegions && resume.preferredRegions.length > 0) 
+            ? resume.preferredRegions[0] 
+            : resume.users.veterinarian_profiles?.preferredLocation || '전국',
+          keywords: (resume.specialties && resume.specialties.length > 0) 
+            ? resume.specialties 
+            : [resume.users.veterinarian_profiles?.specialty || '일반진료'],
           lastAccessDate: resume.updatedAt?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
           lastLoginAt: resume.users.lastLoginAt, // 최근 로그인 정보 추가
           isNew: false,
