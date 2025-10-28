@@ -710,6 +710,7 @@ export default function ResumesPage() {
                       { value: "수의테크니션", label: "수의테크니션" },
                       { value: "병원장", label: "병원장" },
                     ]}
+                    className="min-w-[140px]"
                   />
                 </div>
 
