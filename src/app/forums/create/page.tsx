@@ -143,7 +143,7 @@ export default function ForumCreatePage() {
                   onChange={handleAnimalChange}
                 >
                   <div className="flex flex-wrap gap-2">
-                    <FilterBox value="강아지">강아지</FilterBox>
+                    <FilterBox value="개">개</FilterBox>
                     <FilterBox value="고양이">고양이</FilterBox>
                     <FilterBox value="대동물">대동물</FilterBox>
                     <FilterBox value="특수동물">특수동물</FilterBox>

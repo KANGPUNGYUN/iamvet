@@ -67,7 +67,8 @@ export const allForumsData: ForumData[] = [
             id: "1-1",
             author: "김수의사",
             authorProfile: "",
-            content: "네, 도움이 되었다면 좋겠습니다. 추가 질문 있으시면 언제든 댓글 남겨주세요!",
+            content:
+              "네, 도움이 되었다면 좋겠습니다. 추가 질문 있으시면 언제든 댓글 남겨주세요!",
             date: "2025-04-14",
             replies: [],
           },
@@ -85,13 +86,13 @@ export const allForumsData: ForumData[] = [
   },
   {
     id: "2",
-    title: "강아지 피부염 치료 사례 공유",
+    title: "개 피부염 치료 사례 공유",
     content: `
       <div>
         <p>3세 리트리버 아토피 피부염 치료 사례를 공유합니다.</p>
         <p>기존 스테로이드 치료에서 벗어나 새로운 접근법을 시도한 결과입니다.</p>
         
-        <img src="/assets/images/transfer/transfer2.jpg" alt="강아지 피부염 치료 전후 사진" style="width: 100%; max-width: 500px; margin: 20px 0; border-radius: 8px;" />
+        <img src="/assets/images/transfer/transfer2.jpg" alt="개 피부염 치료 전후 사진" style="width: 100%; max-width: 500px; margin: 20px 0; border-radius: 8px;" />
         
         <h3>치료 과정:</h3>
         <p>1. 알레르기 유발 요소 제거</p>
@@ -108,7 +109,7 @@ export const allForumsData: ForumData[] = [
     createdAt: new Date("2025-04-13"),
     viewCount: 189,
     commentCount: 8,
-    tags: ["피부과", "강아지"],
+    tags: ["피부과", "개"],
     isBookmarked: true,
     comments: [],
   },
@@ -174,10 +175,10 @@ export const allForumsData: ForumData[] = [
   },
   {
     id: "5",
-    title: "강아지 파보바이러스 예방접종 프로토콜",
+    title: "개 파보바이러스 예방접종 프로토콜",
     content: `
       <div>
-        <p>강아지 파보바이러스 예방을 위한 최신 백신 프로토콜을 소개합니다.</p>
+        <p>개 파보바이러스 예방을 위한 최신 백신 프로토콜을 소개합니다.</p>
         
         <img src="/assets/images/transfer/transfer7.jpg" alt="백신 접종 모습" style="width: 100%; max-width: 500px; margin: 20px 0; border-radius: 8px;" />
         
@@ -194,7 +195,7 @@ export const allForumsData: ForumData[] = [
     createdAt: new Date("2025-04-10"),
     viewCount: 278,
     commentCount: 9,
-    tags: ["예방의학", "강아지"],
+    tags: ["예방의학", "개"],
     isBookmarked: true,
     comments: [],
   },
@@ -229,5 +230,5 @@ export const allForumsData: ForumData[] = [
 ];
 
 export const getForumById = (id: string): ForumData | undefined => {
-  return allForumsData.find(forum => forum.id === id);
+  return allForumsData.find((forum) => forum.id === id);
 };

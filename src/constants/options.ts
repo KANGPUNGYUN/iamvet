@@ -43,7 +43,7 @@ export const salaryTypeOptions = [
 
 // 동물 타입 옵션
 export const animalTypeOptions = [
-  { value: "강아지", label: "강아지" },
+  { value: "개", label: "개" },
   { value: "고양이", label: "고양이" },
   { value: "특수동물", label: "특수동물" },
   { value: "대동물", label: "대동물" },

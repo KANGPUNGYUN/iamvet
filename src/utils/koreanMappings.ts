@@ -14,7 +14,7 @@ export const businessTypeMapping: Record<string, string> = {
   livestock: "가축",
   wildlife: "야생동물",
   aquatic_animal: "수생동물",
-  dog: "강아지",
+  dog: "개",
   cat: "고양이",
   bird: "조류",
   rabbit: "토끼",

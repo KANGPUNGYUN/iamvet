@@ -115,7 +115,7 @@ export const KOREAN_MAPPINGS = {
 
   // 동물 유형 매핑
   animalType: {
-    DOG: "강아지",
+    DOG: "개",
     CAT: "고양이",
     EXOTIC: "특수동물",
     LARGE_ANIMAL: "대동물",

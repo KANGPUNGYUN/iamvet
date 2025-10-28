@@ -1395,7 +1395,7 @@ COPY public.forum_post_likes (id, "userId", "forumPostId", "createdAt") FROM std
 --
 
 COPY public.forum_posts (id, "userId", title, content, "createdAt", "updatedAt", "deletedAt", "animalType", "medicalField", "viewCount") FROM stdin;
-forum_1759051547530_vafu6ka3nhe	ExS5veE4OqwHGwkl	임상포럼	<p>좋아요!</p>	2025-09-28 09:25:48.12	2025-09-28 09:25:48.12	\N	강아지	내과	1
+forum_1759051547530_vafu6ka3nhe	ExS5veE4OqwHGwkl	임상포럼	<p>좋아요!</p>	2025-09-28 09:25:48.12	2025-09-28 09:25:48.12	\N	개	내과	1
 \.
 
 

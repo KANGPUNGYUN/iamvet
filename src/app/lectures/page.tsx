@@ -407,7 +407,7 @@ export default function LecturesPage() {
                   value={filters.animalType}
                   onChange={(value) => handleFilterChange("animalType", value)}
                 >
-                  <FilterBox value="dog">강아지</FilterBox>
+                  <FilterBox value="dog">개</FilterBox>
                   <FilterBox value="cat">고양이</FilterBox>
                   <FilterBox value="other">기타</FilterBox>
                 </FilterBox.Group>
@@ -780,7 +780,7 @@ export default function LecturesPage() {
                           handleFilterChange("animalType", value)
                         }
                       >
-                        <FilterBox value="dog">강아지</FilterBox>
+                        <FilterBox value="dog">개</FilterBox>
                         <FilterBox value="cat">고양이</FilterBox>
                         <FilterBox value="other">기타</FilterBox>
                       </FilterBox.Group>

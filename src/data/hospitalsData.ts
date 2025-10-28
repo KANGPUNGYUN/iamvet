@@ -198,7 +198,7 @@ const hospitalsData: Record<string, HospitalDetailData> = {
     establishedYear: "1980.03.15",
     address: "서울 광진구 능동로 120 건국대학교 수의과대학",
     staffCount: "45명",
-    businessType: "강아지, 고양이, 소동물",
+    businessType: "개, 고양이, 소동물",
     specialties: ["내과", "외과", "안과", "피부과", "치과"],
     facilityImages: [transfer6, transfer7, transfer8, transfer1, transfer2],
     introduction:

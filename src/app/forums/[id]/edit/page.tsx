@@ -43,31 +43,33 @@ export default function ForumEditPage({
         setIsLoading(true);
         const response = await fetch(`/api/forums/${id}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
+            Authorization: `Bearer ${
+              localStorage.getItem("accessToken") || ""
+            }`,
           },
         });
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             notFound();
           }
-          throw new Error('Failed to fetch forum');
+          throw new Error("Failed to fetch forum");
         }
-        
+
         const data = await response.json();
-        if (data.status === 'success' && data.data) {
+        if (data.status === "success" && data.data) {
           const forum = data.data;
-          
+
           // 권한 체크
           if (!isAuthenticated || currentUser?.id !== forum.userId) {
-            alert('이 게시글을 수정할 권한이 없습니다.');
+            alert("이 게시글을 수정할 권한이 없습니다.");
             router.push(`/forums/${id}`);
             return;
           }
-          
+
           setTitle(forum.title);
           setContent(forum.content);
-          
+
           // 동물 종류와 진료 분야 설정
           if (forum.animalType) {
             setSelectedAnimals([forum.animalType]);
@@ -77,14 +79,14 @@ export default function ForumEditPage({
           }
         }
       } catch (error) {
-        console.error('Failed to fetch forum:', error);
-        alert('게시글을 불러오는데 실패했습니다.');
-        router.push('/forums');
+        console.error("Failed to fetch forum:", error);
+        alert("게시글을 불러오는데 실패했습니다.");
+        router.push("/forums");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchForumData();
   }, [id, currentUser, isAuthenticated, router]);
 
@@ -111,10 +113,10 @@ export default function ForumEditPage({
 
     try {
       const response = await fetch(`/api/forums/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
         },
         body: JSON.stringify({
           title: title.trim(),
@@ -126,15 +128,17 @@ export default function ForumEditPage({
 
       const data = await response.json();
 
-      if (response.ok && data.status === 'success') {
+      if (response.ok && data.status === "success") {
         // 성공 시 상세 페이지로 이동
         router.push(`/forums/${id}`);
       } else {
-        throw new Error(data.message || '게시글 수정에 실패했습니다.');
+        throw new Error(data.message || "게시글 수정에 실패했습니다.");
       }
     } catch (error) {
       console.error("게시글 수정 실패:", error);
-      alert(error instanceof Error ? error.message : "게시글 수정에 실패했습니다.");
+      alert(
+        error instanceof Error ? error.message : "게시글 수정에 실패했습니다."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -162,7 +166,6 @@ export default function ForumEditPage({
 
   return (
     <>
-
       <main className="pt-[50px] pb-[100px] px-[16px] bg-white">
         <div className="max-w-[800px] mx-auto">
           {/* 헤더 */}
@@ -202,7 +205,7 @@ export default function ForumEditPage({
                   onChange={handleAnimalChange}
                 >
                   <div className="flex flex-wrap gap-2">
-                    <FilterBox value="강아지">강아지</FilterBox>
+                    <FilterBox value="개">개</FilterBox>
                     <FilterBox value="고양이">고양이</FilterBox>
                     <FilterBox value="대동물">대동물</FilterBox>
                     <FilterBox value="특수동물">특수동물</FilterBox>

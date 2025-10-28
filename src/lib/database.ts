@@ -264,13 +264,13 @@ export const getJobsWithPagination = async (params: any) => {
     const experiences = Array.isArray(params.experience)
       ? params.experience
       : [params.experience];
-    
+
     console.log("[DB] Original experience filter:", experiences);
-    
+
     // 계층적으로 확장된 경험 카테고리 생성
     const expandedExperiences = getExperienceFilterConditions(experiences);
     console.log("[DB] Expanded experience filter:", expandedExperiences);
-    
+
     if (expandedExperiences.length > 0) {
       paramCount++;
       query += ` AND j.experience && $${paramCount}`;
@@ -280,10 +280,10 @@ export const getJobsWithPagination = async (params: any) => {
   }
 
   // 지역 필터
-  if (params.region && params.region !== 'all') {
+  if (params.region && params.region !== "all") {
     const regionMapping: { [key: string]: string } = {
       seoul: "서울",
-      busan: "부산", 
+      busan: "부산",
       daegu: "대구",
       incheon: "인천",
       gwangju: "광주",
@@ -297,9 +297,9 @@ export const getJobsWithPagination = async (params: any) => {
       jeonnam: "전남",
       gyeongbuk: "경북",
       gyeongnam: "경남",
-      jeju: "제주"
+      jeju: "제주",
     };
-    
+
     const koreanRegion = regionMapping[params.region];
     if (koreanRegion) {
       paramCount++;
@@ -397,10 +397,10 @@ export const getJobsWithPagination = async (params: any) => {
     const experiences = Array.isArray(params.experience)
       ? params.experience
       : [params.experience];
-    
+
     // 계층적으로 확장된 경험 카테고리 생성
     const expandedExperiences = getExperienceFilterConditions(experiences);
-    
+
     if (expandedExperiences.length > 0) {
       countParamCount++;
       countQuery += ` AND j.experience && $${countParamCount}`;
@@ -408,10 +408,10 @@ export const getJobsWithPagination = async (params: any) => {
     }
   }
 
-  if (params.region && params.region !== 'all') {
+  if (params.region && params.region !== "all") {
     const regionMapping: { [key: string]: string } = {
       seoul: "서울",
-      busan: "부산", 
+      busan: "부산",
       daegu: "대구",
       incheon: "인천",
       gwangju: "광주",
@@ -425,9 +425,9 @@ export const getJobsWithPagination = async (params: any) => {
       jeonnam: "전남",
       gyeongbuk: "경북",
       gyeongnam: "경남",
-      jeju: "제주"
+      jeju: "제주",
     };
-    
+
     const koreanRegion = regionMapping[params.region];
     if (koreanRegion) {
       countParamCount++;
@@ -464,11 +464,12 @@ export const getJobsWithPagination = async (params: any) => {
 
   // Experience 값들을 로그로 출력하여 디버깅
   if (result.rows.length > 0) {
-    console.log('[DB] Sample job experience values:', 
-      result.rows.slice(0, 3).map(job => ({
+    console.log(
+      "[DB] Sample job experience values:",
+      result.rows.slice(0, 3).map((job) => ({
         id: job.id,
         title: job.title,
-        experience: job.experience
+        experience: job.experience,
       }))
     );
   }
@@ -803,7 +804,7 @@ export const generateHospitalHashtags = (hospital: any): string[] => {
 
   if (hospital.treatable_animals && hospital.treatable_animals.length > 0) {
     const animalMap: Record<string, string> = {
-      dog: "강아지",
+      dog: "개",
       cat: "고양이",
       special: "특수동물",
       large: "대동물",
@@ -1863,7 +1864,7 @@ export const getLecturesWithPagination = async (params: any) => {
       radiology: "영상진단",
       anesthesia: "마취학",
       dentistry: "치과",
-      other: "기타"
+      other: "기타",
     };
 
     const categories = params.medicalField
@@ -4966,10 +4967,7 @@ export const checkForumBookmarkExists = async (
   return result.rows.length > 0;
 };
 
-export const createForumBookmark = async (
-  userId: string,
-  forumId: string
-) => {
+export const createForumBookmark = async (userId: string, forumId: string) => {
   // First, try to restore a soft-deleted bookmark
   const restoreQuery = `
     UPDATE forum_bookmarks 
@@ -4978,21 +4976,18 @@ export const createForumBookmark = async (
     RETURNING *
   `;
   const restoreResult = await pool.query(restoreQuery, [userId, forumId]);
-  
+
   if (restoreResult.rows.length > 0) {
     return restoreResult.rows[0];
   }
-  
+
   // If no soft-deleted bookmark exists, create a new one
   const insertQuery = `INSERT INTO forum_bookmarks (user_id, forum_id) VALUES ($1, $2) RETURNING *`;
   const result = await pool.query(insertQuery, [userId, forumId]);
   return result.rows[0];
 };
 
-export const removeForumBookmark = async (
-  userId: string,
-  forumId: string
-) => {
+export const removeForumBookmark = async (userId: string, forumId: string) => {
   const query = `UPDATE forum_bookmarks SET deleted_at = NOW() WHERE user_id = $1 AND forum_id = $2`;
   const result = await pool.query(query, [userId, forumId]);
   return (result.rowCount ?? 0) > 0;

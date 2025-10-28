@@ -80,8 +80,8 @@ export default function HospitalForumBookmarksPage() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/forums/bookmarks', {
-        credentials: 'include',
+      const response = await fetch("/api/forums/bookmarks", {
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -96,37 +96,44 @@ export default function HospitalForumBookmarksPage() {
         // 클라이언트 사이드 필터링
         if (searchKeyword.trim()) {
           const keyword = searchKeyword.toLowerCase().trim();
-          bookmarkedForums = bookmarkedForums.filter((forum: Forum) =>
-            forum.title.toLowerCase().includes(keyword) ||
-            forum.animalType?.toLowerCase().includes(keyword) ||
-            forum.medicalField?.toLowerCase().includes(keyword)
+          bookmarkedForums = bookmarkedForums.filter(
+            (forum: Forum) =>
+              forum.title.toLowerCase().includes(keyword) ||
+              forum.animalType?.toLowerCase().includes(keyword) ||
+              forum.medicalField?.toLowerCase().includes(keyword)
           );
         }
 
         if (selectedFields.length > 0) {
           bookmarkedForums = bookmarkedForums.filter((forum: Forum) =>
-            selectedFields.includes(forum.medicalField || '')
+            selectedFields.includes(forum.medicalField || "")
           );
         }
 
         if (selectedAnimals.length > 0) {
           bookmarkedForums = bookmarkedForums.filter((forum: Forum) =>
-            selectedAnimals.includes(forum.animalType || '')
+            selectedAnimals.includes(forum.animalType || "")
           );
         }
 
         // 정렬 적용
         switch (sortBy) {
           case "recent":
-            bookmarkedForums.sort((a: Forum, b: Forum) => 
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            bookmarkedForums.sort(
+              (a: Forum, b: Forum) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
             );
             break;
           case "popular":
-            bookmarkedForums.sort((a: Forum, b: Forum) => b.viewCount - a.viewCount);
+            bookmarkedForums.sort(
+              (a: Forum, b: Forum) => b.viewCount - a.viewCount
+            );
             break;
           case "comments":
-            bookmarkedForums.sort((a: Forum, b: Forum) => b.commentCount - a.commentCount);
+            bookmarkedForums.sort(
+              (a: Forum, b: Forum) => b.commentCount - a.commentCount
+            );
             break;
         }
 
@@ -134,7 +141,10 @@ export default function HospitalForumBookmarksPage() {
         const total = bookmarkedForums.length;
         const totalPagesCount = Math.ceil(total / itemsPerPage);
         const startIndex = (currentPage - 1) * itemsPerPage;
-        const paginatedForums = bookmarkedForums.slice(startIndex, startIndex + itemsPerPage);
+        const paginatedForums = bookmarkedForums.slice(
+          startIndex,
+          startIndex + itemsPerPage
+        );
 
         setForums(paginatedForums);
         setTotalForums(total);
@@ -162,47 +172,39 @@ export default function HospitalForumBookmarksPage() {
   }, [searchKeyword, sortBy, selectedFields, selectedAnimals, currentPage]);
 
   // 포럼 북마크 변경 핸들러
-  const handleBookmarkChange = async (forumId: string, isBookmarked: boolean) => {
+  const handleBookmarkChange = async (
+    forumId: string,
+    isBookmarked: boolean
+  ) => {
     try {
-      const method = isBookmarked ? 'POST' : 'DELETE';
+      const method = isBookmarked ? "POST" : "DELETE";
       const response = await fetch(`/api/forums/${forumId}/bookmark`, {
         method,
-        credentials: 'include',
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (response.ok) {
         // 스토어 상태 업데이트
         toggleForumBookmark(forumId);
-        
+
         // 북마크 제거 시 목록 새로고침
         if (!isBookmarked) {
           await fetchBookmarkedForums();
         }
       } else {
-        console.error('북마크 처리 실패:', await response.text());
+        console.error("북마크 처리 실패:", await response.text());
       }
     } catch (error) {
-      console.error('북마크 처리 중 오류:', error);
+      console.error("북마크 처리 중 오류:", error);
     }
   };
 
-  const fieldOptions = [
-    "내과",
-    "외과", 
-    "피부과",
-    "응급의학",
-    "예방의학"
-  ];
+  const fieldOptions = ["내과", "외과", "피부과", "응급의학", "예방의학"];
 
-  const animalOptions = [
-    "강아지",
-    "고양이",
-    "대동물",
-    "특수동물"
-  ];
+  const animalOptions = ["개", "고양이", "대동물", "특수동물"];
 
   const handleFieldChange = (fields: string[]) => {
     setSelectedFields(fields);
@@ -290,9 +292,7 @@ export default function HospitalForumBookmarksPage() {
 
               {/* 결과 정보 및 정렬 */}
               <div className="flex justify-between items-center">
-                <p className="text-[16px] text-[#9098A4]">
-                  총 {totalForums}건
-                </p>
+                <p className="text-[16px] text-[#9098A4]">총 {totalForums}건</p>
                 <SelectBox
                   value={sortBy}
                   onChange={setSortBy}
@@ -349,7 +349,11 @@ export default function HospitalForumBookmarksPage() {
                         viewCount={forum.viewCount}
                         commentCount={forum.commentCount}
                         createdAt={new Date(forum.createdAt)}
-                        updatedAt={forum.updatedAt ? new Date(forum.updatedAt) : undefined}
+                        updatedAt={
+                          forum.updatedAt
+                            ? new Date(forum.updatedAt)
+                            : undefined
+                        }
                         isBookmarked={isForumBookmarked(forum.id)}
                         onBookmarkChange={handleBookmarkChange}
                       />
@@ -438,9 +442,7 @@ export default function HospitalForumBookmarksPage() {
 
               {/* 총 결과 수와 정렬 */}
               <div className="flex justify-between items-center">
-                <p className="text-[14px] text-[#9098A4]">
-                  총 {totalForums}건
-                </p>
+                <p className="text-[14px] text-[#9098A4]">총 {totalForums}건</p>
                 <SelectBox
                   value={sortBy}
                   onChange={setSortBy}
@@ -497,7 +499,11 @@ export default function HospitalForumBookmarksPage() {
                         viewCount={forum.viewCount}
                         commentCount={forum.commentCount}
                         createdAt={new Date(forum.createdAt)}
-                        updatedAt={forum.updatedAt ? new Date(forum.updatedAt) : undefined}
+                        updatedAt={
+                          forum.updatedAt
+                            ? new Date(forum.updatedAt)
+                            : undefined
+                        }
                         isBookmarked={isForumBookmarked(forum.id)}
                         onBookmarkChange={handleBookmarkChange}
                       />

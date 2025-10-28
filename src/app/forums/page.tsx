@@ -150,22 +150,22 @@ export default function ForumsPage() {
   useEffect(() => {
     const fetchUserBookmarks = async () => {
       if (!user) return;
-      
+
       try {
-        const response = await fetch('/api/forums/bookmarks', {
-          credentials: 'include',
+        const response = await fetch("/api/forums/bookmarks", {
+          credentials: "include",
         });
-        
+
         if (response.ok) {
           const data = await response.json();
-          if (data.status === 'success') {
+          if (data.status === "success") {
             const forumIds = data.data.map((bookmark: any) => bookmark.id);
             setBookmarkedForumIds(forumIds);
             initializeForumBookmarks(forumIds);
           }
         }
       } catch (error) {
-        console.error('Failed to fetch user bookmarks:', error);
+        console.error("Failed to fetch user bookmarks:", error);
       }
     };
 
@@ -286,11 +286,11 @@ export default function ForumsPage() {
 
   // 북마크 변경 핸들러
   const handleBookmarkChange = (forumId: string, isBookmarked: boolean) => {
-    setBookmarkedForumIds(prev => {
+    setBookmarkedForumIds((prev) => {
       if (isBookmarked) {
         return [...prev, forumId];
       } else {
-        return prev.filter(id => id !== forumId);
+        return prev.filter((id) => id !== forumId);
       }
     });
   };
@@ -328,7 +328,7 @@ export default function ForumsPage() {
                   value={filters.animal}
                   onChange={(value) => handleFilterChange("animal", value)}
                 >
-                  <FilterBox value="강아지">강아지</FilterBox>
+                  <FilterBox value="개">개</FilterBox>
                   <FilterBox value="고양이">고양이</FilterBox>
                   <FilterBox value="대동물">대동물</FilterBox>
                   <FilterBox value="특수동물">특수동물</FilterBox>
@@ -596,7 +596,7 @@ export default function ForumsPage() {
                           handleFilterChange("animal", value)
                         }
                       >
-                        <FilterBox value="강아지">강아지</FilterBox>
+                        <FilterBox value="개">개</FilterBox>
                         <FilterBox value="고양이">고양이</FilterBox>
                         <FilterBox value="대동물">대동물</FilterBox>
                         <FilterBox value="특수동물">특수동물</FilterBox>
