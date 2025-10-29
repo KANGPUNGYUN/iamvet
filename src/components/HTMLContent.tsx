@@ -19,68 +19,75 @@ export const HTMLContent: React.FC<HTMLContentProps> = ({
   // 링크를 새창으로 열도록 설정 및 Quill 스타일 보정
   useEffect(() => {
     if (contentRef.current) {
-      // 링크 처리
+      // 외부 링크인지 확인하는 함수
+      const isExternalLink = (url: string) => {
+        // 이미 완전한 URL인 경우
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          return true;
+        }
+        // www로 시작하는 경우
+        if (url.startsWith('www.')) {
+          return true;
+        }
+        // ftp, mailto, tel 등의 프로토콜
+        if (url.startsWith('ftp://') || url.startsWith('mailto:') || url.startsWith('tel:')) {
+          return true;
+        }
+        // 내부 링크가 아닌 경우 (/, #, 상대경로가 아닌 경우)
+        if (!url.startsWith('/') && !url.startsWith('#') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
+          // 도메인 패턴 확인 (점이 포함되고 일반적인 도메인 형태)
+          const domainPattern = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/;
+          if (domainPattern.test(url)) {
+            return true;
+          }
+          // IP 주소 패턴
+          const ipPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?(\/.*)?$/;
+          if (ipPattern.test(url)) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      // 링크 처리 - 완전히 다른 접근법: span 요소로 교체
       const links = contentRef.current.querySelectorAll('a');
       links.forEach(link => {
         const href = link.getAttribute('href');
-        if (href) {
-          // 외부 링크인지 확인하는 함수
-          const isExternalLink = (url: string) => {
-            // 이미 완전한 URL인 경우
-            if (url.startsWith('http://') || url.startsWith('https://')) {
-              return true;
-            }
-            // www로 시작하는 경우
-            if (url.startsWith('www.')) {
-              return true;
-            }
-            // ftp, mailto, tel 등의 프로토콜
-            if (url.startsWith('ftp://') || url.startsWith('mailto:') || url.startsWith('tel:')) {
-              return true;
-            }
-            // 내부 링크가 아닌 경우 (/, #, 상대경로가 아닌 경우)
-            if (!url.startsWith('/') && !url.startsWith('#') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
-              // 도메인 패턴 확인 (점이 포함되고 일반적인 도메인 형태)
-              const domainPattern = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/;
-              if (domainPattern.test(url)) {
-                return true;
-              }
-              // IP 주소 패턴
-              const ipPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?(\/.*)?$/;
-              if (ipPattern.test(url)) {
-                return true;
-              }
-            }
-            return false;
-          };
-
-          if (isExternalLink(href)) {
-            // 프로토콜이 없는 경우 https:// 추가
-            let fullUrl = href;
-            if (!href.startsWith('http://') && !href.startsWith('https://')) {
-              fullUrl = `https://${href}`;
-            }
-
-            console.log(`Processing external link: "${href}" -> "${fullUrl}"`);
-
-            // href 속성도 올바른 URL로 업데이트
-            link.setAttribute('href', fullUrl);
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-            
-            // 클릭 이벤트 추가하여 Next.js 라우팅 가로채기 방지
-            link.addEventListener('click', (e) => {
-              console.log(`External link clicked: ${fullUrl}`);
-              e.preventDefault();
-              e.stopPropagation();
-              window.open(fullUrl, '_blank', 'noopener,noreferrer');
-            });
-
-            // data-external 속성 추가하여 외부 링크임을 표시
-            link.setAttribute('data-external', 'true');
-          } else {
-            console.log(`Internal link detected: "${href}"`);
+        if (href && isExternalLink(href)) {
+          // 프로토콜이 없는 경우 https:// 추가
+          let fullUrl = href;
+          if (!href.startsWith('http://') && !href.startsWith('https://')) {
+            fullUrl = `https://${href}`;
           }
+
+          console.log(`Converting external link to button: "${href}" -> "${fullUrl}"`);
+
+          // a 태그를 button 요소로 교체하여 Next.js 라우팅 완전 차단
+          const button = document.createElement('button');
+          button.innerHTML = link.innerHTML;
+          button.className = link.className;
+          button.style.cssText = 'background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; color: #3B82F6; font: inherit;';
+          button.setAttribute('data-external-url', fullUrl);
+          button.setAttribute('type', 'button');
+          
+          // 클릭 이벤트
+          button.onclick = () => {
+            console.log(`External link button clicked: ${fullUrl}`);
+            window.open(fullUrl, '_blank', 'noopener,noreferrer');
+          };
+          
+          // hover 효과
+          button.onmouseenter = () => {
+            button.style.color = '#2563EB';
+          };
+          button.onmouseleave = () => {
+            button.style.color = '#3B82F6';
+          };
+          
+          // 기존 a 태그를 button으로 교체
+          link.parentNode?.replaceChild(button, link);
+        } else if (href) {
+          console.log(`Internal link detected: "${href}"`);
         }
       });
 
