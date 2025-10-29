@@ -48,6 +48,17 @@
   width: auto;
 }
 
+/* L - Keycolor */
+.button-large-keycolor {
+  background: var(--Keycolor1);
+  color: #fff;
+  border: none;
+}
+
+.button-large-keycolor:hover:not(:disabled) {
+  background: #ff7f8f;
+}
+
 /* L - Default */
 .button-large-default {
   background: var(--Subtext);
