@@ -4496,6 +4496,7 @@ export const getTransferById = async (transferId: string) => {
   const transfer = result.rows[0];
   return {
     ...transfer,
+    documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
     user: {
       id: transfer.userId,
       hospitalName: transfer.hospitalName,
@@ -4601,7 +4602,7 @@ export const updateTransfer = async (transferId: string, updateData: any) => {
   }
   if (updateData.documents !== undefined) {
     fields.push(`documents = $${paramIndex++}`);
-    values.push(updateData.documents);
+    values.push(JSON.stringify(updateData.documents));
   }
   if (updateData.status !== undefined) {
     fields.push(`status = $${paramIndex++}`);
@@ -4638,14 +4639,17 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
   const query = `
     SELECT id, "userId", title, description, location, base_address, detail_address, sido, sigungu, 
-           price, category, images, status, area, views, "createdAt", "updatedAt"
+           price, category, images, documents, status, area, views, "createdAt", "updatedAt"
     FROM transfers 
     WHERE "deletedAt" IS NULL AND status != 'DISABLED'
     ORDER BY "createdAt" DESC 
     LIMIT $1 OFFSET $2
   `;
   const result = await pool.query(query, [limit, offset]);
-  return result.rows;
+  return result.rows.map(transfer => ({
+    ...transfer,
+    documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
+  }));
 };
 
 export const createLecture = async (lectureData: any) => {
@@ -4699,7 +4703,7 @@ export const createTransfer = async (transferData: any) => {
     transferData.price,
     transferData.category,
     transferData.images,
-    transferData.documents || [], // 문서 파일 URL 배열
+    JSON.stringify(transferData.documents || []), // 문서 파일 URL 배열을 JSON 문자열로 변환
     transferData.status || "ACTIVE",
     transferData.area || null, // 평수 (병원양도일 때만)
     0, // views 초기값
@@ -4718,7 +4722,13 @@ export const getTransferByIdForEdit = async (transferId: string) => {
     WHERE t.id = $1 AND t."deletedAt" IS NULL
   `;
   const result = await pool.query(query, [transferId]);
-  return result.rows[0] || null;
+  if (!result.rows[0]) return null;
+  
+  const transfer = result.rows[0];
+  return {
+    ...transfer,
+    documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
+  };
 };
 
 // 사용자의 임시저장된 양도양수 조회
