@@ -770,7 +770,7 @@ export default function JobDetailPage({
                   </>
                 )}
                 <Button
-                  variant="weak"
+                  variant="keycolor"
                   size="large"
                   onClick={handleContactClick}
                 >
