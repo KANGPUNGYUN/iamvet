@@ -8,15 +8,8 @@ import HospitalNotificationsCard from "@/components/ui/HospitalNotificationsCard
 import ApplicantsTable from "@/components/ui/ApplicantsTable";
 import AdvertisementSlider from "@/components/ui/AdvertisementSlider";
 import { useNotificationStore } from "@/store/notificationStore";
-
-interface DashboardAdvertisement {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  linkUrl?: string;
-  targetAudience: "ALL" | "VETERINARIANS" | "HOSPITALS";
-}
+import { useDashboardBanners } from "@/hooks/api/useAdvertisements";
+import React from "react";
 
 interface Notification {
   id: string;
@@ -28,37 +21,18 @@ interface Notification {
 }
 
 export default function HospitalDashboardPage() {
-  const [advertisements, setAdvertisements] = useState<DashboardAdvertisement[]>([]);
-  const [isLoadingAds, setIsLoadingAds] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   
   // 알림 store 사용
   const { fetchUnreadCount } = useNotificationStore();
 
+  // 대시보드 배너 광고 데이터 조회
+  const { data: dashboardBannersData, isLoading: isLoadingAds } = useDashboardBanners();
+
   useEffect(() => {
-    fetchDashboardAdvertisements();
     fetchNotifications();
   }, []);
-
-  const fetchDashboardAdvertisements = async () => {
-    try {
-      const response = await fetch('/api/advertisements?type=DASHBOARD_BANNER&status=ACTIVE');
-      const data = await response.json();
-      
-      if (data.success && data.data?.length > 0) {
-        // Filter ads for hospitals
-        const hospitalAds = data.data.filter((ad: DashboardAdvertisement) => 
-          ad.targetAudience === "ALL" || ad.targetAudience === "HOSPITALS"
-        );
-        setAdvertisements(hospitalAds);
-      }
-    } catch (error) {
-      console.error('Failed to fetch dashboard advertisements:', error);
-    } finally {
-      setIsLoadingAds(false);
-    }
-  };
 
   const fetchNotifications = async () => {
     try {
@@ -90,15 +64,24 @@ export default function HospitalDashboardPage() {
     }
   };
 
-  // Transform API data to match AdvertisementSlider format
-  const formattedAds = advertisements.map(ad => ({
-    id: ad.id,
-    imageUrl: ad.imageUrl || '',
-    imageLargeUrl: ad.imageUrl || '',
-    linkUrl: ad.linkUrl,
-    title: ad.title,
-    description: ad.description
-  }));
+  // 병원용 광고 필터링 및 변환
+  const formattedAds = React.useMemo(() => {
+    if (!dashboardBannersData?.data || dashboardBannersData.data.length === 0) {
+      return [];
+    }
+
+    // Filter ads for hospitals
+    const hospitalAds = dashboardBannersData.data.filter(ad => 
+      ad.targetAudience === "ALL" || ad.targetAudience === "HOSPITALS"
+    );
+
+    // Transform API data to match AdvertisementSlider format
+    return hospitalAds.map(ad => ({
+      id: ad.id,
+      imageUrl: ad.imageUrl || '',
+      linkUrl: ad.linkUrl,
+    }));
+  }, [dashboardBannersData]);
   return (
     <div className="bg-gray-50">
       <div className="max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">

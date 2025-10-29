@@ -49,7 +49,9 @@ export async function GET(req: NextRequest) {
       const typeMapping: { [key: string]: AdvertisementType } = {
         'HERO': 'HERO_BANNER',
         'BANNER': 'GENERAL_BANNER',
-        'SIDEBAR': 'SIDE_AD'
+        'SIDEBAR': 'SIDE_AD',
+        'CARD': 'AD_CARD',
+        'DASHBOARD': 'DASHBOARD_BANNER'
       };
       const mappedType = typeMapping[position];
       if (mappedType) {
@@ -117,8 +119,11 @@ export async function GET(req: NextRequest) {
         data: advertisements.map((ad: any) => ({
           id: ad.id,
           title: ad.title,
+          description: ad.description,
           imageUrl: ad.imageUrl,
           linkUrl: ad.linkUrl,
+          variant: ad.variant,
+          targetAudience: ad.targetAudience,
           order: 0, // 기본값
         })),
       });

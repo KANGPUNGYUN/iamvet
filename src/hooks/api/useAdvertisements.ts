@@ -3,11 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 interface Advertisement {
   id: string;
   title: string;
+  description?: string;
   imageUrl: string;
   linkUrl: string;
-  position: 'HERO' | 'BANNER' | 'SIDEBAR';
+  position: 'HERO' | 'BANNER' | 'SIDEBAR' | 'CARD' | 'DASHBOARD';
   isActive: boolean;
   order: number;
+  variant?: string;
+  targetAudience?: string;
   startDate?: string;
   endDate?: string;
   createdAt: string;
@@ -20,7 +23,7 @@ interface AdvertisementsResponse {
 }
 
 // 광고 목록 조회
-export const useAdvertisements = (position?: 'HERO' | 'BANNER' | 'SIDEBAR') => {
+export const useAdvertisements = (position?: 'HERO' | 'BANNER' | 'SIDEBAR' | 'CARD' | 'DASHBOARD') => {
   return useQuery<AdvertisementsResponse>({
     queryKey: ['advertisements', position],
     queryFn: async () => {
@@ -54,4 +57,19 @@ export const useHeroBanners = () => {
 // 일반 배너용 hook
 export const useBannerAds = () => {
   return useAdvertisements('BANNER');
+};
+
+// 사이드 광고용 hook
+export const useSideAds = () => {
+  return useAdvertisements('SIDEBAR');
+};
+
+// 카드 광고용 hook
+export const useCardAds = () => {
+  return useAdvertisements('CARD');
+};
+
+// 대시보드 배너용 hook
+export const useDashboardBanners = () => {
+  return useAdvertisements('DASHBOARD');
 };

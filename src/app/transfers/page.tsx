@@ -19,6 +19,7 @@ import { CloseIcon, ArrowRightIcon, EditIcon } from "public/icons";
 import Link from "next/link";
 import { useLikeStore } from "@/stores/likeStore";
 import { handleNumberInputChange } from "@/utils/validation";
+import { useCardAds } from "@/hooks/api/useAdvertisements";
 
 export default function TransfersPage() {
   const router = useRouter();
@@ -36,16 +37,8 @@ export default function TransfersPage() {
   const [transfersData, setTransfersData] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
-  // AD_CARD 광고 데이터
-  const [adData, setAdData] = useState<{
-    id: string;
-    title: string;
-    description: string;
-    imageUrl?: string;
-    linkUrl?: string;
-    variant?: "default" | "blue";
-  } | null>(null);
-  const [isLoadingAd, setIsLoadingAd] = useState(true);
+  // AD_CARD 광고 데이터 조회
+  const { data: cardAdsData, isLoading: isLoadingAd } = useCardAds();
 
   // 적용된 필터 상태 (실제 필터링에 사용)
   const [appliedFilters, setAppliedFilters] = useState({
@@ -146,37 +139,22 @@ export default function TransfersPage() {
     fetchTransfers();
   }, []);
 
-  // API에서 AD_CARD 광고 가져오기
-  useEffect(() => {
-    const fetchAdCard = async () => {
-      setIsLoadingAd(true);
-      try {
-        const response = await fetch(
-          "/api/advertisements?type=AD_CARD&status=ACTIVE"
-        );
-        const data = await response.json();
-
-        if (data.success && data.data?.length > 0) {
-          // 첫 번째 활성 광고 가져오기
-          const ad = data.data[0];
-          setAdData({
-            id: ad.id,
-            title: ad.title,
-            description: ad.description,
-            imageUrl: ad.imageUrl,
-            linkUrl: ad.linkUrl,
-            variant: ad.variant || "default",
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch ad card:", error);
-      } finally {
-        setIsLoadingAd(false);
-      }
+  // 카드 광고 데이터 변환
+  const adData = React.useMemo(() => {
+    if (!cardAdsData?.data || cardAdsData.data.length === 0) {
+      return null;
+    }
+    
+    const ad = cardAdsData.data[0]; // 첫 번째 활성 광고 사용
+    return {
+      id: ad.id,
+      title: ad.title,
+      description: ad.description || ad.title,
+      imageUrl: ad.imageUrl,
+      linkUrl: ad.linkUrl,
+      variant: (ad.variant as "default" | "blue") || "default",
     };
-
-    fetchAdCard();
-  }, []);
+  }, [cardAdsData]);
 
   // Transfer 좋아요 상태 동기화
   useEffect(() => {

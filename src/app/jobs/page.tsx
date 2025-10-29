@@ -14,6 +14,7 @@ import { useJobs, JobFilters } from "@/hooks/api/useJobs";
 import { useLikeStore } from "@/stores/likeStore";
 import { workTypeOptions } from "@/constants/options";
 import { useAuth } from "@/hooks/api/useAuth";
+import { useSideAds } from "@/hooks/api/useAdvertisements";
 import Link from "next/link";
 import { EditIcon } from "public/icons";
 
@@ -29,15 +30,8 @@ export default function JobsPage() {
   const { setJobLike, toggleJobLike, initializeJobLikes, isJobLiked } =
     useLikeStore();
 
-  // SIDE_AD 광고 데이터
-  const [sideAdData, setSideAdData] = useState<{
-    id: string;
-    title: string;
-    description: string;
-    imageUrl?: string;
-    linkUrl?: string;
-  } | null>(null);
-  const [isLoadingAd, setIsLoadingAd] = useState(true);
+  // SIDE_AD 광고 데이터 조회
+  const { data: sideAdsData, isLoading: isLoadingAd } = useSideAds();
 
   // 필터 상태 관리 (UI용 - 아직 적용되지 않은 상태)
   const [filters, setFilters] = useState({
@@ -127,36 +121,21 @@ export default function JobsPage() {
     setCurrentPage(urlFilters.page);
   }, [searchParams]);
 
-  // API에서 SIDE_AD 광고 가져오기
-  useEffect(() => {
-    const fetchSideAd = async () => {
-      setIsLoadingAd(true);
-      try {
-        const response = await fetch(
-          "/api/advertisements?type=SIDE_AD&status=ACTIVE"
-        );
-        const data = await response.json();
-
-        if (data.success && data.data?.length > 0) {
-          // 첫 번째 활성 광고 가져오기
-          const ad = data.data[0];
-          setSideAdData({
-            id: ad.id,
-            title: ad.title,
-            description: ad.description,
-            imageUrl: ad.imageUrl,
-            linkUrl: ad.linkUrl,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch side ad:", error);
-      } finally {
-        setIsLoadingAd(false);
-      }
+  // 사이드 광고 데이터 변환
+  const sideAdData = React.useMemo(() => {
+    if (!sideAdsData?.data || sideAdsData.data.length === 0) {
+      return null;
+    }
+    
+    const ad = sideAdsData.data[0]; // 첫 번째 활성 광고 사용
+    return {
+      id: ad.id,
+      title: ad.title,
+      description: ad.description || ad.title, // description이 없으면 title 사용
+      imageUrl: ad.imageUrl,
+      linkUrl: ad.linkUrl,
     };
-
-    fetchSideAd();
-  }, []);
+  }, [sideAdsData]);
 
   // Build API filters from current state
   const buildApiFilters = (): JobFilters => {

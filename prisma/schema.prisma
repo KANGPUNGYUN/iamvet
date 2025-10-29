@@ -981,6 +981,7 @@ enum AdvertisementType {
   GENERAL_BANNER
   SIDE_AD
   AD_CARD
+  DASHBOARD_BANNER
 }
 
 enum AdvertisementStatus {
