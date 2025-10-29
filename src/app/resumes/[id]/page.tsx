@@ -168,6 +168,9 @@ export default function ResumeDetailPage({
   >("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
+  const [selectedApplicationId, setSelectedApplicationId] = useState<
+    string | null
+  >(null);
 
   // 평가하기 관련 상태
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -228,8 +231,8 @@ export default function ResumeDetailPage({
 
   // 이력서 ID에서 veterinarianId 추출하는 함수
   const extractVeterinarianId = (resumeId: string): string | null => {
-    // resume_mVTzzWLtXOtuNwJ__1758234128553 -> mVTzzWLtXOtuNwJ_
-    const match = resumeId.match(/^resume_([^_]+_)/);
+    // resume_IVoSQNS8kgGWm1-m_1761122200523 -> IVoSQNS8kgGWm1-m
+    const match = resumeId.match(/^resume_([^_]+)/);
     return match ? match[1] : null;
   };
 
@@ -927,25 +930,32 @@ export default function ResumeDetailPage({
         console.log("📋 All hospital applications:", result);
 
         if (result.status === "success" && result.data) {
-          // 해당 수의사가 이 병원의 공고에 지원한 내역 찾기
-          const targetApplication = result.data.find(
+          // 해당 수의사가 이 병원의 공고에 지원한 모든 내역 찾기
+          const targetApplications = result.data.filter(
             (app: any) => app.veterinarianId === veterinarianId
           );
 
-          if (targetApplication) {
-            console.log("🎯 Found matching application:", targetApplication);
-            const legacyStatus = targetApplication.status;
-            const newStatus = mapFromLegacyStatus(legacyStatus);
-            console.log("🔄 Status conversion:", { legacyStatus, newStatus });
+          if (targetApplications.length > 0) {
+            console.log("🎯 Found matching applications:", targetApplications);
 
-            const updatedApplication = {
-              ...targetApplication,
-              status: newStatus,
-            };
+            // 각 지원에 대해 상태 변환 처리
+            const updatedApplications = targetApplications.map((app: any) => {
+              const legacyStatus = app.status;
+              const newStatus = mapFromLegacyStatus(legacyStatus);
+              console.log("🔄 Status conversion for", app.job_title, ":", {
+                legacyStatus,
+                newStatus,
+              });
 
-            setApplicationInfo(updatedApplication);
-            setApplicationStatus(newStatus);
-            return updatedApplication;
+              return {
+                ...app,
+                status: newStatus,
+              };
+            });
+
+            setApplicationInfo(updatedApplications);
+            setApplicationStatus(updatedApplications[0].status); // 첫 번째 지원의 상태로 초기화
+            return updatedApplications;
           } else {
             console.log("❌ No application found for this veterinarian");
             return null;
@@ -1021,15 +1031,29 @@ export default function ResumeDetailPage({
   };
 
   // 지원 상태 변경
-  const handleStatusChange = async (newStatus: ApplicationStatus) => {
+  const handleStatusChange = async (
+    newStatus: ApplicationStatus,
+    targetApplicationId?: string
+  ) => {
     if (!applicationInfo) return;
-    if (newStatus === applicationInfo.status) return; // 상태가 동일하면 변경하지 않음
+
+    // 여러 지원이 있는 경우 특정 지원 대상
+    const isMultipleApplications = Array.isArray(applicationInfo);
+    const targetApp = isMultipleApplications
+      ? applicationInfo.find(
+          (app: any) =>
+            app.id === (targetApplicationId || selectedApplicationId)
+        )
+      : applicationInfo;
+
+    if (!targetApp) return;
+    if (newStatus === targetApp.status) return; // 상태가 동일하면 변경하지 않음
 
     setIsUpdatingStatus(true);
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `/api/dashboard/hospital/applicants/${applicationInfo.id}/status`,
+        `/api/dashboard/hospital/applicants/${targetApp.id}/status`,
         {
           method: "PUT",
           headers: {
@@ -1042,10 +1066,17 @@ export default function ResumeDetailPage({
 
       if (response.ok) {
         // applicationInfo 상태도 업데이트
-        setApplicationInfo({
-          ...applicationInfo,
-          status: newStatus,
-        });
+        if (isMultipleApplications) {
+          const updatedApplications = applicationInfo.map((app: any) =>
+            app.id === targetApp.id ? { ...app, status: newStatus } : app
+          );
+          setApplicationInfo(updatedApplications);
+        } else {
+          setApplicationInfo({
+            ...applicationInfo,
+            status: newStatus,
+          });
+        }
         alert("지원 상태가 성공적으로 변경되었습니다.");
       } else {
         const errorData = await response.json();
@@ -1114,60 +1145,167 @@ export default function ResumeDetailPage({
               isHospital: user?.type === "hospital",
               hasApplicationInfo: !!applicationInfo,
               shouldShow: user?.type === "hospital" && applicationInfo,
+              isMultiple: Array.isArray(applicationInfo),
             })}
             {user?.type === "hospital" && applicationInfo && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600">지원 상태:</span>
-                {isEditingStatus ? (
+              <div className="space-y-4">
+                {Array.isArray(applicationInfo) ? (
+                  // 여러 지원이 있는 경우
                   <>
-                    <SelectBox
-                      value={applicationStatus}
-                      onChange={(value) =>
-                        setApplicationStatus(value as ApplicationStatus)
-                      }
-                      disabled={isUpdatingStatus}
-                      placeholder="상태 선택"
-                      options={APPLICATION_STATUS_OPTIONS}
-                    />
-                    <Button
-                      variant="keycolor"
-                      size="small"
-                      onClick={() => {
-                        if (applicationStatus) {
-                          handleStatusChange(applicationStatus);
-                          setIsEditingStatus(false);
-                        }
-                      }}
-                      disabled={isUpdatingStatus}
-                    >
-                      {isUpdatingStatus ? "변경 중..." : "변경"}
-                    </Button>
-                    <Button
-                      variant="line"
-                      size="small"
-                      onClick={() => {
-                        setApplicationStatus(applicationInfo.status);
-                        setIsEditingStatus(false);
-                      }}
-                      disabled={isUpdatingStatus}
-                    >
-                      취소
-                    </Button>
+                    <span className="text-sm text-gray-600 font-medium">
+                      지원 상태 관리:
+                    </span>
+                    {applicationInfo.map((app: any) => (
+                      <div
+                        key={app.id}
+                        className="bg-gray-50 p-4 rounded-lg flex gap-4 justify-between"
+                      >
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-800">
+                              {app.job_title}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({app.job_position})
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-400">
+                            지원일:{" "}
+                            {new Date(app.appliedAt).toLocaleDateString(
+                              "ko-KR"
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-600">상태:</span>
+                          {isEditingStatus &&
+                          selectedApplicationId === app.id ? (
+                            <>
+                              <SelectBox
+                                value={applicationStatus}
+                                onChange={(value) =>
+                                  setApplicationStatus(
+                                    value as ApplicationStatus
+                                  )
+                                }
+                                disabled={isUpdatingStatus}
+                                placeholder="상태 선택"
+                                options={APPLICATION_STATUS_OPTIONS}
+                              />
+                              <Button
+                                variant="keycolor"
+                                size="small"
+                                onClick={() => {
+                                  if (applicationStatus) {
+                                    handleStatusChange(
+                                      applicationStatus,
+                                      app.id
+                                    );
+                                    setIsEditingStatus(false);
+                                    setSelectedApplicationId(null);
+                                  }
+                                }}
+                                disabled={isUpdatingStatus}
+                              >
+                                {isUpdatingStatus ? "변경 중..." : "변경"}
+                              </Button>
+                              <Button
+                                variant="line"
+                                size="small"
+                                onClick={() => {
+                                  setApplicationStatus(app.status);
+                                  setIsEditingStatus(false);
+                                  setSelectedApplicationId(null);
+                                }}
+                                disabled={isUpdatingStatus}
+                              >
+                                취소
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Tag variant={getStatusVariant(app.status)}>
+                                {
+                                  APPLICATION_STATUS_LABELS[
+                                    app.status as ApplicationStatus
+                                  ]
+                                }
+                              </Tag>
+                              <Button
+                                variant="line"
+                                size="small"
+                                onClick={() => {
+                                  setSelectedApplicationId(app.id);
+                                  setApplicationStatus(app.status);
+                                  setIsEditingStatus(true);
+                                }}
+                                disabled={isEditingStatus}
+                              >
+                                수정하기
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </>
                 ) : (
-                  <>
-                    <Tag variant={getStatusVariant(applicationStatus)}>
-                      {applicationStatus &&
-                        APPLICATION_STATUS_LABELS[applicationStatus]}
-                    </Tag>
-                    <Button
-                      variant="line"
-                      size="small"
-                      onClick={() => setIsEditingStatus(true)}
-                    >
-                      수정하기
-                    </Button>
-                  </>
+                  // 단일 지원인 경우 (기존 UI 유지)
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-600">지원 상태:</span>
+                    {isEditingStatus ? (
+                      <>
+                        <SelectBox
+                          value={applicationStatus}
+                          onChange={(value) =>
+                            setApplicationStatus(value as ApplicationStatus)
+                          }
+                          disabled={isUpdatingStatus}
+                          placeholder="상태 선택"
+                          options={APPLICATION_STATUS_OPTIONS}
+                        />
+                        <Button
+                          variant="keycolor"
+                          size="small"
+                          onClick={() => {
+                            if (applicationStatus) {
+                              handleStatusChange(applicationStatus);
+                              setIsEditingStatus(false);
+                            }
+                          }}
+                          disabled={isUpdatingStatus}
+                        >
+                          {isUpdatingStatus ? "변경 중..." : "변경"}
+                        </Button>
+                        <Button
+                          variant="line"
+                          size="small"
+                          onClick={() => {
+                            setApplicationStatus(applicationInfo.status);
+                            setIsEditingStatus(false);
+                          }}
+                          disabled={isUpdatingStatus}
+                        >
+                          취소
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Tag variant={getStatusVariant(applicationStatus)}>
+                          {applicationStatus &&
+                            APPLICATION_STATUS_LABELS[applicationStatus]}
+                        </Tag>
+                        <Button
+                          variant="line"
+                          size="small"
+                          onClick={() => setIsEditingStatus(true)}
+                        >
+                          수정하기
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             )}

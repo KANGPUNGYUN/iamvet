@@ -27,21 +27,21 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const uploadFileToS3 = async (file: File): Promise<string | null> => {
     try {
       // presigned URL 요청
-      const response = await fetch('/api/upload/presigned-url', {
-        method: 'POST',
+      const response = await fetch("/api/upload/presigned-url", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           fileName: file.name,
           fileType: file.type,
           fileSize: file.size,
-          folder: 'transfers',
+          folder: "transfers",
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Presigned URL 생성 실패');
+        throw new Error("Presigned URL 생성 실패");
       }
 
       const data = await response.json();
@@ -49,26 +49,28 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
       // S3에 직접 업로드
       const uploadResponse = await fetch(presignedUrl, {
-        method: 'PUT',
+        method: "PUT",
         body: file,
         headers: {
-          'Content-Type': file.type,
+          "Content-Type": file.type,
         },
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('S3 업로드 실패');
+        throw new Error("S3 업로드 실패");
       }
 
       return fileUrl;
     } catch (error) {
-      console.error('File upload error:', error);
+      console.error("File upload error:", error);
       alert(`${file.name} 업로드 중 오류가 발생했습니다.`);
       return null;
     }
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const newFiles = Array.from(event.target.files || []);
 
     if (newFiles.length === 0) return;
@@ -108,10 +110,10 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     }
 
     // 업로드 상태 관리
-    const fileIds = validFiles.map(file => `${file.name}-${Date.now()}`);
-    setUploadingFiles(prev => {
+    const fileIds = validFiles.map((file) => `${file.name}-${Date.now()}`);
+    setUploadingFiles((prev) => {
       const newSet = new Set(prev);
-      fileIds.forEach(id => newSet.add(id));
+      fileIds.forEach((id) => newSet.add(id));
       return newSet;
     });
 
@@ -119,10 +121,12 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       // 파일들을 S3에 순차적으로 업로드
       const uploadPromises = validFiles.map(uploadFileToS3);
       const uploadResults = await Promise.all(uploadPromises);
-      
+
       // 성공한 업로드 결과만 필터링
-      const successfulUrls = uploadResults.filter((url): url is string => url !== null);
-      
+      const successfulUrls = uploadResults.filter(
+        (url): url is string => url !== null
+      );
+
       if (successfulUrls.length > 0) {
         // 성공한 업로드 URL들을 부모 컴포넌트에 전달
         onUploadComplete?.(successfulUrls);
@@ -131,18 +135,17 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       // 파일 객체들도 로컬 상태에 추가 (UI 표시용)
       const updatedFiles = [...value, ...validFiles];
       onChange?.(updatedFiles);
-
     } catch (error) {
-      console.error('Upload error:', error);
-      alert('파일 업로드 중 오류가 발생했습니다.');
+      console.error("Upload error:", error);
+      alert("파일 업로드 중 오류가 발생했습니다.");
     } finally {
       // 업로드 상태 초기화
-      setUploadingFiles(prev => {
+      setUploadingFiles((prev) => {
         const newSet = new Set(prev);
-        fileIds.forEach(id => newSet.delete(id));
+        fileIds.forEach((id) => newSet.delete(id));
         return newSet;
       });
-      
+
       // input 초기화
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -177,7 +180,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     }
     // Word 파일 체크 (wordprocessingml이나 msword 포함)
     if (
-      fileType.includes("word") || 
+      fileType.includes("word") ||
       fileType.includes("wordprocessingml") ||
       fileType.includes("msword")
     ) {
@@ -254,7 +257,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                 lineHeight: "135%",
               }}
             >
-              PDF, Word, Excel, 이미지 파일 (20MB 이하)
+              PDF, Word, Excel 파일 (20MB 이하)
               <br />({value.length}/{maxFiles}개 업로드됨)
             </p>
           </div>

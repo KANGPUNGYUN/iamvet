@@ -4,7 +4,7 @@ import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import {
   getApplicationWithJobAndHospital,
   updateApplicationStatus,
-  // createNotification,
+  createNotification,
 } from "@/lib/database";
 
 import { ApplicationStatus, APPLICATION_STATUS_LABELS } from '@/constants/applicationStatus';
@@ -26,6 +26,14 @@ export const PUT = withAuth(
 
       // 지원서 및 권한 확인
       const application = await getApplicationWithJobAndHospital(applicationId);
+      
+      console.log("[Status Update] Permission check:", {
+        applicationExists: !!application,
+        hospitalUserId: application?.job?.hospital?.userId,
+        currentUserId: user.userId,
+        isMatch: application?.job?.hospital?.userId === user.userId
+      });
+      
       if (!application || application.job.hospital.userId !== user.userId) {
         return NextResponse.json(createErrorResponse("권한이 없습니다"), {
           status: 403,
@@ -35,16 +43,16 @@ export const PUT = withAuth(
       // 상태 업데이트
       await updateApplicationStatus(applicationId, status);
 
-      // 지원자에게 알림 발송 (notifications 테이블이 생성되면 주석 해제)
-      // await createNotification({
-      //   userId: application.veterinarian.userId,
-      //   type: "application_status",
-      //   title: getStatusNotificationTitle(status),
-      //   description: `${application.job.title} 공고의 지원 결과가 업데이트되었습니다`,
-      //   applicationId,
-      //   applicationStatus: status,
-      //   url: `/dashboard/veterinarian/applications`,
-      // });
+      // 지원자에게 알림 발송
+      await createNotification({
+        userId: application.veterinarian.userId,
+        type: "SYSTEM",
+        title: getStatusNotificationTitle(status),
+        content: `${application.job.title} 공고의 지원 결과가 업데이트되었습니다`,
+        applicationId,
+        applicationStatus: status,
+        url: `/dashboard/veterinarian/applications`,
+      });
 
       return NextResponse.json(
         createApiResponse("success", "지원 상태가 업데이트되었습니다", null)

@@ -1164,13 +1164,12 @@ export const createApplication = async (applicationData: any) => {
 
 export const updateApplicationStatus = async (
   applicationId: string,
-  status: ApplicationStatus
+  status: ApplicationStatus | string
 ) => {
-  // 임시로 레거시 상태로 변환하여 데이터베이스에 저장
-  const legacyStatus = mapToLegacyStatus(status);
+  // 이제 6개의 상태를 모두 직접 저장 가능
   const query =
     'UPDATE applications SET status = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2';
-  await pool.query(query, [legacyStatus, applicationId]);
+  await pool.query(query, [status, applicationId]);
 };
 
 export const getApplicationStatus = async (userId: string) => {
@@ -1299,11 +1298,11 @@ export const getStatusNotificationTitle = (
   status: ApplicationStatus
 ): string => {
   const statusMap: Record<ApplicationStatus, string> = {
-    [ApplicationStatusEnum.APPLYING]: "지원서 접수 완료",
-    [ApplicationStatusEnum.DOCUMENT_REVIEW]: "서류 검토 중",
+    [ApplicationStatusEnum.PENDING]: "지원서 접수 완료",
+    [ApplicationStatusEnum.REVIEWING]: "서류 검토 중",
     [ApplicationStatusEnum.DOCUMENT_PASS]: "서류 합격 축하드립니다!",
     [ApplicationStatusEnum.INTERVIEW_PASS]: "면접 합격 축하드립니다!",
-    [ApplicationStatusEnum.FINAL_PASS]: "최종 합격 축하드립니다!",
+    [ApplicationStatusEnum.ACCEPTED]: "최종 합격 축하드립니다!",
     [ApplicationStatusEnum.REJECTED]: "지원 결과 안내",
   };
 
@@ -1823,12 +1822,13 @@ export const getApplicationWithJobAndHospital = async (
   const query = `
     SELECT a.*, 
            j.title as job_title, j."hospitalId",
-           h.id as hospital_user_id, h."hospitalName",
-           v.id as veterinarian_user_id, v.nickname as veterinarian_name
+           h."userId" as hospital_id, h."hospitalName", h."userId" as hospital_user_id,
+           v.id as veterinarian_user_id, vet.nickname as veterinarian_name
     FROM applications a
     JOIN jobs j ON a."jobId" = j.id
-    JOIN users h ON j."hospitalId" = h.id
+    JOIN hospitals h ON h."userId" = j."hospitalId"
     JOIN users v ON a."veterinarianId" = v.id
+    LEFT JOIN veterinarians vet ON v.id = vet."userId"
     WHERE a.id = $1
   `;
 
@@ -3359,6 +3359,8 @@ export const getHospitalApplicants = async (hospitalId: string) => {
     ORDER BY a."appliedAt" DESC
   `;
   const result = await pool.query(query, [hospitalId]);
+  
+  // 데이터베이스에서 직접 가져온 상태를 그대로 사용
   return result.rows;
 };
 
