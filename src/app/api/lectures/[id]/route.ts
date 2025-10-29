@@ -153,7 +153,11 @@ export async function GET(
       youtubeUrl: youtubeUrl,
       thumbnailUrl: lecture.thumbnail,
       medicalField: lecture.category, // category를 medicalField로 사용
-      referenceFiles: [], // TODO: 참고자료 테이블 연결 필요
+      referenceFiles: lecture.referenceMaterials 
+        ? (typeof lecture.referenceMaterials === 'string' 
+          ? JSON.parse(lecture.referenceMaterials) 
+          : lecture.referenceMaterials) 
+        : [],
       recommendedLectures,
       isLiked: isLiked,
       comments: {
@@ -193,7 +197,7 @@ export async function PUT(
     const { id } = resolvedParams;
     const body = await request.json();
 
-    const { title, description, category, videoUrl, thumbnail, tags } = body;
+    const { title, description, category, videoUrl, thumbnail, tags, referenceMaterials } = body;
 
     // 기존 강의 확인
     const existingLecture = await (prisma as any).lectures.findUnique({
@@ -216,6 +220,9 @@ export async function PUT(
         videoUrl: videoUrl || existingLecture.videoUrl,
         thumbnail: thumbnail || existingLecture.thumbnail,
         tags: tags || existingLecture.tags,
+        referenceMaterials: referenceMaterials !== undefined 
+          ? JSON.stringify(referenceMaterials) 
+          : existingLecture.referenceMaterials,
         updatedAt: new Date(),
       },
     });

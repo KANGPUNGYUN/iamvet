@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { title, instructor, category, youtubeUrl, description, thumbnail } = body;
+    const { title, instructor, category, youtubeUrl, description, thumbnail, referenceMaterials } = body;
 
     if (!title || !instructor || !category) {
       return NextResponse.json(
@@ -199,6 +199,7 @@ export async function POST(request: NextRequest) {
       category,
       thumbnail,
       tags: [], // 현재는 빈 배열로 설정
+      referenceMaterials: referenceMaterials || [], // 참고자료 추가
     };
 
     const newLecture = await createLecture(lectureData);

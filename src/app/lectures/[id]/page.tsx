@@ -27,6 +27,8 @@ import Image from "next/image";
 interface ReferenceFile {
   id: string;
   name: string;
+  type: "PDF" | "PPT" | "WORD" | "EXCEL";
+  size: number;
   url: string;
 }
 
@@ -514,22 +516,46 @@ export default function LectureDetailPage({
                   <h2 className="font-text text-[16px] text-sub text-light mb-[20px]">
                     참고자료
                   </h2>
-                  <div className="space-y-3">
-                    {lectureDetail.referenceFiles.map((file: ReferenceFile) => (
+                  {lectureDetail.referenceFiles && lectureDetail.referenceFiles.length > 0 ? (
+                    <div className="space-y-3">
+                      {lectureDetail.referenceFiles.map((file: ReferenceFile) => (
                       <div
                         key={file.id}
                         className="flex items-center justify-between p-4 border border-[#EFEFF0] bg-white rounded-[8px]"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-[16px] h-[16px]">
-                            {file.name.endsWith(".pdf") ? (
+                            {file.type === "PDF" || file.name.endsWith(".pdf") ? (
                               <PdfIcon currentColor="#EF4444" />
-                            ) : file.name.endsWith(".doc") ||
+                            ) : file.type === "WORD" || file.name.endsWith(".doc") ||
                               file.name.endsWith(".docx") ? (
                               <WordIcon currentColor="#3B82F6" />
-                            ) : file.name.endsWith(".xlsx") ||
+                            ) : file.type === "EXCEL" || file.name.endsWith(".xlsx") ||
                               file.name.endsWith(".xls") ? (
                               <ExcelIcon currentColor="#22C55E" />
+                            ) : file.type === "PPT" || file.name.endsWith(".ppt") ||
+                              file.name.endsWith(".pptx") ? (
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                              >
+                                <rect
+                                  x="2"
+                                  y="1"
+                                  width="10"
+                                  height="14"
+                                  rx="1"
+                                  fill="#FF8500"
+                                />
+                                <path
+                                  d="M5 5h4M5 8h3M5 11h2"
+                                  stroke="white"
+                                  strokeWidth="1"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
                             ) : (
                               <svg
                                 width="16"
@@ -558,12 +584,30 @@ export default function LectureDetailPage({
                             {file.name}
                           </p>
                         </div>
-                        <button className="flex items-center justify-center w-[32px] h-[32px] rounded-[8px] transition-colors">
+                        <button 
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = file.url;
+                            link.download = file.name;
+                            link.target = '_blank';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                          className="flex items-center justify-center w-[32px] h-[32px] rounded-[8px] hover:bg-[#F8F9FA] transition-colors"
+                        >
                           <DownloadIcon currentColor="#9098A4" />
                         </button>
                       </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-[14px] text-[#9098A4]">
+                        첨부된 참고자료가 없습니다.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </section>
 

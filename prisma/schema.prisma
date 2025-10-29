@@ -168,6 +168,7 @@ model forum_posts {
   animalType       String
   medicalField     String
   viewCount        Int                @default(0)
+  forum_bookmarks  forum_bookmarks[]
   forum_comments   forum_comments[]
   forum_post_likes forum_post_likes[]
   users            users              @relation(fields: [userId], references: [id])
@@ -284,12 +285,12 @@ model jobs {
   preferences          String[]            @default([])
   recruitEndDate       DateTime?
   salary               String
-  viewCount            Int                 @default(0)
   workDays             String[]            @default([])
   workEndTime          String?
   workStartTime        String?
   salaryType           String
   workType             String[]            @default([])
+  viewCount            Int                 @default(0)
   contact_inquiries    contact_inquiries[]
   job_likes            job_likes[]
   job_notifications    job_notifications[]
@@ -339,21 +340,22 @@ model lecture_likes {
 }
 
 model lectures {
-  id               String             @id
-  title            String
-  description      String?
-  videoUrl         String
-  thumbnail        String?
-  duration         Int?
-  category         String?
-  tags             String[]
-  viewCount        Int                @default(0)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime
-  deletedAt        DateTime?
-  instructor       String?            @db.VarChar(255)
-  lecture_comments lecture_comments[]
-  lecture_likes    lecture_likes[]
+  id                 String             @id
+  title              String
+  description        String?
+  videoUrl           String
+  thumbnail          String?
+  duration           Int?
+  category           String?
+  tags               String[]
+  viewCount          Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime
+  deletedAt          DateTime?
+  instructor         String?            @db.VarChar(255)
+  referenceMaterials Json?              @default("[]")
+  lecture_comments   lecture_comments[]
+  lecture_likes      lecture_likes[]
 }
 
 model messages {
@@ -520,9 +522,9 @@ model resume_portfolio_files {
   sortOrder        Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([resumeId])
+  @@index([resumeId], map: "resume_portfolio_files_resumeid_idx")
 }
 
 model resumes {
@@ -577,10 +579,9 @@ model transfers {
   title          String
   description    String
   location       String
-  price          Int?
+  price          BigInt?
   category       String
   images         String[]
-  documents      String[]         @default([])
   status         TransferStatus   @default(ACTIVE)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime
@@ -593,58 +594,72 @@ model transfers {
   sido           String?
   sigungu        String?
   views          Int              @default(0)
+  documents      Json?            @default("[]")
   transfer_likes transfer_likes[]
   users          users            @relation(fields: [userId], references: [id])
+
+  @@index([documents], map: "idx_transfers_documents", type: Gin)
 }
 
 model users {
-  id                                                          String                           @id
-  email                                                       String                           @unique
-  phone                                                       String                           @unique
+  id                                                          String                       @id
+  email                                                       String                       @unique
+  phone                                                       String                       @unique
   passwordHash                                                String?
   profileImage                                                String?
   userType                                                    UserType
-  provider                                                    Provider                         @default(NORMAL)
-  isActive                                                    Boolean                          @default(true)
+  provider                                                    Provider                     @default(NORMAL)
+  isActive                                                    Boolean                      @default(true)
   termsAgreedAt                                               DateTime
   privacyAgreedAt                                             DateTime
   marketingAgreedAt                                           DateTime?
   deletedAt                                                   DateTime?
   withdrawReason                                              String?
   restoredAt                                                  DateTime?
-  createdAt                                                   DateTime                         @default(now())
+  createdAt                                                   DateTime                     @default(now())
   updatedAt                                                   DateTime
-  lastLoginAt                                                 DateTime?                        @db.Timestamp(6)
-  loginId                                                     String?                          @unique @db.VarChar(100)
-  seq                                                         Int                              @unique @default(autoincrement())
+  realName                                                    String?
+  birthDate                                                   DateTime?
+  businessNumber                                              String?                      @unique
+  establishedDate                                             DateTime?
+  hospitalAddress                                             String?
+  hospitalAddressDetail                                       String?
+  hospitalLogo                                                String?
+  hospitalName                                                String?
+  hospitalWebsite                                             String?
+  licenseImage                                                String?
+  loginId                                                     String?                      @unique @db.VarChar(100)
+  nickname                                                    String?                      @db.VarChar(100)
+  seq                                                         Int                          @unique @default(autoincrement())
+  universityEmail                                             String?                      @unique
+  lastLoginAt                                                 DateTime?                    @db.Timestamp(6)
   announcements                                               announcements[]
   applications                                                applications[]
   comment_replies                                             comment_replies[]
-  contact_inquiries_contact_inquiries_recipient_idTousers     contact_inquiries[]              @relation("contact_inquiries_recipient_idTousers")
-  contact_inquiries_contact_inquiries_sender_idTousers        contact_inquiries[]              @relation("contact_inquiries_sender_idTousers")
+  contact_inquiries_contact_inquiries_recipient_idTousers     contact_inquiries[]          @relation("contact_inquiries_recipient_idTousers")
+  contact_inquiries_contact_inquiries_sender_idTousers        contact_inquiries[]          @relation("contact_inquiries_sender_idTousers")
   detailed_resumes                                            detailed_resumes?
   email_verifications                                         email_verifications[]
+  forum_bookmarks                                             forum_bookmarks[]
   forum_comments                                              forum_comments[]
   forum_post_likes                                            forum_post_likes[]
   forum_posts                                                 forum_posts[]
   hospital_animals                                            hospital_animals[]
   hospital_business_licenses                                  hospital_business_licenses[]
-  hospital_evaluations_hospital_evaluations_hospitalIdTousers hospital_evaluations[]           @relation("hospital_evaluations_hospitalIdTousers")
-  hospital_evaluations_hospital_evaluations_userIdTousers     hospital_evaluations[]           @relation("hospital_evaluations_userIdTousers")
+  hospital_evaluations_hospital_evaluations_hospitalIdTousers hospital_evaluations[]       @relation("hospital_evaluations_hospitalIdTousers")
+  hospital_evaluations_hospital_evaluations_userIdTousers     hospital_evaluations[]       @relation("hospital_evaluations_userIdTousers")
   hospital_images                                             hospital_images[]
   hospital_specialties                                        hospital_specialties[]
-  hospital_treatment_animals                                  hospital_treatment_animals[]
-  hospital_treatment_specialties                              hospital_treatment_specialties[]
   hospitals                                                   hospitals?
   job_likes                                                   job_likes[]
   jobs                                                        jobs[]
   lecture_comments                                            lecture_comments[]
   lecture_likes                                               lecture_likes[]
-  messages_messages_receiverIdTousers                         messages[]                       @relation("messages_receiverIdTousers")
-  messages_messages_senderIdTousers                           messages[]                       @relation("messages_senderIdTousers")
+  messages_messages_receiverIdTousers                         messages[]                   @relation("messages_receiverIdTousers")
+  messages_messages_senderIdTousers                           messages[]                   @relation("messages_senderIdTousers")
   notification_settings                                       notification_settings?
-  notifications_notifications_recipientIdTousers              notifications[]                  @relation("notifications_recipientIdTousers")
-  notifications_notifications_senderIdTousers                 notifications[]                  @relation("notifications_senderIdTousers")
+  notifications_notifications_recipientIdTousers              notifications[]              @relation("notifications_recipientIdTousers")
+  notifications_notifications_senderIdTousers                 notifications[]              @relation("notifications_senderIdTousers")
   resume_evaluations                                          resume_evaluations[]
   resume_likes                                                resume_likes[]
   resumes                                                     resumes[]
@@ -656,6 +671,7 @@ model users {
   veterinary_students                                         veterinary_students?
 
   @@index([loginId], map: "idx_users_loginid")
+  @@index([nickname], map: "idx_users_nickname")
 }
 
 model veterinarians {
@@ -690,27 +706,25 @@ model veterinary_students {
 }
 
 model hospitals {
-  id                             String                           @id @db.VarChar
-  userId                         String                           @unique @db.VarChar
-  hospitalName                   String                           @db.VarChar
-  representativeName             String                           @db.VarChar
-  businessNumber                 String?                          @unique @db.VarChar
-  businessLicenseFile            String?                          @db.VarChar
-  establishedDate                DateTime?                        @db.Timestamp(6)
-  hospitalAddress                String?                          @db.VarChar
-  hospitalAddressDetail          String?                          @db.VarChar
-  postalCode                     String?                          @db.VarChar
-  latitude                       Decimal?                         @db.Decimal(10, 8)
-  longitude                      Decimal?                         @db.Decimal(11, 8)
-  hospitalLogo                   String?                          @db.VarChar
-  hospitalWebsite                String?                          @db.VarChar
-  hospitalDescription            String?
-  createdAt                      DateTime?                        @default(now()) @db.Timestamp(6)
-  updatedAt                      DateTime?                        @default(now()) @updatedAt @db.Timestamp(6)
-  hospital_images                hospital_images[]
-  hospital_treatment_animals     hospital_treatment_animals[]
-  hospital_treatment_specialties hospital_treatment_specialties[]
-  users                          users                            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospitals_user")
+  id                    String            @id @db.VarChar
+  userId                String            @unique @db.VarChar
+  hospitalName          String            @db.VarChar
+  representativeName    String            @db.VarChar
+  businessNumber        String?           @unique @db.VarChar
+  businessLicenseFile   String?           @db.VarChar
+  establishedDate       DateTime?         @db.Timestamp(6)
+  hospitalAddress       String?           @db.VarChar
+  hospitalAddressDetail String?           @db.VarChar
+  postalCode            String?           @db.VarChar
+  latitude              Decimal?          @db.Decimal(10, 8)
+  longitude             Decimal?          @db.Decimal(11, 8)
+  hospitalLogo          String?           @db.VarChar
+  hospitalWebsite       String?           @db.VarChar
+  hospitalDescription   String?
+  createdAt             DateTime?         @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime?         @default(now()) @updatedAt @db.Timestamp(6)
+  hospital_images       hospital_images[]
+  users                 users             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospitals_user")
 
   @@index([businessNumber], map: "idx_hospitals_business_number")
   @@index([latitude, longitude], map: "idx_hospitals_location")
@@ -718,46 +732,19 @@ model hospitals {
 }
 
 model hospital_images {
-  id               String    @id @db.VarChar
-  hospitalId       String    @db.VarChar
-  userId           String    @db.VarChar
-  imageUrl         String    @db.VarChar
-  imageOrder       Int
-  imageDescription String?   @db.VarChar
-  createdAt        DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt        DateTime? @default(now()) @updatedAt @db.Timestamp(6)
-  hospital         hospitals @relation(fields: [hospitalId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_images_hospital")
-  users            users     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_images_user")
+  id           String    @id @db.VarChar
+  hospitalId   String    @db.VarChar
+  userId       String    @db.VarChar
+  imageUrl     String    @db.VarChar
+  description  String?
+  displayOrder Int?      @default(0)
+  createdAt    DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  hospital     hospitals @relation(fields: [hospitalId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_images_hospital")
+  users        users     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_images_user")
 
-  @@unique([hospitalId, imageOrder], map: "uk_hospital_image_order")
-  @@index([hospitalId], map: "idx_hospital_images_hospital")
-  @@index([hospitalId, imageOrder], map: "idx_hospital_images_order")
-}
-
-model hospital_treatment_animals {
-  id         String    @id @db.VarChar
-  hospitalId String    @db.VarChar
-  userId     String    @db.VarChar
-  animalType String    @db.VarChar
-  createdAt  DateTime? @default(now()) @db.Timestamp(6)
-  hospital   hospitals @relation(fields: [hospitalId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_animals_hospital")
-  users      users     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_animals_user")
-
-  @@unique([hospitalId, animalType], map: "uk_hospital_animal")
-  @@index([hospitalId], map: "idx_hospital_treatment_animals_hospital")
-}
-
-model hospital_treatment_specialties {
-  id         String    @id @db.VarChar
-  hospitalId String    @db.VarChar
-  userId     String    @db.VarChar
-  specialty  String    @db.VarChar
-  createdAt  DateTime? @default(now()) @db.Timestamp(6)
-  hospital   hospitals @relation(fields: [hospitalId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_specialties_hospital")
-  users      users     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_hospital_specialties_user")
-
-  @@unique([hospitalId, specialty], map: "uk_hospital_specialty")
-  @@index([hospitalId], map: "idx_hospital_treatment_specialties_hospital")
+  @@index([hospitalId], map: "idx_hospital_images_hospital_id")
+  @@index([userId], map: "idx_hospital_images_user_id")
 }
 
 model veterinarian_profiles {
@@ -832,26 +819,6 @@ model view_logs {
   @@index([user_identifier])
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model hospital_animals_backup {
-  id         String?
-  userId     String?
-  animalType String?
-  createdAt  DateTime?
-
-  @@ignore
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model hospital_specialties_backup {
-  id        String?
-  userId    String?
-  specialty String?
-  createdAt DateTime?
-
-  @@ignore
-}
-
 model email_verifications {
   id               String    @id
   userId           String?
@@ -868,6 +835,61 @@ model email_verifications {
   @@index([email])
   @@index([verificationCode])
   @@index([expiresAt])
+}
+
+model forum_bookmarks {
+  id          Int         @id @default(autoincrement())
+  user_id     String
+  forum_id    String
+  created_at  DateTime?   @default(now()) @db.Timestamptz(6)
+  deleted_at  DateTime?   @db.Timestamptz(6)
+  forum_posts forum_posts @relation(fields: [forum_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_forum_bookmarks_created_at")
+  @@index([forum_id], map: "idx_forum_bookmarks_forum_id")
+  @@index([user_id], map: "idx_forum_bookmarks_user_id")
+}
+
+model hospital_equipments {
+  id                String    @id
+  hospitalProfileId String
+  name              String
+  category          String
+  manufacturer      String?
+  model             String?
+  purchaseDate      DateTime?
+  description       String?
+  image             String?
+  sortOrder         Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime
+}
+
+model hospital_facility_images {
+  id           String   @id
+  userId       String
+  imageUrl     String
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+
+  @@index([userId])
+}
+
+model hospital_staff {
+  id                String   @id
+  hospitalProfileId String
+  name              String
+  position          String
+  specialization    String?
+  experience        String?
+  education         String?
+  profileImage      String?
+  introduction      String?
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
 }
 
 enum AnimalType {

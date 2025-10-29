@@ -4635,8 +4635,8 @@ export const createLecture = async (lectureData: any) => {
     .substring(2)}`;
 
   const query = `
-    INSERT INTO lectures (id, title, description, "videoUrl", thumbnail, duration, category, tags, "viewCount", instructor, "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+    INSERT INTO lectures (id, title, description, "videoUrl", thumbnail, duration, category, tags, "viewCount", instructor, "referenceMaterials", "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
     RETURNING *
   `;
   const values = [
@@ -4650,6 +4650,7 @@ export const createLecture = async (lectureData: any) => {
     lectureData.tags || [],
     0, // 초기 조회수
     lectureData.instructor || "강사명", // instructor 필드 추가
+    JSON.stringify(lectureData.referenceMaterials || []), // 참고자료 JSON으로 저장
   ];
   const result = await pool.query(query, values);
   return result.rows[0];

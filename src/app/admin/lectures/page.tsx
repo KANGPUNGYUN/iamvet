@@ -483,6 +483,7 @@ export default function LecturesManagement() {
           videoUrl: newLecture.youtubeUrl,
           thumbnail: thumbnailUrl,
           tags: [], // 필요에 따라 추가
+          referenceMaterials: newLecture.referenceMaterials, // 참고자료 추가
         }),
       });
 
