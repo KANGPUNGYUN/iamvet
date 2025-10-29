@@ -27,6 +27,7 @@ import {
   DialogActions,
   Alert,
   Stack,
+  Avatar,
 } from "@mui/material";
 import {
   Search,
@@ -43,6 +44,9 @@ import {
   PictureAsPdf,
   Description,
   TableChart,
+  Person,
+  Business,
+  Comment as CommentIcon,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
 import { uploadImage, deleteImage } from "@/lib/s3";
@@ -84,6 +88,13 @@ export default function LecturesManagement() {
   const [itemsPerPage] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
+  const [selectedLectureComments, setSelectedLectureComments] = useState<any[]>(
+    []
+  );
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [deleteCommentLoading, setDeleteCommentLoading] = useState<
+    string | null
+  >(null);
   const [actionType, setActionType] = useState<
     "view" | "activate" | "deactivate" | "edit" | "delete"
   >("view");
@@ -355,6 +366,73 @@ export default function LecturesManagement() {
   );
   const totalPages = Math.ceil(filteredLectures.length / itemsPerPage);
 
+  // 강의 댓글 조회
+  const fetchLectureComments = async (lectureId: string) => {
+    try {
+      setCommentsLoading(true);
+      const response = await fetch(`/api/lectures/${lectureId}/comments`);
+      const data = await response.json();
+
+      if (data.status === "success") {
+        setSelectedLectureComments(data.data || []);
+      } else {
+        console.error("댓글 조회 실패:", data.message);
+        setSelectedLectureComments([]);
+      }
+    } catch (error) {
+      console.error("댓글 조회 오류:", error);
+      setSelectedLectureComments([]);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  // 댓글 삭제 함수
+  const handleDeleteLectureComment = async (
+    lectureId: string,
+    commentId: string,
+    authorName: string
+  ) => {
+    if (
+      !confirm(
+        `"${authorName}"님의 댓글을 삭제하시겠습니까?\n삭제된 댓글은 복구할 수 없으며, 작성자에게 알림이 전송됩니다.`
+      )
+    ) {
+      return;
+    }
+
+    setDeleteCommentLoading(commentId);
+
+    try {
+      const response = await fetch(
+        `/api/admin/lectures/${lectureId}/comments/${commentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        alert(
+          `댓글이 삭제되었습니다. ${result.data.notificationsSent}명에게 알림이 발송되었습니다.`
+        );
+        // 댓글 목록 다시 로드
+        fetchLectureComments(lectureId);
+      } else {
+        alert(result.message || "댓글 삭제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("댓글 삭제 오류:", error);
+      alert("댓글 삭제 중 오류가 발생했습니다.");
+    } finally {
+      setDeleteCommentLoading(null);
+    }
+  };
+
   const handleAction = (
     lecture: Lecture,
     action: "view" | "activate" | "deactivate" | "edit" | "delete"
@@ -371,6 +449,11 @@ export default function LecturesManagement() {
         description: lecture.description,
         referenceMaterials: lecture.referenceMaterials || [],
       });
+    }
+
+    if (action === "view" && lecture) {
+      // 강의 상세 보기 시 댓글도 함께 로드
+      fetchLectureComments(lecture.id);
     }
 
     setModalVisible(true);
@@ -436,6 +519,9 @@ export default function LecturesManagement() {
 
     setModalVisible(false);
     setSelectedLecture(null);
+    setSelectedLectureComments([]);
+    setCommentsLoading(false);
+    setDeleteCommentLoading(null);
   };
 
   const handleSaveLecture = async () => {
@@ -1636,6 +1722,218 @@ export default function LecturesManagement() {
                         </Box>
                       </Box>
                     )}
+
+                  {/* 댓글 섹션 */}
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      <strong>댓글 관리:</strong>
+                    </Typography>
+                    {commentsLoading ? (
+                      <Typography>댓글을 불러오는 중...</Typography>
+                    ) : selectedLectureComments.length === 0 ? (
+                      <Typography color="text.secondary">
+                        등록된 댓글이 없습니다.
+                      </Typography>
+                    ) : (
+                      <Box
+                        sx={{
+                          maxHeight: 400,
+                          overflow: "auto",
+                          border: "1px solid #efeff0",
+                          borderRadius: 2,
+                          p: 2,
+                          bgcolor: "#fafafa",
+                        }}
+                      >
+                        {selectedLectureComments.map((comment: any) => (
+                          <Box key={comment.id}>
+                            <Box
+                              sx={{
+                                bgcolor: "white",
+                                border: "1px solid #e9ecef",
+                                borderRadius: 1,
+                                p: 1.5,
+                                mb: 1,
+                                fontSize: "13px",
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  mb: 0.5,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
+                                  <Avatar
+                                    sx={{
+                                      bgcolor:
+                                        (comment.userType || comment.user?.type) === "VETERINARIAN"
+                                          ? "#ff8796"
+                                          : (comment.userType || comment.user?.type) === "HOSPITAL"
+                                          ? "#ffb7b8"
+                                          : "#9098a4",
+                                      width: 20,
+                                      height: 20,
+                                    }}
+                                  >
+                                    {(comment.userType || comment.user?.type) === "VETERINARIAN" ? (
+                                      <Person sx={{ fontSize: 12 }} />
+                                    ) : (comment.userType || comment.user?.type) === "HOSPITAL" ? (
+                                      <Business sx={{ fontSize: 12 }} />
+                                    ) : (
+                                      <Person sx={{ fontSize: 12 }} />
+                                    )}
+                                  </Avatar>
+                                  <Typography
+                                    variant="caption"
+                                    fontWeight="600"
+                                  >
+                                    {comment.author_name || comment.author_display_name || comment.user?.name || comment.user?.nickName || "알 수 없는 사용자"}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                  >
+                                    • {comment.createdAt}
+                                  </Typography>
+                                </Box>
+                                <Button
+                                  size="small"
+                                  color="error"
+                                  disabled={deleteCommentLoading === comment.id}
+                                  onClick={() =>
+                                    handleDeleteLectureComment(
+                                      selectedLecture!.id,
+                                      comment.id,
+                                      comment.author_name || comment.author_display_name || comment.user?.name || comment.user?.nickName || "알 수 없는 사용자"
+                                    )
+                                  }
+                                  sx={{ minWidth: "auto", p: 0.5 }}
+                                >
+                                  <Delete sx={{ fontSize: 16 }} />
+                                </Button>
+                              </Box>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#3b394d", fontSize: "12px" }}
+                              >
+                                {comment.content}
+                              </Typography>
+                            </Box>
+                            {comment.replies && comment.replies.length > 0 && (
+                              <Box sx={{ ml: 3 }}>
+                                {comment.replies.map((reply: any) => (
+                                  <Box
+                                    key={reply.id}
+                                    sx={{
+                                      bgcolor: "#fefefe",
+                                      border: "1px solid #e9ecef",
+                                      borderRadius: 1,
+                                      p: 1.5,
+                                      mb: 1,
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        mb: 0.5,
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <Avatar
+                                          sx={{
+                                            bgcolor:
+                                              (reply.userType || reply.user?.type) ===
+                                              "VETERINARIAN"
+                                                ? "#ff8796"
+                                                : (reply.userType || reply.user?.type) ===
+                                                  "HOSPITAL"
+                                                ? "#ffb7b8"
+                                                : "#9098a4",
+                                            width: 18,
+                                            height: 18,
+                                          }}
+                                        >
+                                          {(reply.userType || reply.user?.type) ===
+                                          "VETERINARIAN" ? (
+                                            <Person sx={{ fontSize: 10 }} />
+                                          ) : (reply.userType || reply.user?.type) ===
+                                            "HOSPITAL" ? (
+                                            <Business sx={{ fontSize: 10 }} />
+                                          ) : (
+                                            <Person sx={{ fontSize: 10 }} />
+                                          )}
+                                        </Avatar>
+                                        <Typography
+                                          variant="caption"
+                                          fontWeight="600"
+                                          fontSize="11px"
+                                        >
+                                          └{" "}
+                                          {reply.author_name || reply.author_display_name || reply.user?.name || reply.user?.nickName || "알 수 없는 사용자"}
+                                        </Typography>
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                          fontSize="11px"
+                                        >
+                                          • {reply.createdAt}
+                                        </Typography>
+                                      </Box>
+                                      <Button
+                                        size="small"
+                                        color="error"
+                                        disabled={
+                                          deleteCommentLoading === reply.id
+                                        }
+                                        onClick={() =>
+                                          handleDeleteLectureComment(
+                                            selectedLecture!.id,
+                                            reply.id,
+                                            reply.author_name || reply.author_display_name || reply.user?.name || reply.user?.nickName || "알 수 없는 사용자"
+                                          )
+                                        }
+                                        sx={{ minWidth: "auto", p: 0.5 }}
+                                      >
+                                        <Delete sx={{ fontSize: 14 }} />
+                                      </Button>
+                                    </Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{
+                                        color: "#3b394d",
+                                        fontSize: "11px",
+                                        ml: 2,
+                                      }}
+                                    >
+                                      {reply.content}
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
                 </Box>
               )}
 
@@ -1761,8 +2059,17 @@ export default function LecturesManagement() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModalVisible(false)} color="inherit">
-            취소
+          <Button
+            onClick={() => {
+              setModalVisible(false);
+              setSelectedLecture(null);
+              setSelectedLectureComments([]);
+              setCommentsLoading(false);
+              setDeleteCommentLoading(null);
+            }}
+            color="inherit"
+          >
+            {actionType === "view" ? "닫기" : "취소"}
           </Button>
           {actionType === "edit" && (
             <Button

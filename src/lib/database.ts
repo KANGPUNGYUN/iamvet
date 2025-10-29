@@ -9,7 +9,7 @@ type NotificationType =
   | "bookmark_added"
   | "profile_view"
   | "message"
-  | "system"
+  | "SYSTEM"
   | "evaluation_received"
   | "job_posted"
   | "interview_scheduled";
@@ -1213,23 +1213,56 @@ export const createNotification = async (notificationData: {
   applicationId?: string;
   applicationStatus?: ApplicationStatus;
 }) => {
-  const query = `
-    INSERT INTO notifications ("recipientId", type, title, content, "isRead", "senderId")
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING *
-  `;
+  try {
+    console.log('createNotification called with:', {
+      userId: notificationData.userId,
+      type: notificationData.type,
+      title: notificationData.title
+    });
 
-  const values = [
-    notificationData.userId,
-    notificationData.type,
-    notificationData.title,
-    notificationData.content,
-    false, // isRead
-    notificationData.senderId,
-  ];
+    // 사용자 타입 조회
+    const userTypeResult = await pool.query(
+      'SELECT "userType", email FROM users WHERE id = $1',
+      [notificationData.userId]
+    );
+    
+    console.log('User lookup result:', userTypeResult.rows[0]);
+    
+    if (!userTypeResult.rows[0]) {
+      console.error('User not found:', notificationData.userId);
+      throw new Error(`User not found: ${notificationData.userId}`);
+    }
+    
+    const recipientType = userTypeResult.rows[0]?.userType || 'VETERINARIAN';
 
-  const result = await pool.query(query, values);
-  return result.rows[0];
+    // Generate unique ID for notification
+    const notificationId = `notification_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+
+    const query = `
+      INSERT INTO notifications (id, "recipientId", "recipientType", type, title, content, "isRead", "senderId", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      RETURNING *
+    `;
+
+    const values = [
+      notificationId,
+      notificationData.userId,
+      recipientType,
+      notificationData.type,
+      notificationData.title,
+      notificationData.content,
+      false, // isRead
+      notificationData.senderId,
+    ];
+
+    console.log('Executing notification insert with values:', values);
+    const result = await pool.query(query, values);
+    console.log('Notification created successfully:', result.rows[0]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('createNotification error:', error);
+    throw error;
+  }
 };
 
 export const getNotifications = async (userId: string, limit: number = 20) => {
@@ -3703,15 +3736,17 @@ export const getForumComments = async (forumId: string) => {
   `;
   const result = await pool.query(query, [forumId]);
 
-  // 병원명 우선 표시 로직 적용
-  return result.rows.map((comment: any) => {
-    let displayName;
-    let profileImage = comment.author_profile_image;
+  // 댓글을 계층구조로 정리
+  const commentMap = new Map();
+  const rootComments: any[] = [];
 
+  // 모든 댓글을 맵에 저장
+  result.rows.forEach((comment: any) => {
+    // 사용자 타입에 따라 적절한 이름 사용
+    let displayName;
     if (comment.userType === "HOSPITAL") {
-      // 병원 계정: hospitalName을 무조건 우선 사용
+      // 병원 계정: hospitalName을 무조건 우선적으로 사용
       displayName = comment.hospitalName || "병원명 미설정";
-      profileImage = comment.hospitalLogo || comment.author_profile_image;
       console.log(`Forum comment - Using hospitalName: ${displayName}`);
     } else if (comment.userType === "VETERINARIAN") {
       displayName = comment.vet_real_name || "익명 사용자";
@@ -3721,12 +3756,44 @@ export const getForumComments = async (forumId: string) => {
       displayName = "익명 사용자";
     }
 
-    return {
-      ...comment,
-      author_display_name: displayName,
+    const profileImage =
+      comment.userType === "HOSPITAL" && comment.hospitalLogo
+        ? comment.hospitalLogo
+        : comment.author_profile_image || null;
+
+    const mappedComment = {
+      id: comment.id,
+      forum_id: comment.forum_id,
+      user_id: comment.user_id,
+      parent_id: comment.parent_id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      author_name: displayName,
       author_profile_image: profileImage,
+      author_display_name: displayName,
+      replies: [],
     };
+    commentMap.set(comment.id, mappedComment);
   });
+
+  // 부모-자식 관계 설정
+  result.rows.forEach((comment: any) => {
+    const mappedComment = commentMap.get(comment.id);
+
+    if (comment.parent_id) {
+      // 대댓글인 경우 부모 댓글의 replies에 추가
+      const parentComment = commentMap.get(comment.parent_id);
+      if (parentComment) {
+        parentComment.replies.push(mappedComment);
+      }
+    } else {
+      // 최상위 댓글인 경우 rootComments에 추가
+      rootComments.push(mappedComment);
+    }
+  });
+
+  return rootComments;
 };
 
 // 댓글 생성

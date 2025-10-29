@@ -28,6 +28,9 @@ import {
   Stack,
   Avatar,
   Chip,
+  IconButton,
+  Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import {
   Search,
@@ -41,6 +44,7 @@ import {
   PlayArrow,
   Pause,
   Business,
+  Delete,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
 
@@ -93,6 +97,11 @@ export default function ForumsManagement() {
   const [selectedPostDetail, setSelectedPostDetail] = useState<any>(null);
   const [actionType, setActionType] = useState<"view" | "toggle">("view");
   const [modalLoading, setModalLoading] = useState(false);
+  const [deleteCommentLoading, setDeleteCommentLoading] = useState<string | null>(null);
+  
+  // 댓글 관리 상태 추가
+  const [selectedForumComments, setSelectedForumComments] = useState<any[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
 
   // API 호출 함수
   const fetchForums = async (
@@ -232,6 +241,7 @@ export default function ForumsManagement() {
     // 상세보기인 경우 추가 정보 로드
     if (action === "view") {
       fetchForumDetail(post.id);
+      fetchForumComments(post.id);
     }
   };
 
@@ -251,6 +261,62 @@ export default function ForumsManagement() {
       }
     }
   };
+
+  // 포럼 댓글 조회 함수
+  const fetchForumComments = async (forumId: string) => {
+    try {
+      setCommentsLoading(true);
+      const response = await fetch(`/api/forums/${forumId}/comments`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setSelectedForumComments(result.data || []);
+        console.log('getForumComments: Found', result.data?.length || 0, 'comments');
+      } else {
+        console.error('댓글 조회 실패:', result.message);
+        setSelectedForumComments([]);
+      }
+    } catch (error) {
+      console.error('댓글 조회 오류:', error);
+      setSelectedForumComments([]);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  // 댓글 삭제 함수
+  const handleDeleteComment = async (forumId: string, commentId: string, authorName: string) => {
+    if (!confirm(`"${authorName}"님의 댓글을 삭제하시겠습니까?\n삭제된 댓글은 복구할 수 없으며, 작성자에게 알림이 전송됩니다.`)) {
+      return;
+    }
+
+    setDeleteCommentLoading(commentId);
+    
+    try {
+      const response = await fetch(`/api/admin/forums/${forumId}/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        alert(`댓글이 삭제되었습니다. ${result.data.notificationsSent}명에게 알림이 발송되었습니다.`);
+        // 댓글 목록 다시 로드
+        fetchForumComments(forumId);
+      } else {
+        alert(result.message || '댓글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('댓글 삭제 오류:', error);
+      alert('댓글 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setDeleteCommentLoading(null);
+    }
+  };
+
 
   const renderActionButtons = (post: ForumPost) => (
     <ButtonGroup size="small">
@@ -684,39 +750,217 @@ export default function ForumsManagement() {
                           </Box>
                         </Box>
                         
-                        {selectedPostDetail.recentComments && selectedPostDetail.recentComments.length > 0 && (
-                          <Box>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#4f5866", mb: 1 }}>
-                              최근 댓글 ({selectedPostDetail.recentComments.length}개)
+                        {/* 댓글 섹션 */}
+                        <Box sx={{ mt: 3 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            <strong>댓글 관리:</strong>
+                          </Typography>
+                          {commentsLoading ? (
+                            <Typography>댓글을 불러오는 중...</Typography>
+                          ) : selectedForumComments.length === 0 ? (
+                            <Typography color="text.secondary">
+                              등록된 댓글이 없습니다.
                             </Typography>
-                            <Box sx={{ maxHeight: 200, overflow: "auto" }}>
-                              {selectedPostDetail.recentComments.map((comment: any, index: number) => (
-                                <Box 
-                                  key={index}
-                                  sx={{ 
-                                    bgcolor: "#f8f9fa", 
-                                    border: "1px solid #e9ecef",
-                                    borderRadius: 1, 
-                                    p: 1.5,
-                                    mb: 1,
-                                    fontSize: "13px"
-                                  }}
-                                >
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                                    <Avatar sx={{ bgcolor: comment.author.type === "VETERINARIAN" ? "#ff8796" : "#ffb7b8", width: 20, height: 20 }}>
-                                      {comment.author.type === "VETERINARIAN" ? <Person sx={{ fontSize: 12 }} /> : <Business sx={{ fontSize: 12 }} />}
-                                    </Avatar>
-                                    <Typography variant="caption" fontWeight="600">{comment.author.name}</Typography>
-                                    <Typography variant="caption" color="text.secondary">• {comment.createdAt}</Typography>
+                          ) : (
+                            <Box
+                              sx={{
+                                maxHeight: 400,
+                                overflow: "auto",
+                                border: "1px solid #efeff0",
+                                borderRadius: 2,
+                                p: 2,
+                                bgcolor: "#fafafa",
+                              }}
+                            >
+                              {selectedForumComments.map((comment: any) => (
+                                <Box key={comment.id}>
+                                  <Box
+                                    sx={{
+                                      bgcolor: "white",
+                                      border: "1px solid #e9ecef",
+                                      borderRadius: 1,
+                                      p: 1.5,
+                                      mb: 1,
+                                      fontSize: "13px",
+                                    }}
+                                  >
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        mb: 0.5,
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <Avatar
+                                          sx={{
+                                            bgcolor:
+                                              (comment.userType || comment.user?.type) === "VETERINARIAN"
+                                                ? "#ff8796"
+                                                : (comment.userType || comment.user?.type) === "HOSPITAL"
+                                                ? "#ffb7b8"
+                                                : "#9098a4",
+                                            width: 20,
+                                            height: 20,
+                                          }}
+                                        >
+                                          {(comment.userType || comment.user?.type) === "VETERINARIAN" ? (
+                                            <Person sx={{ fontSize: 12 }} />
+                                          ) : (comment.userType || comment.user?.type) === "HOSPITAL" ? (
+                                            <Business sx={{ fontSize: 12 }} />
+                                          ) : (
+                                            <Person sx={{ fontSize: 12 }} />
+                                          )}
+                                        </Avatar>
+                                        <Typography
+                                          variant="caption"
+                                          fontWeight="600"
+                                        >
+                                          {comment.author_name || comment.author_display_name || comment.user?.name || comment.user?.nickName || "알 수 없는 사용자"}
+                                        </Typography>
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          • {comment.createdAt}
+                                        </Typography>
+                                      </Box>
+                                      <Button
+                                        size="small"
+                                        color="error"
+                                        disabled={deleteCommentLoading === comment.id}
+                                        onClick={() =>
+                                          handleDeleteComment(
+                                            selectedPost?.id || '',
+                                            comment.id,
+                                            comment.author_name || comment.author_display_name || comment.user?.name || comment.user?.nickName || "알 수 없는 사용자"
+                                          )
+                                        }
+                                        sx={{ minWidth: "auto", p: 0.5 }}
+                                      >
+                                        <Delete sx={{ fontSize: 16 }} />
+                                      </Button>
+                                    </Box>
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ color: "#3b394d", fontSize: "12px" }}
+                                    >
+                                      {comment.content}
+                                    </Typography>
                                   </Box>
-                                  <Typography variant="body2" sx={{ color: "#3b394d", fontSize: "12px" }}>
-                                    {comment.content}
-                                  </Typography>
+                                  {comment.replies && comment.replies.length > 0 && (
+                                    <Box sx={{ ml: 3 }}>
+                                      {comment.replies.map((reply: any) => (
+                                        <Box
+                                          key={reply.id}
+                                          sx={{
+                                            bgcolor: "#fefefe",
+                                            border: "1px solid #e9ecef",
+                                            borderRadius: 1,
+                                            p: 1.5,
+                                            mb: 1,
+                                            fontSize: "12px",
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "space-between",
+                                              mb: 0.5,
+                                            }}
+                                          >
+                                            <Box
+                                              sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 1,
+                                              }}
+                                            >
+                                              <Avatar
+                                                sx={{
+                                                  bgcolor:
+                                                    (reply.userType || reply.user?.type) ===
+                                                    "VETERINARIAN"
+                                                      ? "#ff8796"
+                                                      : (reply.userType || reply.user?.type) ===
+                                                        "HOSPITAL"
+                                                      ? "#ffb7b8"
+                                                      : "#9098a4",
+                                                  width: 18,
+                                                  height: 18,
+                                                }}
+                                              >
+                                                {(reply.userType || reply.user?.type) ===
+                                                "VETERINARIAN" ? (
+                                                  <Person sx={{ fontSize: 10 }} />
+                                                ) : (reply.userType || reply.user?.type) ===
+                                                  "HOSPITAL" ? (
+                                                  <Business sx={{ fontSize: 10 }} />
+                                                ) : (
+                                                  <Person sx={{ fontSize: 10 }} />
+                                                )}
+                                              </Avatar>
+                                              <Typography
+                                                variant="caption"
+                                                fontWeight="600"
+                                                fontSize="11px"
+                                              >
+                                                └{" "}
+                                                {reply.author_name || reply.author_display_name || reply.user?.name || reply.user?.nickName || "알 수 없는 사용자"}
+                                              </Typography>
+                                              <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                                fontSize="11px"
+                                              >
+                                                • {reply.createdAt}
+                                              </Typography>
+                                            </Box>
+                                            <Button
+                                              size="small"
+                                              color="error"
+                                              disabled={
+                                                deleteCommentLoading === reply.id
+                                              }
+                                              onClick={() =>
+                                                handleDeleteComment(
+                                                  selectedPost?.id || '',
+                                                  reply.id,
+                                                  reply.author_name || reply.author_display_name || reply.user?.name || reply.user?.nickName || "알 수 없는 사용자"
+                                                )
+                                              }
+                                              sx={{ minWidth: "auto", p: 0.5 }}
+                                            >
+                                              <Delete sx={{ fontSize: 14 }} />
+                                            </Button>
+                                          </Box>
+                                          <Typography
+                                            variant="body2"
+                                            sx={{
+                                              color: "#3b394d",
+                                              fontSize: "11px",
+                                              ml: 2,
+                                            }}
+                                          >
+                                            {reply.content}
+                                          </Typography>
+                                        </Box>
+                                      ))}
+                                    </Box>
+                                  )}
                                 </Box>
                               ))}
                             </Box>
-                          </Box>
-                        )}
+                          )}
+                        </Box>
                       </Box>
                     </Stack>
                   ) : (
