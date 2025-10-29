@@ -173,25 +173,67 @@ export default function AdvertiseManagement() {
     return "활성";
   };
 
-  const handleAction = (
+  const handleAction = async (
     ad: Advertisement | null,
     action: typeof actionType
   ) => {
     setSelectedAd(ad);
     setActionType(action);
+    
     if (action === "edit" && ad) {
-      setFormData({
-        title: ad.title,
-        description: ad.description,
-        type: ad.type,
-        linkUrl: ad.linkUrl,
-        isActive: ad.isActive,
-        startDate: ad.startDate,
-        endDate: ad.endDate,
-        targetAudience: ad.targetAudience,
-        buttonText: ad.buttonText,
-        variant: ad.variant,
-      });
+      try {
+        // 개별 광고 조회 API 호출하여 최신 데이터 가져오기
+        const response = await fetch(`/api/advertisements/${ad.id}`);
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          const latestAd = data.data;
+          setFormData({
+            title: latestAd.title,
+            description: latestAd.description,
+            type: latestAd.type,
+            imageUrl: latestAd.imageUrl,
+            linkUrl: latestAd.linkUrl,
+            isActive: latestAd.isActive,
+            startDate: latestAd.startDate ? new Date(latestAd.startDate).toISOString().split('T')[0] : '',
+            endDate: latestAd.endDate ? new Date(latestAd.endDate).toISOString().split('T')[0] : '',
+            targetAudience: latestAd.targetAudience,
+            buttonText: latestAd.buttonText,
+            variant: latestAd.variant,
+          });
+        } else {
+          // API 호출 실패 시 기존 데이터 사용
+          setFormData({
+            title: ad.title,
+            description: ad.description,
+            type: ad.type,
+            imageUrl: ad.imageUrl,
+            linkUrl: ad.linkUrl,
+            isActive: ad.isActive,
+            startDate: ad.startDate ? new Date(ad.startDate).toISOString().split('T')[0] : '',
+            endDate: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : '',
+            targetAudience: ad.targetAudience,
+            buttonText: ad.buttonText,
+            variant: ad.variant,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch advertisement details:", error);
+        // 오류 발생 시 기존 데이터 사용
+        setFormData({
+          title: ad.title,
+          description: ad.description,
+          type: ad.type,
+          imageUrl: ad.imageUrl,
+          linkUrl: ad.linkUrl,
+          isActive: ad.isActive,
+          startDate: ad.startDate ? new Date(ad.startDate).toISOString().split('T')[0] : '',
+          endDate: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : '',
+          targetAudience: ad.targetAudience,
+          buttonText: ad.buttonText,
+          variant: ad.variant,
+        });
+      }
     } else if (action === "create") {
       setFormData({
         title: "",
