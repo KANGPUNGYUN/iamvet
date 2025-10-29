@@ -29,7 +29,8 @@ interface FormData {
   sido: string; // 시도 (서울, 경기, 부산 등)
   sigungu: string; // 시군구 (강남구, 분당구 등)
   images: string[]; // 양도양수 이미지 URL들 (MultiImageUpload에서 처리됨)
-  documents: File[]; // 양도양수 파일들
+  documents: File[]; // 양도양수 파일들 (UI 표시용)
+  documentUrls: string[]; // 업로드된 문서 URL들
 }
 
 const categoryOptions = [
@@ -57,7 +58,8 @@ export default function CreateTransferPage() {
     sido: "",
     sigungu: "",
     images: [], // URL 배열
-    documents: [],
+    documents: [], // UI 표시용
+    documentUrls: [], // 실제 업로드된 URL들
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -139,6 +141,13 @@ export default function CreateTransferPage() {
     setFormData((prev) => ({
       ...prev,
       documents: files,
+    }));
+  };
+
+  const handleDocumentUploadComplete = (urls: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      documentUrls: [...prev.documentUrls, ...urls],
     }));
   };
 
@@ -240,29 +249,11 @@ export default function CreateTransferPage() {
 
     setIsLoading(true);
     try {
-      // S3에 이미지와 파일 업로드
-      const imageUrls: string[] = [];
-      const documentUrls: string[] = [];
-
-      // 양도양수 이미지들은 이미 MultiImageUpload에서 업로드됨 (첫 번째가 썸네일)
+      // 양도양수 이미지들은 이미 MultiImageUpload에서 업로드됨
       console.log("[DEBUG] 양도양수 이미지 URL들:", formData.images);
-      imageUrls.push(...formData.images);
-
-      // 문서 파일들 업로드
-      console.log("[DEBUG] 문서 파일 개수:", formData.documents.length);
-      for (let i = 0; i < formData.documents.length; i++) {
-        const document = formData.documents[i];
-        console.log(`[DEBUG] 문서 ${i + 1} 업로드 시작:`, document.name);
-        const result = await uploadFile(document, "transfers");
-        console.log(`[DEBUG] 문서 ${i + 1} 업로드 결과:`, result);
-        if (result) {
-          documentUrls.push(result);
-          console.log(`[DEBUG] 문서 ${i + 1} URL 추가됨:`, result);
-        }
-      }
-
-      console.log("[DEBUG] 최종 이미지 URL 배열:", imageUrls);
-      console.log("[DEBUG] 최종 문서 URL 배열:", documentUrls);
+      
+      // 문서 파일들은 이미 DocumentUpload에서 업로드됨
+      console.log("[DEBUG] 문서 URL들:", formData.documentUrls);
 
       // API 요청 데이터 구성
       const transferData = {
@@ -287,8 +278,8 @@ export default function CreateTransferPage() {
           formData.category === "병원양도"
             ? parseInt(formData.area) || null
             : null,
-        images: imageUrls, // 이미지 파일 URL들
-        documents: documentUrls, // 문서 파일 URL들
+        images: formData.images, // 이미지 파일 URL들
+        documents: formData.documentUrls, // 문서 파일 URL들
         status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
       };
 
@@ -351,6 +342,7 @@ export default function CreateTransferPage() {
       sigungu: draftData.sigungu || "",
       images: draftData.images || [],
       documents: [], // 문서는 File 객체가 필요하므로 빈 배열
+      documentUrls: draftData.documents || [], // 문서 URL들
     });
 
     setShowDraftModal(false);
@@ -584,6 +576,7 @@ export default function CreateTransferPage() {
               <DocumentUpload
                 value={formData.documents}
                 onChange={handleDocumentUpload}
+                onUploadComplete={handleDocumentUploadComplete}
                 maxFiles={3}
               />
 

@@ -560,42 +560,25 @@ export default function ResumePage() {
   };
 
   // 포트폴리오 파일 추가 (DocumentUpload 컴포넌트와 연동)
-  const handlePortfolioUpload = async (files: File[]) => {
-    try {
-      const uploadPromises = files.map(async (file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", "portfolios");
+  const handlePortfolioUpload = (files: File[]) => {
+    // DocumentUpload에서 파일들을 로컬 상태로만 관리 (UI 표시용)
+    // 실제 업로드는 DocumentUpload 컴포넌트에서 처리됨
+  };
 
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+  // 포트폴리오 파일 업로드 완료 처리
+  const handlePortfolioUploadComplete = (urls: string[]) => {
+    const newFiles = urls.map((url, index) => ({
+      id: `portfolio_${Date.now()}_${index}`,
+      fileName: url.split('/').pop() || `파일_${index + 1}`,
+      fileUrl: url,
+      fileType: 'application/octet-stream', // 기본값
+      fileSize: 0, // 크기 정보 없음
+    }));
 
-        if (!response.ok) {
-          throw new Error("파일 업로드 실패");
-        }
-
-        const result = await response.json();
-        return {
-          id: `portfolio_${Date.now()}_${Math.random()}`,
-          fileName: file.name,
-          fileUrl: result.url,
-          fileType: file.type,
-          fileSize: file.size,
-        };
-      });
-
-      const uploadedFiles = await Promise.all(uploadPromises);
-
-      setResumeData((prev) => ({
-        ...prev,
-        portfolioFiles: uploadedFiles,
-      }));
-    } catch (error) {
-      console.error("파일 업로드 오류:", error);
-      alert("파일 업로드에 실패했습니다.");
-    }
+    setResumeData((prev) => ({
+      ...prev,
+      portfolioFiles: [...prev.portfolioFiles, ...newFiles],
+    }));
   };
 
   // 파일 아이콘 반환 함수
@@ -1626,6 +1609,7 @@ export default function ResumePage() {
           <DocumentUpload
             value={[]} // DocumentUpload는 새로운 파일 업로드만 처리
             onChange={handlePortfolioUpload}
+            onUploadComplete={handlePortfolioUploadComplete}
             maxFiles={5}
             className="mb-6"
           />

@@ -29,7 +29,8 @@ interface FormData {
   sido: string; // 시도 (서울, 경기, 부산 등)
   sigungu: string; // 시군구 (강남구, 분당구 등)
   images: string[]; // 양도양수 이미지 URL들 (MultiImageUpload에서 처리됨)
-  documents: File[]; // 새로 업로드할 문서 파일들
+  documents: File[]; // 새로 업로드할 문서 파일들 (UI 표시용)
+  documentUrls: string[]; // 새로 업로드된 문서 URL들
 }
 
 const categoryOptions = [
@@ -60,7 +61,8 @@ export default function EditTransferPage({
     sido: "",
     sigungu: "",
     images: [], // URL 배열
-    documents: [],
+    documents: [], // UI 표시용
+    documentUrls: [], // 새로 업로드된 문서 URL들
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -97,9 +99,9 @@ export default function EditTransferPage({
         if (transferData.price) {
           if (transferData.category === "병원양도") {
             // TODO: 실제로는 매매/임대 정보를 별도로 저장해야 함
-            salePrice = transferData.price.toString();
+            salePrice = transferData.price.toLocaleString();
           } else {
-            salePrice = transferData.price.toString();
+            salePrice = transferData.price.toLocaleString();
           }
         }
 
@@ -122,7 +124,8 @@ export default function EditTransferPage({
           sido: transferData.sido || "",
           sigungu: transferData.sigungu || "",
           images: transferData.images || [],
-          documents: [], // 새로 업로드할 문서 파일들
+          documents: [], // 새로 업로드할 문서 파일들 (UI 표시용)
+          documentUrls: [], // 새로 업로드된 문서 URL들
         });
         setExistingDocuments(transferData.documents || []); // 기존 문서 URL들
         setIsDataLoaded(true);
@@ -147,6 +150,25 @@ export default function EditTransferPage({
     }
   };
 
+  // 가격 입력 필드 전용 핸들러 (숫자 포맷팅)
+  const handlePriceInputChange = (field: 'salePrice' | 'rentPrice') => (value: string) => {
+    // 숫자만 추출
+    const numericValue = value.replace(/[^\d]/g, '');
+    
+    // 숫자를 천 단위 콤마 형식으로 변환
+    const formattedValue = numericValue ? parseInt(numericValue).toLocaleString() : '';
+    
+    setFormData((prev) => ({
+      ...prev,
+      [field]: formattedValue,
+    }));
+    
+    // 에러 제거
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
   const handleSaleTypeChange = (isSale: boolean) => {
     setFormData((prev) => ({
       ...prev,
@@ -165,6 +187,13 @@ export default function EditTransferPage({
     setFormData((prev) => ({
       ...prev,
       documents: files,
+    }));
+  };
+
+  const handleDocumentUploadComplete = (urls: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      documentUrls: [...prev.documentUrls, ...urls],
     }));
   };
 
@@ -270,33 +299,17 @@ export default function EditTransferPage({
 
     setIsLoading(true);
     try {
-      // S3에 이미지와 파일 업로드
-      const imageUrls: string[] = [];
-      const documentUrls: string[] = [];
-
-      // 양도양수 이미지들은 이미 MultiImageUpload에서 업로드됨 (첫 번째가 썸네일)
+      // 양도양수 이미지들은 이미 MultiImageUpload에서 업로드됨
       console.log("[DEBUG] 양도양수 이미지 URL들:", formData.images);
-      imageUrls.push(...formData.images);
-
-      // 문서 파일들 업로드
-      console.log("[DEBUG] 문서 파일 개수:", formData.documents.length);
-      for (let i = 0; i < formData.documents.length; i++) {
-        const document = formData.documents[i];
-        console.log(`[DEBUG] 문서 ${i + 1} 업로드 시작:`, document.name);
-        const result = await uploadFile(document, "transfers");
-        console.log(`[DEBUG] 문서 ${i + 1} 업로드 결과:`, result);
-        if (result) {
-          documentUrls.push(result);
-          console.log(`[DEBUG] 문서 ${i + 1} URL 추가됨:`, result);
-        }
-      }
+      
+      // 문서 파일들은 이미 DocumentUpload에서 업로드됨
+      console.log("[DEBUG] 새로 업로드된 문서 URL들:", formData.documentUrls);
 
       // 기존 문서 URL들과 새로 업로드된 문서 URL들을 합침
-      const allDocumentUrls = [...existingDocuments, ...documentUrls];
+      const allDocumentUrls = [...existingDocuments, ...formData.documentUrls];
 
-      console.log("[DEBUG] 최종 이미지 URL 배열:", imageUrls);
       console.log("[DEBUG] 기존 문서 URL들:", existingDocuments);
-      console.log("[DEBUG] 새 문서 URL들:", documentUrls);
+      console.log("[DEBUG] 새 문서 URL들:", formData.documentUrls);
       console.log("[DEBUG] 전체 문서 URL 배열:", allDocumentUrls);
 
       // API 요청 데이터 구성
@@ -311,17 +324,18 @@ export default function EditTransferPage({
         sigungu: formData.sigungu, // 시군구
         price:
           parseInt(
-            formData.category === "병원양도"
+            (formData.category === "병원양도"
               ? formData.isSale
                 ? formData.salePrice
                 : formData.rentPrice
               : formData.salePrice
+            ).replace(/[^\d]/g, '') // 콤마 제거 후 숫자만 추출
           ) || 0,
         area:
           formData.category === "병원양도"
             ? parseInt(formData.area) || null
             : null,
-        images: imageUrls, // 이미지 파일 URL들
+        images: formData.images, // 이미지 파일 URL들
         documents: allDocumentUrls, // 기존 문서 + 새 문서 URL들
         status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
       };
@@ -464,7 +478,7 @@ export default function EditTransferPage({
                     <div className="mb-4">
                       <InputBox
                         value={formData.salePrice}
-                        onChange={handleInputChange("salePrice")}
+                        onChange={handlePriceInputChange("salePrice")}
                         placeholder={getSalePricePlaceholder()}
                         suffix="원"
                         error={!!errors.salePrice}
@@ -480,7 +494,7 @@ export default function EditTransferPage({
                     <div className="mb-4">
                       <InputBox
                         value={formData.rentPrice}
-                        onChange={handleInputChange("rentPrice")}
+                        onChange={handlePriceInputChange("rentPrice")}
                         placeholder={getRentPricePlaceholder()}
                         suffix="원/월"
                         error={!!errors.rentPrice}
@@ -497,7 +511,7 @@ export default function EditTransferPage({
                 <div className="mb-4">
                   <InputBox
                     value={formData.salePrice}
-                    onChange={handleInputChange("salePrice")}
+                    onChange={handlePriceInputChange("salePrice")}
                     placeholder={getSalePricePlaceholder()}
                     suffix="원"
                     error={!!errors.salePrice}
@@ -654,6 +668,7 @@ export default function EditTransferPage({
               <DocumentUpload
                 value={formData.documents}
                 onChange={handleDocumentUpload}
+                onUploadComplete={handleDocumentUploadComplete}
                 maxFiles={3}
               />
 
