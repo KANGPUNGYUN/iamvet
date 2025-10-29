@@ -55,7 +55,12 @@ interface Advertisement {
   id: string;
   title: string;
   description: string;
-  type: "HERO_BANNER" | "GENERAL_BANNER" | "SIDE_AD" | "AD_CARD" | "DASHBOARD_BANNER";
+  type:
+    | "HERO_BANNER"
+    | "GENERAL_BANNER"
+    | "SIDE_AD"
+    | "AD_CARD"
+    | "DASHBOARD_BANNER";
   imageUrl?: string;
   linkUrl?: string;
   isActive: boolean;
@@ -112,7 +117,7 @@ export default function AdvertiseManagement() {
         page: currentPage.toString(),
         limit: itemsPerPage.toString(),
       });
-      
+
       if (filterType !== "ALL") params.append("type", filterType);
       if (filterStatus !== "ALL") params.append("status", filterStatus);
       if (searchTerm) params.append("search", searchTerm);
@@ -179,13 +184,13 @@ export default function AdvertiseManagement() {
   ) => {
     setSelectedAd(ad);
     setActionType(action);
-    
+
     if (action === "edit" && ad) {
       try {
         // 개별 광고 조회 API 호출하여 최신 데이터 가져오기
         const response = await fetch(`/api/advertisements/${ad.id}`);
         const data = await response.json();
-        
+
         if (data.success && data.data) {
           const latestAd = data.data;
           setFormData({
@@ -195,8 +200,12 @@ export default function AdvertiseManagement() {
             imageUrl: latestAd.imageUrl,
             linkUrl: latestAd.linkUrl,
             isActive: latestAd.isActive,
-            startDate: latestAd.startDate ? new Date(latestAd.startDate).toISOString().split('T')[0] : '',
-            endDate: latestAd.endDate ? new Date(latestAd.endDate).toISOString().split('T')[0] : '',
+            startDate: latestAd.startDate
+              ? new Date(latestAd.startDate).toISOString().split("T")[0]
+              : "",
+            endDate: latestAd.endDate
+              ? new Date(latestAd.endDate).toISOString().split("T")[0]
+              : "",
             targetAudience: latestAd.targetAudience,
             buttonText: latestAd.buttonText,
             variant: latestAd.variant,
@@ -210,8 +219,12 @@ export default function AdvertiseManagement() {
             imageUrl: ad.imageUrl,
             linkUrl: ad.linkUrl,
             isActive: ad.isActive,
-            startDate: ad.startDate ? new Date(ad.startDate).toISOString().split('T')[0] : '',
-            endDate: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : '',
+            startDate: ad.startDate
+              ? new Date(ad.startDate).toISOString().split("T")[0]
+              : "",
+            endDate: ad.endDate
+              ? new Date(ad.endDate).toISOString().split("T")[0]
+              : "",
             targetAudience: ad.targetAudience,
             buttonText: ad.buttonText,
             variant: ad.variant,
@@ -227,8 +240,12 @@ export default function AdvertiseManagement() {
           imageUrl: ad.imageUrl,
           linkUrl: ad.linkUrl,
           isActive: ad.isActive,
-          startDate: ad.startDate ? new Date(ad.startDate).toISOString().split('T')[0] : '',
-          endDate: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : '',
+          startDate: ad.startDate
+            ? new Date(ad.startDate).toISOString().split("T")[0]
+            : "",
+          endDate: ad.endDate
+            ? new Date(ad.endDate).toISOString().split("T")[0]
+            : "",
           targetAudience: ad.targetAudience,
           buttonText: ad.buttonText,
           variant: ad.variant,
@@ -693,7 +710,13 @@ export default function AdvertiseManagement() {
                     sx={{ "&:hover": { bgcolor: "rgba(0, 0, 0, 0.02)" } }}
                   >
                     <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 2,
+                        }}
+                      >
                         {/* 이미지 썸네일 */}
                         {ad.imageUrl ? (
                           <Box
@@ -722,10 +745,12 @@ export default function AdvertiseManagement() {
                               flexShrink: 0,
                             }}
                           >
-                            <Image sx={{ fontSize: 16, color: "var(--Guidetext)" }} />
+                            <Image
+                              sx={{ fontSize: 16, color: "var(--Guidetext)" }}
+                            />
                           </Box>
                         )}
-                        
+
                         {/* 텍스트 정보 */}
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography
@@ -770,7 +795,9 @@ export default function AdvertiseManagement() {
                                   textDecoration: "underline",
                                   cursor: "pointer",
                                 }}
-                                onClick={() => window.open(ad.linkUrl, "_blank")}
+                                onClick={() =>
+                                  window.open(ad.linkUrl, "_blank")
+                                }
                               >
                                 {ad.linkUrl.length > 30
                                   ? `${ad.linkUrl.substring(0, 30)}...`
@@ -1049,13 +1076,15 @@ export default function AdvertiseManagement() {
                   }}
                 >
                   <MenuItem value="HERO_BANNER">
-                    히어로 배너 (BannerSlider)
+                    히어로 배너 (메인페이지 상단)
                   </MenuItem>
                   <MenuItem value="GENERAL_BANNER">
-                    일반 배너 (AdvertisementSlider)
+                    일반 배너 (메인페이지 아래)
                   </MenuItem>
-                  <MenuItem value="SIDE_AD">사이드 광고 (Jobs 페이지)</MenuItem>
-                  <MenuItem value="AD_CARD">광고 카드 (AdCard)</MenuItem>
+                  <MenuItem value="SIDE_AD">
+                    사이드 광고 (채용공고 광고)
+                  </MenuItem>
+                  <MenuItem value="AD_CARD">광고 카드 (양도양수 광고)</MenuItem>
                   <MenuItem value="DASHBOARD_BANNER">
                     대시보드 배너 (대시보드 페이지)
                   </MenuItem>
@@ -1114,6 +1143,26 @@ export default function AdvertiseManagement() {
                   sx={{ fontWeight: 600, color: "var(--Subtext)", mb: 1 }}
                 >
                   광고 이미지
+                  {formData.type && (
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "var(--Guidetext)", ml: 1 }}
+                    >
+                      (권장 크기:{" "}
+                      {formData.type === "HERO_BANNER"
+                        ? "1964 × 970"
+                        : formData.type === "GENERAL_BANNER"
+                        ? "2640 × 288"
+                        : formData.type === "SIDE_AD"
+                        ? "536 × 170"
+                        : formData.type === "AD_CARD"
+                        ? "840 × 792"
+                        : formData.type === "DASHBOARD_BANNER"
+                        ? "2190 × 240"
+                        : ""}{" "}
+                      픽셀)
+                    </Typography>
+                  )}
                 </Typography>
                 <Box
                   sx={{
@@ -1128,7 +1177,10 @@ export default function AdvertiseManagement() {
                       bgcolor: "rgba(255, 135, 150, 0.04)",
                     },
                   }}
-                  onClick={() => !isUploading && document.getElementById("image-upload-input")?.click()}
+                  onClick={() =>
+                    !isUploading &&
+                    document.getElementById("image-upload-input")?.click()
+                  }
                 >
                   <input
                     ref={fileInputRef}
@@ -1144,35 +1196,43 @@ export default function AdvertiseManagement() {
                           alert("파일 크기는 10MB 이하로 선택해주세요.");
                           return;
                         }
-                        
+
                         // 파일 타입 제한
                         if (!file.type.startsWith("image/")) {
                           alert("이미지 파일만 선택 가능합니다.");
                           return;
                         }
-                        
+
                         setIsUploading(true);
-                        
+
                         try {
                           // 기존 S3 이미지가 있다면 먼저 삭제
                           if (formData.imageUrl && isS3Url(formData.imageUrl)) {
                             await deleteImage(formData.imageUrl);
                           }
-                          
+
                           // S3에 업로드
-                          const result = await uploadImage(file, 'advertisements');
-                          
+                          const result = await uploadImage(
+                            file,
+                            "advertisements"
+                          );
+
                           if (result.success && result.url) {
                             setFormData((prev) => ({
                               ...prev,
                               imageUrl: result.url,
                             }));
                           } else {
-                            alert(result.error || "이미지 업로드에 실패했습니다.");
+                            alert(
+                              result.error || "이미지 업로드에 실패했습니다."
+                            );
                           }
                         } catch (error) {
-                          console.error('Upload error:', error);
-                          const errorMessage = error instanceof Error ? error.message : "이미지 업로드 중 오류가 발생했습니다.";
+                          console.error("Upload error:", error);
+                          const errorMessage =
+                            error instanceof Error
+                              ? error.message
+                              : "이미지 업로드 중 오류가 발생했습니다.";
                           alert(`업로드 오류: ${errorMessage}`);
                         } finally {
                           setIsUploading(false);
@@ -1198,37 +1258,83 @@ export default function AdvertiseManagement() {
                         size="small"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          
+
                           try {
                             // S3에서 이미지 삭제
-                            if (formData.imageUrl && isS3Url(formData.imageUrl)) {
+                            if (
+                              formData.imageUrl &&
+                              isS3Url(formData.imageUrl)
+                            ) {
                               await deleteImage(formData.imageUrl);
                             }
-                            
-                            setFormData((prev) => ({ ...prev, imageUrl: undefined }));
+
+                            setFormData((prev) => ({
+                              ...prev,
+                              imageUrl: undefined,
+                            }));
                             if (fileInputRef.current) {
                               fileInputRef.current.value = "";
                             }
                           } catch (error) {
-                            console.error('Delete error:', error);
-                            const errorMessage = error instanceof Error ? error.message : "이미지 삭제 중 오류가 발생했습니다.";
+                            console.error("Delete error:", error);
+                            const errorMessage =
+                              error instanceof Error
+                                ? error.message
+                                : "이미지 삭제 중 오류가 발생했습니다.";
                             alert(`삭제 오류: ${errorMessage}`);
                           }
                         }}
-                        sx={{ borderColor: "var(--Line)", color: "var(--Subtext)" }}
+                        sx={{
+                          borderColor: "var(--Line)",
+                          color: "var(--Subtext)",
+                        }}
                       >
                         이미지 제거
                       </Button>
                     </Box>
                   ) : (
                     <Box>
-                      <Upload sx={{ fontSize: 48, color: "var(--Guidetext)", mb: 1 }} />
-                      <Typography variant="body1" sx={{ color: "var(--Text)", mb: 0.5 }}>
-                        {isUploading ? "업로드 중..." : "클릭하여 이미지 업로드"}
+                      <Upload
+                        sx={{ fontSize: 48, color: "var(--Guidetext)", mb: 1 }}
+                      />
+                      <Typography
+                        variant="body1"
+                        sx={{ color: "var(--Text)", mb: 0.5 }}
+                      >
+                        {isUploading
+                          ? "업로드 중..."
+                          : "클릭하여 이미지 업로드"}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "var(--Guidetext)" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "var(--Guidetext)" }}
+                      >
                         JPG, PNG, GIF (최대 10MB)
                       </Typography>
+                      {formData.type && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "var(--Keycolor1)",
+                            display: "block",
+                            mt: 1,
+                          }}
+                        >
+                          권장 크기:{" "}
+                          {formData.type === "HERO_BANNER"
+                            ? "1964 × 970"
+                            : formData.type === "GENERAL_BANNER"
+                            ? "2640 × 288"
+                            : formData.type === "SIDE_AD"
+                            ? "536 × 170"
+                            : formData.type === "AD_CARD"
+                            ? "840 × 792"
+                            : formData.type === "DASHBOARD_BANNER"
+                            ? "2190 × 240"
+                            : ""}{" "}
+                          픽셀
+                        </Typography>
+                      )}
                     </Box>
                   )}
                 </Box>
