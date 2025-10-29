@@ -26,7 +26,7 @@ export const HTMLContent: React.FC<HTMLContentProps> = ({
         if (href) {
           // 외부 링크인지 확인하는 함수
           const isExternalLink = (url: string) => {
-            // 프로토콜이 있는 경우
+            // 이미 완전한 URL인 경우
             if (url.startsWith('http://') || url.startsWith('https://')) {
               return true;
             }
@@ -34,9 +34,22 @@ export const HTMLContent: React.FC<HTMLContentProps> = ({
             if (url.startsWith('www.')) {
               return true;
             }
-            // 도메인 패턴 확인 (점이 포함되고 슬래시로 시작하지 않는 경우)
-            if (url.includes('.') && !url.startsWith('/') && !url.startsWith('#') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
+            // ftp, mailto, tel 등의 프로토콜
+            if (url.startsWith('ftp://') || url.startsWith('mailto:') || url.startsWith('tel:')) {
               return true;
+            }
+            // 내부 링크가 아닌 경우 (/, #, 상대경로가 아닌 경우)
+            if (!url.startsWith('/') && !url.startsWith('#') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
+              // 도메인 패턴 확인 (점이 포함되고 일반적인 도메인 형태)
+              const domainPattern = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/;
+              if (domainPattern.test(url)) {
+                return true;
+              }
+              // IP 주소 패턴
+              const ipPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?(\/.*)?$/;
+              if (ipPattern.test(url)) {
+                return true;
+              }
             }
             return false;
           };
@@ -48,14 +61,25 @@ export const HTMLContent: React.FC<HTMLContentProps> = ({
               fullUrl = `https://${href}`;
             }
 
+            console.log(`Processing external link: "${href}" -> "${fullUrl}"`);
+
+            // href 속성도 올바른 URL로 업데이트
+            link.setAttribute('href', fullUrl);
             link.setAttribute('target', '_blank');
             link.setAttribute('rel', 'noopener noreferrer');
             
-            // 클릭 이벤트 추가하여 확실히 새창으로 열기
+            // 클릭 이벤트 추가하여 Next.js 라우팅 가로채기 방지
             link.addEventListener('click', (e) => {
+              console.log(`External link clicked: ${fullUrl}`);
               e.preventDefault();
+              e.stopPropagation();
               window.open(fullUrl, '_blank', 'noopener,noreferrer');
             });
+
+            // data-external 속성 추가하여 외부 링크임을 표시
+            link.setAttribute('data-external', 'true');
+          } else {
+            console.log(`Internal link detected: "${href}"`);
           }
         }
       });
