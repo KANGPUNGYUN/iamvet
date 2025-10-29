@@ -937,7 +937,7 @@ export default function HomePage() {
           {/* 기존 강의 섹션을 이 코드로 교체 */}
           <section className="py-[60px]">
             <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-[16px] md:gap-0 mb-[30px]">
-              <h3 className="font-title text-[28px] md:text-[44px] title-bold">
+              <h3 className="font-title text-[28px] md:text-[44px]">
                 주요 분야 인기 강좌
               </h3>
               <Link
@@ -1079,7 +1079,7 @@ export default function HomePage() {
           </section>
 
           <section className="py-[60px]">
-            <h3 className="font-title text-[28px] md:text-[44px] title-bold mb-[47px] text-center">
+            <h3 className="font-title text-[28px] md:text-[44px] mb-[47px] text-center">
               인기 양도 매물
             </h3>
 
