@@ -4496,6 +4496,7 @@ export const getTransferById = async (transferId: string) => {
   const transfer = result.rows[0];
   return {
     ...transfer,
+    images: transfer.images ? (typeof transfer.images === 'string' ? JSON.parse(transfer.images) : transfer.images) : [],
     documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
     user: {
       id: transfer.userId,
@@ -4622,6 +4623,7 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   const result = await pool.query(query, [limit, offset]);
   return result.rows.map(transfer => ({
     ...transfer,
+    images: transfer.images ? (typeof transfer.images === 'string' ? JSON.parse(transfer.images) : transfer.images) : [],
     documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
   }));
 };

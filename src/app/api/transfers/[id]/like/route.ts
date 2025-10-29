@@ -22,6 +22,12 @@ export const POST = withAuth(
 
       const transfer = await (prisma as any).transfers.findUnique({
         where: { id: transferId },
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          deletedAt: true,
+        },
       });
 
       if (!transfer) {

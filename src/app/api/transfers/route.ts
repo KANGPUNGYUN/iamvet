@@ -92,7 +92,26 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: "desc" },
           skip: offset,
           take: limit,
-          include: {
+          select: {
+            id: true,
+            userId: true,
+            title: true,
+            description: true,
+            location: true,
+            price: true,
+            category: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+            deletedAt: true,
+            area: true,
+            base_address: true,
+            detail_address: true,
+            latitude: true,
+            longitude: true,
+            sido: true,
+            sigungu: true,
+            views: true,
             users: {
               select: {
                 profileImage: true,
