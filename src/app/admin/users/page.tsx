@@ -139,7 +139,7 @@ export default function UsersManagement() {
     console.log("Executing action:", {
       actionType,
       userId: selectedUser.id,
-      reason: actionReason
+      reason: actionReason,
     });
 
     try {
@@ -169,7 +169,9 @@ export default function UsersManagement() {
     } catch (error) {
       console.error("Action failed:", error);
       // UI에 에러 메시지 표시 (일단 alert로)
-      alert(`작업 실패: ${error instanceof Error ? error.message : String(error)}`);
+      alert(
+        `작업 실패: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   };
 
@@ -189,15 +191,15 @@ export default function UsersManagement() {
   const getStatusChip = (status: string, isActive: boolean) => {
     if (!isActive) {
       return (
-        <Chip 
-          label="비활성" 
-          size="small" 
+        <Chip
+          label="비활성"
+          size="small"
           sx={{
             backgroundColor: "#ffd3d3",
             color: "#ff8796",
             fontSize: "11px",
             fontWeight: "600",
-            borderRadius: "12px"
+            borderRadius: "12px",
           }}
         />
       );
@@ -206,57 +208,57 @@ export default function UsersManagement() {
     switch (status) {
       case "ACTIVE":
         return (
-          <Chip 
-            label="활성" 
-            size="small" 
+          <Chip
+            label="활성"
+            size="small"
             sx={{
               backgroundColor: "#f2f5ff",
               color: "#698cfc",
               fontSize: "11px",
               fontWeight: "600",
-              borderRadius: "12px"
+              borderRadius: "12px",
             }}
           />
         );
       case "PENDING":
         return (
-          <Chip 
-            label="대기중" 
-            size="small" 
+          <Chip
+            label="대기중"
+            size="small"
             sx={{
               backgroundColor: "#ffe5e5",
               color: "#ffb7b8",
               fontSize: "11px",
               fontWeight: "600",
-              borderRadius: "12px"
+              borderRadius: "12px",
             }}
           />
         );
       case "INACTIVE":
         return (
-          <Chip 
-            label="비활성" 
-            size="small" 
+          <Chip
+            label="비활성"
+            size="small"
             sx={{
               backgroundColor: "#ffd3d3",
               color: "#ff8796",
               fontSize: "11px",
               fontWeight: "600",
-              borderRadius: "12px"
+              borderRadius: "12px",
             }}
           />
         );
       default:
         return (
-          <Chip 
-            label={status} 
-            size="small" 
+          <Chip
+            label={status}
+            size="small"
             sx={{
               backgroundColor: "#f6f6f6",
               color: "#9098a4",
               fontSize: "11px",
               fontWeight: "600",
-              borderRadius: "12px"
+              borderRadius: "12px",
             }}
           />
         );
@@ -311,16 +313,16 @@ export default function UsersManagement() {
 
   return (
     <Box sx={{ p: 3, backgroundColor: "#fafafa", minHeight: "100vh" }}>
-      <Typography 
-        variant="h4" 
-        sx={{ 
-          mb: 3, 
-          fontWeight: "bold",
-          color: "#3b394d",
-          fontFamily: "var(--font-title)"
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          color: "var(--Text)",
+          mb: 2,
+          fontSize: { xs: "1.75rem", md: "2rem" },
         }}
       >
-        사용자 관리
+        회원 관리
       </Typography>
 
       {/* 통계 카드 */}
@@ -333,42 +335,112 @@ export default function UsersManagement() {
             mb: 3,
           }}
         >
-          <Card sx={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <Card
+            sx={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            }}
+          >
             <CardContent sx={{ textAlign: "center", py: 3 }}>
-              <Typography variant="h6" sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}>전체 사용자</Typography>
-              <Typography variant="h4" sx={{ color: "#ff8796", fontWeight: "bold", fontSize: "32px" }}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}
+              >
+                전체 사용자
+              </Typography>
+              <Typography
+                variant="h4"
+                sx={{ color: "#ff8796", fontWeight: "bold", fontSize: "32px" }}
+              >
                 {stats.total.toLocaleString()}
               </Typography>
             </CardContent>
           </Card>
-          <Card sx={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <Card
+            sx={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            }}
+          >
             <CardContent sx={{ textAlign: "center", py: 3 }}>
-              <Typography variant="h6" sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}>활성 사용자</Typography>
-              <Typography variant="h4" sx={{ color: "#698cfc", fontWeight: "bold", fontSize: "32px" }}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}
+              >
+                활성 사용자
+              </Typography>
+              <Typography
+                variant="h4"
+                sx={{ color: "#698cfc", fontWeight: "bold", fontSize: "32px" }}
+              >
                 {stats.active.toLocaleString()}
               </Typography>
             </CardContent>
           </Card>
-          <Card sx={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <Card
+            sx={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            }}
+          >
             <CardContent sx={{ textAlign: "center", py: 3 }}>
-              <Typography variant="h6" sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}>수의사</Typography>
-              <Typography variant="h4" sx={{ color: "#85a1ff", fontWeight: "bold", fontSize: "32px" }}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}
+              >
+                수의사
+              </Typography>
+              <Typography
+                variant="h4"
+                sx={{ color: "#85a1ff", fontWeight: "bold", fontSize: "32px" }}
+              >
                 {stats.veterinarians.toLocaleString()}
               </Typography>
             </CardContent>
           </Card>
-          <Card sx={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <Card
+            sx={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            }}
+          >
             <CardContent sx={{ textAlign: "center", py: 3 }}>
-              <Typography variant="h6" sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}>병원</Typography>
-              <Typography variant="h4" sx={{ color: "#ffb7b8", fontWeight: "bold", fontSize: "32px" }}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}
+              >
+                병원
+              </Typography>
+              <Typography
+                variant="h4"
+                sx={{ color: "#ffb7b8", fontWeight: "bold", fontSize: "32px" }}
+              >
                 {stats.hospitals.toLocaleString()}
               </Typography>
             </CardContent>
           </Card>
-          <Card sx={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <Card
+            sx={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            }}
+          >
             <CardContent sx={{ textAlign: "center", py: 3 }}>
-              <Typography variant="h6" sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}>학생</Typography>
-              <Typography variant="h4" sx={{ color: "#aabeff", fontWeight: "bold", fontSize: "32px" }}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#4f5866", mb: 1, fontSize: "14px" }}
+              >
+                학생
+              </Typography>
+              <Typography
+                variant="h4"
+                sx={{ color: "#aabeff", fontWeight: "bold", fontSize: "32px" }}
+              >
                 {stats.students.toLocaleString()}
               </Typography>
             </CardContent>
@@ -377,7 +449,14 @@ export default function UsersManagement() {
       )}
 
       {/* 필터 및 검색 */}
-      <Card sx={{ mb: 3, backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+      <Card
+        sx={{
+          mb: 3,
+          backgroundColor: "white",
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        }}
+      >
         <CardContent sx={{ p: 3 }}>
           <Box
             sx={{
@@ -393,18 +472,18 @@ export default function UsersManagement() {
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ 
+              sx={{
                 minWidth: 200,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                  backgroundColor: '#f6f6f6',
-                  '&:hover': {
-                    backgroundColor: '#f0f0f0',
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  backgroundColor: "#f6f6f6",
+                  "&:hover": {
+                    backgroundColor: "#f0f0f0",
                   },
-                  '&.Mui-focused': {
-                    backgroundColor: 'white',
-                  }
-                }
+                  "&.Mui-focused": {
+                    backgroundColor: "white",
+                  },
+                },
               }}
               InputProps={{
                 startAdornment: (
@@ -415,13 +494,16 @@ export default function UsersManagement() {
               }}
             />
 
-            <FormControl size="small" sx={{ 
-              minWidth: 120,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '8px',
-                backgroundColor: '#f6f6f6',
-              }
-            }}>
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: 120,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  backgroundColor: "#f6f6f6",
+                },
+              }}
+            >
               <InputLabel sx={{ color: "#4f5866" }}>사용자 유형</InputLabel>
               <Select
                 value={filterType}
@@ -436,13 +518,16 @@ export default function UsersManagement() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ 
-              minWidth: 120,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '8px',
-                backgroundColor: '#f6f6f6',
-              }
-            }}>
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: 120,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  backgroundColor: "#f6f6f6",
+                },
+              }}
+            >
               <InputLabel sx={{ color: "#4f5866" }}>상태</InputLabel>
               <Select
                 value={filterStatus}
@@ -461,66 +546,114 @@ export default function UsersManagement() {
       </Card>
 
       {/* 사용자 테이블 */}
-      <Card sx={{ backgroundColor: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+      <Card
+        sx={{
+          backgroundColor: "white",
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        }}
+      >
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: "#f6f6f6" }}>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>프로필</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>이름</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>이메일</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>유형</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>상태</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>가입일</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>최근 로그인</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>인증</TableCell>
-                <TableCell sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}>작업</TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  프로필
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  이름
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  이메일
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  유형
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  상태
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  가입일
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  최근 로그인
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  인증
+                </TableCell>
+                <TableCell
+                  sx={{ color: "#4f5866", fontWeight: "600", fontSize: "14px" }}
+                >
+                  작업
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredUsers.map((user) => (
-                <TableRow 
-                  key={user.id} 
-                  hover 
+                <TableRow
+                  key={user.id}
+                  hover
                   onClick={() => handleUserClick(user)}
-                  sx={{ 
-                    '&:hover': { 
-                      backgroundColor: '#f9f9f9',
-                      cursor: 'pointer'
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#f9f9f9",
+                      cursor: "pointer",
                     },
-                    borderBottom: '1px solid #efeff0'
+                    borderBottom: "1px solid #efeff0",
                   }}
                 >
                   <TableCell>
-                    <Avatar 
-                      sx={{ 
-                        width: 40, 
-                        height: 40, 
-                        backgroundColor: user.userType === 'VETERINARIAN' ? '#f2f5ff' : 
-                                         user.userType === 'HOSPITAL' ? '#fff7f7' : '#f2f5ff'
+                    <Avatar
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        backgroundColor:
+                          user.userType === "VETERINARIAN"
+                            ? "#f2f5ff"
+                            : user.userType === "HOSPITAL"
+                            ? "#fff7f7"
+                            : "#f2f5ff",
                       }}
                     >
                       {getUserTypeIcon(user.userType)}
                     </Avatar>
                   </TableCell>
                   <TableCell>
-                    <Typography 
-                      variant="subtitle2" 
-                      fontWeight="600" 
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight="600"
                       sx={{ color: "#3b394d", fontSize: "14px" }}
                     >
                       {user.name}
                     </Typography>
                     {user.phone && (
-                      <Typography 
-                        variant="caption" 
+                      <Typography
+                        variant="caption"
                         sx={{ color: "#9098a4", fontSize: "12px" }}
                       >
                         {user.phone}
                       </Typography>
                     )}
                   </TableCell>
-                  <TableCell sx={{ color: "#4f5866", fontSize: "13px" }}>{user.email}</TableCell>
+                  <TableCell sx={{ color: "#4f5866", fontSize: "13px" }}>
+                    {user.email}
+                  </TableCell>
                   <TableCell>
                     <Box
                       sx={{
@@ -530,10 +663,18 @@ export default function UsersManagement() {
                         borderRadius: "12px",
                         fontSize: "12px",
                         fontWeight: "600",
-                        backgroundColor: user.userType === 'VETERINARIAN' ? '#f2f5ff' : 
-                                         user.userType === 'HOSPITAL' ? '#fff7f7' : '#f2f5ff',
-                        color: user.userType === 'VETERINARIAN' ? '#698cfc' : 
-                               user.userType === 'HOSPITAL' ? '#ff8796' : '#698cfc'
+                        backgroundColor:
+                          user.userType === "VETERINARIAN"
+                            ? "#f2f5ff"
+                            : user.userType === "HOSPITAL"
+                            ? "#fff7f7"
+                            : "#f2f5ff",
+                        color:
+                          user.userType === "VETERINARIAN"
+                            ? "#698cfc"
+                            : user.userType === "HOSPITAL"
+                            ? "#ff8796"
+                            : "#698cfc",
                       }}
                     >
                       {getUserTypeLabel(user.userType)}
@@ -542,8 +683,12 @@ export default function UsersManagement() {
                   <TableCell>
                     {getStatusChip(user.status, user.isActive)}
                   </TableCell>
-                  <TableCell sx={{ color: "#4f5866", fontSize: "13px" }}>{user.joinDate}</TableCell>
-                  <TableCell sx={{ color: "#9098a4", fontSize: "13px" }}>{user.lastLogin || "없음"}</TableCell>
+                  <TableCell sx={{ color: "#4f5866", fontSize: "13px" }}>
+                    {user.joinDate}
+                  </TableCell>
+                  <TableCell sx={{ color: "#9098a4", fontSize: "13px" }}>
+                    {user.lastLogin || "없음"}
+                  </TableCell>
                   <TableCell>
                     {user.verified ? (
                       <CheckCircle sx={{ color: "#698cfc" }} />
@@ -562,20 +707,24 @@ export default function UsersManagement() {
                         }}
                         disabled={user.verified}
                         sx={{
-                          backgroundColor: user.verified ? "#f6f6f6" : "#698cfc",
+                          backgroundColor: user.verified
+                            ? "#f6f6f6"
+                            : "#698cfc",
                           color: user.verified ? "#9098a4" : "white",
                           borderRadius: "6px",
                           fontSize: "11px",
                           px: 1.5,
                           py: 0.5,
                           minWidth: "auto",
-                          '&:hover': {
-                            backgroundColor: user.verified ? "#f6f6f6" : "#5a7cfc",
+                          "&:hover": {
+                            backgroundColor: user.verified
+                              ? "#f6f6f6"
+                              : "#5a7cfc",
                           },
-                          '&:disabled': {
+                          "&:disabled": {
                             backgroundColor: "#f6f6f6",
                             color: "#caced6",
-                          }
+                          },
                         }}
                       >
                         인증
@@ -595,9 +744,9 @@ export default function UsersManagement() {
                           px: 1.5,
                           py: 0.5,
                           minWidth: "auto",
-                          '&:hover': {
+                          "&:hover": {
                             backgroundColor: "#ff8796",
-                          }
+                          },
                         }}
                       >
                         거부
@@ -617,9 +766,9 @@ export default function UsersManagement() {
                           px: 1.5,
                           py: 0.5,
                           minWidth: "auto",
-                          '&:hover': {
+                          "&:hover": {
                             backgroundColor: "#85a1ff",
-                          }
+                          },
                         }}
                       >
                         {user.isActive ? "정지" : "활성화"}
@@ -634,27 +783,29 @@ export default function UsersManagement() {
 
         {/* 페이지네이션 */}
         {pagination && (
-          <Box sx={{ 
-            display: "flex", 
-            justifyContent: "center", 
-            p: 3,
-            borderTop: "1px solid #efeff0"
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              p: 3,
+              borderTop: "1px solid #efeff0",
+            }}
+          >
             <Pagination
               count={pagination.totalPages}
               page={currentPage}
               onChange={(_, page) => setCurrentPage(page)}
               sx={{
-                '& .MuiPaginationItem-root': {
+                "& .MuiPaginationItem-root": {
                   color: "#4f5866",
-                  '&.Mui-selected': {
+                  "&.Mui-selected": {
                     backgroundColor: "#698cfc",
                     color: "white",
                   },
-                  '&:hover': {
+                  "&:hover": {
                     backgroundColor: "#f2f5ff",
-                  }
-                }
+                  },
+                },
               }}
             />
           </Box>
@@ -668,18 +819,20 @@ export default function UsersManagement() {
         maxWidth="sm"
         fullWidth
         sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: '12px',
-            padding: '8px',
-          }
+          "& .MuiDialog-paper": {
+            borderRadius: "12px",
+            padding: "8px",
+          },
         }}
       >
-        <DialogTitle sx={{ 
-          color: "#3b394d", 
-          fontSize: "18px", 
-          fontWeight: "bold",
-          pb: 2
-        }}>
+        <DialogTitle
+          sx={{
+            color: "#3b394d",
+            fontSize: "18px",
+            fontWeight: "bold",
+            pb: 2,
+          }}
+        >
           {actionType === "verify" && "사용자 인증 승인"}
           {actionType === "reject" && "사용자 인증 거부"}
           {actionType === "suspend" && "사용자 계정 정지/활성화"}
@@ -688,16 +841,18 @@ export default function UsersManagement() {
         <DialogContent>
           {selectedUser && (
             <Box>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  mb: 3, 
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 3,
                   color: "#4f5866",
-                  lineHeight: 1.6
+                  lineHeight: 1.6,
                 }}
               >
-                <strong style={{ color: "#3b394d" }}>{selectedUser.name}</strong> ({selectedUser.email})님의
-                계정을
+                <strong style={{ color: "#3b394d" }}>
+                  {selectedUser.name}
+                </strong>{" "}
+                ({selectedUser.email})님의 계정을
                 {actionType === "verify" && " 인증 승인"}
                 {actionType === "reject" && " 인증 거부"}
                 {actionType === "suspend" &&
@@ -715,20 +870,20 @@ export default function UsersManagement() {
                 onChange={(e) => setActionReason(e.target.value)}
                 placeholder="작업 사유를 입력하세요..."
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '8px',
-                    backgroundColor: '#f6f6f6',
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                    backgroundColor: "#f6f6f6",
                   },
-                  '& .MuiInputLabel-root': {
-                    color: '#4f5866',
-                  }
+                  "& .MuiInputLabel-root": {
+                    color: "#4f5866",
+                  },
                 }}
               />
             </Box>
           )}
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 1 }}>
-          <Button 
+          <Button
             onClick={() => setDialogOpen(false)}
             sx={{
               color: "#9098a4",
@@ -736,9 +891,9 @@ export default function UsersManagement() {
               borderRadius: "8px",
               px: 3,
               py: 1,
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: "#efeff0",
-              }
+              },
             }}
           >
             취소
@@ -755,13 +910,14 @@ export default function UsersManagement() {
               borderRadius: "8px",
               px: 3,
               py: 1,
-              '&:hover': {
-                backgroundColor: actionType === "delete" ? "#ff6b7d" : "#5a7cfc",
+              "&:hover": {
+                backgroundColor:
+                  actionType === "delete" ? "#ff6b7d" : "#5a7cfc",
               },
-              '&:disabled': {
+              "&:disabled": {
                 backgroundColor: "#caced6",
                 color: "#9098a4",
-              }
+              },
             }}
           >
             {userActionMutation.isPending || userVerifyMutation.isPending
@@ -778,19 +934,21 @@ export default function UsersManagement() {
         maxWidth="md"
         fullWidth
         sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: '12px',
-            maxHeight: '90vh'
-          }
+          "& .MuiDialog-paper": {
+            borderRadius: "12px",
+            maxHeight: "90vh",
+          },
         }}
       >
-        <DialogTitle sx={{ 
-          color: "#3b394d", 
-          fontSize: "20px", 
-          fontWeight: "bold",
-          pb: 2,
-          borderBottom: "1px solid #efeff0"
-        }}>
+        <DialogTitle
+          sx={{
+            color: "#3b394d",
+            fontSize: "20px",
+            fontWeight: "bold",
+            pb: 2,
+            borderBottom: "1px solid #efeff0",
+          }}
+        >
           회원 상세 정보
         </DialogTitle>
         <DialogContent sx={{ p: 0 }}>
@@ -798,22 +956,34 @@ export default function UsersManagement() {
             <Box>
               {/* 기본 정보 섹션 */}
               <Box sx={{ p: 3, borderBottom: "1px solid #efeff0" }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
-                  <Avatar 
-                    sx={{ 
-                      width: 80, 
-                      height: 80, 
-                      backgroundColor: detailUser.userType === 'VETERINARIAN' ? '#f2f5ff' : 
-                                       detailUser.userType === 'HOSPITAL' ? '#fff7f7' : '#f2f5ff'
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 3, mb: 3 }}
+                >
+                  <Avatar
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      backgroundColor:
+                        detailUser.userType === "VETERINARIAN"
+                          ? "#f2f5ff"
+                          : detailUser.userType === "HOSPITAL"
+                          ? "#fff7f7"
+                          : "#f2f5ff",
                     }}
                   >
                     {getUserTypeIcon(detailUser.userType)}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6" sx={{ color: "#3b394d", fontWeight: "bold", mb: 1 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#3b394d", fontWeight: "bold", mb: 1 }}
+                    >
                       {detailUser.name}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: "#4f5866", mb: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#4f5866", mb: 1 }}
+                    >
                       {detailUser.email}
                     </Typography>
                     {detailUser.phone && (
@@ -822,7 +992,14 @@ export default function UsersManagement() {
                       </Typography>
                     )}
                   </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-end' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                      alignItems: "flex-end",
+                    }}
+                  >
                     <Box
                       sx={{
                         display: "inline-block",
@@ -831,10 +1008,18 @@ export default function UsersManagement() {
                         borderRadius: "12px",
                         fontSize: "12px",
                         fontWeight: "600",
-                        backgroundColor: detailUser.userType === 'VETERINARIAN' ? '#f2f5ff' : 
-                                         detailUser.userType === 'HOSPITAL' ? '#fff7f7' : '#f2f5ff',
-                        color: detailUser.userType === 'VETERINARIAN' ? '#698cfc' : 
-                               detailUser.userType === 'HOSPITAL' ? '#ff8796' : '#698cfc'
+                        backgroundColor:
+                          detailUser.userType === "VETERINARIAN"
+                            ? "#f2f5ff"
+                            : detailUser.userType === "HOSPITAL"
+                            ? "#fff7f7"
+                            : "#f2f5ff",
+                        color:
+                          detailUser.userType === "VETERINARIAN"
+                            ? "#698cfc"
+                            : detailUser.userType === "HOSPITAL"
+                            ? "#ff8796"
+                            : "#698cfc",
                       }}
                     >
                       {getUserTypeLabel(detailUser.userType)}
@@ -843,9 +1028,22 @@ export default function UsersManagement() {
                   </Box>
                 </Box>
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: 2,
+                  }}
+                >
                   <Box>
-                    <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#9098a4",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                      }}
+                    >
                       가입일
                     </Typography>
                     <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -853,7 +1051,14 @@ export default function UsersManagement() {
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#9098a4",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                      }}
+                    >
                       최근 로그인
                     </Typography>
                     <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -861,19 +1066,39 @@ export default function UsersManagement() {
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#9098a4",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                      }}
+                    >
                       인증 상태
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mt: 0.5,
+                      }}
+                    >
                       {detailUser.verified ? (
                         <>
-                          <CheckCircle sx={{ color: "#698cfc", fontSize: 16 }} />
-                          <Typography variant="body2" sx={{ color: "#698cfc" }}>인증됨</Typography>
+                          <CheckCircle
+                            sx={{ color: "#698cfc", fontSize: 16 }}
+                          />
+                          <Typography variant="body2" sx={{ color: "#698cfc" }}>
+                            인증됨
+                          </Typography>
                         </>
                       ) : (
                         <>
                           <Warning sx={{ color: "#ffb7b8", fontSize: 16 }} />
-                          <Typography variant="body2" sx={{ color: "#ffb7b8" }}>미인증</Typography>
+                          <Typography variant="body2" sx={{ color: "#ffb7b8" }}>
+                            미인증
+                          </Typography>
                         </>
                       )}
                     </Box>
@@ -884,7 +1109,10 @@ export default function UsersManagement() {
               {/* 주소 정보 */}
               {detailUser.address && (
                 <Box sx={{ p: 3, borderBottom: "1px solid #efeff0" }}>
-                  <Typography variant="h6" sx={{ color: "#3b394d", fontWeight: "bold", mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#3b394d", fontWeight: "bold", mb: 2 }}
+                  >
                     주소 정보
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -896,12 +1124,29 @@ export default function UsersManagement() {
               {/* 수의사 면허 정보 */}
               {detailUser.veterinarianLicense && (
                 <Box sx={{ p: 3, borderBottom: "1px solid #efeff0" }}>
-                  <Typography variant="h6" sx={{ color: "#3b394d", fontWeight: "bold", mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#3b394d", fontWeight: "bold", mb: 2 }}
+                  >
                     수의사 면허 정보
                   </Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: 2,
+                    }}
+                  >
                     <Box>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                        }}
+                      >
                         면허번호
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -909,7 +1154,14 @@ export default function UsersManagement() {
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                        }}
+                      >
                         발급일
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -917,7 +1169,14 @@ export default function UsersManagement() {
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                        }}
+                      >
                         만료일
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -927,20 +1186,34 @@ export default function UsersManagement() {
                   </Box>
                   {detailUser.veterinarianLicense.licenseImage && (
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600", mb: 1, display: "block" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          mb: 1,
+                          display: "block",
+                        }}
+                      >
                         면허증 이미지
                       </Typography>
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => window.open(detailUser.veterinarianLicense!.licenseImage, '_blank')}
+                        onClick={() =>
+                          window.open(
+                            detailUser.veterinarianLicense!.licenseImage,
+                            "_blank"
+                          )
+                        }
                         sx={{
                           color: "#698cfc",
                           borderColor: "#698cfc",
-                          '&:hover': {
+                          "&:hover": {
                             backgroundColor: "#f2f5ff",
                             borderColor: "#698cfc",
-                          }
+                          },
                         }}
                       >
                         면허증 보기
@@ -953,12 +1226,29 @@ export default function UsersManagement() {
               {/* 병원 정보 */}
               {detailUser.hospitalInfo && (
                 <Box sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ color: "#3b394d", fontWeight: "bold", mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#3b394d", fontWeight: "bold", mb: 2 }}
+                  >
                     병원 정보
                   </Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: 2,
+                    }}
+                  >
                     <Box>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                        }}
+                      >
                         사업자번호
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -966,7 +1256,14 @@ export default function UsersManagement() {
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                        }}
+                      >
                         대표자명
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -974,7 +1271,14 @@ export default function UsersManagement() {
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                        }}
+                      >
                         설립일
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#4f5866" }}>
@@ -984,20 +1288,34 @@ export default function UsersManagement() {
                   </Box>
                   {detailUser.hospitalInfo.businessRegistration && (
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="caption" sx={{ color: "#9098a4", fontSize: "12px", fontWeight: "600", mb: 1, display: "block" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#9098a4",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          mb: 1,
+                          display: "block",
+                        }}
+                      >
                         사업자등록증
                       </Typography>
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => window.open(detailUser.hospitalInfo!.businessRegistration, '_blank')}
+                        onClick={() =>
+                          window.open(
+                            detailUser.hospitalInfo!.businessRegistration,
+                            "_blank"
+                          )
+                        }
                         sx={{
                           color: "#ff8796",
                           borderColor: "#ff8796",
-                          '&:hover': {
+                          "&:hover": {
                             backgroundColor: "#fff7f7",
                             borderColor: "#ff8796",
-                          }
+                          },
                         }}
                       >
                         사업자등록증 보기
@@ -1018,9 +1336,9 @@ export default function UsersManagement() {
               borderRadius: "8px",
               px: 3,
               py: 1,
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: "#efeff0",
-              }
+              },
             }}
           >
             닫기

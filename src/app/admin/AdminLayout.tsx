@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // 로그인 상태 확인
   React.useEffect(() => {
     let isMounted = true;
-    
+
     const checkAuth = async () => {
       // 로그인 페이지는 인증 체크에서 제외
       if (pathname === "/admin/login") {
@@ -83,7 +83,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           const data = await response.json();
           setIsLoggedIn(true);
           setAdminEmail(data.email || localStorage.getItem("adminEmail") || "");
-          
+
           // localStorage 업데이트
           if (data.email) {
             localStorage.setItem("isAdminLoggedIn", "true");
@@ -110,7 +110,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     };
 
     checkAuth();
-    
+
     return () => {
       isMounted = false;
     };
@@ -184,7 +184,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: "양도양수", href: "/admin/transfers", icon: <CurrencyExchange /> },
     { name: "임상포럼", href: "/admin/forums", icon: <Forum /> },
     {
-      name: "알림/메시지",
+      name: "공지사항 관리",
       href: "/admin/messages",
       icon: <MarkChatUnread />,
     },
@@ -290,7 +290,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           >
             <Menu />
           </IconButton>
-          <Breadcrumbs aria-label="breadcrumb" sx={{ color: "text.secondary", flexGrow: 1 }}>
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ color: "text.secondary", flexGrow: 1 }}
+          >
             <Link
               component={NextLink}
               underline="hover"
@@ -306,7 +309,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </Typography>
             )}
           </Breadcrumbs>
-          
+
           {/* 사용자 프로필 영역 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
@@ -326,13 +329,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               id="menu-appbar"
               anchorEl={anchorEl}
               anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               open={Boolean(anchorEl)}
               onClose={handleProfileMenuClose}
