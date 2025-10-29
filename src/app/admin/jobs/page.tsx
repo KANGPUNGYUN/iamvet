@@ -30,6 +30,9 @@ import {
   Chip,
   Avatar,
   CircularProgress,
+  Switch,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import {
   Search,
@@ -38,6 +41,8 @@ import {
   Cancel,
   Warning,
   Work,
+  ToggleOn,
+  ToggleOff,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
 import { useAdminJobs, useAdminJobDetail } from "@/hooks/api/useAdminJobs";
@@ -75,6 +80,7 @@ export default function JobPostsManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailJobId, setDetailJobId] = useState<string | null>(null);
+  const [toggleLoading, setToggleLoading] = useState<string | null>(null);
 
   // API hooks
   const {
@@ -154,6 +160,42 @@ export default function JobPostsManagement() {
   const handleJobClick = (jobId: string) => {
     setDetailJobId(jobId);
     setDetailModalOpen(true);
+  };
+
+  const handleToggleJobStatus = async (jobId: string, currentStatus: string) => {
+    try {
+      setToggleLoading(jobId);
+      
+      const newIsActive = currentStatus !== 'ACTIVE';
+      
+      // 쿠키 기반 관리자 인증 사용
+      const response = await fetch(`/api/admin/jobs/${jobId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // HttpOnly 쿠키 전송
+        body: JSON.stringify({
+          isActive: newIsActive,
+          reason: newIsActive ? '관리자에 의한 활성화' : '관리자에 의한 비활성화'
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        // 성공 시 페이지 새로고침 또는 상태 업데이트
+        window.location.reload();
+      } else {
+        console.error('상태 변경 실패:', result.message);
+        alert('상태 변경에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('API 호출 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
+    } finally {
+      setToggleLoading(null);
+    }
   };
 
   if (isLoading) {
@@ -458,6 +500,12 @@ export default function JobPostsManagement() {
                   sx={{ fontWeight: "bold", color: "#3b394d" }}
                   align="center"
                 >
+                  상태 관리
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "#3b394d" }}
+                  align="center"
+                >
                   작업
                 </TableCell>
               </TableRow>
@@ -528,6 +576,31 @@ export default function JobPostsManagement() {
                     <Typography variant="body2" sx={{ color: "#4f5866" }}>
                       {job.createdAt}
                     </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip title={`채용공고 ${job.status === 'ACTIVE' ? '비활성화' : '활성화'}`}>
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleJobStatus(job.id, job.status);
+                        }}
+                        disabled={toggleLoading === job.id}
+                        sx={{
+                          color: job.status === 'ACTIVE' ? '#10b981' : '#6b7280',
+                          '&:hover': {
+                            bgcolor: job.status === 'ACTIVE' ? '#d1fae5' : '#f3f4f6',
+                          },
+                        }}
+                      >
+                        {toggleLoading === job.id ? (
+                          <CircularProgress size={20} />
+                        ) : job.status === 'ACTIVE' ? (
+                          <ToggleOn sx={{ fontSize: 28 }} />
+                        ) : (
+                          <ToggleOff sx={{ fontSize: 28 }} />
+                        )}
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                   <TableCell align="center">
                     <Button

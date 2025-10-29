@@ -937,6 +937,7 @@ enum NotificationType {
   REPLY
   APPLICATION_STATUS
   APPLICATION_NEW
+  SYSTEM
 }
 
 enum Provider {

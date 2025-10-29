@@ -160,3 +160,98 @@ export async function GET(
     );
   }
 }
+
+// 채용 공고 상태 변경 (관리자용)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 관리자 인증 확인
+    const adminAuth = verifyAdminToken(request);
+    if (!adminAuth.success) {
+      return NextResponse.json(
+        { status: 'error', message: '관리자 인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
+    const { id: jobId } = await params;
+    const body = await request.json();
+    const { isActive, reason } = body;
+
+    if (typeof isActive !== 'boolean') {
+      return NextResponse.json(
+        { status: 'error', message: 'isActive 값이 필요합니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 현재 채용공고 정보 조회 (작성자 정보 포함)
+    const jobResult = await sql`
+      SELECT 
+        j.id,
+        j.title,
+        j."hospitalId",
+        j."isActive",
+        h.email as hospital_email,
+        hosp."hospitalName" as hospital_name
+      FROM jobs j
+      LEFT JOIN users h ON j."hospitalId" = h.id
+      LEFT JOIN hospitals hosp ON h.id = hosp."userId"
+      WHERE j.id = ${jobId}
+    `;
+
+    if (jobResult.length === 0) {
+      return NextResponse.json(
+        { status: 'error', message: '채용 공고를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
+
+    const job = jobResult[0];
+
+    // 채용공고 상태 업데이트
+    await sql`
+      UPDATE jobs 
+      SET "isActive" = ${isActive}, "updatedAt" = NOW()
+      WHERE id = ${jobId}
+    `;
+
+    // 작성자에게 알림 발송
+    try {
+      const statusText = isActive ? '활성화' : '비활성화';
+      const notificationTitle = `채용공고 ${statusText} 알림`;
+      const notificationContent = reason 
+        ? `"${job.title}" 채용공고가 관리자에 의해 ${statusText}되었습니다.\n사유: ${reason}`
+        : `"${job.title}" 채용공고가 관리자에 의해 ${statusText}되었습니다.`;
+
+      // 데이터베이스에 직접 삽입 (camelCase 필드명 사용)
+      const notificationId = `notification_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      await sql`
+        INSERT INTO notifications (id, "recipientId", "recipientType", type, title, content, "isRead", "createdAt", "updatedAt")
+        VALUES (${notificationId}, ${job.hospitalId}, 'HOSPITAL', 'SYSTEM', ${notificationTitle}, ${notificationContent}, false, NOW(), NOW())
+      `;
+    } catch (notificationError) {
+      console.error('알림 발송 실패:', notificationError);
+      // 알림 발송 실패해도 상태 변경은 성공으로 처리
+    }
+
+    return NextResponse.json({
+      status: 'success',
+      message: `채용공고가 ${isActive ? '활성화' : '비활성화'}되었습니다.`,
+      data: {
+        jobId,
+        isActive,
+        updatedAt: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('채용 공고 상태 변경 실패:', error);
+    return NextResponse.json(
+      { status: 'error', message: '서버 오류가 발생했습니다.' },
+      { status: 500 }
+    );
+  }
+}

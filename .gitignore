@@ -12,6 +12,7 @@ node_modules/
 
 # Production
 /build
+/migrations
 
 # Misc
 .DS_Store
