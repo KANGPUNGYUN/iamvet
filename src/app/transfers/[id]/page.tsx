@@ -19,14 +19,12 @@ import {
   BookmarkFilledIcon,
   BookmarkIcon,
   PlusIcon,
+  ExcelIcon,
+  WordIcon,
+  PdfIcon,
 } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
 import transfer1Img from "@/assets/images/transfer/transfer1.jpg";
-import transfer2Img from "@/assets/images/transfer/transfer2.jpg";
-import transfer3Img from "@/assets/images/transfer/transfer3.jpg";
-import transfer4Img from "@/assets/images/transfer/transfer4.jpg";
-import transfer5Img from "@/assets/images/transfer/transfer5.jpg";
-import transfer6Img from "@/assets/images/transfer/transfer6.jpg";
 import profileImg from "@/assets/images/profile.png";
 import NaverMap from "@/components/NaverMap";
 import TransferCard from "@/components/ui/TransferCard/TransferCard";
@@ -76,6 +74,49 @@ const ImageSlider = ({ images }: { images: string[] }) => {
       goToPrevious();
     }
   };
+
+  // 이미지가 없는 경우 회색 빈 이미지 표시
+  if (!images || images.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="relative w-full h-full max-w-[970px] lg:h-[646px] min-h-[310px] rounded-[8px] bg-gray-200 overflow-hidden mb-4 flex items-center justify-center">
+          <div className="text-center">
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="mx-auto mb-4 text-gray-400"
+            >
+              <path
+                d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9 10C10.1046 10 11 9.10457 11 8C11 6.89543 10.1046 6 9 6C7.89543 6 7 6.89543 7 8C7 9.10457 7.89543 10 9 10Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M21 15L16 10L5 21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <p className="text-gray-500 text-sm">이미지가 없습니다</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -538,18 +579,11 @@ export default function TransferDetailPage({
     );
   }
 
-  // 이미지 배열 (없으면 기본 이미지 사용)
+  // 이미지 배열 (없으면 빈 배열로 처리)
   const sliderImages =
     transferData.images && transferData.images.length > 0
       ? transferData.images
-      : [
-          transfer1Img.src,
-          transfer2Img.src,
-          transfer3Img.src,
-          transfer4Img.src,
-          transfer5Img.src,
-          transfer6Img.src,
-        ];
+      : [];
 
   // 작성자 정보
   const author = {
@@ -845,6 +879,103 @@ export default function TransferDetailPage({
                   "주소 정보 없음"}
               </p>
             </div>
+
+            {/* 첨부 파일 */}
+            {(transferData as any).documents && (transferData as any).documents.length > 0 && (
+              <div className="mt-[30px] lg:mt-[50px] border-t-[1px] border-t-[#EFEFF0] pt-[30px] lg:pt-[50px]">
+                <h2 className="font-title text-[16px] lg:text-[20px] title-light text-primary mb-[15px] lg:mb-[20px]">
+                  첨부 파일
+                </h2>
+                <div className="space-y-3">
+                  {(transferData as any).documents.map((document: string, index: number) => {
+                    const fileName = document.split('/').pop() || `파일${index + 1}`;
+                    const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+                    
+                    // 파일 타입별 아이콘 (DocumentUpload의 getFileIcon 함수 참고)
+                    const getFileIcon = () => {
+                      // PDF 파일
+                      if (fileExtension === 'pdf') {
+                        return <PdfIcon currentColor="#EF4444" />;
+                      }
+                      // Excel 파일
+                      if (['xlsx', 'xls', 'xlsm'].includes(fileExtension)) {
+                        return <ExcelIcon currentColor="#22C55E" />;
+                      }
+                      // Word 파일
+                      if (['doc', 'docx'].includes(fileExtension)) {
+                        return <WordIcon currentColor="#3B82F6" />;
+                      }
+                      // 이미지 파일
+                      if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(fileExtension)) {
+                        return (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="3" width="18" height="18" rx="3" fill="#10B981" />
+                            <circle cx="9" cy="9" r="1.5" fill="white" />
+                            <path
+                              d="M21 15l-3-3a1.5 1.5 0 00-2.121 0L6 21"
+                              stroke="white"
+                              strokeWidth="2.25"
+                            />
+                          </svg>
+                        );
+                      }
+                      // 기본 파일 아이콘
+                      return (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <rect x="3" y="1.5" width="15" height="21" rx="1.5" fill="#6B7280" />
+                          <path
+                            d="M7.5 7.5h6M7.5 12h4.5M7.5 16.5h3"
+                            stroke="white"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      );
+                    };
+
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => window.open(document, '_blank')}
+                      >
+                        {getFileIcon()}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {fileName}
+                          </p>
+                          <p className="text-xs text-gray-500 uppercase">
+                            {fileExtension} 파일
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const link = globalThis.document.createElement('a');
+                              link.href = document;
+                              link.download = fileName;
+                              link.click();
+                            }}
+                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                            title="다운로드"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2"/>
+                              <polyline points="7,10 12,15 17,10" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" strokeWidth="2"/>
+                            </svg>
+                          </button>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-400">
+                            <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2"/>
+                          </svg>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
 
           {/* 추천 양도양수 섹션 */}
