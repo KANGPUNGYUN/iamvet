@@ -320,7 +320,7 @@ export default function VeterinarianLectureBookmarksPage() {
             <div className="bg-white w-full mx-auto rounded-[16px] border border-[#EFEFF0] p-[16px] xl:p-[20px] flex-1 space-y-6">
               {/* 제목 */}
               <div className="flex justify-between items-center self-stretch">
-                <h1 className="text-[28px] font-text text-medium text-[#3B394D]">
+                <h1 className="text-primary font-text text-[24px] text-bold mb-6">
                   강의 북마크
                 </h1>
 
