@@ -4508,32 +4508,6 @@ export const getTransferById = async (transferId: string) => {
   };
 };
 
-export const checkTransferBookmarkExists = async (
-  userId: string,
-  transferId: string
-) => {
-  const query = `SELECT id FROM transfer_bookmarks WHERE user_id = $1 AND transfer_id = $2 AND "deletedAt" IS NULL`;
-  const result = await pool.query(query, [userId, transferId]);
-  return result.rows.length > 0;
-};
-
-export const createTransferBookmark = async (
-  userId: string,
-  transferId: string
-) => {
-  const query = `INSERT INTO transfer_bookmarks (user_id, transfer_id) VALUES ($1, $2) RETURNING *`;
-  const result = await pool.query(query, [userId, transferId]);
-  return result.rows[0];
-};
-
-export const removeTransferBookmark = async (
-  userId: string,
-  transferId: string
-) => {
-  const query = `UPDATE transfer_bookmarks SET "deletedAt" = NOW() WHERE user_id = $1 AND transfer_id = $2`;
-  const result = await pool.query(query, [userId, transferId]);
-  return (result.rowCount ?? 0) > 0;
-};
 
 export const incrementTransferViewCount = async (
   transferId: string,
