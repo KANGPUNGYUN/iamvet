@@ -377,7 +377,7 @@ export default function HospitalProfileEditPage() {
 
   // 동물 타입 매핑 (DB enum -> 한글 표시)
   const ANIMAL_TYPE_LABELS = {
-    DOG: "반려견",
+    DOG: "개",
     CAT: "고양이",
     EXOTIC: "특수동물",
     LARGE_ANIMAL: "대동물",

@@ -114,7 +114,6 @@ model resumes {
   updatedAt                   DateTime
   deletedAt                   DateTime?
   viewCount                   Int                           @default(0)
-  users                       users                         @relation(fields: [userId], references: [id], onDelete: Cascade)
   contact_inquiries           contact_inquiries[]
   resume_educations           resume_educations[]
   resume_evaluations          resume_evaluations[]
@@ -123,6 +122,7 @@ model resumes {
   resume_likes                resume_likes[]
   resume_medical_capabilities resume_medical_capabilities[]
   resume_portfolio_files      resume_portfolio_files[]
+  users                       users                         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model forum_comments {
@@ -431,7 +431,7 @@ model notifications {
 }
 
 model resume_educations {
-  id               String           @id
+  id               String    @id
   resumeId         String
   degree           String
   graduationStatus String
@@ -441,59 +441,59 @@ model resume_educations {
   totalGpa         String?
   startDate        DateTime?
   endDate          DateTime?
-  sortOrder        Int              @default(0)
-  createdAt        DateTime         @default(now())
+  sortOrder        Int       @default(0)
+  createdAt        DateTime  @default(now())
   updatedAt        DateTime
-  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumes          resumes   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_evaluations {
-  id               String           @id
-  resumeId         String
-  userId           String
-  rating           Int
-  comment          String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  deletedAt        DateTime?
-  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users            users            @relation(fields: [userId], references: [id])
+  id        String    @id
+  resumeId  String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  deletedAt DateTime?
+  resumes   resumes   @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users     users     @relation(fields: [userId], references: [id])
 
   @@unique([resumeId, userId])
 }
 
 model resume_experiences {
-  id               String           @id
-  resumeId         String
-  hospitalName     String
-  mainTasks        String
-  startDate        DateTime?
-  endDate          DateTime?
-  sortOrder        Int              @default(0)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  id           String    @id
+  resumeId     String
+  hospitalName String
+  mainTasks    String
+  startDate    DateTime?
+  endDate      DateTime?
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+  resumes      resumes   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_licenses {
-  id               String           @id
-  resumeId         String
-  name             String
-  issuer           String
-  acquiredDate     DateTime?
-  sortOrder        Int              @default(0)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  id           String    @id
+  resumeId     String
+  name         String
+  issuer       String
+  acquiredDate DateTime?
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+  resumes      resumes   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_likes {
-  id               String           @id
-  userId           String
-  resumeId         String
-  createdAt        DateTime         @default(now())
-  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  users            users            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id
+  userId    String
+  resumeId  String
+  createdAt DateTime @default(now())
+  resumes   resumes  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, resumeId])
   @@index([resumeId])
@@ -501,33 +501,32 @@ model resume_likes {
 }
 
 model resume_medical_capabilities {
-  id               String           @id
-  resumeId         String
-  field            String
-  proficiency      String
-  description      String?
-  others           String?
-  sortOrder        Int              @default(0)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  id          String   @id
+  resumeId    String
+  field       String
+  proficiency String
+  description String?
+  others      String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  resumes     resumes  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_portfolio_files {
-  id               String           @id
-  resumeId         String
-  fileName         String
-  fileUrl          String
-  fileType         String?
-  fileSize         Int?
-  sortOrder        Int              @default(0)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id        String   @id
+  resumeId  String
+  fileName  String
+  fileUrl   String
+  fileType  String?
+  fileSize  Int?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  resumes   resumes  @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([resumeId], map: "resume_portfolio_files_resumeid_idx")
 }
-
 
 model social_accounts {
   id           String   @id
@@ -621,7 +620,6 @@ model users {
   comment_replies                                             comment_replies[]
   contact_inquiries_contact_inquiries_recipient_idTousers     contact_inquiries[]          @relation("contact_inquiries_recipient_idTousers")
   contact_inquiries_contact_inquiries_sender_idTousers        contact_inquiries[]          @relation("contact_inquiries_sender_idTousers")
-  resumes                                                     resumes?
   email_verifications                                         email_verifications[]
   forum_bookmarks                                             forum_bookmarks[]
   forum_comments                                              forum_comments[]
@@ -645,6 +643,7 @@ model users {
   notifications_notifications_senderIdTousers                 notifications[]              @relation("notifications_senderIdTousers")
   resume_evaluations                                          resume_evaluations[]
   resume_likes                                                resume_likes[]
+  resumes                                                     resumes?
   social_accounts                                             social_accounts[]
   transfer_likes                                              transfer_likes[]
   transfers                                                   transfers[]

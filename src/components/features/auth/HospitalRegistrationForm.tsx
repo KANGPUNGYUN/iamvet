@@ -1122,7 +1122,7 @@ export const HospitalRegistrationForm: React.FC<
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: "DOG", label: "반려견" },
+                  { value: "DOG", label: "개" },
                   { value: "CAT", label: "고양이" },
                   { value: "EXOTIC", label: "특수동물" },
                   { value: "LARGE_ANIMAL", label: "대동물" },

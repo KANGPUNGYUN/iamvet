@@ -1374,7 +1374,8 @@ export const getHospitalProfile = async (userId: string) => {
 export const getHospitalByUserId = async (userId: string) => {
   const query = `
     SELECT 
-      u.id,
+      h.id,
+      u.id as "userId",
       h."hospitalName",
       h."businessNumber",
       h."hospitalAddress",
@@ -5056,7 +5057,8 @@ export const getForumBookmarks = async (userId: string) => {
       u."profileImage" as author_profile_image,
       COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       COALESCE(v."realName", vs."realName", h."representativeName", h."hospitalName") as author_display_name,
-      fb.created_at as bookmarked_date
+      fb.created_at as bookmarked_date,
+      COALESCE((SELECT COUNT(*)::int FROM forum_comments WHERE forum_id = f.id AND "deletedAt" IS NULL), 0) as "commentCount"
     FROM forum_bookmarks fb
     JOIN forum_posts f ON fb.forum_id = f.id
     LEFT JOIN users u ON f."userId" = u.id

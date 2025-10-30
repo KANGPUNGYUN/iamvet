@@ -2,7 +2,7 @@
 
 // Business type mappings (진료 동물)
 export const businessTypeMapping: Record<string, string> = {
-  DOG: "반려견",
+  DOG: "개",
   CAT: "고양이",
   EXOTIC: "특수동물",
   LARGE_ANIMAL: "대동물",
