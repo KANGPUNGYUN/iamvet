@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
           "preferredRegions",
           "createdAt",
           "updatedAt"
-        FROM detailed_resumes 
+        FROM resumes 
         WHERE "deletedAt" IS NULL
         ORDER BY "createdAt" DESC
         LIMIT 10

@@ -1,22 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  getDetailedResume, 
-  saveDetailedResume, 
-  type DetailedResume, 
-  type DetailedResumeData 
+  getResume, 
+  saveResume, 
+  type Resume, 
+  type ResumeData 
 } from '@/actions/auth';
 
 // React Query 키 상수
-export const detailedResumeKeys = {
-  resume: ['detailedResume'] as const,
+export const resumeKeys = {
+  resume: ['resume'] as const,
 };
 
 // 상세 이력서 조회 훅
-export function useDetailedResume() {
+export function useResume() {
   return useQuery({
-    queryKey: detailedResumeKeys.resume,
-    queryFn: async (): Promise<DetailedResume | null> => {
-      const result = await getDetailedResume();
+    queryKey: resumeKeys.resume,
+    queryFn: async (): Promise<Resume | null> => {
+      const result = await getResume();
       if (result.success && result.resume) {
         return result.resume;
       }
@@ -38,12 +38,12 @@ export function useDetailedResume() {
 }
 
 // 상세 이력서 저장/업데이트 훅
-export function useSaveDetailedResume() {
+export function useSaveResume() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: DetailedResumeData) => {
-      const result = await saveDetailedResume(data);
+    mutationFn: async (data: ResumeData) => {
+      const result = await saveResume(data);
       if (!result.success) {
         throw new Error(result.error || '이력서 저장에 실패했습니다.');
       }
@@ -51,7 +51,7 @@ export function useSaveDetailedResume() {
     },
     onSuccess: () => {
       // 이력서 저장 성공 시 캐시 무효화하여 최신 데이터 다시 가져오기
-      queryClient.invalidateQueries({ queryKey: detailedResumeKeys.resume });
+      queryClient.invalidateQueries({ queryKey: resumeKeys.resume });
     },
     onError: (error) => {
       console.error('Resume save error:', error);
@@ -60,8 +60,8 @@ export function useSaveDetailedResume() {
 }
 
 // 이력서 존재 여부 확인 훅
-export function useHasDetailedResume() {
-  const { data: resume, isLoading, error } = useDetailedResume();
+export function useHasResume() {
+  const { data: resume, isLoading, error } = useResume();
   
   return {
     hasResume: !!resume,

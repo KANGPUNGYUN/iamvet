@@ -909,7 +909,7 @@ export const getRecentJobs = async (limit: number = 10) => {
 // 인재정보 관련 헬퍼 함수들
 // ============================================================================
 
-export const incrementResumeViewCount = async (
+export const incrementVeterinarianResumeViewCount = async (
   veterinarianId: string,
   userIdentifier: string,
   userId?: string
@@ -920,7 +920,7 @@ export const incrementResumeViewCount = async (
 export const getResumesWithPagination = async (params: any) => {
   console.log("[getResumesWithPagination] 파라미터:", params);
 
-  // detailed_resumes 테이블과 users 테이블을 JOIN하여 조회 (lastLoginAt 포함)
+  // resumes 테이블과 users 테이블을 JOIN하여 조회 (lastLoginAt 포함)
   let query = `
     SELECT 
       dr.id,
@@ -937,7 +937,7 @@ export const getResumesWithPagination = async (params: any) => {
       dr."createdAt",
       dr."updatedAt",
       u."lastLoginAt"
-    FROM detailed_resumes dr
+    FROM resumes dr
     JOIN users u ON dr."userId" = u.id
     WHERE u."deletedAt" IS NULL AND u."isActive" = true
   `;
@@ -3299,7 +3299,7 @@ export const getApplicationById = async (applicationId: string) => {
     JOIN hospitals h ON hu.id = h."userId"
     JOIN users u ON a."veterinarianId" = u.id
     LEFT JOIN veterinarians v ON u.id = v."userId"
-    LEFT JOIN detailed_resumes dr ON dr."userId" = u.id
+    LEFT JOIN resumes dr ON dr."userId" = u.id
     WHERE a.id = $1
   `;
   const result = await pool.query(query, [applicationId]);
@@ -3354,7 +3354,7 @@ export const getHospitalApplicants = async (hospitalId: string) => {
     JOIN users u ON a."veterinarianId" = u.id
     LEFT JOIN veterinarians v ON u.id = v."userId"
     JOIN jobs j ON a."jobId" = j.id
-    LEFT JOIN detailed_resumes dr ON dr."userId" = u.id
+    LEFT JOIN resumes dr ON dr."userId" = u.id
     WHERE j."hospitalId" = $1
     ORDER BY a."appliedAt" DESC
   `;
@@ -3391,7 +3391,7 @@ export const getUserBookmarks = async (userId: string) => {
     WHERE jb.user_id = $1 AND jb.deleted_at IS NULL
     UNION
     SELECT 'resume' as type, r.* FROM resume_bookmarks rb
-    JOIN detailed_resumes r ON rb.resume_id = r.id
+    JOIN resumes r ON rb.resume_id = r.id
     WHERE rb.user_id = $1 AND rb.deleted_at IS NULL
   `;
   const result = await pool.query(query, [userId]);
@@ -3647,7 +3647,7 @@ export const incrementViewCount = async (
       lecture: "lectures",
       resume: "users", // Changed from veterinarian_profiles to users
       transfer: "transfers",
-      detailed_resume: "detailed_resumes",
+      detailed_resume: "resumes",
     };
 
     const tableName = tableMap[contentType];
@@ -3703,7 +3703,7 @@ export const incrementForumViewCount = async (
   return incrementViewCount("forum", forumId, userIdentifier, userId);
 };
 
-export const incrementDetailedResumeViewCount = async (
+export const incrementResumeViewCount = async (
   resumeId: string,
   userIdentifier: string,
   userId?: string
@@ -3967,7 +3967,7 @@ export const getRecentLectures = async (limit = 5) => {
 };
 
 export const getRecentResumes = async (limit = 5) => {
-  const query = `SELECT * FROM detailed_resumes WHERE "deletedAt" IS NULL ORDER BY "createdAt" DESC LIMIT $1`;
+  const query = `SELECT * FROM resumes WHERE "deletedAt" IS NULL ORDER BY "createdAt" DESC LIMIT $1`;
   const result = await pool.query(query, [limit]);
   return result.rows;
 };

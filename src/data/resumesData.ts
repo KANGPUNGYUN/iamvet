@@ -11,7 +11,7 @@ export interface ResumeListData {
   createdAt: Date;
 }
 
-export interface DetailedResumeData {
+export interface ResumeData {
   id: string;
   name: string;
   profileImage: string | null;
@@ -95,9 +95,9 @@ export interface DetailedResumeData {
   };
 }
 
-export type ResumeData = ResumeListData;
+export type ResumeListDataType = ResumeListData;
 
-export const allResumeData: ResumeData[] = [
+export const allResumeData: ResumeListData[] = [
   {
     id: "1",
     name: "김수희",
@@ -253,7 +253,7 @@ export const popularResumesData = [
   },
 ];
 
-export const detailedResumeData: DetailedResumeData[] = [
+export const resumeData: ResumeData[] = [
   {
     id: "1",
     name: "김수희",
@@ -796,8 +796,8 @@ export const detailedResumeData: DetailedResumeData[] = [
   },
 ];
 
-export const getResumeById = (id: string): DetailedResumeData | undefined => {
-  const detailedResume = detailedResumeData.find(resume => resume.id === id);
+export const getResumeById = (id: string): ResumeData | undefined => {
+  const detailedResume = resumeData.find(resume => resume.id === id);
   
   if (detailedResume) {
     return detailedResume;
@@ -886,6 +886,6 @@ export const getResumeById = (id: string): DetailedResumeData | undefined => {
   };
 };
 
-export const getAllDetailedResumes = (): DetailedResumeData[] => {
-  return detailedResumeData;
+export const getAllResumes = (): ResumeData[] => {
+  return resumeData;
 };

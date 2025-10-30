@@ -87,7 +87,7 @@ model contact_inquiries {
   @@index([sender_id])
 }
 
-model detailed_resumes {
+model resumes {
   id                          String                        @id
   userId                      String                        @unique
   photo                       String?
@@ -115,6 +115,7 @@ model detailed_resumes {
   deletedAt                   DateTime?
   viewCount                   Int                           @default(0)
   users                       users                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact_inquiries           contact_inquiries[]
   resume_educations           resume_educations[]
   resume_evaluations          resume_evaluations[]
   resume_experiences          resume_experiences[]
@@ -443,7 +444,7 @@ model resume_educations {
   sortOrder        Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_evaluations {
@@ -455,7 +456,7 @@ model resume_evaluations {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
   deletedAt        DateTime?
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users            users            @relation(fields: [userId], references: [id])
 
   @@unique([resumeId, userId])
@@ -471,7 +472,7 @@ model resume_experiences {
   sortOrder        Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_licenses {
@@ -483,7 +484,7 @@ model resume_licenses {
   sortOrder        Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_likes {
@@ -491,7 +492,7 @@ model resume_likes {
   userId           String
   resumeId         String
   createdAt        DateTime         @default(now())
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   users            users            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, resumeId])
@@ -509,7 +510,7 @@ model resume_medical_capabilities {
   sortOrder        Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model resume_portfolio_files {
@@ -522,29 +523,11 @@ model resume_portfolio_files {
   sortOrder        Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime
-  detailed_resumes detailed_resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  resumes resumes @relation(fields: [resumeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([resumeId], map: "resume_portfolio_files_resumeid_idx")
 }
 
-model resumes {
-  id                String              @id
-  veterinarianId    String
-  title             String
-  introduction      String?
-  experience        String?
-  education         String?
-  certifications    String?
-  skills            String?
-  preferredSalary   Int?
-  preferredLocation String?
-  availableFrom     DateTime?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime
-  deletedAt         DateTime?
-  contact_inquiries contact_inquiries[]
-  users             users               @relation(fields: [veterinarianId], references: [id])
-}
 
 model social_accounts {
   id           String   @id
@@ -638,7 +621,7 @@ model users {
   comment_replies                                             comment_replies[]
   contact_inquiries_contact_inquiries_recipient_idTousers     contact_inquiries[]          @relation("contact_inquiries_recipient_idTousers")
   contact_inquiries_contact_inquiries_sender_idTousers        contact_inquiries[]          @relation("contact_inquiries_sender_idTousers")
-  detailed_resumes                                            detailed_resumes?
+  resumes                                                     resumes?
   email_verifications                                         email_verifications[]
   forum_bookmarks                                             forum_bookmarks[]
   forum_comments                                              forum_comments[]
@@ -662,7 +645,6 @@ model users {
   notifications_notifications_senderIdTousers                 notifications[]              @relation("notifications_senderIdTousers")
   resume_evaluations                                          resume_evaluations[]
   resume_likes                                                resume_likes[]
-  resumes                                                     resumes[]
   social_accounts                                             social_accounts[]
   transfer_likes                                              transfer_likes[]
   transfers                                                   transfers[]

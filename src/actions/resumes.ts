@@ -65,7 +65,7 @@ export async function getResumeByIdAction(id: string) {
         dr."birthDate",
         dr."createdAt",
         dr."updatedAt"
-      FROM detailed_resumes dr
+      FROM resumes dr
       WHERE dr.id = ${id}
     `;
     console.log("[getResumeByIdAction] 조회 결과:", result.length);
@@ -90,7 +90,7 @@ export async function deleteResumeAction(id: string) {
 
     // detailed_resumes 테이블에서 해당 ID의 이력서 삭제
     const result = await sql`
-      DELETE FROM detailed_resumes
+      DELETE FROM resumes
       WHERE id = ${id}
     `;
     

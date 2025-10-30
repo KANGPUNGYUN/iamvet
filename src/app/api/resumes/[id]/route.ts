@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sql } from "@/lib/db";
-import { incrementDetailedResumeViewCount } from "@/lib/database";
+import { incrementResumeViewCount } from "@/lib/database";
 
 export async function GET(
   request: NextRequest,
@@ -77,7 +77,7 @@ export async function GET(
         dr."viewCount",
         dr."createdAt",
         dr."updatedAt"
-      FROM detailed_resumes dr
+      FROM resumes dr
       WHERE dr.id = ${veterinarianId}
     `;
 
@@ -159,7 +159,7 @@ export async function GET(
 
     // 조회수 증가 (회원/비회원 모두 처리, 24시간 중복 방지)
     const userIdentifier = generateUserIdentifier(request, userId);
-    await incrementDetailedResumeViewCount(veterinarianId, userIdentifier, userId);
+    await incrementResumeViewCount(veterinarianId, userIdentifier, userId);
 
     // 좋아요 여부 확인 (로그인한 경우에만)
     let isLiked = false;

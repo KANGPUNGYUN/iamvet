@@ -46,7 +46,7 @@ export async function GET(
         v."realName" as "veterinarianName",
         v."licenseImage",
         v."birthDate"
-      FROM detailed_resumes dr
+      FROM resumes dr
       JOIN users u ON dr."userId" = u.id
       LEFT JOIN veterinarians v ON u.id = v."userId"
       WHERE dr.id = ${resumeId} AND dr."deletedAt" IS NULL
@@ -267,7 +267,7 @@ export async function PUT(
     // 이력서 존재 확인
     const resumeResult = await sql`
       SELECT dr.id, u."isActive", dr."userId"
-      FROM detailed_resumes dr
+      FROM resumes dr
       JOIN users u ON dr."userId" = u.id
       WHERE dr.id = ${resumeId} AND dr."deletedAt" IS NULL
     `;
@@ -287,7 +287,7 @@ export async function PUT(
         await sql`
           UPDATE users 
           SET "isActive" = true, "updatedAt" = NOW()
-          WHERE id = (SELECT "userId" FROM detailed_resumes WHERE id = ${resumeId})
+          WHERE id = (SELECT "userId" FROM resumes WHERE id = ${resumeId})
         `;
         actionDescription = "승인";
         break;
@@ -296,7 +296,7 @@ export async function PUT(
         await sql`
           UPDATE users 
           SET "isActive" = false, "updatedAt" = NOW()
-          WHERE id = (SELECT "userId" FROM detailed_resumes WHERE id = ${resumeId})
+          WHERE id = (SELECT "userId" FROM resumes WHERE id = ${resumeId})
         `;
         actionDescription = "정지";
         break;
@@ -305,14 +305,14 @@ export async function PUT(
         await sql`
           UPDATE users 
           SET "isActive" = true, "updatedAt" = NOW()
-          WHERE id = (SELECT "userId" FROM detailed_resumes WHERE id = ${resumeId})
+          WHERE id = (SELECT "userId" FROM resumes WHERE id = ${resumeId})
         `;
         actionDescription = "활성화";
         break;
 
       case "delete":
         await sql`
-          UPDATE detailed_resumes 
+          UPDATE resumes 
           SET "deletedAt" = NOW(), "updatedAt" = NOW()
           WHERE id = ${resumeId}
         `;
@@ -324,7 +324,7 @@ export async function PUT(
         await sql`
           UPDATE users 
           SET "isActive" = true, "updatedAt" = NOW()
-          WHERE id = (SELECT "userId" FROM detailed_resumes WHERE id = ${resumeId})
+          WHERE id = (SELECT "userId" FROM resumes WHERE id = ${resumeId})
         `;
         actionDescription = "인증";
         break;

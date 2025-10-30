@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Skip resume validation since we're using DetailedResume IDs
+    // Skip resume validation since we're using Resume IDs
     // The resumeId field is kept for reference but doesn't enforce FK constraint
 
     // Validate jobId if provided

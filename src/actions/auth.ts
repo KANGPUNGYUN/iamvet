@@ -1511,7 +1511,7 @@ export async function getVeterinarianProfile(): Promise<{
 }
 
 // 상세 이력서 타입 정의
-export interface DetailedResumeData {
+export interface ResumeData {
   // 기본 정보
   photo?: string;
   name: string;
@@ -1569,7 +1569,7 @@ export interface DetailedResumeData {
   }>;
 }
 
-export interface DetailedResume {
+export interface Resume {
   id: string;
   userId: string;
   photo?: string;
@@ -1629,9 +1629,9 @@ export interface DetailedResume {
 }
 
 // 상세 이력서 조회
-export async function getDetailedResume(): Promise<{
+export async function getResume(): Promise<{
   success: boolean;
-  resume?: DetailedResume;
+  resume?: Resume;
   error?: string;
 }> {
   try {
@@ -1652,7 +1652,7 @@ export async function getDetailedResume(): Promise<{
 
     // 메인 이력서 정보 조회
     const resumeResult = await sql`
-      SELECT * FROM detailed_resumes 
+      SELECT * FROM resumes 
       WHERE "userId" = ${userResult.user.id} 
       AND "deletedAt" IS NULL
     `;
@@ -1743,7 +1743,7 @@ export async function getDetailedResume(): Promise<{
 }
 
 // 상세 이력서 저장/업데이트
-export async function saveDetailedResume(data: DetailedResumeData): Promise<{
+export async function saveResume(data: ResumeData): Promise<{
   success: boolean;
   resumeId?: string;
   error?: string;
@@ -1768,7 +1768,7 @@ export async function saveDetailedResume(data: DetailedResumeData): Promise<{
 
     // 기존 이력서가 있는지 확인
     const existingResume = await sql`
-      SELECT id FROM detailed_resumes 
+      SELECT id FROM resumes 
       WHERE "userId" = ${userId} 
       AND "deletedAt" IS NULL
     `;
@@ -1780,7 +1780,7 @@ export async function saveDetailedResume(data: DetailedResumeData): Promise<{
       resumeId = existingResume[0].id;
 
       await sql`
-        UPDATE detailed_resumes SET
+        UPDATE resumes SET
           photo = ${data.photo || null},
           name = ${data.name},
           "birthDate" = ${data.birthDate || null},
@@ -1817,7 +1817,7 @@ export async function saveDetailedResume(data: DetailedResumeData): Promise<{
       resumeId = createId();
 
       await sql`
-        INSERT INTO detailed_resumes (
+        INSERT INTO resumes (
           id, "userId", photo, name, "birthDate", introduction, phone, email,
           "phonePublic", "emailPublic", position, specialties, "preferredRegions",
           "expectedSalary", "workTypes", "startDate", "preferredWeekdays",

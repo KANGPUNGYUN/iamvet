@@ -56,7 +56,7 @@ export interface ResumePortfolioFile {
   fileSize?: number;
 }
 
-// 이력서 데이터 타입 정의 (detailed_resumes 테이블 스키마에 맞춤)
+// 이력서 데이터 타입 정의 (resumes 테이블 스키마에 맞춤)
 export interface VeterinarianResume {
   id: string;
   userId: string;
@@ -230,7 +230,7 @@ export async function getVeterinarianResumeAction(token: string): Promise<{
         "preferredRegions", "expectedSalary", "workTypes", "startDate", 
         "preferredWeekdays", "weekdaysNegotiable", "workStartTime", "workEndTime", 
         "workTimeNegotiable", "createdAt", "updatedAt"
-      FROM detailed_resumes 
+      FROM resumes 
       WHERE "userId" = ${userId}
     `;
 
@@ -456,7 +456,7 @@ export async function saveVeterinarianResumeAction(
       resumeId = existingResume.data.id;
       
       await sql`
-        UPDATE detailed_resumes SET
+        UPDATE resumes SET
           name = ${updateData.name},
           introduction = ${updateData.introduction || null},
           "selfIntroduction" = ${updateData.selfIntroduction || null},
@@ -495,7 +495,7 @@ export async function saveVeterinarianResumeAction(
       resumeId = `resume_${userId}_${Date.now()}`;
       
       await sql`
-        INSERT INTO detailed_resumes 
+        INSERT INTO resumes 
         (id, "userId", name, introduction, "selfIntroduction", photo, "birthDate", 
          phone, email, "phonePublic", "emailPublic", position, specialties, 
          "preferredRegions", "expectedSalary", "workTypes", "startDate", 

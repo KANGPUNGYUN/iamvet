@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
             ))::INTEGER,
             0
           ) as "experienceYears"
-        FROM detailed_resumes dr
+        FROM resumes dr
         JOIN users u ON dr."userId" = u.id
         LEFT JOIN veterinarians v ON u.id = v."userId"
         LEFT JOIN resume_educations re ON dr.id = re."resumeId" 
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       `,
       sql`
         SELECT COUNT(*) as total
-        FROM detailed_resumes dr
+        FROM resumes dr
         WHERE dr."deletedAt" IS NULL
       `
     ]);
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
         0 as pending,
         COUNT(*) as verified,
         0 as unverified
-      FROM detailed_resumes dr
+      FROM resumes dr
       JOIN users u ON dr."userId" = u.id
       WHERE dr."deletedAt" IS NULL
     `;

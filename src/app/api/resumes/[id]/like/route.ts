@@ -12,7 +12,7 @@ export const POST = withAuth(async (
     const resolvedParams = await params;
     const resumeId = resolvedParams.id;
 
-    const resume = await (prisma as any).detailed_resumes.findUnique({
+    const resume = await (prisma as any).resumes.findUnique({
       where: { id: resumeId }
     });
 

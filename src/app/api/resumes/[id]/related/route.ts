@@ -46,7 +46,7 @@ export async function GET(
         dr."preferredRegions",
         dr."workTypes",
         dr."expectedSalary"
-      FROM detailed_resumes dr
+      FROM resumes dr
       WHERE dr.id = ${resumeId}
     `;
 
@@ -71,7 +71,7 @@ export async function GET(
           specialties,
           "preferredRegions",
           "expectedSalary"::numeric
-        FROM detailed_resumes
+        FROM resumes
         WHERE id = ${resumeId}
       ),
       scored_resumes AS (
@@ -105,7 +105,7 @@ export async function GET(
             AND ABS(dr."expectedSalary"::numeric - cr."expectedSalary") <= 1000 THEN 1
             ELSE 0
           END as relevance_score
-        FROM detailed_resumes dr
+        FROM resumes dr
         CROSS JOIN current_resume cr
         WHERE dr.id != ${resumeId}
           AND dr."deletedAt" IS NULL

@@ -21,7 +21,7 @@ import HospitalCard from "@/components/ui/HospitalCard";
 import { useJobDetail } from "@/hooks/api/useJobDetail";
 import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/api/useAuth";
-import { useHasDetailedResume } from "@/hooks/api/useDetailedResume";
+import { useHasResume } from "@/hooks/api/useResume";
 import { useLikeStore } from "@/stores/likeStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
 import axios from "axios";
@@ -71,7 +71,7 @@ export default function JobDetailPage({
     hasResume,
     isLoading: isResumeLoading,
     error: resumeError,
-  } = useHasDetailedResume();
+  } = useHasResume();
 
   // 초기 좋아요 상태 동기화
   useEffect(() => {

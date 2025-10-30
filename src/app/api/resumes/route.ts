@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
         // 좋아요한 이력서들만 조회
         const offset = ((params.page || 1) - 1) * (params.limit || 10);
         
-        // DetailedResume 모델 기준으로 직접 쿼리
+        // Resume 모델 기준으로 직접 쿼리
         let orderBy: any = {};
         switch (params.sort) {
           case 'oldest':
@@ -93,14 +93,14 @@ export async function GET(request: NextRequest) {
             orderBy = { createdAt: 'desc' };
         }
         
-        const total = await (prisma as any).detailed_resumes.count({ 
+        const total = await (prisma as any).resumes.count({ 
           where: { 
             id: { in: likedResumeIds },
             users: { deletedAt: null, userType: 'VETERINARIAN' }
           } 
         });
         
-        const resumes = await (prisma as any).detailed_resumes.findMany({
+        const resumes = await (prisma as any).resumes.findMany({
           where: { 
             id: { in: likedResumeIds },
             users: { deletedAt: null, userType: 'VETERINARIAN' }
