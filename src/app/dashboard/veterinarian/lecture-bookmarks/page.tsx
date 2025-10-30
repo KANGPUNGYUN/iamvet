@@ -440,7 +440,7 @@ export default function VeterinarianLectureBookmarksPage() {
             <div className="space-y-4">
               {/* 제목과 필터 버튼 */}
               <div className="flex justify-between items-center">
-                <h1 className="font-text text-[28px] text-light text-[#3B394D]">
+                <h1 className="text-primary font-text text-[24px] text-bold mb-6">
                   강의 북마크
                 </h1>
                 <button
