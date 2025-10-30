@@ -141,6 +141,11 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             label: "채용공고 북마크",
             href: "/dashboard/veterinarian/job-bookmarks",
           },
+          {
+            id: "forum-bookmarks",
+            label: "임상포럼 북마크",
+            href: "/dashboard/veterinarian/forum-bookmarks",
+          },
         ],
       };
     } else {
@@ -163,6 +168,11 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             id: "favorite-talents",
             label: "이력서 북마크",
             href: "/dashboard/hospital/favorite-talents",
+          },
+          {
+            id: "forum-bookmarks",
+            label: "임상포럼 북마크",
+            href: "/dashboard/hospital/forum-bookmarks",
           },
         ],
       };
