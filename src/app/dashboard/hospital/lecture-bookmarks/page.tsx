@@ -302,7 +302,7 @@ export default function HospitalLectureBookmarksPage() {
               {/* 제목 */}
               <div className="flex justify-between items-center self-stretch">
                 <h1 className="text-primary font-text text-[24px] text-bold">
-                  북마크한 강의
+                  강의 북마크
                 </h1>
 
                 {/* 검색바 */}
@@ -422,7 +422,7 @@ export default function HospitalLectureBookmarksPage() {
               {/* 제목과 필터 버튼 */}
               <div className="flex justify-between items-center">
                 <h1 className="font-title text-[28px] title-light text-[#3B394D]">
-                  북마크한 강의
+                  강의 북마크
                 </h1>
                 <button
                   onClick={() => setIsMobileFilterOpen(true)}
