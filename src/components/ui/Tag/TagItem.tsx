@@ -48,7 +48,7 @@ const TagItem: React.FC<TagProps> = ({
   // 반응형 패딩과 폰트 사이즈를 위한 함수
   const getResponsiveStyles = () => {
     return {
-      padding: isMobile ? "3px 10px" : "6px 16px",
+      padding: isMobile ? "3px 10px 2px" : "6px 16px 4px",
       fontSize: isMobile ? "13px" : "14px",
     };
   };
