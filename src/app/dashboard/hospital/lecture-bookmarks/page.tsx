@@ -250,6 +250,7 @@ export default function HospitalLectureBookmarksPage() {
     "영상진단",
     "마취학",
     "치과",
+    "기타",
   ];
 
   const handleCategoryChange = (categories: string[]) => {
