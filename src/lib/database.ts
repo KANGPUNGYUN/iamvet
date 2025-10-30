@@ -4682,6 +4682,17 @@ export const deleteTransfer = async (transferId: string) => {
 
 export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
+
+  // Count query
+  const countQuery = `
+    SELECT COUNT(*) as total
+    FROM transfers 
+    WHERE "deletedAt" IS NULL AND status != 'DISABLED'
+  `;
+  const countResult = await pool.query(countQuery);
+  const total = Number(countResult.rows[0]?.total || 0); // Ensure it's a Number
+
+  // Data query
   const query = `
     SELECT id, "userId", title, description, location, base_address, detail_address, sido, sigungu, 
            price, category, images, documents, status, area, views, "createdAt", "updatedAt"
@@ -4691,11 +4702,20 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
     LIMIT $1 OFFSET $2
   `;
   const result = await pool.query(query, [limit, offset]);
-  return result.rows.map(transfer => ({
+
+  const transfers = result.rows.map(transfer => ({
     ...transfer,
     images: transfer.images ? (typeof transfer.images === 'string' ? JSON.parse(transfer.images) : transfer.images) : [],
     documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
   }));
+
+  return {
+    data: transfers,
+    total: total,
+    page: page,
+    limit: limit,
+    totalPages: Math.ceil(total / limit),
+  };
 };
 
 export const createLecture = async (lectureData: any) => {

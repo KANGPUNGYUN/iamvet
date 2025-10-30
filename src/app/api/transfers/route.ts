@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
 
     let transfers;
     let total = 0;
+    let totalPages = 0;
 
     if (bookmarked && userId) {
       // 사용자가 좋아요한 양도양수 ID들을 먼저 조회
@@ -85,7 +86,10 @@ export async function GET(request: NextRequest) {
           whereClause.category = { in: categories };
         }
 
-        total = await (prisma as any).transfers.count({ where: whereClause });
+        total = Number(
+          await (prisma as any).transfers.count({ where: whereClause })
+        );
+        totalPages = Math.ceil(total / limit);
 
         const result = await (prisma as any).transfers.findMany({
           where: whereClause,
@@ -112,6 +116,7 @@ export async function GET(request: NextRequest) {
             sido: true,
             sigungu: true,
             views: true,
+            images: true,
             users: {
               select: {
                 profileImage: true,
@@ -122,15 +127,21 @@ export async function GET(request: NextRequest) {
 
         transfers = result.map((transfer: any) => ({
           ...transfer,
+          views: Number(transfer.views), // Convert BigInt to Number
+          price: Number(transfer.price), // Convert BigInt to Number
+          area: Number(transfer.area), // Convert BigInt to Number
           hospitalName: "병원", // 기본값 설정 (hospital 정보는 별도 조회 필요)
           hospitalType: "병원", // 기본값 설정
           categories: transfer.category,
+          hospitalLogo: transfer.users?.profileImage, // Add hospital logo
         }));
       }
     } else {
       // 일반 양도양수 목록 조회
-      transfers = await getTransfersWithPagination(page, limit);
-      total = transfers.length; // TODO: 실제로는 전체 카운트를 가져와야 함
+      const paginationResult = await getTransfersWithPagination(page, limit);
+      transfers = paginationResult.data;
+      total = paginationResult.total;
+      totalPages = paginationResult.totalPages;
     }
 
     // 좋아요 정보 조회 (로그인한 경우에만)
@@ -158,8 +169,6 @@ export async function GET(request: NextRequest) {
           isLiked: userId ? userLikes.includes(transfer.id) : false,
         }))
       : [];
-
-    const totalPages = Math.ceil(total / limit);
 
     console.log(`[Transfers API] Retrieved ${transfers.length} transfers`);
 

@@ -236,6 +236,8 @@ export default function VeterinarianTransferBookmarksPage() {
     }
   };
 
+  console.log(transfers, "transfers");
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px]">
