@@ -49,7 +49,7 @@ import {
   Comment as CommentIcon,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
-import { uploadImage, deleteImage } from "@/lib/s3";
+import { uploadFile, deleteImage } from "@/lib/s3";
 import { isS3Url } from "@/lib/s3-client";
 
 interface Lecture {
@@ -212,26 +212,17 @@ export default function LecturesManagement() {
 
         try {
           // S3에 파일 업로드
-          const result = await uploadImage(file, "lecture-materials");
+          const url = await uploadFile(file, "lecture-materials");
 
-          if (result.success && result.url) {
-            return {
-              id: `file_${Date.now()}_${Math.random()
-                .toString(36)
-                .substring(2, 11)}`,
-              name: file.name,
-              type: fileType,
-              size: file.size,
-              url: result.url,
-            };
-          } else {
-            alert(
-              `파일 업로드 실패: ${file.name} - ${
-                result.error || "알 수 없는 오류"
-              }`
-            );
-            return null;
-          }
+          return {
+            id: `file_${Date.now()}_${Math.random()
+              .toString(36)
+              .substring(2, 11)}`,
+            name: file.name,
+            type: fileType,
+            size: file.size,
+            url: url,
+          };
         } catch (uploadError) {
           console.error("File upload error:", uploadError);
           alert(`파일 업로드 중 오류 발생: ${file.name}`);
