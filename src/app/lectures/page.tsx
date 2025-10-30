@@ -33,7 +33,7 @@ export default function LecturesPage() {
   const {
     setLectureLike,
     toggleLectureLike,
-    initializeLectureLikes,
+    syncLectureLikes,
     isLectureLiked,
   } = useLikeStore();
 
@@ -181,7 +181,7 @@ export default function LecturesPage() {
         setTotalLectures(lecturesData.total || 0);
         setTotalPages(lecturesData.totalPages || 0);
 
-        // 초기 좋아요 상태 동기화 (Zustand 스토어 사용)
+        // 초기 좋아요 상태 동기화 (Zustand 스토어 사용) - 스마트 동기화 사용으로 변경
         const likedLectureIds = lectures
           .filter((lecture: any) => lecture.isLiked)
           .map((lecture: any) => lecture.id);
@@ -190,7 +190,8 @@ export default function LecturesPage() {
           "[LecturesPage] 서버에서 받은 좋아요 강의:",
           likedLectureIds
         );
-        initializeLectureLikes(likedLectureIds);
+        // initializeLectureLikes 대신 syncLectureLikes 사용 - 최근 변경사항 보존
+        syncLectureLikes(likedLectureIds);
       } else {
         throw new Error(
           result.message || "강의 목록을 불러오는데 실패했습니다."
