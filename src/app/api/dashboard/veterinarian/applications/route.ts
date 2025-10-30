@@ -43,7 +43,7 @@ export const GET = withAuth(async (request: NextRequest) => {
           hospitalContact: app.contact_phone && app.contact_email 
             ? `${app.contact_phone} / ${app.contact_email}`
             : app.contact_phone || app.contact_email || '',
-          status: getStatusLabel(app.status),
+          status: app.status,
           hospitalLogo: app.hospital_logo,
         };
       });
@@ -71,19 +71,4 @@ export const GET = withAuth(async (request: NextRequest) => {
   }
 });
 
-// 상태 라벨 변환 함수
-function getStatusLabel(status: string): "서류 대기" | "서류 합격" | "면접 대기" | "불합격" | "최종합격" {
-  switch (status) {
-    case 'ACCEPTED':
-      return '서류 합격';
-    case 'REVIEWING':
-      return '면접 대기';
-    case 'REJECTED':
-      return '불합격';
-    case 'HIRED':
-      return '최종합격';
-    case 'PENDING':
-    default:
-      return '서류 대기';
-  }
-}
+

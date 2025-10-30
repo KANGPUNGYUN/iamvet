@@ -7,6 +7,7 @@ import { Tag } from "./Tag";
 import { ArrowRightIcon } from "public/icons";
 import profileImg from "@/assets/images/profile.png";
 import { useApplications } from "@/hooks/useApplications";
+import { ApplicationStatus, APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS } from "@/constants/applicationStatus";
 
 interface ApplicationData {
   id: number;
@@ -14,7 +15,7 @@ interface ApplicationData {
   applicant: string;
   position: string;
   contact: string;
-  status: "서류 합격" | "면접 대기" | "불합격" | "최종합격";
+  status: ApplicationStatus;
   profileImage?: string;
   jobId: string;
   applicationId: string;
@@ -23,21 +24,6 @@ interface ApplicationData {
 interface RecentApplicationsCardProps {
   applications?: ApplicationData[];
 }
-
-const getStatusVariant = (status: ApplicationData["status"]) => {
-  switch (status) {
-    case "서류 합격":
-      return 2;
-    case "면접 대기":
-      return 1;
-    case "불합격":
-      return 6;
-    case "최종합격":
-      return 1;
-    default:
-      return 3;
-  }
-};
 
 const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
   application,
@@ -85,8 +71,8 @@ const MobileApplicationCard: React.FC<{ application: ApplicationData }> = ({
         <span className="text-[12px] text-gray-500">
           {application.applicationDate}
         </span>
-        <Tag variant={getStatusVariant(application.status)}>
-          {application.status}
+        <Tag variant={APPLICATION_STATUS_COLORS[application.status]}>
+          {APPLICATION_STATUS_LABELS[application.status]}
         </Tag>
       </div>
     </div>
@@ -197,8 +183,8 @@ const RecentApplicationsCard: React.FC<RecentApplicationsCardProps> = () => {
                   {application.contact}
                 </td>
                 <td className="py-[22px]">
-                  <Tag variant={getStatusVariant(application.status)}>
-                    {application.status}
+                  <Tag variant={APPLICATION_STATUS_COLORS[application.status]}>
+                    {APPLICATION_STATUS_LABELS[application.status]}
                   </Tag>
                 </td>
                 <td className="py-[22px] pr-[30px]">

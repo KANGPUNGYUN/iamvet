@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { ApplicationStatus } from "@/constants/applicationStatus";
+
 interface VeterinarianApplication {
   id: number;
   jobId: string;
@@ -7,7 +9,7 @@ interface VeterinarianApplication {
   hospitalName: string;
   hospitalContact: string;
   jobPosition: string;
-  status: "서류 대기" | "서류 합격" | "면접 대기" | "불합격" | "최종합격";
+  status: ApplicationStatus;
   hospitalLogo?: string;
 }
 

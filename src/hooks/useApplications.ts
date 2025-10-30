@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react";
 
+import { ApplicationStatus } from "@/constants/applicationStatus";
+
 interface ApplicationData {
   id: number;
   applicationDate: string;
   applicant: string;
   position: string;
   contact: string;
-  status: "서류 합격" | "면접 대기" | "불합격" | "최종합격";
+  status: ApplicationStatus;
   profileImage?: string;
   jobId: string;
   applicationId: string;

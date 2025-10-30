@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         applicant: hospital?.hospitalName || "병원명 없음",
         position: job?.title || "포지션 정보 없음",
         contact: "-", // 실제 연락처 정보가 있다면 추가
-        status: getKoreanStatus(app.status),
+        status: app.status,
         profileImage: hospital?.profileImage,
         jobId: app.jobId,
         applicationId: app.id,
@@ -114,19 +114,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ApplicationStatus enum을 한국어로 변환
-function getKoreanStatus(status: string): "서류 합격" | "면접 대기" | "불합격" | "최종합격" {
-  switch (status) {
-    case 'APPROVED':
-      return '서류 합격';
-    case 'INTERVIEW':
-      return '면접 대기';
-    case 'REJECTED':
-      return '불합격';
-    case 'HIRED':
-      return '최종합격';
-    case 'PENDING':
-    default:
-      return '면접 대기';
-  }
-}
