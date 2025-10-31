@@ -119,11 +119,11 @@ export const ChevronUpIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const BookmarkIcon = ({ currentColor = "currentColor" }) => (
+export const BookmarkIcon = ({ currentColor = "currentColor", size = 32 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="32"
-    height="32"
+    width={size}
+    height={size}
     viewBox="0 0 32 32"
     fill="none"
   >
@@ -138,11 +138,14 @@ export const BookmarkIcon = ({ currentColor = "currentColor" }) => (
   </svg>
 );
 
-export const BookmarkFilledIcon = ({ currentColor = "currentColor" }) => (
+export const BookmarkFilledIcon = ({
+  currentColor = "currentColor",
+  size = 32,
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="32"
-    height="32"
+    width={size}
+    height={size}
     viewBox="0 0 32 32"
     fill="none"
   >
@@ -1312,7 +1315,7 @@ export const StarFilledIcon = ({ size = 24, currentColor = "#FF8796" }) => (
 
 export const StarHalfIcon = ({ size = 24, currentColor = "#FF8796" }) => {
   const clipId = `half-clip-${Math.random().toString(36).substring(2, 11)}`;
-  
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

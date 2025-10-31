@@ -84,7 +84,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
     setIsOptimisticUpdate(true);
     setLocalIsLiked(!localIsLiked);
     onLike?.();
-    
+
     // 짧은 시간 후 낙관적 업데이트 플래그 리셋 (API 응답을 기다림)
     setTimeout(() => {
       setIsOptimisticUpdate(false);
@@ -270,9 +270,9 @@ const TransferCard: React.FC<TransferCardProps> = ({
           }}
         >
           {localIsLiked ? (
-            <BookmarkFilledIcon currentColor="white" />
+            <BookmarkFilledIcon currentColor="white" size={28} />
           ) : (
-            <BookmarkIcon currentColor="white" />
+            <BookmarkIcon currentColor="white" size={28} />
           )}
         </button>
       </div>
@@ -321,7 +321,9 @@ const TransferCard: React.FC<TransferCardProps> = ({
             {categories === "병원양도" && area > 0 && (
               <>
                 <span className="mx-1 flex-shrink-0">·</span>
-                <span className="flex-shrink-0">{formatNumberWithCommas(area.toString())}평</span>
+                <span className="flex-shrink-0">
+                  {formatNumberWithCommas(area.toString())}평
+                </span>
               </>
             )}
           </div>
