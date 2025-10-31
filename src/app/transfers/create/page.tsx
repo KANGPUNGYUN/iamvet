@@ -571,7 +571,7 @@ export default function CreateTransferPage() {
             {/* 이미지/파일 첨부 */}
             <div className="mb-8">
               <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
-                이미지/파일 첨부
+                양도양수 이미지
               </label>
 
               {/* 양도양수 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
@@ -583,6 +583,10 @@ export default function CreateTransferPage() {
                 folder="transfers"
                 className="mt-[40px]"
               />
+
+              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
+                첨부 파일
+              </label>
 
               {/* 양도양수 파일들 업로드 */}
 

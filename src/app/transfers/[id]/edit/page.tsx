@@ -667,6 +667,10 @@ export default function EditTransferPage({
                 </div>
               )}
 
+              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-2">
+                양도양수 이미지
+              </label>
+
               {/* 양도양수 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
               <MultiImageUpload
                 value={formData.images}
@@ -675,6 +679,10 @@ export default function EditTransferPage({
                 folder="transfers"
                 className="mt-[40px]"
               />
+
+              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4 mt-4">
+                첨부 파일
+              </label>
 
               {/* 새 문서 파일들 업로드 */}
               <DocumentUpload
