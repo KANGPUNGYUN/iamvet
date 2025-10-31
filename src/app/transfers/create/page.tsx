@@ -570,7 +570,7 @@ export default function CreateTransferPage() {
           <div className="bg-white border border-[#EFEFF0] rounded-[20px] p-6 lg:p-[60px] mt-[40px]">
             {/* 이미지/파일 첨부 */}
             <div className="mb-8">
-              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
+              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-2">
                 양도양수 이미지
               </label>
 
@@ -584,7 +584,7 @@ export default function CreateTransferPage() {
                 className="mt-[40px]"
               />
 
-              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
+              <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-6 mt-8">
                 첨부 파일
               </label>
 
