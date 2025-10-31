@@ -105,23 +105,26 @@ export default function CreateTransferPage() {
   };
 
   // 가격 입력 필드 전용 핸들러 (숫자 포맷팅)
-  const handlePriceInputChange = (field: 'salePrice' | 'rentPrice') => (value: string) => {
-    // 숫자만 추출
-    const numericValue = value.replace(/[^\d]/g, '');
-    
-    // 숫자를 천 단위 콤마 형식으로 변환
-    const formattedValue = numericValue ? parseInt(numericValue).toLocaleString() : '';
-    
-    setFormData((prev) => ({
-      ...prev,
-      [field]: formattedValue,
-    }));
-    
-    // 에러 제거
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
+  const handlePriceInputChange =
+    (field: "salePrice" | "rentPrice") => (value: string) => {
+      // 숫자만 추출
+      const numericValue = value.replace(/[^\d]/g, "");
+
+      // 숫자를 천 단위 콤마 형식으로 변환
+      const formattedValue = numericValue
+        ? parseInt(numericValue).toLocaleString()
+        : "";
+
+      setFormData((prev) => ({
+        ...prev,
+        [field]: formattedValue,
+      }));
+
+      // 에러 제거
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    };
 
   const handleSaleTypeChange = (isSale: boolean) => {
     setFormData((prev) => ({
@@ -251,7 +254,7 @@ export default function CreateTransferPage() {
     try {
       // 양도양수 이미지들은 이미 MultiImageUpload에서 업로드됨
       console.log("[DEBUG] 양도양수 이미지 URL들:", formData.images);
-      
+
       // 문서 파일들은 이미 DocumentUpload에서 업로드됨
       console.log("[DEBUG] 문서 URL들:", formData.documentUrls);
 
@@ -272,7 +275,7 @@ export default function CreateTransferPage() {
                 ? formData.salePrice
                 : formData.rentPrice
               : formData.salePrice
-            ).replace(/[^\d]/g, '') // 콤마 제거 후 숫자만 추출
+            ).replace(/[^\d]/g, "") // 콤마 제거 후 숫자만 추출
           ) || 0,
         area:
           formData.category === "병원양도"
@@ -571,15 +574,6 @@ export default function CreateTransferPage() {
                 이미지/파일 첨부
               </label>
 
-              {/* 양도양수 파일들 업로드 */}
-
-              <DocumentUpload
-                value={formData.documents}
-                onChange={handleDocumentUpload}
-                onUploadComplete={handleDocumentUploadComplete}
-                maxFiles={3}
-              />
-
               {/* 양도양수 이미지들 업로드 (첫 번째 이미지가 썸네일로 사용됨) */}
 
               <MultiImageUpload
@@ -588,6 +582,15 @@ export default function CreateTransferPage() {
                 maxImages={10}
                 folder="transfers"
                 className="mt-[40px]"
+              />
+
+              {/* 양도양수 파일들 업로드 */}
+
+              <DocumentUpload
+                value={formData.documents}
+                onChange={handleDocumentUpload}
+                onUploadComplete={handleDocumentUploadComplete}
+                maxFiles={3}
               />
             </div>
           </div>
