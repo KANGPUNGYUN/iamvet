@@ -109,8 +109,8 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
                 <button
                   onClick={handleButtonClick}
                   className="absolute bg-white flex justify-between items-center text-subtext2 font-title title-light rounded-[60px] transition-all duration-200
-                    sm:w-[200px] sm:h-[44px] sm:py-[10px] sm:px-[24px] sm:text-[20px]
-                    w-[140px] py-[8px] px-[16px]"
+                    sm:w-[200px] sm:h-[44px] sm:pt-[10px] pb-[8px] sm:px-[24px] sm:text-[20px]
+                    w-[120px] pt-[8px] pb-[6px] px-[16px]"
                   style={{
                     left: "clamp(14px, 3.8vw, 37px)",
                     bottom: "clamp(26px, 6.7vw, 66px)",
@@ -120,9 +120,6 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
                   }}
                 >
                   <span className="truncate pr-1">{banner.buttonText}</span>
-                  <div className="sm:w-6 sm:h-6 w-5 h-5 flex items-center justify-center">
-                    <ChevronRightIcon size="24" />
-                  </div>
                 </button>
               )}
             </div>
