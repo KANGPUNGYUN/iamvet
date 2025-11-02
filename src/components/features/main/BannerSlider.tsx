@@ -108,13 +108,13 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
               {showButton && (
                 <button
                   onClick={handleButtonClick}
-                  className="absolute bg-white flex justify-between items-center text-subtext2 font-title title-light rounded-[60px] transition-all duration-200
+                  className="absolute bg-white flex sm:justify-between items-center text-subtext2 font-title title-light rounded-[60px] transition-all duration-200
                     sm:w-[200px] sm:h-[44px] sm:pt-[10px] pb-[8px] sm:px-[24px] sm:text-[20px]
-                    w-[120px] pt-[8px] pb-[6px] px-[16px]"
+                    w-[120px] pt-[8px] pb-[6px] sm:px-[16px] px-[8px] justify-center"
                   style={{
                     left: "clamp(14px, 3.8vw, 37px)",
                     bottom: "clamp(26px, 6.7vw, 66px)",
-                    width: "clamp(150px, 28.3vw, 200px)",
+                    width: "clamp(142px, 28.3vw, 200px)",
                     height: "clamp(31px, 5.5vw, 44px)",
                     fontSize: "clamp(14px, 2.5vw, 20px)",
                   }}
