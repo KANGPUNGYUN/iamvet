@@ -1095,7 +1095,7 @@ export default function HomePage() {
                 <Tab.Item value="Interior">인테리어</Tab.Item>
               </Tab.List>
 
-              <Tab.Content value="transfer">
+              <Tab.Content value="transfer" className="w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   {transfersLoading ? (
                     // 로딩 스켈레톤
@@ -1153,7 +1153,7 @@ export default function HomePage() {
                   </Link>
                 </div>
               </Tab.Content>
-              <Tab.Content value="machine">
+              <Tab.Content value="machine" className="w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   {transfersLoading ? (
                     // 로딩 스켈레톤
@@ -1200,7 +1200,7 @@ export default function HomePage() {
                   )}
                 </div>
               </Tab.Content>
-              <Tab.Content value="device">
+              <Tab.Content value="device" className="w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   {transfersLoading ? (
                     // 로딩 스켈레톤
@@ -1247,7 +1247,7 @@ export default function HomePage() {
                   )}
                 </div>
               </Tab.Content>
-              <Tab.Content value="Interior">
+              <Tab.Content value="Interior" className="w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[16px] mb-[88px]">
                   {transfersLoading ? (
                     // 로딩 스켈레톤
