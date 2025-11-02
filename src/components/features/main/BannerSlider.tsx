@@ -120,6 +120,9 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
                   }}
                 >
                   <span className="truncate pr-1">{banner.buttonText}</span>
+                  <div className="sm:w-6 sm:h-6 w-5 h-5 flex items-center justify-center">
+                    <ChevronRightIcon size="24" />
+                  </div>
                 </button>
               )}
             </div>
