@@ -130,7 +130,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
         </div>
 
         {/* 좌우 네비게이션 버튼 (선택사항) */}
-        {banners.length > 1 && (
+        {/* {banners.length > 1 && (
           <>
             <button
               onClick={prevSlide}
@@ -171,7 +171,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
               </svg>
             </button>
           </>
-        )}
+        )} */}
 
         {/* 페이지네이션 인디케이터 - 배너 내부 하단 고정 위치 (반응형) */}
         {banners.length > 1 && (
