@@ -114,7 +114,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
                   style={{
                     left: "clamp(14px, 3.8vw, 37px)",
                     bottom: "clamp(26px, 6.7vw, 66px)",
-                    width: "clamp(142px, 28.3vw, 200px)",
+                    width: "clamp(125px, 26.3vw, 200px)",
                     height: "clamp(31px, 5.5vw, 44px)",
                     fontSize: "clamp(14px, 2.5vw, 20px)",
                   }}
