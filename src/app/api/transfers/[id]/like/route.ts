@@ -66,19 +66,6 @@ export const POST = withAuth(
 
       console.log("Creating new like...");
       
-      // 추가 보안: 사용자 재확인
-      const dbUser = await (prisma as any).users.findUnique({
-        where: { 
-          id: user.userId,
-          isActive: true 
-        }
-      });
-
-      if (!dbUser) {
-        console.error('User not found in database:', user.userId);
-        return NextResponse.json(createErrorResponse('유효하지 않은 사용자입니다.'), { status: 401 });
-      }
-      
       await (prisma as any).transfer_likes.create({
         data: {
           id: `like_${Date.now()}_${Math.random()
@@ -96,12 +83,6 @@ export const POST = withAuth(
       );
     } catch (error) {
       console.error("Transfer like error:", error);
-      
-      // P2003은 외래키 제약조건 위반 에러
-      if (error instanceof Error && 'code' in error && error.code === 'P2003') {
-        return NextResponse.json(createErrorResponse('유효하지 않은 사용자입니다. 다시 로그인해주세요.'), { status: 401 });
-      }
-      
       return NextResponse.json(
         createErrorResponse("좋아요 처리 중 오류가 발생했습니다."),
         { status: 500 }

@@ -104,17 +104,6 @@ export const removeTokenFromStorage = (): void => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
-  localStorage.removeItem('token');
-  
-  // Remove any other auth-related keys that might exist
-  const keysToRemove = Object.keys(localStorage).filter(key => 
-    key.startsWith('auth') || 
-    key.startsWith('user') || 
-    key.startsWith('token') ||
-    key.includes('Token')
-  );
-  
-  keysToRemove.forEach(key => localStorage.removeItem(key));
 };
 
 export const setTokenToStorage = (token: string): void => {

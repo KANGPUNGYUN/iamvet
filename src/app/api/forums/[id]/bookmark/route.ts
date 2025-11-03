@@ -39,19 +39,6 @@ export const POST = withAuth(
         );
       }
 
-      // 추가 보안: 사용자 재확인
-      const { prisma } = await import("@/lib/prisma");
-      const dbUser = await (prisma as any).users.findUnique({
-        where: { 
-          id: user.userId,
-          isActive: true 
-        }
-      });
-
-      if (!dbUser) {
-        console.error('User not found in database:', user.userId);
-        return NextResponse.json(createErrorResponse('유효하지 않은 사용자입니다.'), { status: 401 });
-      }
 
       // 북마크 생성
       await createForumBookmark(user.userId, forumId);
@@ -61,12 +48,6 @@ export const POST = withAuth(
       );
     } catch (error) {
       console.error("Forum bookmark create error:", error);
-      
-      // 외래키 제약조건 위반 에러 처리
-      if (error instanceof Error && 'code' in error && (error.code === 'P2003' || error.code === '23503')) {
-        return NextResponse.json(createErrorResponse('유효하지 않은 사용자입니다. 다시 로그인해주세요.'), { status: 401 });
-      }
-      
       return NextResponse.json(
         createErrorResponse("북마크 추가 중 오류가 발생했습니다"),
         { status: 500 }

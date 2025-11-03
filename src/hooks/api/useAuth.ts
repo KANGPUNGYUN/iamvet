@@ -215,39 +215,19 @@ export function useLogout() {
       // Zustand 상태 초기화
       reset();
       
-      // 모든 localStorage 데이터 완전 삭제
+      // localStorage와 쿠키에서 토큰 제거
       if (typeof window !== 'undefined') {
-        // 인증 관련 모든 키 삭제
-        const keysToRemove = Object.keys(localStorage).filter(key => 
-          key.startsWith('auth') || 
-          key.startsWith('user') || 
-          key.startsWith('token') ||
-          key.includes('Token') ||
-          key.includes('User')
-        );
-        
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-        
-        // 확실히 삭제
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        localStorage.removeItem('token');
       }
       
       // 쿠키 제거
       removeAuthCookie();
       
-      // React Query 캐시 완전 클리어
-      queryClient.clear();
+      // React Query 캐시 클리어
       queryClient.setQueryData(authKeys.currentUser, null);
-      
-      // 페이지 새로고침으로 완전 초기화 (모바일 캐시 문제 해결)
-      if (typeof window !== 'undefined') {
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 100);
-      }
+      queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
     },
   });
 }
