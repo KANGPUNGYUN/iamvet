@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { QUERY_KEYS } from "@/constants/queryKeys";
+import { getTokenFromStorage } from "@/utils/auth";
 
 interface WorkConditions {
   workType: string;
@@ -73,7 +74,7 @@ export const useJobDetail = (jobId: string) => {
   return useQuery<JobDetail>({
     queryKey: [QUERY_KEYS.JOB_DETAIL, jobId],
     queryFn: async () => {
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const token = getTokenFromStorage();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
       console.log('API request with headers:', headers);

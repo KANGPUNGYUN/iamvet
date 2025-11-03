@@ -22,7 +22,9 @@ export function useCurrentUser() {
   const getHasToken = () => {
     if (typeof window === 'undefined') return false;
     const accessToken = localStorage.getItem('accessToken');
-    return !!accessToken;
+    const hasValidToken = !!accessToken && accessToken.length > 10; // 최소 길이 검증
+    console.log('[getHasToken] checking token:', { hasToken: !!accessToken, isValid: hasValidToken, length: accessToken?.length });
+    return hasValidToken;
   };
 
   const getLocalUser = () => {
@@ -48,6 +50,12 @@ export function useCurrentUser() {
       
       if (!hasToken) {
         console.log('[useCurrentUser] No token found, returning null');
+        // 토큰이 없지만 사용자 정보가 있다면 정리
+        if (localUser) {
+          console.log('[useCurrentUser] Cleaning up stale user data without token');
+          localStorage.removeItem('user');
+          document.cookie = 'auth-token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict';
+        }
         return null;
       }
       

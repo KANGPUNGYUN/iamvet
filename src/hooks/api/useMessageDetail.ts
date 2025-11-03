@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getTokenFromStorage } from '@/utils/auth';
 
 export interface MessageDetailData {
   id: string;
@@ -41,7 +42,7 @@ export function useMessageDetail(messageId: string, preferredType: 'notification
         setIsLoading(true);
         setError(null);
 
-        const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
+        const token = getTokenFromStorage();
         if (!token) {
           throw new Error('No authentication token found');
         }
