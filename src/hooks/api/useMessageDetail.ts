@@ -27,6 +27,7 @@ export interface MessageDetailData {
   };
   inquiryType?: string;
   category: string;
+  images?: string[];
 }
 
 export function useMessageDetail(messageId: string, preferredType: 'notification' | 'inquiry') {

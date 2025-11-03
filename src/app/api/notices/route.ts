@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
             priority: true,
             targetUserTypes: true,
             expiresAt: true,
+            images: true,
           },
         },
       },

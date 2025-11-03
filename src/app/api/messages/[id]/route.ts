@@ -33,6 +33,9 @@ export async function GET(
         include: {
           users_notifications_senderIdTousers: {
             select: { id: true, userType: true, profileImage: true }
+          },
+          announcements: {
+            select: { images: true }
           }
         }
       });
@@ -95,6 +98,7 @@ export async function GET(
         } : null,
         notificationType: notification.type,
         category: getNotificationCategory(notification.type),
+        images: notification.announcements?.images || [],
         // INQUIRY 타입인 경우 관련 문의 정보 포함
         ...(relatedInquiry && {
           subject: relatedInquiry.subject,

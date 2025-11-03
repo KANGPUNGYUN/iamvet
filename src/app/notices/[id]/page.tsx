@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeftIcon } from "public/icons";
 import axios from "axios";
 
@@ -16,6 +17,7 @@ interface AnnouncementDetail {
     priority: string;
     targetUserTypes: string[];
     expiresAt: string | null;
+    images: string[];
   } | null;
   users_notifications_senderIdTousers?: {
     nickname: string | null;
@@ -173,6 +175,37 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
               {announcement.content}
             </pre>
           </div>
+
+          {/* 첨부 이미지 */}
+          {announcement.announcements?.images && announcement.announcements.images.length > 0 && (
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <h3 className="text-sm font-medium text-gray-600 mb-4">첨부 이미지</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {announcement.announcements.images.map((imageUrl, index) => (
+                  <div key={index} className="relative group">
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
+                      <Image
+                        src={imageUrl}
+                        alt={`첨부 이미지 ${index + 1}`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-200"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+                    {/* 클릭 시 원본 이미지 보기 */}
+                    <button
+                      onClick={() => window.open(imageUrl, '_blank')}
+                      className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center"
+                    >
+                      <span className="opacity-0 group-hover:opacity-100 text-white text-sm bg-black bg-opacity-70 px-3 py-1 rounded transition-opacity duration-200">
+                        원본 보기
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 대상 사용자 정보 */}
           {announcement.announcements?.targetUserTypes && (
