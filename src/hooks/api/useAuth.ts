@@ -160,9 +160,8 @@ export function useLogin() {
             localStorage.setItem('refreshToken', tokens.refreshToken);
           }
         } else {
-          // 토큰이 없는 경우 fallback (임시)
-          const accessToken = btoa(JSON.stringify({ userId: result.user.id }));
-          localStorage.setItem('accessToken', accessToken);
+          // 토큰이 없는 경우 로그인 실패로 처리
+          throw new Error('서버에서 인증 토큰을 제공하지 않았습니다');
         }
         localStorage.setItem('user', JSON.stringify({
           id: result.user.id,
