@@ -6,13 +6,6 @@
 import axios from 'axios';
 import { getTokenFromStorage } from '@/utils/auth';
 
-// 모바일 환경 감지
-const isMobile = () => {
-  if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
-};
 
 // 전역 axios 인스턴스 생성
 export const apiClient = axios.create({
@@ -21,18 +14,18 @@ export const apiClient = axios.create({
   timeout: 30000,
 });
 
-// 요청 인터셉터: 모바일에서는 Authorization 헤더도 추가
+// 요청 인터셉터: Authorization 헤더 추가
 apiClient.interceptors.request.use(
   (config) => {
     console.log('[API Client] Request:', config.method?.toUpperCase(), config.url);
     
-    // 모바일 환경에서는 Authorization 헤더도 함께 전송
-    if (isMobile()) {
-      const token = getTokenFromStorage();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-        console.log('[API Client] Mobile: Added Authorization header');
-      }
+    // 모든 요청에 Authorization 헤더 추가 (쿠키와 함께 이중 보안)
+    const token = getTokenFromStorage();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('[API Client] Added Authorization header');
+    } else {
+      console.log('[API Client] No token found in localStorage');
     }
     
     return config;

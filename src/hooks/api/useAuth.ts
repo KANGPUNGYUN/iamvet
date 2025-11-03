@@ -2,7 +2,7 @@ import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentUser, login as loginAction, logout as logoutAction } from '@/actions/auth';
 import { useAuthStore } from '@/store/authStore';
-import { syncTokensWithCookie, removeAuthCookie } from '@/lib/auth';
+import { removeAuthCookie } from '@/lib/auth';
 import { getTokenFromStorage } from '@/utils/auth';
 import type { User } from '@/store/authStore';
 
@@ -259,9 +259,6 @@ export function useAuth() {
   
   // localStorage 토큰을 쿠키로 동기화
   React.useEffect(() => {
-    syncTokensWithCookie();
-    
-    // 추가적으로 localStorage 토큰을 직접 쿠키로 설정
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
       console.log('[useAuth] Setting cookie from localStorage token');
@@ -298,16 +295,17 @@ export function useAuth() {
   // localStorage 및 쿠키 변화 감지하여 사용자 정보 다시 가져오기
   React.useEffect(() => {
     const handleStorageChange = () => {
-      const token = getTokenFromStorage(); // 쿠키 우선으로 토큰 확인
+      const token = getTokenFromStorage();
       console.log('[useAuth] handleStorageChange - token:', !!token, 'user:', !!user);
       
-      // 토큰이 있으면 localStorage와 쿠키 동기화
+      // 토큰이 있으면 쿠키와 동기화
       if (token) {
-        // localStorage에 없으면 동기화 (이미 getTokenFromStorage에서 처리됨)
-        const localToken = localStorage.getItem('accessToken');
-        if (!localToken) {
-          localStorage.setItem('accessToken', token);
-        }
+        // 쿠키 설정
+        const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        const isProduction = process.env.NODE_ENV === 'production';
+        const secureFlag = isProduction ? '; secure' : '';
+        document.cookie = `auth-token=${token}; expires=${expireDate.toUTCString()}; path=/${secureFlag}; samesite=strict`;
+        
         console.log('[useAuth] Token synchronized');
         
         // 사용자 정보가 있지만 phone이나 birthDate가 누락된 경우 새로고침

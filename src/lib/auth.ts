@@ -83,7 +83,10 @@ export const setAuthCookie = (token: string, expires?: Date) => {
   if (typeof window === 'undefined') return;
   
   const expireDate = expires || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7일
-  document.cookie = `auth-token=${token}; expires=${expireDate.toUTCString()}; path=/; secure; samesite=strict`;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const secureFlag = isProduction ? '; secure' : '';
+  
+  document.cookie = `auth-token=${token}; expires=${expireDate.toUTCString()}; path=/${secureFlag}; samesite=strict`;
 };
 
 export const removeAuthCookie = () => {
