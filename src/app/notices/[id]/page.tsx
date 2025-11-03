@@ -41,19 +41,32 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
   const fetchAnnouncementDetail = async () => {
     try {
       setIsLoading(true);
-      // 현재는 전체 목록에서 필터링 (추후 개별 API 엔드포인트 필요)
-      const response = await axios.get("/api/notices");
+      // 개별 API 엔드포인트 사용
+      const response = await axios.get(`/api/notices/${id}`);
       if (response.data.success) {
-        const found = response.data.data.find((item: AnnouncementDetail) => item.id === id);
-        if (found) {
-          setAnnouncement(found);
-        }
+        console.log("NoticeDetail API response:", response.data.data);
+        setAnnouncement(response.data.data);
       }
     } catch (error) {
       console.error("Failed to fetch announcement detail:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // content에서 텍스트 부분만 추출 (JSON 형태인 경우)
+  const getDisplayContent = () => {
+    if (!announcement?.content) return '';
+    
+    try {
+      const contentData = JSON.parse(announcement.content);
+      if (contentData.text) {
+        return contentData.text;
+      }
+    } catch (e) {
+      // JSON이 아닌 경우 원본 content 사용
+    }
+    return announcement.content;
   };
 
   const markAsRead = async () => {
@@ -172,16 +185,16 @@ export default function NoticeDetailPage({ params }: { params: Promise<{ id: str
           {/* 내용 */}
           <div className="prose max-w-none">
             <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
-              {announcement.content}
+              {getDisplayContent()}
             </pre>
           </div>
 
           {/* 첨부 이미지 */}
-          {announcement.announcements?.images && announcement.announcements.images.length > 0 && (
+          {announcement.announcements?.images && announcement.announcements.images.filter(img => img && img.trim() !== '').length > 0 && (
             <div className="mt-8 pt-8 border-t border-gray-200">
               <h3 className="text-sm font-medium text-gray-600 mb-4">첨부 이미지</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {announcement.announcements.images.map((imageUrl, index) => (
+                {announcement.announcements.images.filter(img => img && img.trim() !== '').map((imageUrl, index) => (
                   <div key={index} className="relative group">
                     <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
                       <Image

@@ -16,6 +16,7 @@ interface NotificationCardProps {
   type?: "notification" | "inquiry";
   notificationType?: string;
   inquiryType?: string;
+  images?: string[];
 }
 
 const NotificationCard: React.FC<NotificationCardProps> = ({
@@ -30,7 +31,27 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   type = "notification",
   notificationType,
   inquiryType,
+  images = [],
 }) => {
+  // content에서 텍스트 부분만 추출 (JSON 형태인 경우)
+  const getDisplayContent = () => {
+    try {
+      const contentData = JSON.parse(content);
+      if (contentData.text) {
+        return contentData.text;
+      }
+    } catch (e) {
+      // JSON이 아닌 경우 원본 content 사용
+    }
+    return content;
+  };
+
+  const displayContent = getDisplayContent();
+  
+  // 실제 이미지 개수 계산 (빈 문자열 제외)
+  const validImages = images.filter(img => img && img.trim() !== '');
+  const hasImages = validImages.length > 0;
+
   const getTagLabel = () => {
     if (type === "inquiry") {
       switch (inquiryType) {
@@ -98,7 +119,12 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                 isRead ? "text-[#999999]" : "text-[#666666]"
               }`}
             >
-              {content}
+              {displayContent}
+              {hasImages && (
+                <span className="block mt-1 text-xs text-blue-600">
+                  📎 이미지 {validImages.length}개
+                </span>
+              )}
             </p>
           </div>
         </div>

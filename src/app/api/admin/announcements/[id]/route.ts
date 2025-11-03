@@ -192,6 +192,12 @@ export async function POST(
         let sentCount = 0;
         const notifications = [];
 
+        // announcement의 이미지 정보를 JSON 형태로 content에 포함
+        const contentWithImages = JSON.stringify({
+          text: announcement.notifications.content,
+          images: announcement.images || []
+        });
+
         for (const user of targetUsers) {
           try {
             const notificationId = nanoid();
@@ -203,7 +209,7 @@ export async function POST(
                 recipientType: user.userType,
                 senderId: announcement.createdBy,
                 title: announcement.notifications.title,
-                content: announcement.notifications.content,
+                content: contentWithImages,
                 updatedAt: new Date(),
               },
             });

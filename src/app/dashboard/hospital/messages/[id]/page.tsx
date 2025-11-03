@@ -244,11 +244,11 @@ export default function HospitalMessageDetailPage({
             </div>
 
             {/* 첨부 이미지 */}
-            {message.images && message.images.length > 0 && (
+            {message.images && message.images.filter(img => img && img.trim() !== '').length > 0 && (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <h3 className="text-sm font-medium text-gray-600 mb-4">첨부 이미지</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {message.images.map((imageUrl, index) => (
+                  {message.images.filter(img => img && img.trim() !== '').map((imageUrl, index) => (
                     <div key={index} className="relative group">
                       <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
                         <Image

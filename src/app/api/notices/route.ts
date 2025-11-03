@@ -61,8 +61,59 @@ export async function GET(req: NextRequest) {
       ],
     });
 
+    // content에서 이미지 정보 파싱하고 데이터 변환
+    const transformedAnnouncements = announcements.map((announcement) => {
+      // 디버깅: 원본 데이터 로그
+      console.log(`Processing announcement ${announcement.id}:`, {
+        hasAnnouncements: !!announcement.announcements,
+        announcementImages: announcement.announcements?.images || 'no announcements',
+        contentPreview: announcement.content.substring(0, 100)
+      });
+
+      // content에서 이미지 정보 파싱 (JSON 형태로 저장된 경우)
+      let parsedContent = announcement.content;
+      let notificationImages: string[] = [];
+      
+      try {
+        const contentData = JSON.parse(announcement.content);
+        if (contentData.text && contentData.images) {
+          parsedContent = contentData.text;
+          notificationImages = contentData.images;
+          console.log(`Found ${notificationImages.length} images in notification content for ${announcement.id}`);
+        }
+      } catch (e) {
+        // JSON이 아닌 경우 원본 content 사용
+        parsedContent = announcement.content;
+      }
+
+      // announcement 이미지와 notification에서 파싱한 이미지 합치기
+      const allImages = [
+        ...(announcement.announcements?.images || []),
+        ...notificationImages
+      ].filter(img => img && img.trim() !== '');
+
+      // 중복 제거
+      const uniqueImages = Array.from(new Set(allImages));
+
+      const result = {
+        ...announcement,
+        content: parsedContent,
+        announcements: announcement.announcements ? {
+          ...announcement.announcements,
+          images: uniqueImages
+        } : null,
+      };
+
+      // 디버깅용 로그
+      if (uniqueImages.length > 0) {
+        console.log(`Announcement ${announcement.id} has ${uniqueImages.length} images:`, uniqueImages);
+      }
+
+      return result;
+    });
+
     // 중복 제거: 같은 제목과 내용을 가진 공지사항 중 최신 것만 유지
-    const uniqueAnnouncements = announcements.reduce((acc: any[], current) => {
+    const uniqueAnnouncements = transformedAnnouncements.reduce((acc: any[], current) => {
       const duplicate = acc.find(
         item => item.title === current.title && item.content === current.content
       );

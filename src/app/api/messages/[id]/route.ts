@@ -40,6 +40,32 @@ export async function GET(
         }
       });
 
+      // 발송된 공지사항의 경우 원본 announcement를 찾아서 이미지 가져오기
+      let originalAnnouncement = null;
+      if (notification && notification.type === 'ANNOUNCEMENT' && !notification.announcements) {
+        // 같은 제목과 발신자로 원본 announcement 찾기
+        const originalNotification = await (prisma as any).notifications.findFirst({
+          where: {
+            title: notification.title,
+            senderId: notification.senderId,
+            type: 'ANNOUNCEMENT'
+          },
+          include: {
+            announcements: {
+              select: { images: true }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc' // 가장 먼저 생성된 것 (원본)
+          }
+        });
+        
+        if (originalNotification?.announcements) {
+          originalAnnouncement = originalNotification.announcements;
+          console.log(`Found original announcement for ${id}:`, originalAnnouncement);
+        }
+      }
+
       if (!notification) {
         return Response.json({ error: "Notification not found" }, { status: 404 });
       }
@@ -82,11 +108,40 @@ export async function GET(
         });
       }
 
+      // content에서 이미지 정보 파싱 (JSON 형태로 저장된 경우)
+      let parsedContent = notification.content;
+      let images: string[] = [];
+      
+      try {
+        const contentData = JSON.parse(notification.content);
+        if (contentData.text && contentData.images) {
+          parsedContent = contentData.text;
+          images = contentData.images;
+        }
+      } catch (e) {
+        // JSON이 아닌 경우 원본 content 사용
+        parsedContent = notification.content;
+      }
+
+      // announcement에서 이미지가 있으면 그것도 포함
+      if (notification.announcements?.images) {
+        images = [...images, ...notification.announcements.images];
+      }
+
+      // 원본 announcement에서 이미지가 있으면 그것도 포함
+      if (originalAnnouncement?.images) {
+        images = [...images, ...originalAnnouncement.images];
+        console.log(`Added ${originalAnnouncement.images.length} images from original announcement`);
+      }
+
+      // 빈 이미지 필터링 및 중복 제거
+      images = Array.from(new Set(images.filter(img => img && img.trim() !== '')));
+
       messageData = {
         id: notification.id,
         type: "notification",
         title: notification.title,
-        content: notification.content,
+        content: parsedContent,
         createdAt: notification.createdAt,
         isRead: true, // 조회 시 읽음 처리됨
         senderId: notification.senderId,
@@ -98,7 +153,7 @@ export async function GET(
         } : null,
         notificationType: notification.type,
         category: getNotificationCategory(notification.type),
-        images: notification.announcements?.images || [],
+        images: images,
         // INQUIRY 타입인 경우 관련 문의 정보 포함
         ...(relatedInquiry && {
           subject: relatedInquiry.subject,

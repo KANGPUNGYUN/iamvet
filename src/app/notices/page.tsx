@@ -18,6 +18,7 @@ interface AnnouncementData {
     priority: string;
     targetUserTypes: string[];
     expiresAt: string | null;
+    images: string[];
   } | null;
   users_notifications_senderIdTousers?: {
     nickname: string | null;
@@ -63,6 +64,18 @@ export default function NoticesPage() {
       const response = await axios.get("/api/notices");
       if (response.data.success) {
         console.log("Raw API response:", response.data.data);
+        console.log("First announcement:", response.data.data[0]);
+        console.log("First announcement images:", response.data.data[0]?.announcements?.images);
+        
+        // 각 announcement의 이미지 상태 확인
+        response.data.data.forEach((ann: any, index: number) => {
+          console.log(`Announcement ${index} (${ann.id}):`, {
+            hasAnnouncements: !!ann.announcements,
+            images: ann.announcements?.images || 'no images',
+            contentPreview: ann.content.substring(0, 50)
+          });
+        });
+        
         setAnnouncements(response.data.data);
       }
     } catch (error: any) {
@@ -301,6 +314,7 @@ export default function NoticesPage() {
                   isRead={announcement.isRead}
                   onMarkAsRead={handleMarkAsRead}
                   basePath="/notices"
+                  images={announcement.announcements?.images || []}
                 />
               </div>
             ))}
