@@ -1992,6 +1992,7 @@ export const getRecommendedLectures = async (
   medicalField?: string,
   limit: number = 5
 ) => {
+  // 먼저 같은 카테고리 강의를 찾기
   let query = `
     SELECT * FROM lectures 
     WHERE id != $1 AND "deletedAt" IS NULL
@@ -2009,7 +2010,34 @@ export const getRecommendedLectures = async (
     params.push(limit.toString());
   }
 
-  const result = await pool.query(query, params);
+  let result = await pool.query(query, params);
+  
+  // 같은 카테고리 강의가 충분하지 않은 경우 다른 카테고리 강의도 포함
+  if (result.rows.length < limit && medicalField) {
+    const remainingLimit = limit - result.rows.length;
+    const existingIds = result.rows.map(row => row.id);
+    
+    let additionalQuery = `
+      SELECT * FROM lectures 
+      WHERE id != $1 AND "deletedAt" IS NULL
+      AND category != $2
+    `;
+    
+    const additionalParams = [lectureId, medicalField];
+    
+    if (existingIds.length > 0) {
+      const placeholders = existingIds.map((_, index) => `$${index + 3}`).join(', ');
+      additionalQuery += ` AND id NOT IN (${placeholders})`;
+      additionalParams.push(...existingIds);
+    }
+    
+    additionalQuery += ` ORDER BY "viewCount" DESC, "createdAt" DESC LIMIT $${additionalParams.length + 1}`;
+    additionalParams.push(remainingLimit.toString());
+    
+    const additionalResult = await pool.query(additionalQuery, additionalParams);
+    result.rows = [...result.rows, ...additionalResult.rows];
+  }
+
   return result.rows;
 };
 
