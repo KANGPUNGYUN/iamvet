@@ -797,12 +797,15 @@ export default function AnnouncementManagement() {
                       gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                       gap: 2 
                     }}>
-                      {selectedItem.images.map((imageUrl, index) => (
+                      {selectedItem.images.filter(img => img && img.trim() !== '').map((imageUrl, index) => (
                         <Box
                           key={index}
                           component="img"
                           src={imageUrl}
                           alt={`첨부 이미지 ${index + 1}`}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
                           sx={{
                             width: '100%',
                             height: 150,

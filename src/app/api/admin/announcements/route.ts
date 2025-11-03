@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
             : ["VETERINARIAN", "HOSPITAL", "VETERINARY_STUDENT"],
           priority:
             (priority as NotificationPriority) || NotificationPriority.NORMAL,
-          images: images || [],
+          images: Array.isArray(images) ? images.filter(img => img !== null && img !== undefined) : [],
           contentType: "text",
           createdBy: adminUser.id,
         } as any,

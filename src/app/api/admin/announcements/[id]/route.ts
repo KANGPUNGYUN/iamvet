@@ -50,7 +50,7 @@ export async function PUT(
         data: {
           targetUserTypes: Array.isArray(targetUsers) ? targetUsers : [targetUsers],
           priority: priority as NotificationPriority,
-          images: images || [],
+          images: Array.isArray(images) ? images.filter(img => img !== null && img !== undefined) : [],
         } as any,
       });
 

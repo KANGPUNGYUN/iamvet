@@ -78,8 +78,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           throw new Error('업로드 실패');
         }
 
-        const { url } = await response.json();
-        return url;
+        const result = await response.json();
+        return result.data.fileUrl;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
@@ -154,13 +154,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
           gap: 2 
         }}>
-          {images.map((imageUrl, index) => (
+          {images.filter(img => img && img.trim() !== '').map((imageUrl, index) => (
             <Card key={index} sx={{ position: 'relative' }}>
               <CardMedia
                 component="img"
                 height={120}
                 image={imageUrl}
                 alt={`첨부 이미지 ${index + 1}`}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
                 sx={{ objectFit: 'cover' }}
               />
               <IconButton
