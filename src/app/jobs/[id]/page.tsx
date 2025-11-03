@@ -13,6 +13,7 @@ import {
   BookmarkFilledIcon,
   BookmarkIcon,
   WalletIcon,
+  EyeIcon,
 } from "public/icons";
 import { Tag } from "@/components/ui/Tag";
 import { Button } from "@/components/ui/Button";
@@ -62,10 +63,7 @@ export default function JobDetailPage({
   // Zustand 스토어에서 조회수 상태 관리
   const {
     setJobViewCount,
-    incrementJobViewCount,
     getJobViewCount,
-    markAsViewed,
-    isAlreadyViewed,
   } = useViewCountStore();
   const {
     hasResume,
@@ -81,7 +79,7 @@ export default function JobDetailPage({
     }
   }, [jobData, id, setJobLike]);
 
-  // 조회수 초기화 및 실시간 증가 처리
+  // 조회수 초기화
   useEffect(() => {
     if (jobData) {
       console.log("[JobDetail] 서버에서 받은 채용공고 데이터:", {
@@ -89,27 +87,84 @@ export default function JobDetailPage({
         viewCount: jobData.viewCount,
       });
 
-      // 조회수 초기화 및 실시간 증가 처리
+      // 조회수 초기화
       if (jobData.viewCount !== undefined) {
         // 서버에서 받은 조회수로 초기화
         setJobViewCount(id, jobData.viewCount);
-
-        // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
-        if (!isAlreadyViewed("job", id)) {
-          console.log("[JobDetail] 조회수 실시간 증가:", id);
-          incrementJobViewCount(id);
-          markAsViewed("job", id);
-        }
       }
     }
   }, [
     jobData,
     id,
     setJobViewCount,
-    incrementJobViewCount,
-    markAsViewed,
-    isAlreadyViewed,
   ]);
+
+  // 조회수 증가 함수
+  const incrementViewCount = async () => {
+    try {
+      console.log(`[JobDetail] 조회수 증가 API 호출 시작 - Job ID: ${id}`);
+
+      const token = localStorage.getItem("accessToken");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        console.log("[JobDetail] 인증 토큰 포함하여 요청");
+      } else {
+        console.log("[JobDetail] 익명 사용자로 요청");
+      }
+
+      const apiUrl = `/api/jobs/${id}/view`;
+      console.log(`[JobDetail] API URL: ${apiUrl}`);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers,
+      });
+
+      console.log(`[JobDetail] API 응답 상태: ${response.status}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[JobDetail] API 응답 데이터:", data);
+
+        if (data.status === "success" && data.data?.viewCount) {
+          console.log("[JobDetail] 조회수 증가 성공:", data.data.viewCount);
+          setJobViewCount(id, data.data.viewCount);
+        } else {
+          console.warn(
+            "[JobDetail] 조회수 증가 실패 - 응답 데이터 이상:",
+            data
+          );
+        }
+      } else {
+        const errorData = await response.text();
+        console.error(
+          "[JobDetail] 조회수 증가 실패:",
+          response.status,
+          errorData
+        );
+      }
+    } catch (error) {
+      console.error("[JobDetail] 조회수 증가 중 오류:", error);
+    }
+  };
+
+  // 조회수 증가를 위한 별도 useEffect
+  useEffect(() => {
+    if (jobData) {
+      console.log("[JobDetail] 채용공고 데이터 로드 완료, 조회수 증가 API 호출");
+      
+      // 낙관적 업데이트: API 호출 전에 먼저 클라이언트에서 조회수 증가
+      const currentViewCount = getJobViewCount(id);
+      setJobViewCount(id, currentViewCount + 1);
+      
+      // 그 다음 API 호출
+      incrementViewCount();
+    }
+  }, [jobData?.id]); // jobData가 설정될 때마다 실행
 
   // API 응답의 isOwner 값을 사용하되, 클라이언트에서도 추가 체크
   const isOwner =
@@ -581,8 +636,8 @@ export default function JobDetailPage({
                 </div>
               </div>
 
-              {/* 조회수
-              <div className="flex items-center gap-2 mt-4">
+              {/* 조회수 */}
+              {/* <div className="flex items-center gap-2 mt-4">
                 <EyeIcon currentColor="#9098A4" />
                 <span className="font-text text-[14px] text-[#9098A4]">
                   조회 {getJobViewCount(id).toLocaleString()}

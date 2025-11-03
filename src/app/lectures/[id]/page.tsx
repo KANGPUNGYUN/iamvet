@@ -89,10 +89,7 @@ export default function LectureDetailPage({
   // 조회수 상태 관리 (Zustand 스토어)
   const {
     setLectureViewCount,
-    incrementLectureViewCount,
     getLectureViewCount,
-    markAsViewed,
-    isAlreadyViewed,
   } = useViewCountStore();
 
   // useAuth 훅으로 현재 로그인한 사용자 정보 가져오기
@@ -123,7 +120,7 @@ export default function LectureDetailPage({
           setLectureLike(id, result.data.isLiked);
         }
 
-        // 조회수 초기화 및 실시간 증가 처리
+        // 조회수 초기화
         if (result.data?.viewCount !== undefined) {
           console.log(
             "[LectureDetail] 서버에서 받은 조회수:",
@@ -131,13 +128,6 @@ export default function LectureDetailPage({
           );
           // 서버에서 받은 조회수로 초기화
           setLectureViewCount(id, result.data.viewCount);
-
-          // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
-          if (!isAlreadyViewed("lecture", id)) {
-            console.log("[LectureDetail] 조회수 실시간 증가:", id);
-            incrementLectureViewCount(id);
-            markAsViewed("lecture", id);
-          }
         }
 
         // 댓글은 별도로 로드
@@ -154,6 +144,73 @@ export default function LectureDetailPage({
 
     fetchLectureDetail();
   }, [id, fetchComments]);
+
+  // 조회수 증가 함수
+  const incrementViewCount = async () => {
+    try {
+      console.log(`[LectureDetail] 조회수 증가 API 호출 시작 - Lecture ID: ${id}`);
+
+      const token = localStorage.getItem("accessToken");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        console.log("[LectureDetail] 인증 토큰 포함하여 요청");
+      } else {
+        console.log("[LectureDetail] 익명 사용자로 요청");
+      }
+
+      const apiUrl = `/api/lectures/${id}/view`;
+      console.log(`[LectureDetail] API URL: ${apiUrl}`);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers,
+      });
+
+      console.log(`[LectureDetail] API 응답 상태: ${response.status}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[LectureDetail] API 응답 데이터:", data);
+
+        if (data.status === "success" && data.data?.viewCount) {
+          console.log("[LectureDetail] 조회수 증가 성공:", data.data.viewCount);
+          setLectureViewCount(id, data.data.viewCount);
+        } else {
+          console.warn(
+            "[LectureDetail] 조회수 증가 실패 - 응답 데이터 이상:",
+            data
+          );
+        }
+      } else {
+        const errorData = await response.text();
+        console.error(
+          "[LectureDetail] 조회수 증가 실패:",
+          response.status,
+          errorData
+        );
+      }
+    } catch (error) {
+      console.error("[LectureDetail] 조회수 증가 중 오류:", error);
+    }
+  };
+
+  // 조회수 증가를 위한 별도 useEffect
+  useEffect(() => {
+    if (lectureDetail) {
+      console.log("[LectureDetail] 강의 데이터 로드 완료, 조회수 증가 API 호출");
+      
+      // 낙관적 업데이트: API 호출 전에 먼저 클라이언트에서 조회수 증가
+      const currentViewCount = getLectureViewCount(id);
+      setLectureViewCount(id, currentViewCount + 1);
+      
+      // 그 다음 API 호출
+      incrementViewCount();
+    }
+  }, [lectureDetail?.id]); // lectureDetail이 설정될 때마다 실행
 
   const getYouTubeEmbedUrl = (url: string) => {
     if (!url) return "https://www.youtube.com/embed/dQw4w9WgXcQ";

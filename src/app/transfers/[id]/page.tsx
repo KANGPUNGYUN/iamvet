@@ -290,10 +290,7 @@ export default function TransferDetailPage({
   // Zustand 스토어에서 조회수 상태 관리
   const {
     setTransferViewCount,
-    incrementTransferViewCount,
     getTransferViewCount,
-    markAsViewed,
-    isAlreadyViewed,
   } = useViewCountStore();
 
   useEffect(() => {
@@ -322,7 +319,7 @@ export default function TransferDetailPage({
             initializeTransferLikes([id]);
           }
 
-          // 조회수 초기화 및 실시간 증가 처리
+          // 조회수 초기화
           if (data.data.views !== undefined) {
             console.log(
               "[TransferDetail] 서버에서 받은 조회수:",
@@ -330,13 +327,6 @@ export default function TransferDetailPage({
             );
             // 서버에서 받은 조회수로 초기화
             setTransferViewCount(id, data.data.views);
-
-            // 아직 조회하지 않은 경우 조회수 증가 (실시간 반영)
-            if (!isAlreadyViewed("transfer", id)) {
-              console.log("[TransferDetail] 조회수 실시간 증가:", id);
-              incrementTransferViewCount(id);
-              markAsViewed("transfer", id);
-            }
           }
 
           // 추천 양도양수 카드의 좋아요 상태도 초기화
@@ -372,6 +362,73 @@ export default function TransferDetailPage({
 
     fetchTransferDetail();
   }, [id]);
+
+  // 조회수 증가 함수
+  const incrementViewCount = async () => {
+    try {
+      console.log(`[TransferDetail] 조회수 증가 API 호출 시작 - Transfer ID: ${id}`);
+
+      const token = localStorage.getItem("accessToken");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        console.log("[TransferDetail] 인증 토큰 포함하여 요청");
+      } else {
+        console.log("[TransferDetail] 익명 사용자로 요청");
+      }
+
+      const apiUrl = `/api/transfers/${id}/view`;
+      console.log(`[TransferDetail] API URL: ${apiUrl}`);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers,
+      });
+
+      console.log(`[TransferDetail] API 응답 상태: ${response.status}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[TransferDetail] API 응답 데이터:", data);
+
+        if (data.status === "success" && data.data?.viewCount) {
+          console.log("[TransferDetail] 조회수 증가 성공:", data.data.viewCount);
+          setTransferViewCount(id, data.data.viewCount);
+        } else {
+          console.warn(
+            "[TransferDetail] 조회수 증가 실패 - 응답 데이터 이상:",
+            data
+          );
+        }
+      } else {
+        const errorData = await response.text();
+        console.error(
+          "[TransferDetail] 조회수 증가 실패:",
+          response.status,
+          errorData
+        );
+      }
+    } catch (error) {
+      console.error("[TransferDetail] 조회수 증가 중 오류:", error);
+    }
+  };
+
+  // 조회수 증가를 위한 별도 useEffect
+  useEffect(() => {
+    if (transferData) {
+      console.log("[TransferDetail] 양도양수 데이터 로드 완료, 조회수 증가 API 호출");
+      
+      // 낙관적 업데이트: API 호출 전에 먼저 클라이언트에서 조회수 증가
+      const currentViewCount = getTransferViewCount(id);
+      setTransferViewCount(id, currentViewCount + 1);
+      
+      // 그 다음 API 호출
+      incrementViewCount();
+    }
+  }, [transferData?.id]); // transferData가 설정될 때마다 실행
 
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
