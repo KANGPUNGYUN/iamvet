@@ -60,6 +60,23 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         throw new Error("S3 업로드 실패");
       }
 
+      // 업로드 완료 후 메타데이터 업데이트
+      try {
+        await fetch("/api/upload/update-metadata", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileUrl: fileUrl,
+            originalFileName: file.name,
+          }),
+        });
+      } catch (metadataError) {
+        console.warn("메타데이터 업데이트 실패:", metadataError);
+        // 메타데이터 업데이트 실패해도 파일 업로드는 성공으로 처리
+      }
+
       return fileUrl;
     } catch (error) {
       console.error("File upload error:", error);

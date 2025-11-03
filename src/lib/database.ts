@@ -4589,11 +4589,22 @@ export const getTransferById = async (transferId: string) => {
     SELECT 
       t.*,
       u.id as "userId",
-      h."hospitalName",
+      u."userType",
       u."profileImage",
+      CASE 
+        WHEN u."userType" = 'VETERINARIAN' THEN COALESCE(v.nickname, v."realName", u."realName")
+        WHEN u."userType" = 'VETERINARY_STUDENT' THEN COALESCE(vs.nickname, vs."realName", u."realName")
+        WHEN u."userType" = 'HOSPITAL' THEN h."hospitalName"
+        ELSE u."realName"
+      END as user_name,
+      v.nickname as veterinarian_nickname,
+      vs.nickname as student_nickname,
+      h."hospitalName",
       h."hospitalAddress"
     FROM transfers t
     LEFT JOIN users u ON t."userId" = u.id
+    LEFT JOIN veterinarians v ON u.id = v."userId" AND u."userType" = 'VETERINARIAN'
+    LEFT JOIN veterinary_students vs ON u.id = vs."userId" AND u."userType" = 'VETERINARY_STUDENT'
     LEFT JOIN hospitals h ON u.id = h."userId" AND u."userType" = 'HOSPITAL'
     WHERE t.id = $1 AND t."deletedAt" IS NULL
   `;
@@ -4615,6 +4626,9 @@ export const getTransferById = async (transferId: string) => {
       : [],
     user: {
       id: transfer.userId,
+      userType: transfer.userType,
+      name: transfer.user_name,
+      nickname: transfer.veterinarian_nickname || transfer.student_nickname,
       hospitalName: transfer.hospitalName,
       profileImage: transfer.profileImage,
       hospitalAddress: transfer.hospitalAddress,

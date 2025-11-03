@@ -131,7 +131,7 @@ const ImageSlider = ({ images }: { images: string[] }) => {
           src={images[currentIndex]}
           alt={`슬라이드 ${currentIndex + 1}`}
           fill
-          className="object-cover"
+          className="object-cover h-full"
         />
 
         {/* 모바일용 페이지 인디케이터 (우측 하단) */}
@@ -257,6 +257,9 @@ interface TransferData {
   updatedAt?: string;
   user?: {
     id: string;
+    userType?: string;
+    name?: string;
+    nickname?: string;
     hospitalName?: string;
     profileImage?: string;
   };
@@ -644,7 +647,7 @@ export default function TransferDetailPage({
 
   // 작성자 정보
   const author = {
-    name: transferData.user?.hospitalName || "익명",
+    name: transferData.user?.name || transferData.user?.hospitalName || "익명",
     profileImage: transferData.user?.profileImage || null,
   };
 
@@ -1009,9 +1012,9 @@ export default function TransferDetailPage({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              const downloadUrl = `/api/download?url=${encodeURIComponent(document)}`;
                               const link = globalThis.document.createElement('a');
-                              link.href = document;
-                              link.download = fileName;
+                              link.href = downloadUrl;
                               link.click();
                             }}
                             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"

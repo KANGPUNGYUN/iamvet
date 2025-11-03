@@ -48,7 +48,10 @@ export async function POST(request: NextRequest) {
     const uniqueFileName = `${timestamp}-${randomString}.${fileExtension}`;
     const key = `${folder}/${uniqueFileName}`;
 
-    // Presigned URL 생성
+    // UTF-8로 인코딩된 원본 파일명
+    const encodedOriginalFileName = encodeURIComponent(fileName);
+
+    // Presigned URL 생성 (메타데이터는 나중에 별도로 설정)
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: key,

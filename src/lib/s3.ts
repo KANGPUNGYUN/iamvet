@@ -84,7 +84,7 @@ export async function uploadImage(
     // 파일을 Buffer로 변환
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    return await uploadToS3(safeFileName, buffer, file.type);
+    return await uploadToS3(safeFileName, buffer, file.type, undefined, file.name);
   } catch (error) {
     console.error('[S3] uploadImage catch 블록:', {
       error,
@@ -159,7 +159,7 @@ export async function uploadFile(
 
     const buffer = await file.arrayBuffer();
 
-    const result = await uploadToS3(fileName, new Uint8Array(buffer), file.type, 'inline');
+    const result = await uploadToS3(fileName, new Uint8Array(buffer), file.type, 'inline', file.name);
     
     if (!result.success) {
       throw new Error(result.error || '파일 업로드에 실패했습니다');
@@ -265,16 +265,32 @@ async function uploadToS3(
   key: string, 
   body: Buffer | Uint8Array, 
   contentType: string, 
-  contentDisposition?: string
+  contentDisposition?: string,
+  originalFileName?: string
 ): Promise<UploadResult> {
   try {
-    const command = new PutObjectCommand({
+    const commandParams: any = {
       Bucket: BUCKET_NAME,
       Key: key,
       Body: body,
       ContentType: contentType,
-      ...(contentDisposition && { ContentDisposition: contentDisposition }),
-    });
+    };
+
+    // 원본 파일명이 있으면 메타데이터에 저장
+    if (originalFileName) {
+      const encodedOriginalFileName = encodeURIComponent(originalFileName);
+      commandParams.Metadata = {
+        'original-filename': encodedOriginalFileName,
+      };
+      commandParams.ContentDisposition = `attachment; filename*=UTF-8''${encodedOriginalFileName}`;
+    }
+
+    // contentDisposition이 별도로 지정되어 있으면 우선 적용
+    if (contentDisposition) {
+      commandParams.ContentDisposition = contentDisposition;
+    }
+
+    const command = new PutObjectCommand(commandParams);
 
     console.log('[S3] S3 업로드 명령 실행 중...', {
       bucket: BUCKET_NAME,
