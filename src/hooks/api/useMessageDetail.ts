@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getTokenFromStorage } from '@/utils/auth';
+import { api } from '@/lib/api-client';
 
 export interface MessageDetailData {
   id: string;
@@ -42,42 +42,23 @@ export function useMessageDetail(messageId: string, preferredType: 'notification
         setIsLoading(true);
         setError(null);
 
-        const token = getTokenFromStorage();
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
+        console.log('[useMessageDetail] Making API request with cookie auth');
 
         // Try the preferred type first
-        let response = await fetch(`/api/messages/${messageId}?type=${preferredType}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        let response;
+        try {
+          response = await api.get(`/messages/${messageId}?type=${preferredType}`);
+        } catch (error: any) {
+          // If 404, try the other type
+          if (error.response?.status === 404) {
+            const otherType = preferredType === 'notification' ? 'inquiry' : 'notification';
+            response = await api.get(`/messages/${messageId}?type=${otherType}`);
+          } else {
+            throw error;
           }
-        });
-
-        // If 404, try the other type
-        if (response.status === 404) {
-          const otherType = preferredType === 'notification' ? 'inquiry' : 'notification';
-          response = await fetch(`/api/messages/${messageId}?type=${otherType}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
         }
 
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('Authentication required');
-          } else if (response.status === 404) {
-            throw new Error('Message not found');
-          } else if (response.status === 403) {
-            throw new Error('Access denied');
-          }
-          throw new Error('Failed to fetch message');
-        }
-
-        const data = await response.json();
+        const data = response.data;
         setMessage(data.message);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { getTokenFromStorage } from "@/utils/auth";
+import { api } from "@/lib/api-client";
 
 interface WorkConditions {
   workType: string;
@@ -74,11 +73,8 @@ export const useJobDetail = (jobId: string) => {
   return useQuery<JobDetail>({
     queryKey: [QUERY_KEYS.JOB_DETAIL, jobId],
     queryFn: async () => {
-      const token = getTokenFromStorage();
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      
-      console.log('API request with headers:', headers);
-      const response = await axios.get(`/api/jobs/${jobId}`, { headers });
+      console.log('[useJobDetail] Making API request with cookie auth');
+      const response = await api.get(`/jobs/${jobId}`);
       
       if (response.data.status === "success") {
         const job = response.data.data;

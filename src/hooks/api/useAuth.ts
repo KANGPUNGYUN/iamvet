@@ -117,7 +117,7 @@ export function useCurrentUser() {
         };
         console.log('[useCurrentUser] returning server user data:', userData);
         
-        // localStorage에 최신 사용자 정보 저장 (SNS 로그인 시에도 realName과 phone이 포함됨)
+                    // localStorage에 최신 사용자 정보 저장 (SNS 로그인 시에도 realName과 phone이 포함됨)
         if (typeof window !== 'undefined') {
           localStorage.setItem('user', JSON.stringify({
             id: userData.id,
@@ -140,9 +140,11 @@ export function useCurrentUser() {
       console.log('[useCurrentUser] returning null');
       return null;
     },
-    enabled: getHasToken(), // 매번 localStorage를 확인
+    enabled: getHasToken(), // 매번 쿠키와 localStorage를 확인
     staleTime: 1000 * 30, // 30초간 fresh (DB 최신 정보 반영 위해 짧게 설정)
     retry: false, // 인증 실패 시 재시도하지 않음
+    refetchOnMount: true, // 마운트 시 항상 새로고침 (새로고침 대응)
+    refetchOnWindowFocus: true // 윈도우 포커스 시 새로고침
   });
 }
 
@@ -255,6 +257,17 @@ export function useAuth() {
   const { data: user, isLoading: isUserLoading, error, refetch } = useCurrentUser();
   const { isAuthenticated, isLoading: isAuthLoading, setAuthenticated } = useAuthStore();
   
+  // 초기 로드 시 토큰 확인 및 상태 복원
+  React.useEffect(() => {
+    const token = getTokenFromStorage();
+    console.log('[useAuth] Initial load - token check:', !!token);
+    
+    if (token && !user && !isUserLoading) {
+      console.log('[useAuth] Token found on initial load, triggering refetch');
+      refetch();
+    }
+  }, []); // 컴포넌트 마운트 시 한번만 실행
+  
   console.log('[useAuth] Current state:', {
     user: !!user,
     isUserLoading,
@@ -299,19 +312,20 @@ export function useAuth() {
     }
   }, [user, refetch]);
 
-  // localStorage 변화 감지하여 사용자 정보 다시 가져오기
+  // localStorage 및 쿠키 변화 감지하여 사용자 정보 다시 가져오기
   React.useEffect(() => {
     const handleStorageChange = () => {
-      const accessToken = localStorage.getItem('accessToken');
-      console.log('[useAuth] handleStorageChange - accessToken:', !!accessToken, 'user:', !!user);
+      const token = getTokenFromStorage(); // 쿠키 우선으로 토큰 확인
+      console.log('[useAuth] handleStorageChange - token:', !!token, 'user:', !!user);
       
-      // 토큰이 있으면 쿠키도 업데이트
-      if (accessToken) {
-        const expireDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        const isProduction = process.env.NODE_ENV === 'production';
-        const secureFlag = isProduction ? '; secure' : '';
-        document.cookie = `auth-token=${accessToken}; expires=${expireDate.toUTCString()}; path=/${secureFlag}; samesite=strict`;
-        console.log('[useAuth] Cookie updated from localStorage change');
+      // 토큰이 있으면 localStorage와 쿠키 동기화
+      if (token) {
+        // localStorage에 없으면 동기화 (이미 getTokenFromStorage에서 처리됨)
+        const localToken = localStorage.getItem('accessToken');
+        if (!localToken) {
+          localStorage.setItem('accessToken', token);
+        }
+        console.log('[useAuth] Token synchronized');
         
         // 사용자 정보가 있지만 phone이나 birthDate가 누락된 경우 새로고침
         if (user && (!user.phone || !user.birthDate)) {
