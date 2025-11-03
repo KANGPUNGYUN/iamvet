@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // 대학교 이메일 중복 검사
     const existingUniversityEmail = await sql`
-      SELECT id FROM veterinary_student_profiles WHERE university_email = ${universityEmail}
+      SELECT id FROM veterinary_students WHERE "universityEmail" = ${universityEmail}
     `;
 
     if (existingUniversityEmail.length > 0) {
@@ -155,12 +155,12 @@ export async function POST(request: NextRequest) {
     // 수의학과 학생 프로필 생성
     const profileId = createId();
     await sql`
-      INSERT INTO veterinary_student_profiles (
-        id, "userId", nickname, "birthDate", "universityEmail"
+      INSERT INTO veterinary_students (
+        id, "userId", "realName", nickname, "birthDate", "universityEmail", "createdAt", "updatedAt"
       ) VALUES (
-        ${profileId}, ${userId}, ${nickname}, ${
+        ${profileId}, ${userId}, ${realName}, ${nickname}, ${
       birthDate ? new Date(birthDate) : null
-    }, ${universityEmail}
+    }, ${universityEmail}, NOW(), NOW()
       )
     `;
 
