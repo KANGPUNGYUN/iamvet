@@ -55,7 +55,8 @@ export function useCurrentUser() {
         if (localUser) {
           console.log('[useCurrentUser] Cleaning up stale user data without token');
           localStorage.removeItem('user');
-          document.cookie = 'auth-token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict';
+          // HttpOnly 쿠키는 JavaScript로 설정할 수 없음
+          document.cookie = 'auth-token=; Max-Age=0; Path=/; SameSite=Strict';
         }
         return null;
       }
@@ -74,8 +75,8 @@ export function useCurrentUser() {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
-          // 쿠키도 삭제
-          document.cookie = 'auth-token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict';
+          // 쿠키도 삭제 (HttpOnly는 JavaScript로 설정 불가)
+          document.cookie = 'auth-token=; Max-Age=0; Path=/; SameSite=Strict';
           return null;
         }
         
@@ -277,6 +278,8 @@ export function useAuth() {
   
   // URL 파라미터에서 auth=success 확인 시 즉시 상태 업데이트
   React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('auth') === 'success') {
       console.log('[useAuth] Auth success detected in URL, refetching...');

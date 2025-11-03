@@ -53,10 +53,27 @@ apiClient.interceptors.response.use(
     
     // 401 에러시 토큰 정리 (쿠키는 서버에서 처리)
     if (error.response?.status === 401) {
-      console.log('[API Client] 401 error - clearing localStorage');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      const errorMessage = error.response?.data?.error || '';
+      
+      // 특정 에러 메시지에 대해서만 토큰 삭제
+      if (errorMessage.includes('계정 정보가 불완전') || 
+          errorMessage.includes('유효하지 않은 사용자') ||
+          errorMessage.includes('인증이 필요합니다')) {
+        console.log('[API Client] 401 error - clearing authentication data');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        
+        // 쿠키 삭제 시도 (HttpOnly가 아닌 경우만 가능)
+        document.cookie = 'auth-token=; Max-Age=0; Path=/; SameSite=Strict';
+        
+        // 인증 관련 페이지가 아닌 경우 로그인 페이지로 리디렉션
+        if (typeof window !== 'undefined' && 
+            !window.location.pathname.includes('/login') && 
+            !window.location.pathname.includes('/signup')) {
+          window.location.href = '/login';
+        }
+      }
     }
     
     return Promise.reject(error);

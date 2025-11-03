@@ -6,18 +6,8 @@
 export const getTokenFromStorage = (): string | null => {
   if (typeof window === 'undefined') return null;
   
-  // 원래 설계대로 쿠키 우선 확인 (서버에서 설정한 HttpOnly 쿠키)
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'auth-token' && value) {
-      // 쿠키에서 찾으면 localStorage에도 동기화 (편의용)
-      localStorage.setItem('accessToken', value);
-      return value;
-    }
-  }
-  
-  // 쿠키에 없으면 localStorage에서 확인 (fallback)
+  // HttpOnly 쿠키는 JavaScript로 읽을 수 없으므로 localStorage만 확인
+  // 서버는 쿠키를 자동으로 읽을 것임
   return localStorage.getItem('accessToken');
 };
 
