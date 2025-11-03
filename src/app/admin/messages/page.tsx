@@ -37,12 +37,14 @@ import {
   Check,
 } from "@mui/icons-material";
 import { Tag } from "@/components/ui/Tag";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import axios from "axios";
 
 interface AnnouncementData {
   id: string;
   title: string;
   content: string;
+  images: string[];
   priority: "HIGH" | "NORMAL" | "LOW";
   status: "DRAFT" | "SENT" | "PUBLISHED";
   targetUsers: string[];
@@ -68,6 +70,7 @@ export default function AnnouncementManagement() {
   const [announcementData, setAnnouncementData] = useState({
     title: "",
     content: "",
+    images: [] as string[],
     priority: "NORMAL" as AnnouncementData["priority"],
     targetUsers: "ALL" as string,
   });
@@ -163,6 +166,7 @@ export default function AnnouncementManagement() {
       setAnnouncementData({
         title: item.title,
         content: item.content,
+        images: item.images || [],
         priority: item.priority,
         targetUsers: item.targetUsers.includes("ALL") ? "ALL" : 
                     item.targetUsers.includes("VETERINARIAN") ? "VETERINARIAN" :
@@ -179,6 +183,7 @@ export default function AnnouncementManagement() {
     setAnnouncementData({
       title: "",
       content: "",
+      images: [],
       priority: "NORMAL",
       targetUsers: "ALL",
     });
@@ -199,6 +204,7 @@ export default function AnnouncementManagement() {
         const response = await axios.post("/api/admin/announcements", {
           title: announcementData.title,
           content: announcementData.content,
+          images: announcementData.images,
           priority: announcementData.priority,
           targetUsers: targetUsersArray,
         }, {
@@ -217,6 +223,7 @@ export default function AnnouncementManagement() {
         const response = await axios.put(`/api/admin/announcements/${selectedItem.id}`, {
           title: announcementData.title,
           content: announcementData.content,
+          images: announcementData.images,
           priority: announcementData.priority,
           targetUsers: targetUsersArray,
         }, {
@@ -236,6 +243,7 @@ export default function AnnouncementManagement() {
       setAnnouncementData({
         title: "",
         content: "",
+        images: [],
         priority: "NORMAL",
         targetUsers: "ALL",
       });
@@ -561,8 +569,7 @@ export default function AnnouncementManagement() {
                         >
                           {item.title}
                         </Typography>
-                        <Typography
-                          variant="body2"
+                        <Box
                           sx={{ 
                             color: "var(--Subtext2)",
                             overflow: "hidden",
@@ -570,10 +577,19 @@ export default function AnnouncementManagement() {
                             display: "-webkit-box",
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
+                            "& *": {
+                              fontSize: "0.875rem",
+                              lineHeight: 1.43,
+                            }
                           }}
                         >
                           {item.content}
-                        </Typography>
+                          {item.images && item.images.length > 0 && (
+                            <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'primary.main' }}>
+                              📎 이미지 {item.images.length}개
+                            </Typography>
+                          )}
+                        </Box>
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -727,6 +743,11 @@ export default function AnnouncementManagement() {
                   },
                 }}
               />
+              <ImageUpload
+                images={announcementData.images}
+                onChange={(images) => setAnnouncementData(prev => ({ ...prev, images }))}
+                maxImages={5}
+              />
               <Box sx={{ display: "flex", gap: 2 }}>
                 <FormControl sx={{ flex: 1 }}>
                   <InputLabel>우선순위</InputLabel>
@@ -761,9 +782,39 @@ export default function AnnouncementManagement() {
                 <Typography variant="h6" sx={{ fontWeight: 600, color: "#3b394d", mb: 1 }}>
                   {selectedItem.title}
                 </Typography>
-                <Typography variant="body1" sx={{ color: "#3b394d" }}>
-                  {selectedItem.content}
-                </Typography>
+                <Box sx={{ color: "#3b394d", mb: 2 }}>
+                  <Typography variant="body1">
+                    {selectedItem.content}
+                  </Typography>
+                </Box>
+                {selectedItem.images && selectedItem.images.length > 0 && (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      첨부 이미지
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                      gap: 2 
+                    }}>
+                      {selectedItem.images.map((imageUrl, index) => (
+                        <Box
+                          key={index}
+                          component="img"
+                          src={imageUrl}
+                          alt={`첨부 이미지 ${index + 1}`}
+                          sx={{
+                            width: '100%',
+                            height: 150,
+                            objectFit: 'cover',
+                            borderRadius: 1,
+                            border: '1px solid #e0e0e0'
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
               </Box>
               
               <Box>

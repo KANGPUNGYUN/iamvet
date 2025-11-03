@@ -18,7 +18,7 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { title, content, priority, targetUsers } = body;
+    const { title, content, images, priority, targetUsers } = body;
     const resolvedParams = await params;
     const announcementId = resolvedParams.id;
 
@@ -50,7 +50,8 @@ export async function PUT(
         data: {
           targetUserTypes: Array.isArray(targetUsers) ? targetUsers : [targetUsers],
           priority: priority as NotificationPriority,
-        },
+          images: images || [],
+        } as any,
       });
 
       return { notification: updatedNotification, announcement: updatedAnnouncement };

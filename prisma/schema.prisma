@@ -14,6 +14,8 @@ model announcements {
   priority             NotificationPriority   @default(NORMAL)
   expiresAt            DateTime?
   createdBy            String
+  images               String[]               @default([])
+  contentType          String                 @default("text")
   users                users                  @relation(fields: [createdBy], references: [id])
   notifications        notifications          @relation(fields: [notificationId], references: [id], onDelete: Cascade)
   notification_batches notification_batches[]

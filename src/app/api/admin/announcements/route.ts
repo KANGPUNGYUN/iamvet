@@ -81,6 +81,7 @@ export async function GET(req: NextRequest) {
         id: announcement.id,
         title: announcement.notifications?.title || "",
         content: announcement.notifications?.content || "",
+        images: (announcement as any).images || [],
         priority: announcement.priority || "NORMAL",
         status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
         sendCount: latestBatch?.sentCount || 0,
@@ -119,7 +120,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { title, content, priority, targetUsers } = body;
+    const { title, content, images, priority, targetUsers } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -168,8 +169,10 @@ export async function POST(req: NextRequest) {
             : ["VETERINARIAN", "HOSPITAL", "VETERINARY_STUDENT"],
           priority:
             (priority as NotificationPriority) || NotificationPriority.NORMAL,
+          images: images || [],
+          contentType: "text",
           createdBy: adminUser.id,
-        },
+        } as any,
       });
 
       return { notification, announcement };
@@ -181,6 +184,7 @@ export async function POST(req: NextRequest) {
         id: result.announcement.id,
         title,
         content,
+        images: (result.announcement as any).images || [],
         priority: result.announcement.priority,
         targetUsers: result.announcement.targetUserTypes,
         status: "DRAFT",
