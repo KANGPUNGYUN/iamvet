@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // S3 key 추출
     const urlParts = fileUrl.split('/');
-    const bucketIndex = urlParts.findIndex(part => part.includes(BUCKET_NAME));
+    const bucketIndex = urlParts.findIndex((part: string) => part.includes(BUCKET_NAME));
     
     if (bucketIndex === -1) {
       return NextResponse.json(
