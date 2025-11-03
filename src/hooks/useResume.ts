@@ -84,7 +84,9 @@ export const useSaveVeterinarianResume = () => {
     onSuccess: () => {
       // 관련 쿼리 무효화하여 최신 데이터 다시 로드
       queryClient.invalidateQueries({ queryKey: ['veterinarian-resume'] });
-      console.log('[useSaveVeterinarianResume] Cache invalidated');
+      queryClient.invalidateQueries({ queryKey: ['resume-status'] });
+      queryClient.invalidateQueries({ queryKey: ['has-resume'] });
+      console.log('[useSaveVeterinarianResume] All resume-related caches invalidated');
     },
     onError: (error) => {
       console.error('[useSaveVeterinarianResume] Save failed:', error);

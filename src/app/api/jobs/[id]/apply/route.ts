@@ -4,6 +4,8 @@ import { createApplication, query } from "@/lib/database";
 import { prisma } from "@/lib/prisma";
 import { NotificationType } from "@prisma/client";
 import { nanoid } from "nanoid";
+import { getVeterinarianResumeAction } from "@/actions/resume";
+import { getTokenFromStorage } from "@/utils/auth";
 
 export const POST = withAuth(
   async (request: NextRequest, context: any) => {
@@ -15,6 +17,58 @@ export const POST = withAuth(
       console.log('=== Apply route called ===');
       console.log('Job ID:', jobId);
       console.log('User:', { userId: user.userId, userType: user.userType });
+      
+      // 이력서 존재 여부 확인
+      const authHeader = request.headers.get('authorization');
+      let token: string | null = null;
+      
+      if (authHeader?.startsWith('Bearer ')) {
+        token = authHeader.slice(7);
+      }
+      
+      if (!token) {
+        // 쿠키에서 토큰 확인
+        const authTokenCookie = request.cookies.get('auth-token')?.value;
+        if (authTokenCookie) {
+          token = authTokenCookie;
+        }
+      }
+      
+      if (!token) {
+        return NextResponse.json({
+          status: 'error',
+          message: '인증 토큰이 필요합니다'
+        }, { status: 401 });
+      }
+      
+      // 이력서 존재 여부 실시간 확인
+      console.log('=== Checking resume existence ===');
+      const resumeResult = await getVeterinarianResumeAction(token);
+      
+      if (!resumeResult.success) {
+        console.log('Resume check failed:', resumeResult.error);
+        return NextResponse.json({
+          status: 'error',
+          message: '이력서 정보를 확인할 수 없습니다. 다시 시도해주세요.',
+          code: 'RESUME_CHECK_FAILED'
+        }, { status: 500 });
+      }
+      
+      if (!resumeResult.data) {
+        console.log('No resume found for user:', user.userId);
+        return NextResponse.json({
+          status: 'error',
+          message: '지원하기 전에 이력서를 먼저 작성해주세요.',
+          code: 'RESUME_REQUIRED',
+          redirectUrl: '/dashboard/veterinarian/resume'
+        }, { status: 400 });
+      }
+      
+      console.log('Resume found:', {
+        resumeId: resumeResult.data.id,
+        name: resumeResult.data.name,
+        updatedAt: resumeResult.data.updatedAt
+      });
       
       // Check if already applied
       const existingApplication = await query(

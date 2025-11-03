@@ -23,6 +23,7 @@ import { useJobDetail } from "@/hooks/api/useJobDetail";
 import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/api/useAuth";
 import { useHasResume } from "@/hooks/api/useResume";
+import { useResumeStatus, useResumeStatusRefresh } from "@/hooks/useResumeStatus";
 import { useLikeStore } from "@/stores/likeStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
 import axios from "axios";
@@ -70,6 +71,21 @@ export default function JobDetailPage({
     isLoading: isResumeLoading,
     error: resumeError,
   } = useHasResume();
+
+  // API 응답의 isOwner 값을 사용하되, 클라이언트에서도 추가 체크
+  const isOwner =
+    jobData?.isOwner === true ||
+    (isAuthenticated &&
+      user?.type === "hospital" &&
+      user?.id &&
+      jobData?.hospitalUserId === user.id);
+  
+  // 수의사 계정 확인
+  const canApply = isAuthenticated && user?.type === "veterinarian" && !isOwner;
+  
+  // 이력서 상태 실시간 확인
+  const { data: resumeStatus, isLoading: isResumeStatusLoading } = useResumeStatus(canApply);
+  const { checkResumeStatus } = useResumeStatusRefresh();
 
   // 초기 좋아요 상태 동기화
   useEffect(() => {
@@ -165,17 +181,6 @@ export default function JobDetailPage({
       incrementViewCount();
     }
   }, [jobData?.id]); // jobData가 설정될 때마다 실행
-
-  // API 응답의 isOwner 값을 사용하되, 클라이언트에서도 추가 체크
-  const isOwner =
-    jobData?.isOwner === true ||
-    (isAuthenticated &&
-      user?.type === "hospital" &&
-      user?.id &&
-      jobData?.hospitalUserId === user.id);
-
-  // 수의사 또는 수의학과 학생인지 확인
-  const canApply = isAuthenticated && user?.type === "veterinarian" && !isOwner;
 
   // 디버깅: isOwner 상태 확인
   console.log("Owner check:", {
@@ -352,7 +357,7 @@ export default function JobDetailPage({
     setContactModalOpen(true);
   };
 
-  const handleApplyClick = () => {
+  const handleApplyClick = async () => {
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
       router.push("/member-select");
@@ -364,27 +369,57 @@ export default function JobDetailPage({
       return;
     }
 
-    // 이력서 로딩 중이면 잠시 대기
-    if (isResumeLoading) {
-      alert("이력서 정보를 확인하는 중입니다. 잠시 후 다시 시도해주세요.");
-      return;
-    }
+    // 이력서 상태를 실시간으로 재확인
+    console.log("[Apply] 이력서 상태 실시간 확인 중...");
+    
+    try {
+      const freshResumeStatus = await checkResumeStatus();
+      
+      if (!freshResumeStatus.data?.data?.hasResume) {
+        console.log("[Apply] 이력서 없음 - 작성 페이지로 이동");
+        setResumeRequiredModalOpen(true);
+        return;
+      }
+      
+      console.log("[Apply] 이력서 확인 완료 - 지원 진행", {
+        hasResume: freshResumeStatus.data.data.hasResume,
+        resume: freshResumeStatus.data.data.resume
+      });
+      
+      handleApply();
+    } catch (error) {
+      console.error("[Apply] 이력서 상태 확인 실패:", error);
+      
+      // 토큰 관련 오류인 경우
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('token'))) {
+        clearExpiredAuth();
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        router.push("/member-select");
+        return;
+      }
+      
+      // 기존 방식으로 폴백
+      if (isResumeLoading || isResumeStatusLoading) {
+        alert("이력서 정보를 확인하는 중입니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
 
-    // 이력서 확인 중 에러가 발생한 경우 (토큰 만료 등)
-    if (resumeError) {
-      console.log("Resume error detected:", resumeError);
-      clearExpiredAuth();
-      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-      router.push("/member-select");
-      return;
-    }
+      if (resumeError) {
+        console.log("Resume error detected:", resumeError);
+        clearExpiredAuth();
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        router.push("/member-select");
+        return;
+      }
 
-    if (!hasResume) {
-      setResumeRequiredModalOpen(true);
-      return;
+      if (!hasResume && !resumeStatus?.data?.hasResume) {
+        setResumeRequiredModalOpen(true);
+        return;
+      }
+      
+      // 그래도 문제없으면 지원 진행
+      handleApply();
     }
-
-    handleApply();
   };
 
   const handleApply = async () => {
@@ -804,11 +839,11 @@ export default function JobDetailPage({
                         variant="default"
                         size="large"
                         onClick={handleApplyClick}
-                        disabled={isApplying || isResumeLoading}
+                        disabled={isApplying || isResumeLoading || isResumeStatusLoading}
                       >
                         {isApplying
                           ? "지원 중..."
-                          : isResumeLoading
+                          : (isResumeLoading || isResumeStatusLoading)
                           ? "확인 중..."
                           : "지원하기"}
                       </Button>
