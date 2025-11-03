@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { HospitalOnlyButton } from "@/components/ui/HospitalOnlyButton";
 import { useHospitalAuthModal } from "@/hooks/useHospitalAuthModal";
 import { HospitalAuthModal } from "@/components/ui/HospitalAuthModal";
+import { useNotificationStore } from "@/store/notificationStore";
 import { HeaderMobileMenuProps, DashboardMenuItem } from "./types";
 import {
   HomeIcon,
@@ -104,6 +105,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   const pathname = usePathname();
   const { showModal, isModalOpen, closeModal, modalReturnUrl } =
     useHospitalAuthModal();
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
   const [expandedGroups, setExpandedGroups] = React.useState<Set<string>>(
     new Set(["bookmarks"])
   );
@@ -208,6 +210,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           label: "알림/메시지 관리",
           icon: BellOutlineIcon,
           href: "/dashboard/veterinarian/messages",
+          badge: unreadCount,
         },
         {
           id: "profile",
@@ -241,7 +244,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           label: "알림/메시지 관리",
           icon: BellOutlineIcon,
           href: "/dashboard/hospital/messages",
-          badge: 3,
+          badge: unreadCount,
         },
         {
           id: "profile",
@@ -281,6 +284,11 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
       return newSet;
     });
   };
+
+  // 알림 수 가져오기
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [fetchUnreadCount]);
 
   // 메뉴가 열렸을 때 body 스크롤 방지
   useEffect(() => {
