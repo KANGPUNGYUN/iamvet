@@ -131,7 +131,7 @@ const ImageSlider = ({ images }: { images: string[] }) => {
           src={images[currentIndex]}
           alt={`슬라이드 ${currentIndex + 1}`}
           fill
-          className="object-cover h-full"
+          className="object-contain h-full"
         />
 
         {/* 모바일용 페이지 인디케이터 (우측 하단) */}
@@ -182,7 +182,7 @@ const ImageSlider = ({ images }: { images: string[] }) => {
                 alt={`썸네일 ${index + 1}`}
                 width={64}
                 height={64}
-                className="object-cover w-full h-full"
+                className="object-contain w-full h-full"
               />
             </button>
           ))}
@@ -291,10 +291,7 @@ export default function TransferDetailPage({
   } = useLikeStore();
 
   // Zustand 스토어에서 조회수 상태 관리
-  const {
-    setTransferViewCount,
-    getTransferViewCount,
-  } = useViewCountStore();
+  const { setTransferViewCount, getTransferViewCount } = useViewCountStore();
 
   useEffect(() => {
     const fetchTransferDetail = async () => {
@@ -369,7 +366,9 @@ export default function TransferDetailPage({
   // 조회수 증가 함수
   const incrementViewCount = async () => {
     try {
-      console.log(`[TransferDetail] 조회수 증가 API 호출 시작 - Transfer ID: ${id}`);
+      console.log(
+        `[TransferDetail] 조회수 증가 API 호출 시작 - Transfer ID: ${id}`
+      );
 
       const token = localStorage.getItem("accessToken");
       const headers: HeadersInit = {
@@ -398,7 +397,10 @@ export default function TransferDetailPage({
         console.log("[TransferDetail] API 응답 데이터:", data);
 
         if (data.status === "success" && data.data?.viewCount) {
-          console.log("[TransferDetail] 조회수 증가 성공:", data.data.viewCount);
+          console.log(
+            "[TransferDetail] 조회수 증가 성공:",
+            data.data.viewCount
+          );
           setTransferViewCount(id, data.data.viewCount);
         } else {
           console.warn(
@@ -422,12 +424,14 @@ export default function TransferDetailPage({
   // 조회수 증가를 위한 별도 useEffect
   useEffect(() => {
     if (transferData) {
-      console.log("[TransferDetail] 양도양수 데이터 로드 완료, 조회수 증가 API 호출");
-      
+      console.log(
+        "[TransferDetail] 양도양수 데이터 로드 완료, 조회수 증가 API 호출"
+      );
+
       // 낙관적 업데이트: API 호출 전에 먼저 클라이언트에서 조회수 증가
       const currentViewCount = getTransferViewCount(id);
       setTransferViewCount(id, currentViewCount + 1);
-      
+
       // 그 다음 API 호출
       incrementViewCount();
     }
@@ -941,101 +945,172 @@ export default function TransferDetailPage({
             </div>
 
             {/* 첨부 파일 */}
-            {(transferData as any).documents && (transferData as any).documents.length > 0 && (
-              <div className="mt-[30px] lg:mt-[50px] border-t-[1px] border-t-[#EFEFF0] pt-[30px] lg:pt-[50px]">
-                <h2 className="font-title text-[16px] lg:text-[20px] title-light text-primary mb-[15px] lg:mb-[20px]">
-                  첨부 파일
-                </h2>
-                <div className="space-y-3">
-                  {(transferData as any).documents.map((document: string, index: number) => {
-                    const fileName = document.split('/').pop() || `파일${index + 1}`;
-                    const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
-                    
-                    // 파일 타입별 아이콘 (DocumentUpload의 getFileIcon 함수 참고)
-                    const getFileIcon = () => {
-                      // PDF 파일
-                      if (fileExtension === 'pdf') {
-                        return <PdfIcon currentColor="#EF4444" />;
-                      }
-                      // Excel 파일
-                      if (['xlsx', 'xls', 'xlsm'].includes(fileExtension)) {
-                        return <ExcelIcon currentColor="#22C55E" />;
-                      }
-                      // Word 파일
-                      if (['doc', 'docx'].includes(fileExtension)) {
-                        return <WordIcon currentColor="#3B82F6" />;
-                      }
-                      // 이미지 파일
-                      if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(fileExtension)) {
+            {(transferData as any).documents &&
+              (transferData as any).documents.length > 0 && (
+                <div className="mt-[30px] lg:mt-[50px] border-t-[1px] border-t-[#EFEFF0] pt-[30px] lg:pt-[50px]">
+                  <h2 className="font-title text-[16px] lg:text-[20px] title-light text-primary mb-[15px] lg:mb-[20px]">
+                    첨부 파일
+                  </h2>
+                  <div className="space-y-3">
+                    {(transferData as any).documents.map(
+                      (document: string, index: number) => {
+                        const fileName =
+                          document.split("/").pop() || `파일${index + 1}`;
+                        const fileExtension =
+                          fileName.split(".").pop()?.toLowerCase() || "";
+
+                        // 파일 타입별 아이콘 (DocumentUpload의 getFileIcon 함수 참고)
+                        const getFileIcon = () => {
+                          // PDF 파일
+                          if (fileExtension === "pdf") {
+                            return <PdfIcon currentColor="#EF4444" />;
+                          }
+                          // Excel 파일
+                          if (["xlsx", "xls", "xlsm"].includes(fileExtension)) {
+                            return <ExcelIcon currentColor="#22C55E" />;
+                          }
+                          // Word 파일
+                          if (["doc", "docx"].includes(fileExtension)) {
+                            return <WordIcon currentColor="#3B82F6" />;
+                          }
+                          // 이미지 파일
+                          if (
+                            [
+                              "jpg",
+                              "jpeg",
+                              "png",
+                              "gif",
+                              "bmp",
+                              "svg",
+                            ].includes(fileExtension)
+                          ) {
+                            return (
+                              <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
+                                <rect
+                                  x="3"
+                                  y="3"
+                                  width="18"
+                                  height="18"
+                                  rx="3"
+                                  fill="#10B981"
+                                />
+                                <circle cx="9" cy="9" r="1.5" fill="white" />
+                                <path
+                                  d="M21 15l-3-3a1.5 1.5 0 00-2.121 0L6 21"
+                                  stroke="white"
+                                  strokeWidth="2.25"
+                                />
+                              </svg>
+                            );
+                          }
+                          // 기본 파일 아이콘
+                          return (
+                            <svg
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <rect
+                                x="3"
+                                y="1.5"
+                                width="15"
+                                height="21"
+                                rx="1.5"
+                                fill="#6B7280"
+                              />
+                              <path
+                                d="M7.5 7.5h6M7.5 12h4.5M7.5 16.5h3"
+                                stroke="white"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          );
+                        };
+
                         return (
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <rect x="3" y="3" width="18" height="18" rx="3" fill="#10B981" />
-                            <circle cx="9" cy="9" r="1.5" fill="white" />
-                            <path
-                              d="M21 15l-3-3a1.5 1.5 0 00-2.121 0L6 21"
-                              stroke="white"
-                              strokeWidth="2.25"
-                            />
-                          </svg>
+                          <div
+                            key={index}
+                            className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                            onClick={() => window.open(document, "_blank")}
+                          >
+                            {getFileIcon()}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {fileName}
+                              </p>
+                              <p className="text-xs text-gray-500 uppercase">
+                                {fileExtension} 파일
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const downloadUrl = `/api/download?url=${encodeURIComponent(
+                                    document
+                                  )}`;
+                                  const link =
+                                    globalThis.document.createElement("a");
+                                  link.href = downloadUrl;
+                                  link.click();
+                                }}
+                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                                title="다운로드"
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  />
+                                  <polyline
+                                    points="7,10 12,15 17,10"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  />
+                                  <line
+                                    x1="12"
+                                    y1="15"
+                                    x2="12"
+                                    y2="3"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  />
+                                </svg>
+                              </button>
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                className="text-gray-400"
+                              >
+                                <path
+                                  d="m9 18 6-6-6-6"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                />
+                              </svg>
+                            </div>
+                          </div>
                         );
                       }
-                      // 기본 파일 아이콘
-                      return (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                          <rect x="3" y="1.5" width="15" height="21" rx="1.5" fill="#6B7280" />
-                          <path
-                            d="M7.5 7.5h6M7.5 12h4.5M7.5 16.5h3"
-                            stroke="white"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      );
-                    };
-
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => window.open(document, '_blank')}
-                      >
-                        {getFileIcon()}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {fileName}
-                          </p>
-                          <p className="text-xs text-gray-500 uppercase">
-                            {fileExtension} 파일
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const downloadUrl = `/api/download?url=${encodeURIComponent(document)}`;
-                              const link = globalThis.document.createElement('a');
-                              link.href = downloadUrl;
-                              link.click();
-                            }}
-                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-                            title="다운로드"
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2"/>
-                              <polyline points="7,10 12,15 17,10" stroke="currentColor" strokeWidth="2"/>
-                              <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" strokeWidth="2"/>
-                            </svg>
-                          </button>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-400">
-                            <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2"/>
-                          </svg>
-                        </div>
-                      </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </section>
 
           {/* 추천 양도양수 섹션 */}
