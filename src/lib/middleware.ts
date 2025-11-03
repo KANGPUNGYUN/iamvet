@@ -44,6 +44,27 @@ export const withAuth = (handler: Function) => {
 
       if (!user) {
         console.log('withAuth: 사용자 없음 - DB에서 userId를 찾을 수 없음:', payload.userId);
+        
+        // 특별 처리: SNS 계정 복구 시도
+        try {
+          const socialAccount = await (prisma as any).social_accounts.findFirst({
+            where: { userId: payload.userId }
+          });
+          
+          if (socialAccount) {
+            console.log('withAuth: SNS 계정 발견 - 사용자 복구 시도:', socialAccount);
+            // SNS 계정이 있지만 users 테이블에 없는 경우 - 로그아웃 처리
+            return NextResponse.json(createErrorResponse("계정 정보가 불완전합니다. 다시 로그인해주세요."), {
+              status: 401,
+              headers: {
+                'Set-Cookie': 'auth-token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict'
+              }
+            });
+          }
+        } catch (error) {
+          console.error('withAuth: SNS 계정 확인 중 오류:', error);
+        }
+        
         return NextResponse.json(createErrorResponse("유효하지 않은 사용자입니다"), {
           status: 401,
         });

@@ -2699,27 +2699,28 @@ export async function completeSocialVeterinaryStudentRegistration(
     const currentDate = new Date();
     
     const existingProfile = await sql`
-      SELECT id FROM veterinary_student_profiles WHERE "userId" = ${user.id}
+      SELECT id FROM veterinary_students WHERE "userId" = ${user.id}
     `;
     
     if (existingProfile.length === 0) {
       const profileId = createId();
       console.log(`SERVER: [${timestamp}] Creating veterinary student profile with ID: ${profileId}`);
       await sql`
-        INSERT INTO veterinary_student_profiles (
-          id, "userId", nickname, "birthDate", "universityEmail",
+        INSERT INTO veterinary_students (
+          id, "userId", "realName", nickname, "birthDate", "universityEmail",
           "createdAt", "updatedAt"
         )
         VALUES (
-          ${profileId}, ${user.id}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${universityEmail}, ${currentDate}, ${currentDate}
+          ${profileId}, ${user.id}, ${realName || name}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${universityEmail}, ${currentDate}, ${currentDate}
         )
       `;
       console.log(`SERVER: [${timestamp}] Veterinary student profile created successfully`);
     } else {
       console.log(`SERVER: [${timestamp}] Updating existing veterinary student profile`);
       await sql`
-        UPDATE veterinary_student_profiles 
+        UPDATE veterinary_students 
         SET 
+          "realName" = ${realName || name},
           nickname = ${nickname},
           "birthDate" = ${birthDate ? new Date(birthDate) : null},
           "universityEmail" = ${universityEmail},

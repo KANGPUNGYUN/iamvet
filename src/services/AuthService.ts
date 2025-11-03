@@ -96,119 +96,30 @@ export class AuthService {
             message: "이미 가입된 계정이 있습니다",
           };
         } else {
-          // For new SNS users, create a basic user record with incomplete profile
-          // This prevents foreign key violations while allowing profile completion
-          console.log("Creating new SNS user:", email, provider);
-          
-          try {
-            // Import the sql function to create user directly
-            const { sql } = await import("@/lib/db");
-            const { generateTokens } = await import("@/lib/database");
-            
-            // Generate user ID using same pattern as database.ts
-            const userId = `user_${Date.now()}_${Math.random()
-              .toString(36)
-              .substring(2)}`;
-            const currentDate = new Date();
-            
-            // Create basic user record
-            const userResult = await sql`
-              INSERT INTO users (
-                id, email, phone, "passwordHash", "userType", "profileImage", provider,
-                "realName", nickname, "birthDate",
-                "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", 
-                "isActive", "createdAt", "updatedAt"
-              )
-              VALUES (
-                ${userId}, ${email}, ${phone || null}, null, ${userType.toUpperCase()}, ${profileImage || null}, ${provider.toUpperCase()},
-                ${realName || name}, ${name}, ${birthDate ? new Date(birthDate) : null},
-                ${currentDate}, ${currentDate}, null,
-                true, ${currentDate}, ${currentDate}
-              )
-              RETURNING *
-            `;
-            
-            const newUser = userResult[0];
-            
-            // Create social account link
-            const socialAccountId = `sa_${Date.now()}_${Math.random()
-              .toString(36)
-              .substring(2)}`;
-            await sql`
-              INSERT INTO social_accounts (
-                id, "userId", provider, "providerId", "accessToken", "refreshToken", 
-                "createdAt", "updatedAt"
-              )
-              VALUES (
-                ${socialAccountId}, ${newUser.id}, ${provider.toUpperCase()}, ${providerId}, 
-                null, null, ${currentDate}, ${currentDate}
-              )
-            `;
-            
-            // Generate tokens for the new user
-            const tokens = await generateTokens(newUser);
-            
-            console.log("Successfully created SNS user:", newUser.id);
-            
-            return {
-              success: true,
-              data: {
-                user: {
-                  id: newUser.id,
-                  email: newUser.email,
-                  name,
-                  realName: realName || name,
-                  phone,
-                  birthDate,
-                  profileImage,
-                  provider,
-                  providerId,
-                  userType: userType,
-                  socialAccounts: [{ provider, providerId }],
-                },
-                tokens,
-                isNewUser: true,
-                isProfileComplete: false, // Still needs profile completion
-                socialData: {
-                  email,
-                  name,
-                  realName,
-                  phone,
-                  birthDate,
-                  profileImage,
-                  provider,
-                  providerId,
-                  userType,
-                },
+          // For new users, redirect to registration completion (no immediate user creation)
+          // This maintains the existing flow and data integrity
+          return {
+            success: true,
+            data: {
+              user: null,
+              tokens: null,
+              isNewUser: true,
+              isProfileComplete: false,
+              // Pass social data for registration completion
+              socialData: {
+                email,
+                name,
+                realName,
+                phone,
+                birthDate,
+                profileImage,
+                provider,
+                providerId,
+                userType,
               },
-              message: `${provider} 로그인 성공 - 회원가입 완료 필요`,
-            };
-          } catch (error) {
-            console.error("Failed to create SNS user:", error);
-            
-            // Fallback to old behavior if user creation fails
-            return {
-              success: true,
-              data: {
-                user: null,
-                tokens: null,
-                isNewUser: true,
-                isProfileComplete: false,
-                socialData: {
-                  email,
-                  name,
-                  realName,
-                  phone,
-                  birthDate,
-                  profileImage,
-                  provider,
-                  providerId,
-                  userType,
-                },
-              },
-              message: `${provider} 로그인 성공 - 회원가입 완료 필요`,
-            };
-          }
+            },
+            message: `${provider} 로그인 성공 - 회원가입 완료 필요`,
+          };
         }
       }
 

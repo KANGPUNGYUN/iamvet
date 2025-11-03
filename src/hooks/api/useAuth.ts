@@ -55,24 +55,40 @@ export function useCurrentUser() {
       const result = await getCurrentUser();
       console.log('[useCurrentUser] getCurrentUser result:', result);
       
-      // 서버에서 데이터를 가져올 수 없는 경우 localStorage 폴백 사용
-      if (!result.success && localUser) {
-        console.log('[useCurrentUser] Server failed, using localStorage fallback:', localUser);
-        const userData = {
-          id: localUser.id,
-          name: localUser.name || localUser.realName || localUser.email,
-          email: localUser.email,
-          realName: localUser.realName || localUser.name,
-          type: (localUser.userType === "veterinary-student" || localUser.userType === "VETERINARY_STUDENT") ? "veterinarian" : localUser.userType,
-          profileName: localUser.profileName || (localUser.userType === "hospital" ? localUser.hospitalName : localUser.name) || localUser.realName,
-          profileImage: localUser.profileImage,
-          hospitalName: localUser.hospitalName,
-          hospitalLogo: localUser.hospitalLogo,
-          phone: localUser.phone,
-          birthDate: localUser.birthDate ? (typeof localUser.birthDate === 'string' ? localUser.birthDate : localUser.birthDate.toISOString().split('T')[0]) : undefined,
-          provider: localUser.provider,
-        };
-        return userData;
+      // 서버에서 데이터를 가져올 수 없는 경우 처리
+      if (!result.success) {
+        // 계정 정보 불완전 오류인 경우 자동 로그아웃
+        if (result.error?.includes?.('계정 정보가 불완전') || 
+            result.error?.includes?.('유효하지 않은 사용자')) {
+          console.log('[useCurrentUser] 계정 정보 불완전 - 자동 로그아웃 처리');
+          // 토큰 및 사용자 정보 삭제
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          // 쿠키도 삭제
+          document.cookie = 'auth-token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict';
+          return null;
+        }
+        
+        // 다른 서버 오류의 경우 localStorage 폴백 사용
+        if (localUser) {
+          console.log('[useCurrentUser] Server failed, using localStorage fallback:', localUser);
+          const userData = {
+            id: localUser.id,
+            name: localUser.name || localUser.realName || localUser.email,
+            email: localUser.email,
+            realName: localUser.realName || localUser.name,
+            type: (localUser.userType === "veterinary-student" || localUser.userType === "VETERINARY_STUDENT") ? "veterinarian" : localUser.userType,
+            profileName: localUser.profileName || (localUser.userType === "hospital" ? localUser.hospitalName : localUser.name) || localUser.realName,
+            profileImage: localUser.profileImage,
+            hospitalName: localUser.hospitalName,
+            hospitalLogo: localUser.hospitalLogo,
+            phone: localUser.phone,
+            birthDate: localUser.birthDate ? (typeof localUser.birthDate === 'string' ? localUser.birthDate : localUser.birthDate.toISOString().split('T')[0]) : undefined,
+            provider: localUser.provider,
+          };
+          return userData;
+        }
       }
       
       if (result.success && 'user' in result && result.user) {
