@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentUser, login as loginAction, logout as logoutAction } from '@/actions/auth';
 import { useAuthStore } from '@/store/authStore';
 import { syncTokensWithCookie, removeAuthCookie } from '@/lib/auth';
+import { getTokenFromStorage } from '@/utils/auth';
 import type { User } from '@/store/authStore';
 
 interface LoginCredentials {
@@ -21,9 +22,9 @@ export function useCurrentUser() {
   // useState 대신 매번 localStorage를 직접 확인
   const getHasToken = () => {
     if (typeof window === 'undefined') return false;
-    const accessToken = localStorage.getItem('accessToken');
-    const hasValidToken = !!accessToken && accessToken.length > 10; // 최소 길이 검증
-    console.log('[getHasToken] checking token:', { hasToken: !!accessToken, isValid: hasValidToken, length: accessToken?.length });
+    const token = getTokenFromStorage(); // 쿠키 우선으로 토큰 확인
+    const hasValidToken = !!token && token.length > 10;
+    console.log('[getHasToken] checking token:', { hasToken: !!token, isValid: hasValidToken, length: token?.length });
     return hasValidToken;
   };
 
