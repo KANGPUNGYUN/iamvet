@@ -1213,10 +1213,10 @@ export const createNotification = async (notificationData: {
   applicationStatus?: ApplicationStatus;
 }) => {
   try {
-    console.log('createNotification called with:', {
+    console.log("createNotification called with:", {
       userId: notificationData.userId,
       type: notificationData.type,
-      title: notificationData.title
+      title: notificationData.title,
     });
 
     // 사용자 타입 조회
@@ -1224,18 +1224,20 @@ export const createNotification = async (notificationData: {
       'SELECT "userType", email FROM users WHERE id = $1',
       [notificationData.userId]
     );
-    
-    console.log('User lookup result:', userTypeResult.rows[0]);
-    
+
+    console.log("User lookup result:", userTypeResult.rows[0]);
+
     if (!userTypeResult.rows[0]) {
-      console.error('User not found:', notificationData.userId);
+      console.error("User not found:", notificationData.userId);
       throw new Error(`User not found: ${notificationData.userId}`);
     }
-    
-    const recipientType = userTypeResult.rows[0]?.userType || 'VETERINARIAN';
+
+    const recipientType = userTypeResult.rows[0]?.userType || "VETERINARIAN";
 
     // Generate unique ID for notification
-    const notificationId = `notification_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const notificationId = `notification_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2)}`;
 
     const query = `
       INSERT INTO notifications (id, "recipientId", "recipientType", type, title, content, "isRead", "senderId", "createdAt", "updatedAt")
@@ -1254,12 +1256,12 @@ export const createNotification = async (notificationData: {
       notificationData.senderId,
     ];
 
-    console.log('Executing notification insert with values:', values);
+    console.log("Executing notification insert with values:", values);
     const result = await pool.query(query, values);
-    console.log('Notification created successfully:', result.rows[0]);
+    console.log("Notification created successfully:", result.rows[0]);
     return result.rows[0];
   } catch (error) {
-    console.error('createNotification error:', error);
+    console.error("createNotification error:", error);
     throw error;
   }
 };
@@ -1990,7 +1992,7 @@ export const incrementLectureViewCount = async (
 export const getRecommendedLectures = async (
   lectureId: string,
   medicalField?: string,
-  limit: number = 5
+  limit: number = 1
 ) => {
   // 먼저 같은 카테고리 강의를 찾기
   let query = `
@@ -2011,30 +2013,37 @@ export const getRecommendedLectures = async (
   }
 
   let result = await pool.query(query, params);
-  
+
   // 같은 카테고리 강의가 충분하지 않은 경우 다른 카테고리 강의도 포함
   if (result.rows.length < limit && medicalField) {
     const remainingLimit = limit - result.rows.length;
-    const existingIds = result.rows.map(row => row.id);
-    
+    const existingIds = result.rows.map((row) => row.id);
+
     let additionalQuery = `
       SELECT * FROM lectures 
       WHERE id != $1 AND "deletedAt" IS NULL
       AND category != $2
     `;
-    
+
     const additionalParams = [lectureId, medicalField];
-    
+
     if (existingIds.length > 0) {
-      const placeholders = existingIds.map((_, index) => `$${index + 3}`).join(', ');
+      const placeholders = existingIds
+        .map((_, index) => `$${index + 3}`)
+        .join(", ");
       additionalQuery += ` AND id NOT IN (${placeholders})`;
       additionalParams.push(...existingIds);
     }
-    
-    additionalQuery += ` ORDER BY "viewCount" DESC, "createdAt" DESC LIMIT $${additionalParams.length + 1}`;
+
+    additionalQuery += ` ORDER BY "viewCount" DESC, "createdAt" DESC LIMIT $${
+      additionalParams.length + 1
+    }`;
     additionalParams.push(remainingLimit.toString());
-    
-    const additionalResult = await pool.query(additionalQuery, additionalParams);
+
+    const additionalResult = await pool.query(
+      additionalQuery,
+      additionalParams
+    );
     result.rows = [...result.rows, ...additionalResult.rows];
   }
 
@@ -3388,7 +3397,7 @@ export const getHospitalApplicants = async (hospitalId: string) => {
     ORDER BY a."appliedAt" DESC
   `;
   const result = await pool.query(query, [hospitalId]);
-  
+
   // 데이터베이스에서 직접 가져온 상태를 그대로 사용
   return result.rows;
 };
@@ -4594,8 +4603,16 @@ export const getTransferById = async (transferId: string) => {
   const transfer = result.rows[0];
   return {
     ...transfer,
-    images: transfer.images ? (typeof transfer.images === 'string' ? JSON.parse(transfer.images) : transfer.images) : [],
-    documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
+    images: transfer.images
+      ? typeof transfer.images === "string"
+        ? JSON.parse(transfer.images)
+        : transfer.images
+      : [],
+    documents: transfer.documents
+      ? typeof transfer.documents === "string"
+        ? JSON.parse(transfer.documents)
+        : transfer.documents
+      : [],
     user: {
       id: transfer.userId,
       hospitalName: transfer.hospitalName,
@@ -4606,7 +4623,6 @@ export const getTransferById = async (transferId: string) => {
     longitude: transfer.longitude,
   };
 };
-
 
 export const incrementTransferViewCount = async (
   transferId: string,
@@ -4731,10 +4747,18 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   `;
   const result = await pool.query(query, [limit, offset]);
 
-  const transfers = result.rows.map(transfer => ({
+  const transfers = result.rows.map((transfer) => ({
     ...transfer,
-    images: transfer.images ? (typeof transfer.images === 'string' ? JSON.parse(transfer.images) : transfer.images) : [],
-    documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
+    images: transfer.images
+      ? typeof transfer.images === "string"
+        ? JSON.parse(transfer.images)
+        : transfer.images
+      : [],
+    documents: transfer.documents
+      ? typeof transfer.documents === "string"
+        ? JSON.parse(transfer.documents)
+        : transfer.documents
+      : [],
   }));
 
   return {
@@ -4818,11 +4842,15 @@ export const getTransferByIdForEdit = async (transferId: string) => {
   `;
   const result = await pool.query(query, [transferId]);
   if (!result.rows[0]) return null;
-  
+
   const transfer = result.rows[0];
   return {
     ...transfer,
-    documents: transfer.documents ? (typeof transfer.documents === 'string' ? JSON.parse(transfer.documents) : transfer.documents) : [],
+    documents: transfer.documents
+      ? typeof transfer.documents === "string"
+        ? JSON.parse(transfer.documents)
+        : transfer.documents
+      : [],
   };
 };
 
