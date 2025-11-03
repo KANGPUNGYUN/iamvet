@@ -29,7 +29,21 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
   
   logout: () => {
+    // 완전한 로컬 데이터 삭제
     removeTokenFromStorage();
+    
+    // 추가적인 localStorage 정리
+    if (typeof window !== 'undefined') {
+      // sessionStorage도 함께 정리
+      sessionStorage.clear();
+      
+      // 브라우저 캐시 관련 헤더 설정을 위한 메타 태그 추가
+      const meta = document.createElement('meta');
+      meta.httpEquiv = 'Cache-Control';
+      meta.content = 'no-cache, no-store, must-revalidate';
+      document.head.appendChild(meta);
+    }
+    
     set({ 
       isAuthenticated: false, 
       userType: null, 

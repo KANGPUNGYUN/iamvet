@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { BaseResponse } from "./types";
 import { createApiResponse, createErrorResponse, validateEmail } from "./types";
 import { verifyToken } from "./auth";
+import { prisma } from "./prisma";
 
 export const withAuth = (handler: Function) => {
   return async (request: NextRequest, ...args: any[]) => {
@@ -33,11 +34,27 @@ export const withAuth = (handler: Function) => {
         });
       }
 
+      // 사용자 존재 여부 확인 (외래키 제약조건 위반 방지)
+      const user = await (prisma as any).users.findUnique({
+        where: { 
+          id: payload.userId,
+          isActive: true
+        }
+      });
+
+      if (!user) {
+        console.log('withAuth: 사용자 없음 - DB에서 userId를 찾을 수 없음:', payload.userId);
+        return NextResponse.json(createErrorResponse("유효하지 않은 사용자입니다"), {
+          status: 401,
+        });
+      }
+
       // 디버깅 로그
       console.log('withAuth: 인증 성공', {
         userId: payload.userId,
         userType: payload.userType,
-        hasToken: !!token
+        hasToken: !!token,
+        userExists: !!user
       });
 
       // 요청 객체에 사용자 정보 추가

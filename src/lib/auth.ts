@@ -103,7 +103,17 @@ export const syncTokensWithCookie = () => {
   
   const accessToken = localStorage.getItem('accessToken');
   if (accessToken) {
-    setAuthCookie(accessToken);
+    // 토큰 유효성 검사
+    const payload = verifyToken(accessToken);
+    if (payload) {
+      setAuthCookie(accessToken);
+    } else {
+      // 유효하지 않은 토큰이면 localStorage에서 제거
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      removeAuthCookie();
+    }
   }
 };
 
