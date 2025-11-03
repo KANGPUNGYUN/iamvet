@@ -2437,68 +2437,105 @@ export async function completeSocialVeterinarianRegistration(
       WHERE sa.provider = ${provider} AND sa."providerId" = ${providerId}
     `;
 
+    let user;
+    let isExistingUser = false;
+
     if (existingSocialUser.length > 0) {
-      return {
-        success: false,
-        error: "이미 가입된 소셜 계정입니다.",
-      };
+      // User already exists, update their profile completion data
+      user = existingSocialUser[0];
+      isExistingUser = true;
+      
+      console.log("Updating existing SNS user profile:", user.id);
+      
+      // Update user with additional profile data
+      const currentDate = new Date();
+      await sql`
+        UPDATE users 
+        SET 
+          phone = ${phone}, 
+          "realName" = ${realName || name},
+          nickname = ${nickname},
+          "termsAgreedAt" = ${termsAgreed ? currentDate : user.termsAgreedAt},
+          "privacyAgreedAt" = ${privacyAgreed ? currentDate : user.privacyAgreedAt},
+          "marketingAgreedAt" = ${marketingAgreed ? currentDate : user.marketingAgreedAt},
+          "updatedAt" = ${currentDate}
+        WHERE id = ${user.id}
+      `;
+    } else {
+      // Check if email already exists (non-social user)
+      const existingEmailUser = await sql`
+        SELECT id FROM users WHERE email = ${email}
+      `;
+
+      if (existingEmailUser.length > 0) {
+        return {
+          success: false,
+          error: "이미 가입된 이메일입니다.",
+        };
+      }
+
+      // Create new user (this shouldn't happen with the new flow, but keeping as fallback)
+      const userId = createId();
+      const currentDate = new Date();
+
+      const userResult = await sql`
+        INSERT INTO users (
+          id, email, phone, "passwordHash", "userType", "profileImage", provider,
+          "realName", nickname,
+          "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+        )
+        VALUES (
+          ${userId}, ${email}, ${phone}, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
+          ${realName || name}, ${nickname},
+          ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+          true, ${currentDate}, ${currentDate}
+        )
+        RETURNING *
+      `;
+
+      user = userResult[0];
+      
+      // Create social account link for new user
+      const socialAccountId = createId();
+      await sql`
+        INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
+        VALUES (${socialAccountId}, ${user.id}, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
+      `;
     }
 
-    // Check if email already exists
-    const existingEmailUser = await sql`
-      SELECT id FROM users WHERE email = ${email}
-    `;
-
-    if (existingEmailUser.length > 0) {
-      return {
-        success: false,
-        error: "이미 가입된 이메일입니다.",
-      };
-    }
-
-    // Create user
-    const userId = createId();
+    // Create veterinarian profile (only if it doesn't exist)
     const currentDate = new Date();
-
-    const userResult = await sql`
-      INSERT INTO users (
-        id, email, phone, "passwordHash", "userType", "profileImage", provider,
-        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
-      )
-      VALUES (
-        ${userId}, ${email}, ${phone}, null, 'VETERINARIAN', ${profileImage}, ${provider.toUpperCase()},
-        ${termsAgreed ? currentDate : null}, ${
-      privacyAgreed ? currentDate : null
-    }, ${marketingAgreed ? currentDate : null},
-        true, ${currentDate}, ${currentDate}
-      )
-      RETURNING *
+    
+    const existingProfile = await sql`
+      SELECT id FROM veterinarians WHERE "userId" = ${user.id}
     `;
-
-    const user = userResult[0];
-
-    // Create social account link
-    const socialAccountId = createId();
-    await sql`
-      INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
-      VALUES (${socialAccountId}, ${
-      user.id
-    }, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
-    `;
-
-    // Create veterinarian profile
-    const profileId = createId();
-    await sql`
-      INSERT INTO veterinarians (
-        id, "userId", "realName", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
-      )
-      VALUES (
-        ${profileId}, ${user.id}, ${realName || name}, ${nickname}, ${
-      birthDate ? new Date(birthDate) : null
-    }, ${licenseImage || null},
-        ${currentDate}, ${currentDate}
-      )
-    `;
+    
+    if (existingProfile.length === 0) {
+      const profileId = createId();
+      await sql`
+        INSERT INTO veterinarians (
+          id, "userId", "realName", nickname, "birthDate", "licenseImage", "createdAt", "updatedAt"
+        )
+        VALUES (
+          ${profileId}, ${user.id}, ${realName || name}, ${nickname}, ${
+        birthDate ? new Date(birthDate) : null
+      }, ${licenseImage || null},
+          ${currentDate}, ${currentDate}
+        )
+      `;
+    } else {
+      // Update existing profile
+      await sql`
+        UPDATE veterinarians 
+        SET 
+          "realName" = ${realName || name},
+          nickname = ${nickname},
+          "birthDate" = ${birthDate ? new Date(birthDate) : null},
+          "licenseImage" = ${licenseImage || null},
+          "updatedAt" = ${currentDate}
+        WHERE "userId" = ${user.id}
+      `;
+    }
 
     // Generate tokens for the new user
     const tokens = await generateTokens(user);
@@ -2579,89 +2616,118 @@ export async function completeSocialVeterinaryStudentRegistration(
       WHERE sa.provider = ${provider} AND sa."providerId" = ${providerId}
     `;
 
+    let user;
+
     if (existingSocialUser.length > 0) {
-      return {
-        success: false,
-        error: "이미 가입된 소셜 계정입니다.",
-      };
+      // User already exists, update their profile completion data
+      user = existingSocialUser[0];
+      
+      console.log("Updating existing SNS veterinary student user profile:", user.id);
+      
+      // Update user with additional profile data
+      const currentDate = new Date();
+      await sql`
+        UPDATE users 
+        SET 
+          phone = ${phone}, 
+          "realName" = ${realName || name},
+          nickname = ${nickname},
+          "universityEmail" = ${universityEmail},
+          "termsAgreedAt" = ${termsAgreed ? currentDate : user.termsAgreedAt},
+          "privacyAgreedAt" = ${privacyAgreed ? currentDate : user.privacyAgreedAt},
+          "marketingAgreedAt" = ${marketingAgreed ? currentDate : user.marketingAgreedAt},
+          "updatedAt" = ${currentDate}
+        WHERE id = ${user.id}
+      `;
+    } else {
+      // Check if university email already exists (as email or loginId)
+      console.log(`SERVER: [${timestamp}] Checking for existing university email...`);
+      const existingEmailUser = await sql`
+        SELECT id FROM users WHERE email = ${universityEmail} OR "loginId" = ${universityEmail}
+      `;
+      console.log(`SERVER: [${timestamp}] Existing email check result: ${existingEmailUser.length} matches found`);
+
+      if (existingEmailUser.length > 0) {
+        return {
+          success: false,
+          error: "이미 가입된 대학교 이메일입니다.",
+          details: {
+            type: "DUPLICATE_EMAIL",
+            field: "universityEmail",
+            value: universityEmail,
+            message: `${universityEmail}은 이미 사용 중인 이메일입니다. 다른 대학교 이메일을 사용하거나 기존 계정으로 로그인해주세요.`
+          }
+        };
+      }
+
+      // Create new user (fallback case - shouldn't happen with new flow)
+      const userId = createId();
+      const currentDate = new Date();
+
+      console.log(`SERVER: [${timestamp}] Creating new user with ID: ${userId}`);
+      console.log(`SERVER: [${timestamp}] User data - loginId: ${universityEmail}, email: ${socialEmail}, userType: VETERINARY_STUDENT`);
+      
+      const userResult = await sql`
+        INSERT INTO users (
+          id, "loginId", email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
+          "universityEmail", 
+          "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
+        )
+        VALUES (
+          ${userId}, ${universityEmail}, ${socialEmail}, ${phone}, ${nickname}, ${realName || name}, ${birthDate ? new Date(birthDate) : null}, null, 'VETERINARY_STUDENT', ${profileImage}, ${provider.toUpperCase()},
+          ${universityEmail},
+          ${termsAgreed ? currentDate : null}, ${privacyAgreed ? currentDate : null}, ${marketingAgreed ? currentDate : null},
+          true, ${currentDate}, ${currentDate}
+        )
+        RETURNING *
+      `;
+      
+      console.log(`SERVER: [${timestamp}] User created successfully with ID: ${userId}`);
+      user = userResult[0];
+
+      // Create social account link for new user
+      const socialAccountId = createId();
+      console.log(`SERVER: [${timestamp}] Creating social account link with ID: ${socialAccountId}`);
+      await sql`
+        INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
+        VALUES (${socialAccountId}, ${user.id}, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
+      `;
+      console.log(`SERVER: [${timestamp}] Social account link created successfully`);
     }
 
-    // Check if university email already exists (as email or loginId)
-    console.log(`SERVER: [${timestamp}] Checking for existing university email...`);
-    const existingEmailUser = await sql`
-      SELECT id FROM users WHERE email = ${universityEmail} OR "loginId" = ${universityEmail}
-    `;
-    console.log(`SERVER: [${timestamp}] Existing email check result: ${existingEmailUser.length} matches found`);
-
-    if (existingEmailUser.length > 0) {
-      return {
-        success: false,
-        error: "이미 가입된 대학교 이메일입니다.",
-        details: {
-          type: "DUPLICATE_EMAIL",
-          field: "universityEmail",
-          value: universityEmail,
-          message: `${universityEmail}은 이미 사용 중인 이메일입니다. 다른 대학교 이메일을 사용하거나 기존 계정으로 로그인해주세요.`
-        }
-      };
-    }
-
-    // Create user
-    const userId = createId();
+    // Create or update veterinary student profile
     const currentDate = new Date();
-
-    console.log(`SERVER: [${timestamp}] Creating new user with ID: ${userId}`);
-    console.log(`SERVER: [${timestamp}] User data - loginId: ${universityEmail}, email: ${socialEmail}, userType: VETERINARY_STUDENT`);
     
-    const userResult = await sql`
-      INSERT INTO users (
-        id, "loginId", email, phone, nickname, "realName", "birthDate", "passwordHash", "userType", "profileImage", provider,
-        "termsAgreedAt", "privacyAgreedAt", "marketingAgreedAt", "isActive", "createdAt", "updatedAt"
-      )
-      VALUES (
-        ${userId}, ${universityEmail}, ${socialEmail}, ${phone}, ${nickname}, ${
-      realName || name
-    }, ${
-      birthDate ? new Date(birthDate) : null
-    }, null, 'VETERINARY_STUDENT', ${profileImage}, ${provider.toUpperCase()},
-        ${termsAgreed ? currentDate : null}, ${
-      privacyAgreed ? currentDate : null
-    }, ${marketingAgreed ? currentDate : null},
-        true, ${currentDate}, ${currentDate}
-      )
-      RETURNING *
+    const existingProfile = await sql`
+      SELECT id FROM veterinary_student_profiles WHERE "userId" = ${user.id}
     `;
     
-    console.log(`SERVER: [${timestamp}] User created successfully with ID: ${userId}`);
-
-    const user = userResult[0];
-
-    // Create social account link
-    const socialAccountId = createId();
-    console.log(`SERVER: [${timestamp}] Creating social account link with ID: ${socialAccountId}`);
-    await sql`
-      INSERT INTO social_accounts (id, "userId", provider, "providerId", "accessToken", "refreshToken", "createdAt", "updatedAt")
-      VALUES (${socialAccountId}, ${
-      user.id
-    }, ${provider.toUpperCase()}, ${providerId}, null, null, ${currentDate}, ${currentDate})
-    `;
-    console.log(`SERVER: [${timestamp}] Social account link created successfully`);
-
-    // Create veterinary student profile
-    const profileId = createId();
-    console.log(`SERVER: [${timestamp}] Creating veterinary student profile with ID: ${profileId}`);
-    await sql`
-      INSERT INTO veterinary_student_profiles (
-        id, "userId", nickname, "birthDate", "universityEmail",
-        "createdAt", "updatedAt"
-      )
-      VALUES (
-        ${profileId}, ${user.id}, ${nickname}, ${
-      birthDate ? new Date(birthDate) : null
-    }, ${universityEmail}, ${currentDate}, ${currentDate}
-      )
-    `;
-    console.log(`SERVER: [${timestamp}] Veterinary student profile created successfully`);
+    if (existingProfile.length === 0) {
+      const profileId = createId();
+      console.log(`SERVER: [${timestamp}] Creating veterinary student profile with ID: ${profileId}`);
+      await sql`
+        INSERT INTO veterinary_student_profiles (
+          id, "userId", nickname, "birthDate", "universityEmail",
+          "createdAt", "updatedAt"
+        )
+        VALUES (
+          ${profileId}, ${user.id}, ${nickname}, ${birthDate ? new Date(birthDate) : null}, ${universityEmail}, ${currentDate}, ${currentDate}
+        )
+      `;
+      console.log(`SERVER: [${timestamp}] Veterinary student profile created successfully`);
+    } else {
+      console.log(`SERVER: [${timestamp}] Updating existing veterinary student profile`);
+      await sql`
+        UPDATE veterinary_student_profiles 
+        SET 
+          nickname = ${nickname},
+          "birthDate" = ${birthDate ? new Date(birthDate) : null},
+          "universityEmail" = ${universityEmail},
+          "updatedAt" = ${currentDate}
+        WHERE "userId" = ${user.id}
+      `;
+      console.log(`SERVER: [${timestamp}] Veterinary student profile updated successfully`);
+    }
 
     // Generate tokens for the new user
     console.log(`SERVER: [${timestamp}] Generating tokens for user`);
