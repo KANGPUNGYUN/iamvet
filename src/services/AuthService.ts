@@ -53,14 +53,26 @@ export class AuthService {
 
       // Check if user exists by social provider
       console.log("Checking user by social provider:", provider, providerId);
-      let user = await getUserBySocialProvider(provider, providerId);
-      console.log("User found by social provider:", !!user);
+      let user;
+      try {
+        user = await getUserBySocialProvider(provider, providerId);
+        console.log("User found by social provider:", !!user);
+      } catch (dbError) {
+        console.error("Database error in getUserBySocialProvider:", dbError);
+        throw new Error(`Failed to query user by social provider: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`);
+      }
 
       if (!user) {
         // Check if user exists with same email
         console.log("Checking user by email:", email);
-        const existingUser = await getUserByEmail(email);
-        console.log("Existing user found by email:", !!existingUser);
+        let existingUser;
+        try {
+          existingUser = await getUserByEmail(email);
+          console.log("Existing user found by email:", !!existingUser);
+        } catch (dbError) {
+          console.error("Database error in getUserByEmail:", dbError);
+          throw new Error(`Failed to query user by email: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`);
+        }
 
         if (existingUser) {
           // User already exists with this email
@@ -82,7 +94,7 @@ export class AuthService {
               isNewUser: false,
               isProfileComplete: false,
               email: existingUser.email,
-              hasPassword: !!existingUser.password, // Check if user has password
+              hasPassword: !!existingUser.passwordHash, // Check if user has password
               existingProviders: existingSocialAccounts.map((account: any) => account.provider), // Social providers
               attemptedProvider: provider, // The provider they tried to use
               socialData: {
@@ -208,12 +220,25 @@ export class AuthService {
       };
     } catch (error) {
       console.error("Social auth error:", error);
+      console.error("Social auth error details:", {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        socialData: {
+          email: socialUserData.email,
+          provider: socialUserData.provider,
+          providerId: socialUserData.providerId,
+          userType: socialUserData.userType,
+        }
+      });
+      
       return {
         success: false,
         error:
           error instanceof Error
             ? error.message
             : "소셜 로그인 처리 중 오류가 발생했습니다",
+        message: error instanceof Error ? error.message : "소셜 로그인 처리 중 오류가 발생했습니다",
       };
     }
   }

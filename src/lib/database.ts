@@ -30,6 +30,14 @@ const pool = new Pool({
     process.env.NODE_ENV === "production"
       ? { rejectUnauthorized: false }
       : false,
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
+});
+
+// Add error handler for the pool
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle database client', err);
 });
 
 export const getUserByEmail = async (email: string, userType?: string) => {
@@ -3183,6 +3191,8 @@ export const getUserBySocialProvider = async (
   provider: string,
   providerId: string
 ) => {
+  console.log("[getUserBySocialProvider] Querying with:", { provider, providerId });
+  
   const query = `
     SELECT 
       u.id,
@@ -3205,13 +3215,21 @@ export const getUserBySocialProvider = async (
       u."profileName",
       u."hospitalName",
       u."hospitalLogo",
-      u."licenseImage"
+      u."licenseImage",
+      u."passwordHash" as password
     FROM users u 
     JOIN social_accounts sa ON u.id = sa."userId" 
-    WHERE sa.provider = $1 AND sa."providerId" = $2 AND u."isActive" = true AND u."deletedAt" IS NULL
+    WHERE sa.provider = $1 AND sa."providerId" = $2 AND (u."isActive" = true OR u."isActive" IS NULL)
   `;
-  const result = await pool.query(query, [provider, providerId]);
-  return result.rows[0] || null;
+  
+  try {
+    const result = await pool.query(query, [provider, providerId]);
+    console.log("[getUserBySocialProvider] Query result rows:", result.rows.length);
+    return result.rows[0] || null;
+  } catch (error) {
+    console.error("[getUserBySocialProvider] Database error:", error);
+    throw error;
+  }
 };
 
 export const getUserSocialAccounts = async (userId: string) => {

@@ -166,7 +166,25 @@ export async function GET(request: NextRequest) {
     return createSuccessPage("Kakao 로그인 성공", responseData);
   } catch (error) {
     console.error("Kakao callback error:", error);
-    return createErrorPage("Kakao 로그인 실패", "서버 오류가 발생했습니다");
+    console.error("Error details:", {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+    });
+    
+    // More specific error message based on the error
+    let errorMessage = "서버에서 인증 처리 중 오류가 발생했습니다";
+    if (error instanceof Error) {
+      if (error.message.includes('getUserBySocialProvider')) {
+        errorMessage = "사용자 조회 중 오류가 발생했습니다";
+      } else if (error.message.includes('generateTokens')) {
+        errorMessage = "토큰 생성 중 오류가 발생했습니다";
+      } else if (error.message.includes('updateLastLogin')) {
+        errorMessage = "로그인 정보 업데이트 중 오류가 발생했습니다";
+      }
+    }
+    
+    return createErrorPage("Kakao 로그인 실패", errorMessage);
   }
 }
 
