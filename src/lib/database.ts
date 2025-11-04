@@ -3184,9 +3184,31 @@ export const getUserBySocialProvider = async (
   providerId: string
 ) => {
   const query = `
-    SELECT u.*, sa.* FROM users u 
+    SELECT 
+      u.id,
+      u."loginId",
+      u.email,
+      u.phone,
+      u.nickname,
+      u."realName",
+      u."birthDate",
+      u."userType",
+      u."profileImage",
+      u.provider,
+      u."universityEmail",
+      u."termsAgreedAt",
+      u."privacyAgreedAt",
+      u."marketingAgreedAt",
+      u."isActive",
+      u."createdAt",
+      u."updatedAt",
+      u."profileName",
+      u."hospitalName",
+      u."hospitalLogo",
+      u."licenseImage"
+    FROM users u 
     JOIN social_accounts sa ON u.id = sa."userId" 
-    WHERE sa.provider = $1 AND sa."providerId" = $2
+    WHERE sa.provider = $1 AND sa."providerId" = $2 AND u."isActive" = true AND u."deletedAt" IS NULL
   `;
   const result = await pool.query(query, [provider, providerId]);
   return result.rows[0] || null;

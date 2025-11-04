@@ -133,6 +133,16 @@ export class AuthService {
         userType
       );
 
+      // Get user's social accounts
+      let socialAccounts = [];
+      try {
+        socialAccounts = await this.getUserSocialAccounts(user.id) || [];
+        console.log("User social accounts:", socialAccounts);
+      } catch (error) {
+        console.error("Failed to get user social accounts:", error);
+        socialAccounts = [];
+      }
+
       // Generate tokens for existing user
       const tokens = await generateTokens({
         id: user.id,
@@ -184,7 +194,7 @@ export class AuthService {
           provider,
           providerId,
           userType: userType, // Return original userType for frontend
-          socialAccounts: user.socialAccounts || [],
+          socialAccounts: socialAccounts, // Use the fetched socialAccounts
         },
         tokens,
         isNewUser: false, // This is an existing user

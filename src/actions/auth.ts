@@ -39,6 +39,11 @@ export interface User {
   hospitalLogo?: string;
   licenseImage?: string;
   universityEmail?: string;
+  socialAccounts?: Array<{
+    provider: string;
+    providerId: string;
+    createdAt: Date;
+  }>;
 }
 
 // 토큰 생성 전용 타입 - generateTokens 함수의 입력 검증 강화
@@ -485,6 +490,29 @@ export async function getCurrentUser(): Promise<{
       });
     }
 
+    // Get user's social accounts
+    let socialAccounts: Array<{
+      provider: string;
+      providerId: string;
+      createdAt: Date;
+    }> = [];
+    try {
+      const socialResult = await sql`
+        SELECT provider, "providerId", "createdAt" 
+        FROM social_accounts 
+        WHERE "userId" = ${user.id}
+        ORDER BY "createdAt" DESC
+      `;
+      socialAccounts = socialResult as Array<{
+        provider: string;
+        providerId: string;
+        createdAt: Date;
+      }>;
+      console.log("[getCurrentUser] User social accounts:", socialAccounts);
+    } catch (error) {
+      console.error("[getCurrentUser] Failed to get social accounts:", error);
+    }
+
     const userResult = {
       success: true,
       user: {
@@ -506,6 +534,7 @@ export async function getCurrentUser(): Promise<{
         profileName: profileName, // Add profile-specific name
         hospitalName: user.userType === "HOSPITAL" ? profileName : undefined, // Add hospital name for hospital users
         hospitalLogo: hospitalLogo, // Add hospital logo for hospital users
+        socialAccounts: socialAccounts, // Add social accounts
       },
     };
 
