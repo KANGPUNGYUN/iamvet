@@ -3212,7 +3212,6 @@ export const getUserBySocialProvider = async (
       u."isActive",
       u."createdAt",
       u."updatedAt",
-      u."profileName",
       u."hospitalName",
       u."hospitalLogo",
       u."licenseImage",
