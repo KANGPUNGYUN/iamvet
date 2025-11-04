@@ -78,14 +78,7 @@ export const POST = withAuth(
         );
       }
 
-      // 사용자 존재 확인
-      const userExists = await getUserById(user.userId);
-      if (!userExists) {
-        return NextResponse.json(
-          createErrorResponse("유효하지 않은 사용자입니다"),
-          { status: 401 }
-        );
-      }
+      // 사용자 존재 확인은 미들웨어에서 이미 처리됨 (중복 제거)
 
       // 댓글 생성
       const comment = await createLectureComment({

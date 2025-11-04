@@ -35,7 +35,7 @@ export const withAuth = (handler: Function) => {
       }
 
       // 사용자 존재 여부 확인 (외래키 제약조건 위반 방지)
-      const user = await (prisma as any).users.findUnique({
+      let user = await (prisma as any).users.findUnique({
         where: { 
           id: payload.userId,
           isActive: true
@@ -45,29 +45,54 @@ export const withAuth = (handler: Function) => {
       if (!user) {
         console.log('withAuth: 사용자 없음 - DB에서 userId를 찾을 수 없음:', payload.userId);
         
-        // 특별 처리: SNS 계정 복구 시도
+        // 특별 처리: social_accounts.id가 잘못 토큰에 들어간 경우 복구 시도
         try {
-          const socialAccount = await (prisma as any).social_accounts.findFirst({
-            where: { userId: payload.userId }
+          // 혹시 payload.userId가 social_accounts.id인지 확인
+          const socialAccount = await (prisma as any).social_accounts.findUnique({
+            where: { id: payload.userId },
+            include: {
+              user: true
+            }
           });
           
-          if (socialAccount) {
-            console.log('withAuth: SNS 계정 발견 - 사용자 복구 시도:', socialAccount);
-            // SNS 계정이 있지만 users 테이블에 없는 경우 - 로그아웃 처리
-            return NextResponse.json(createErrorResponse("계정 정보가 불완전합니다. 다시 로그인해주세요."), {
-              status: 401,
-              headers: {
-                'Set-Cookie': 'auth-token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict'
-              }
+          if (socialAccount && socialAccount.user && socialAccount.user.isActive) {
+            console.log('withAuth: social_accounts.id로 토큰이 생성된 케이스 발견 - 올바른 사용자로 매핑:', {
+              socialAccountId: payload.userId,
+              actualUserId: socialAccount.user.id,
+              userEmail: socialAccount.user.email
             });
+            
+            // 올바른 사용자 정보로 교체
+            user = socialAccount.user;
+            
+            // 요청 객체의 user 정보도 올바른 userId로 수정
+            payload.userId = user.id;
+          } else {
+            // 일반 SNS 계정 복구 시도 (userId로 social_accounts 찾기)
+            const socialAccountByUserId = await (prisma as any).social_accounts.findFirst({
+              where: { userId: payload.userId }
+            });
+            
+            if (socialAccountByUserId) {
+              console.log('withAuth: SNS 계정 발견 - 사용자 복구 시도:', socialAccountByUserId);
+              // SNS 계정이 있지만 users 테이블에 없는 경우 - 로그아웃 처리
+              return NextResponse.json(createErrorResponse("계정 정보가 불완전합니다. 다시 로그인해주세요."), {
+                status: 401,
+                headers: {
+                  'Set-Cookie': 'auth-token=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict'
+                }
+              });
+            }
           }
         } catch (error) {
           console.error('withAuth: SNS 계정 확인 중 오류:', error);
         }
         
-        return NextResponse.json(createErrorResponse("유효하지 않은 사용자입니다"), {
-          status: 401,
-        });
+        if (!user) {
+          return NextResponse.json(createErrorResponse("유효하지 않은 사용자입니다"), {
+            status: 401,
+          });
+        }
       }
 
       // 디버깅 로그
