@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
 import { sql } from "@/lib/db";
 import { generateTokens } from "@/lib/database";
+import { validateUserForTokenGeneration } from "@/lib/user-validation";
 
 // JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
@@ -45,20 +46,6 @@ export interface UserForTokenGeneration {
   readonly id: string; // 반드시 users.id여야 함
   readonly email: string;
   readonly userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
-}
-
-// 컴파일 타임 검증을 위한 타입 가드 함수
-export function validateUserForTokenGeneration(user: any): user is UserForTokenGeneration {
-  return (
-    typeof user === 'object' &&
-    user !== null &&
-    typeof user.id === 'string' &&
-    user.id.length > 0 &&
-    typeof user.email === 'string' &&
-    user.email.includes('@') &&
-    typeof user.userType === 'string' &&
-    ['VETERINARIAN', 'HOSPITAL', 'VETERINARY_STUDENT'].includes(user.userType)
-  );
 }
 
 // Social Account 타입 정의
