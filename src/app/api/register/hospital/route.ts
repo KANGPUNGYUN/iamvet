@@ -1,4 +1,5 @@
-import { hashPassword, generateTokens } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
+import { generateTokens } from "@/lib/database";
 import { checkUserExists, createUser } from "@/lib/auth-helpers";
 import {
   checkBusinessNumberExists,
@@ -122,7 +123,11 @@ export async function POST(request: NextRequest) {
     });
 
     // 토큰 생성
-    const tokens = await generateTokens(user);
+    const tokens = await generateTokens({
+      id: user.id,
+      email: user.email,
+      userType: user.userType
+    });
     
     // 마지막 로그인 시간 업데이트
     await updateLastLogin(user.id);

@@ -134,7 +134,11 @@ export class AuthService {
       );
 
       // Generate tokens for existing user
-      const tokens = await generateTokens(user);
+      const tokens = await generateTokens({
+        id: user.id,
+        email: user.email,
+        userType: user.userType
+      });
 
       // Get user's profile information from database for phone and birthDate
       let userPhone = user.phone || phone; // Use DB phone first, fallback to social phone

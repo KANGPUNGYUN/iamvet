@@ -60,7 +60,11 @@ export async function POST(request: NextRequest) {
     await restoreUserData(deletedAccount.id);
 
     // 토큰 생성
-    const tokens = await generateTokens(restoredUser);
+    const tokens = await generateTokens({
+      id: restoredUser.id,
+      email: restoredUser.email,
+      userType: restoredUser.userType
+    });
 
     return NextResponse.json(
       createApiResponse("success", "계정이 성공적으로 복구되었습니다", {

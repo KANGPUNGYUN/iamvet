@@ -5076,24 +5076,54 @@ export const restoreUserData = async (userId: string) => {
   }
 };
 
-export const generateTokens = async (user: any) => {
+// 타입 정의
+interface UserForToken {
+  id: string; // 반드시 users.id여야 함
+  email: string;
+  userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
+}
+
+interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export const generateTokens = async (user: UserForToken): Promise<TokenPair> => {
   const jwt = require("jsonwebtoken");
   const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
+  // 입력 검증
+  if (!user.id) {
+    throw new Error('토큰 생성을 위한 user.id가 없습니다.');
+  }
+  if (!user.email) {
+    throw new Error('토큰 생성을 위한 user.email이 없습니다.');
+  }
+  if (!user.userType) {
+    throw new Error('토큰 생성을 위한 user.userType이 없습니다.');
+  }
+
   // 데이터베이스의 대문자 userType을 JWT용 소문자로 변환
-  const normalizedUserType =
-    user.userType === "HOSPITAL"
-      ? "hospital"
-      : user.userType === "VETERINARIAN" ||
-        user.userType === "VETERINARY_STUDENT"
-      ? "veterinarian"
-      : user.userType.toLowerCase();
+  let normalizedUserType: string;
+  switch (user.userType) {
+    case "HOSPITAL":
+      normalizedUserType = "hospital";
+      break;
+    case "VETERINARIAN":
+    case "VETERINARY_STUDENT":
+      normalizedUserType = "veterinarian";
+      break;
+    default:
+      normalizedUserType = "veterinarian"; // fallback
+  }
 
   const payload = {
-    userId: user.id,
+    userId: user.id, // 반드시 users.id
     userType: normalizedUserType,
     email: user.email,
   };
+
+  console.log('토큰 생성 - userId:', user.id, ', userType:', user.userType, ', email:', user.email);
 
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
   const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });

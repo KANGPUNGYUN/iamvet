@@ -17,13 +17,13 @@ function createId() {
 
 // Types
 export interface User {
-  id: string;
+  id: string; // users.id - Primary Key
   loginId?: string;
   email: string;
   phone: string;
-  realName?: string; // 실명 추가
-  nickname?: string; // 닉네임 추가
-  birthDate?: Date; // 생년월일 추가
+  realName?: string;
+  nickname?: string;
+  birthDate?: Date;
   userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
   profileImage?: string;
   provider: "NORMAL" | "GOOGLE" | "KAKAO" | "NAVER";
@@ -33,11 +33,77 @@ export interface User {
   marketingAgreedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
-  profileName?: string; // 수의사: 닉네임, 병원: 병원명
-  hospitalName?: string; // 병원: 병원명 (명시적)
-  hospitalLogo?: string; // 병원: 병원 로고
-  licenseImage?: string; // 수의사: 면허증 이미지
-  universityEmail?: string; // 수의학과 학생: 대학교 이메일
+  profileName?: string;
+  hospitalName?: string;
+  hospitalLogo?: string;
+  licenseImage?: string;
+  universityEmail?: string;
+}
+
+// 토큰 생성 전용 타입 - generateTokens 함수의 입력 검증 강화
+export interface UserForTokenGeneration {
+  readonly id: string; // 반드시 users.id여야 함
+  readonly email: string;
+  readonly userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
+}
+
+// 컴파일 타임 검증을 위한 타입 가드 함수
+export function validateUserForTokenGeneration(user: any): user is UserForTokenGeneration {
+  return (
+    typeof user === 'object' &&
+    user !== null &&
+    typeof user.id === 'string' &&
+    user.id.length > 0 &&
+    typeof user.email === 'string' &&
+    user.email.includes('@') &&
+    typeof user.userType === 'string' &&
+    ['VETERINARIAN', 'HOSPITAL', 'VETERINARY_STUDENT'].includes(user.userType)
+  );
+}
+
+// Social Account 타입 정의
+export interface SocialAccount {
+  id: string; // social_accounts.id - Primary Key
+  userId: string; // users.id 참조
+  provider: "GOOGLE" | "KAKAO" | "NAVER";
+  providerId: string;
+  accessToken?: string;
+  refreshToken?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// DB 조회 결과 타입 (JOIN 결과)
+export interface UserWithSocialAccount {
+  user_id: string; // users.id
+  loginId?: string;
+  email: string;
+  phone: string;
+  nickname?: string;
+  realName?: string;
+  birthDate?: Date;
+  userType: "VETERINARIAN" | "HOSPITAL" | "VETERINARY_STUDENT";
+  profileImage?: string;
+  provider: "NORMAL" | "GOOGLE" | "KAKAO" | "NAVER";
+  universityEmail?: string;
+  termsAgreedAt?: Date;
+  privacyAgreedAt?: Date;
+  marketingAgreedAt?: Date;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  social_account_id: string; // social_accounts.id
+  sa_provider: "GOOGLE" | "KAKAO" | "NAVER";
+  providerId: string;
+}
+
+// JWT 페이로드 타입
+export interface JWTPayload {
+  userId: string; // 반드시 users.id여야 함
+  userType: string;
+  email: string;
+  iat?: number;
+  exp?: number;
 }
 
 export interface LoginCredentials {
@@ -2432,20 +2498,60 @@ export async function completeSocialVeterinarianRegistration(
 
     // Check if social user already exists
     const existingSocialUser = await sql`
-      SELECT u.*, sa.* FROM users u 
+      SELECT 
+        u.id as user_id,
+        u."loginId",
+        u.email,
+        u.phone,
+        u.nickname,
+        u."realName",
+        u."birthDate",
+        u."userType",
+        u."profileImage",
+        u.provider,
+        u."universityEmail",
+        u."termsAgreedAt",
+        u."privacyAgreedAt",
+        u."marketingAgreedAt",
+        u."isActive",
+        u."createdAt",
+        u."updatedAt",
+        sa.id as social_account_id,
+        sa.provider as sa_provider,
+        sa."providerId"
+      FROM users u 
       JOIN social_accounts sa ON u.id = sa."userId" 
       WHERE sa.provider = ${provider} AND sa."providerId" = ${providerId}
     `;
 
     let user;
-    let isExistingUser = false;
 
     if (existingSocialUser.length > 0) {
       // User already exists, update their profile completion data
-      user = existingSocialUser[0];
-      isExistingUser = true;
+      const existingUserData = existingSocialUser[0];
       
-      console.log("Updating existing SNS user profile:", user.id);
+      // Create clean user object with proper id mapping
+      user = {
+        id: existingUserData.user_id, // 올바른 users.id 사용
+        loginId: existingUserData.loginId,
+        email: existingUserData.email,
+        phone: existingUserData.phone,
+        nickname: existingUserData.nickname,
+        realName: existingUserData.realName,
+        birthDate: existingUserData.birthDate,
+        userType: existingUserData.userType,
+        profileImage: existingUserData.profileImage,
+        provider: existingUserData.provider,
+        universityEmail: existingUserData.universityEmail,
+        termsAgreedAt: existingUserData.termsAgreedAt,
+        privacyAgreedAt: existingUserData.privacyAgreedAt,
+        marketingAgreedAt: existingUserData.marketingAgreedAt,
+        isActive: existingUserData.isActive,
+        createdAt: existingUserData.createdAt,
+        updatedAt: existingUserData.updatedAt
+      } as User; // 타입 명시
+      
+      console.log(`SERVER: [${new Date().toISOString()}] Updating existing SNS veterinarian user profile. UserId: ${user.id}, SocialAccountId: ${existingUserData.social_account_id}`);
       
       // Update user with additional profile data
       const currentDate = new Date();
@@ -2537,8 +2643,35 @@ export async function completeSocialVeterinarianRegistration(
       `;
     }
 
-    // Generate tokens for the new user
-    const tokens = await generateTokens(user);
+    // Generate tokens for the user
+    const timestamp = new Date().toISOString();
+    console.log(`SERVER: [${timestamp}] Generating tokens for user. UserId: ${user.id}, UserType: ${user.userType}`);
+    
+    // 토큰 생성 전 user 객체 검증 - 타입 가드 사용
+    const userForToken = {
+      id: user.id,
+      email: user.email,
+      userType: user.userType
+    };
+    
+    if (!validateUserForTokenGeneration(userForToken)) {
+      console.error(`SERVER: [${timestamp}] Invalid user object for token generation:`, {
+        hasId: !!user.id,
+        hasEmail: !!user.email,
+        hasUserType: !!user.userType,
+        userId: user.id,
+        validationDetails: {
+          idType: typeof user.id,
+          emailType: typeof user.email,
+          userTypeType: typeof user.userType,
+          emailHasAt: user.email?.includes('@')
+        }
+      });
+      throw new Error('토큰 생성을 위한 사용자 정보가 불완전합니다.');
+    }
+    
+    const tokens = await generateTokens(userForToken);
+    console.log(`SERVER: [${timestamp}] Tokens generated successfully. TokenUserId from payload: ${user.id}`);
 
     // Set auth cookie
     const cookieStore = await cookies();
@@ -2611,7 +2744,28 @@ export async function completeSocialVeterinaryStudentRegistration(
 
     // Check if social user already exists
     const existingSocialUser = await sql`
-      SELECT u.*, sa.* FROM users u 
+      SELECT 
+        u.id as user_id,
+        u."loginId",
+        u.email,
+        u.phone,
+        u.nickname,
+        u."realName",
+        u."birthDate",
+        u."userType",
+        u."profileImage",
+        u.provider,
+        u."universityEmail",
+        u."termsAgreedAt",
+        u."privacyAgreedAt",
+        u."marketingAgreedAt",
+        u."isActive",
+        u."createdAt",
+        u."updatedAt",
+        sa.id as social_account_id,
+        sa.provider as sa_provider,
+        sa."providerId"
+      FROM users u 
       JOIN social_accounts sa ON u.id = sa."userId" 
       WHERE sa.provider = ${provider} AND sa."providerId" = ${providerId}
     `;
@@ -2620,9 +2774,30 @@ export async function completeSocialVeterinaryStudentRegistration(
 
     if (existingSocialUser.length > 0) {
       // User already exists, update their profile completion data
-      user = existingSocialUser[0];
+      const existingUserData = existingSocialUser[0];
       
-      console.log("Updating existing SNS veterinary student user profile:", user.id);
+      // Create clean user object with proper id mapping
+      user = {
+        id: existingUserData.user_id, // 올바른 users.id 사용
+        loginId: existingUserData.loginId,
+        email: existingUserData.email,
+        phone: existingUserData.phone,
+        nickname: existingUserData.nickname,
+        realName: existingUserData.realName,
+        birthDate: existingUserData.birthDate,
+        userType: existingUserData.userType,
+        profileImage: existingUserData.profileImage,
+        provider: existingUserData.provider,
+        universityEmail: existingUserData.universityEmail,
+        termsAgreedAt: existingUserData.termsAgreedAt,
+        privacyAgreedAt: existingUserData.privacyAgreedAt,
+        marketingAgreedAt: existingUserData.marketingAgreedAt,
+        isActive: existingUserData.isActive,
+        createdAt: existingUserData.createdAt,
+        updatedAt: existingUserData.updatedAt
+      } as User; // 타입 명시
+      
+      console.log(`SERVER: [${timestamp}] Updating existing SNS veterinary student user profile. UserId: ${user.id}, SocialAccountId: ${existingUserData.social_account_id}`);
       
       // Update user with additional profile data
       const currentDate = new Date();
@@ -2730,10 +2905,34 @@ export async function completeSocialVeterinaryStudentRegistration(
       console.log(`SERVER: [${timestamp}] Veterinary student profile updated successfully`);
     }
 
-    // Generate tokens for the new user
-    console.log(`SERVER: [${timestamp}] Generating tokens for user`);
-    const tokens = await generateTokens(user);
-    console.log(`SERVER: [${timestamp}] Tokens generated successfully`);
+    // Generate tokens for the user
+    console.log(`SERVER: [${timestamp}] Generating tokens for user. UserId: ${user.id}, UserType: ${user.userType}`);
+    
+    // 토큰 생성 전 user 객체 검증 - 타입 가드 사용
+    const userForToken = {
+      id: user.id,
+      email: user.email,
+      userType: user.userType
+    };
+    
+    if (!validateUserForTokenGeneration(userForToken)) {
+      console.error(`SERVER: [${timestamp}] Invalid user object for token generation:`, {
+        hasId: !!user.id,
+        hasEmail: !!user.email,
+        hasUserType: !!user.userType,
+        userId: user.id,
+        validationDetails: {
+          idType: typeof user.id,
+          emailType: typeof user.email,
+          userTypeType: typeof user.userType,
+          emailHasAt: user.email?.includes('@')
+        }
+      });
+      throw new Error('토큰 생성을 위한 사용자 정보가 불완전합니다.');
+    }
+    
+    const tokens = await generateTokens(userForToken);
+    console.log(`SERVER: [${timestamp}] Tokens generated successfully. TokenUserId from payload: ${user.id}`);
 
     // Set auth cookie
     const cookieStore = await cookies();

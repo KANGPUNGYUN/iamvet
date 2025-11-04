@@ -9,7 +9,8 @@ import {
   createErrorResponse,
   validateEmail,
 } from "@/lib/types";
-import { generateTokens, comparePassword } from "@/lib/auth";
+import { comparePassword } from "@/lib/auth";
+import { generateTokens } from "@/lib/database";
 import { getUserByEmailOrLoginId, updateLastLogin } from "@/lib/database"; // 데이터베이스 함수
 
 export async function POST(request: NextRequest) {
@@ -65,7 +66,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 토큰 생성
-    const tokens = await generateTokens(user);
+    const tokens = await generateTokens({
+      id: user.id,
+      email: user.email,
+      userType: user.userType
+    });
 
     // 마지막 로그인 시간 업데이트
     await updateLastLogin(user.id);

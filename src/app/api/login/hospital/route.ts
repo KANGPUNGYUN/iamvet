@@ -4,7 +4,7 @@ import type { HospitalLoginRequest } from "@/lib/types";
 import { getUserByEmailOrLoginId, updateLastLogin } from "@/lib/database";
 import { createErrorResponse } from "@/lib/utils";
 import { comparePassword } from "@/lib/auth";
-import { generateTokens } from "@/lib/auth";
+import { generateTokens } from "@/lib/database";
 import { createApiResponse } from "@/lib/auth-helpers";
 
 export async function POST(request: NextRequest) {
@@ -32,7 +32,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const tokens = await generateTokens(user);
+    const tokens = await generateTokens({
+      id: user.id,
+      email: user.email,
+      userType: user.userType
+    });
     await updateLastLogin(user.id);
 
     return NextResponse.json(
