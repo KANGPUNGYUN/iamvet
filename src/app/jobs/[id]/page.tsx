@@ -23,7 +23,10 @@ import { useJobDetail } from "@/hooks/api/useJobDetail";
 import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/api/useAuth";
 import { useHasResume } from "@/hooks/api/useResume";
-import { useResumeStatus, useResumeStatusRefresh } from "@/hooks/useResumeStatus";
+import {
+  useResumeStatus,
+  useResumeStatusRefresh,
+} from "@/hooks/useResumeStatus";
 import { useLikeStore } from "@/stores/likeStore";
 import { useViewCountStore } from "@/stores/viewCountStore";
 import axios from "axios";
@@ -62,10 +65,7 @@ export default function JobDetailPage({
   const { setJobLike, toggleJobLike, isJobLiked } = useLikeStore();
 
   // Zustand 스토어에서 조회수 상태 관리
-  const {
-    setJobViewCount,
-    getJobViewCount,
-  } = useViewCountStore();
+  const { setJobViewCount, getJobViewCount } = useViewCountStore();
   const {
     hasResume,
     isLoading: isResumeLoading,
@@ -79,12 +79,13 @@ export default function JobDetailPage({
       user?.type === "hospital" &&
       user?.id &&
       jobData?.hospitalUserId === user.id);
-  
+
   // 수의사 계정 확인
   const canApply = isAuthenticated && user?.type === "veterinarian" && !isOwner;
-  
+
   // 이력서 상태 실시간 확인
-  const { data: resumeStatus, isLoading: isResumeStatusLoading } = useResumeStatus(canApply);
+  const { data: resumeStatus, isLoading: isResumeStatusLoading } =
+    useResumeStatus(canApply);
   const { checkResumeStatus } = useResumeStatusRefresh();
 
   // 초기 좋아요 상태 동기화
@@ -109,11 +110,7 @@ export default function JobDetailPage({
         setJobViewCount(id, jobData.viewCount);
       }
     }
-  }, [
-    jobData,
-    id,
-    setJobViewCount,
-  ]);
+  }, [jobData, id, setJobViewCount]);
 
   // 조회수 증가 함수
   const incrementViewCount = async () => {
@@ -171,12 +168,14 @@ export default function JobDetailPage({
   // 조회수 증가를 위한 별도 useEffect
   useEffect(() => {
     if (jobData) {
-      console.log("[JobDetail] 채용공고 데이터 로드 완료, 조회수 증가 API 호출");
-      
+      console.log(
+        "[JobDetail] 채용공고 데이터 로드 완료, 조회수 증가 API 호출"
+      );
+
       // 낙관적 업데이트: API 호출 전에 먼저 클라이언트에서 조회수 증가
       const currentViewCount = getJobViewCount(id);
       setJobViewCount(id, currentViewCount + 1);
-      
+
       // 그 다음 API 호출
       incrementViewCount();
     }
@@ -371,33 +370,36 @@ export default function JobDetailPage({
 
     // 이력서 상태를 실시간으로 재확인
     console.log("[Apply] 이력서 상태 실시간 확인 중...");
-    
+
     try {
       const freshResumeStatus = await checkResumeStatus();
-      
+
       if (!freshResumeStatus.data?.data?.hasResume) {
         console.log("[Apply] 이력서 없음 - 작성 페이지로 이동");
         setResumeRequiredModalOpen(true);
         return;
       }
-      
+
       console.log("[Apply] 이력서 확인 완료 - 지원 진행", {
         hasResume: freshResumeStatus.data.data.hasResume,
-        resume: freshResumeStatus.data.data.resume
+        resume: freshResumeStatus.data.data.resume,
       });
-      
+
       handleApply();
     } catch (error) {
       console.error("[Apply] 이력서 상태 확인 실패:", error);
-      
+
       // 토큰 관련 오류인 경우
-      if (error instanceof Error && (error.message.includes('401') || error.message.includes('token'))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes("401") || error.message.includes("token"))
+      ) {
         clearExpiredAuth();
         alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
         router.push("/member-select");
         return;
       }
-      
+
       // 기존 방식으로 폴백
       if (isResumeLoading || isResumeStatusLoading) {
         alert("이력서 정보를 확인하는 중입니다. 잠시 후 다시 시도해주세요.");
@@ -416,7 +418,7 @@ export default function JobDetailPage({
         setResumeRequiredModalOpen(true);
         return;
       }
-      
+
       // 그래도 문제없으면 지원 진행
       handleApply();
     }
@@ -664,9 +666,9 @@ export default function JobDetailPage({
                     <Tag variant={6}>일반채용</Tag>
                   )}
                 </div>
-                <div className="text-right ml-4">
+                <div className="text-right mx-[9px]">
                   <span className="font-text text-[16px] text-[#FF8796]">
-                    {jobData.deadline || "상시채용"}
+                    {jobData.deadline || "상시"}
                   </span>
                 </div>
               </div>
@@ -839,11 +841,13 @@ export default function JobDetailPage({
                         variant="default"
                         size="large"
                         onClick={handleApplyClick}
-                        disabled={isApplying || isResumeLoading || isResumeStatusLoading}
+                        disabled={
+                          isApplying || isResumeLoading || isResumeStatusLoading
+                        }
                       >
                         {isApplying
                           ? "지원 중..."
-                          : (isResumeLoading || isResumeStatusLoading)
+                          : isResumeLoading || isResumeStatusLoading
                           ? "확인 중..."
                           : "지원하기"}
                       </Button>
