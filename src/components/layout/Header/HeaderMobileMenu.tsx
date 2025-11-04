@@ -139,14 +139,14 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             href: "/dashboard/veterinarian/lecture-bookmarks",
           },
           {
-            id: "job-bookmarks",
-            label: "채용공고 북마크",
-            href: "/dashboard/veterinarian/job-bookmarks",
-          },
-          {
             id: "forum-bookmarks",
             label: "임상포럼 북마크",
             href: "/dashboard/veterinarian/forum-bookmarks",
+          },
+          {
+            id: "job-bookmarks",
+            label: "채용공고 북마크",
+            href: "/dashboard/veterinarian/job-bookmarks",
           },
         ],
       };
@@ -167,14 +167,14 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             href: "/dashboard/hospital/lecture-bookmarks",
           },
           {
-            id: "favorite-talents",
-            label: "이력서 북마크",
-            href: "/dashboard/hospital/favorite-talents",
-          },
-          {
             id: "forum-bookmarks",
             label: "임상포럼 북마크",
             href: "/dashboard/hospital/forum-bookmarks",
+          },
+          {
+            id: "favorite-talents",
+            label: "이력서 북마크",
+            href: "/dashboard/hospital/favorite-talents",
           },
         ],
       };
@@ -488,9 +488,9 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                               currentColor={active ? "#FF8796" : "#4F5866"}
                             />
                             <span className="ml-3">{item.label}</span>
-                            {item.badge && item.badge > 0 && (
+                            {item.badge !== undefined && item.badge > 0 && (
                               <span className="ml-auto bg-[#FF8796] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {item.badge}
+                                {item.badge > 9 ? "9+" : item.badge}
                               </span>
                             )}
                           </Link>
