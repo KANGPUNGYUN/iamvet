@@ -4754,6 +4754,10 @@ export const updateTransfer = async (transferId: string, updateData: any) => {
     fields.push(`location = $${paramIndex++}`);
     values.push(updateData.location);
   }
+  if (updateData.isDraft !== undefined) {
+    fields.push(`"isDraft" = $${paramIndex++}`);
+    values.push(updateData.isDraft);
+  }
 
   // Always update updatedAt
   fields.push(`"updatedAt" = NOW()`);
@@ -4784,7 +4788,7 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   const countQuery = `
     SELECT COUNT(*) as total
     FROM transfers 
-    WHERE "deletedAt" IS NULL AND status != 'DISABLED'
+    WHERE "deletedAt" IS NULL AND status != 'DISABLED' AND "isDraft" = false
   `;
   const countResult = await pool.query(countQuery);
   const total = Number(countResult.rows[0]?.total || 0); // Ensure it's a Number
@@ -4794,7 +4798,7 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
     SELECT id, "userId", title, description, location, base_address, detail_address, sido, sigungu, 
            price, category, images, documents, status, area, views, "createdAt", "updatedAt"
     FROM transfers 
-    WHERE "deletedAt" IS NULL AND status != 'DISABLED'
+    WHERE "deletedAt" IS NULL AND status != 'DISABLED' AND "isDraft" = false
     ORDER BY "createdAt" DESC 
     LIMIT $1 OFFSET $2
   `;
@@ -4858,8 +4862,8 @@ export const createTransfer = async (transferData: any) => {
     .substring(2)}`;
 
   const query = `
-    INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, price, category, images, documents, status, area, views, "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), NOW())
+    INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, price, category, images, documents, status, area, views, "isDraft", "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
     RETURNING *
   `;
   const values = [
@@ -4879,6 +4883,7 @@ export const createTransfer = async (transferData: any) => {
     transferData.status || "ACTIVE",
     transferData.area || null, // 평수 (병원양도일 때만)
     0, // views 초기값
+    transferData.isDraft || false, // isDraft 필드 추가
   ];
   const result = await pool.query(query, values);
   return result.rows[0];
@@ -4912,19 +4917,37 @@ export const getDraftTransferByUserId = async (userId: string) => {
   const query = `
     SELECT * FROM transfers 
     WHERE "userId" = $1 
-    AND status = 'ACTIVE'
+    AND "isDraft" = true
     AND "deletedAt" IS NULL
     ORDER BY "createdAt" DESC
     LIMIT 1
   `;
   const result = await pool.query(query, [userId]);
 
-  // 필수 필드가 비어있으면 임시저장으로 간주
-  return (
-    result.rows.find((row) => {
-      return !row.description || !row.base_address || row.price === null;
-    }) || null
-  );
+  return result.rows[0] || null;
+};
+
+// 사용자의 모든 임시저장 양도양수 목록 조회
+export const getDraftTransfersByUserId = async (userId: string) => {
+  const query = `
+    SELECT t.*, u.nickname, u."profileImage"
+    FROM transfers t
+    JOIN users u ON t."userId" = u.id
+    WHERE t."userId" = $1 
+    AND t."isDraft" = true
+    AND t."deletedAt" IS NULL
+    ORDER BY t."updatedAt" DESC
+  `;
+  const result = await pool.query(query, [userId]);
+
+  return result.rows.map((row) => ({
+    ...row,
+    documents: row.documents
+      ? typeof row.documents === "string"
+        ? JSON.parse(row.documents)
+        : row.documents
+      : [],
+  }));
 };
 
 // ============================================================================

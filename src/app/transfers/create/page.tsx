@@ -283,7 +283,8 @@ export default function CreateTransferPage() {
             : null,
         images: formData.images, // 이미지 파일 URL들
         documents: formData.documentUrls, // 문서 파일 URL들
-        status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
+        status: "ACTIVE", // 상태는 항상 ACTIVE
+        isDraft: isDraft, // isDraft 필드로 임시저장 구분
       };
 
       // API 호출
@@ -302,13 +303,14 @@ export default function CreateTransferPage() {
         );
       }
 
-      // 성공 알림 및 리스트 페이지로 이동
+      // 성공 알림 및 페이지 이동
       if (isDraft) {
         alert("양도양수 게시글이 임시저장되었습니다!");
+        router.push("/transfers/drafts"); // 임시저장 목록으로 이동
       } else {
         alert("양도양수 게시글이 성공적으로 생성되었습니다!");
+        router.push("/transfers"); // 양도양수 목록으로 이동
       }
-      router.push("/transfers");
     } catch (error) {
       console.error("Submit error:", error);
       alert("저장 중 오류가 발생했습니다.");

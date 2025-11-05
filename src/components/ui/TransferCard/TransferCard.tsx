@@ -20,6 +20,7 @@ interface TransferCardProps {
   isLiked?: boolean;
   onLike?: () => void;
   onClick?: () => void; // 기존 호환성을 위해 유지
+  isDraft?: boolean; // 임시저장 여부
 }
 
 // 가격 포맷팅 함수
@@ -74,6 +75,7 @@ const TransferCard: React.FC<TransferCardProps> = ({
   isLiked = false,
   onLike,
   onClick,
+  isDraft = false,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   // LectureCard처럼 props를 직접 사용하되, 낙관적 업데이트를 위한 로컬 상태는 유지
@@ -129,13 +131,24 @@ const TransferCard: React.FC<TransferCardProps> = ({
       : {};
 
     const content = (
-      <div className={cardClassName} style={cardStyle} onClick={onClick}>
+      <div className={`relative ${cardClassName}`} style={cardStyle} onClick={onClick}>
         {isMobileLayout ? renderMobileContent() : renderDesktopContent()}
+        
+        {/* 임시저장 오버레이 */}
+        {isDraft && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-[16px] z-10">
+            <div className="text-center text-white">
+              <span className="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-medium">
+                임시저장
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     );
 
     // id가 있으면 Link로 감싸고, 없으면 그대로 반환
-    if (id) {
+    if (id && !isDraft) {
       return (
         <Link href={`/transfers/${id}`} className="block">
           {content}

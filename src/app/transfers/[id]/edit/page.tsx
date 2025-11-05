@@ -340,7 +340,8 @@ export default function EditTransferPage({
             : null,
         images: formData.images, // 이미지 파일 URL들
         documents: allDocumentUrls, // 기존 문서 + 새 문서 URL들
-        status: isDraft ? "DISABLED" : "ACTIVE", // 임시저장이면 DISABLED, 아니면 ACTIVE
+        status: "ACTIVE", // 상태는 항상 ACTIVE
+        isDraft: isDraft, // isDraft 필드로 임시저장 구분
       };
 
       // API 호출
@@ -359,13 +360,13 @@ export default function EditTransferPage({
         );
       }
 
-      // 성공 알림 및 상세 페이지로 이동
+      // 성공 알림 및 페이지 이동
       if (isDraft) {
         alert("양도양수 게시글이 임시저장되었습니다!");
-        router.push("/transfers");
+        router.push("/transfers/drafts"); // 임시저장 목록으로 이동
       } else {
         alert("양도양수 게시글이 성공적으로 수정되었습니다!");
-        router.push(`/transfers/${id}`);
+        router.push(`/transfers/${id}`); // 상세 페이지로 이동
       }
     } catch (error) {
       console.error("Update error:", error);

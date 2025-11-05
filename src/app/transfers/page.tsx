@@ -144,7 +144,7 @@ export default function TransfersPage() {
     if (!cardAdsData?.data || cardAdsData.data.length === 0) {
       return null;
     }
-    
+
     const ad = cardAdsData.data[0]; // 첫 번째 활성 광고 사용
     return {
       id: ad.id,
@@ -1155,12 +1155,20 @@ export default function TransfersPage() {
                 ))}
               </div>
             )}
-            <Link
-              href={"/transfers/create"}
-              className="w-[140px] bg-subtext hover:bg-[#3b394d] p-[10px] gap-[10px] flex items-center justify-center text-[white] rounded-[6px] font-text text-semibold text-[18px] self-end mb-[20px]"
-            >
-              <EditIcon size="20" /> 글쓰기
-            </Link>
+            <div className="flex gap-2 self-end mb-[20px]">
+              <Link
+                href={"/transfers/drafts"}
+                className="w-[140px] p-[10px] border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-[6px] font-text text-semibold text-[18px] flex items-center justify-center"
+              >
+                임시저장 목록
+              </Link>
+              <Link
+                href={"/transfers/create"}
+                className="w-[140px] bg-subtext hover:bg-[#3b394d] p-[10px] gap-[10px] flex items-center justify-center text-[white] rounded-[6px] font-text text-semibold text-[18px]"
+              >
+                <EditIcon size="20" /> 글쓰기
+              </Link>
+            </div>
           </div>
 
           {/* 페이지네이션 */}
