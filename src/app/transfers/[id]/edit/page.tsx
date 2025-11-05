@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeftIcon } from "public/icons";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import { Textarea } from "@/components/ui/Input/Textarea";
@@ -47,6 +47,7 @@ export default function EditTransferPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -69,6 +70,12 @@ export default function EditTransferPage({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [existingDocuments, setExistingDocuments] = useState<string[]>([]); // 기존 문서 URL들
+  const [isDraft, setIsDraft] = useState(false);
+
+  useEffect(() => {
+    const isDraftFromQuery = searchParams.get("isDraft") === "true";
+    setIsDraft(isDraftFromQuery);
+  }, [searchParams]);
 
   // 기존 데이터 로드
   useEffect(() => {
@@ -412,7 +419,7 @@ export default function EditTransferPage({
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
             <h1 className="font-title text-[16px] lg:text-[36px] title-light text-primary">
-              양도양수 게시글 수정
+              {isDraft ? "양도양수 게시글 등록" : "양도양수 게시글 수정"}
             </h1>
           </div>
 
@@ -711,7 +718,7 @@ export default function EditTransferPage({
               onClick={() => handleSubmit(false)}
               loading={isLoading}
             >
-              수정하기
+              {isDraft ? "등록하기" : "수정하기"}
             </Button>
           </div>
         </div>
