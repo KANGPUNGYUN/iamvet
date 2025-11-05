@@ -46,8 +46,7 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
   onCancel,
 }) => {
   // 폼 상태 관리
-  const [formData, setFormData] = useState<SocialRegistrationData>({
-    nickname: "",
+  const [formData, setFormData] = useState<SocialRegistrationData>({    nickname: socialData.name || "",
     phone: "",
     email: userType === "veterinary-student" ? "" : socialData.email, // 수의사는 SNS 이메일 사용
     realName: "", // 실명은 사용자가 직접 입력
@@ -79,8 +78,7 @@ export const SocialRegistrationForm: React.FC<SocialRegistrationFormProps> = ({
   });
 
   // 입력 에러 상태
-  const [inputErrors, setInputErrors] = useState({
-    realName: "",
+  const [inputErrors, setInputErrors] = useState({    realName: "",
     nickname: "",
     phone: "",
     email: "",

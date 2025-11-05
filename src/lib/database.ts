@@ -2060,22 +2060,16 @@ export const getRecommendedLectures = async (
 
 export const getLectureComments = async (lectureId: string) => {
   try {
-    // 강의 댓글 조회 - 사용자 정보와 병원 정보를 조인
     const query = `
       SELECT 
         lc.*,
-        u."profileImage" as author_profile_image,
-        u."userType",
-        v."realName" as vet_real_name,
-        vs."realName" as vs_real_name,
-        h."hospitalName",
-        h."hospitalLogo",
-        h."representativeName"
+        CASE
+          WHEN u.provider != 'NORMAL' THEN u.nickname
+          ELSE COALESCE(u.nickname, u."realName")
+        END as author_name,
+        u."profileImage" as author_profile_image
       FROM lecture_comments lc
       LEFT JOIN users u ON lc."userId" = u.id
-      LEFT JOIN veterinarians v ON u.id = v."userId"
-      LEFT JOIN veterinary_students vs ON u.id = vs."userId"
-      LEFT JOIN hospitals h ON u.id = h."userId"
       WHERE lc."lectureId" = $1 AND lc."deletedAt" IS NULL
       ORDER BY lc."createdAt" DESC
     `;
@@ -2090,27 +2084,6 @@ export const getLectureComments = async (lectureId: string) => {
 
     // 모든 댓글을 맵에 저장
     result.rows.forEach((comment: any) => {
-      // 사용자 타입에 따라 적절한 이름 사용
-      let displayName;
-      if (comment.userType === "HOSPITAL") {
-        // 병원 계정: hospitalName을 무조건 우선적으로 사용
-        displayName = comment.hospitalName || "병원명 미설정";
-        console.log(
-          `Successfully using hospitalName: ${displayName} - this will be set as author_display_name`
-        );
-      } else if (comment.userType === "VETERINARIAN") {
-        displayName = comment.vet_real_name || "익명 사용자";
-      } else if (comment.userType === "VETERINARY_STUDENT") {
-        displayName = comment.vs_real_name || "익명 사용자";
-      } else {
-        displayName = "익명 사용자";
-      }
-
-      const profileImage =
-        comment.userType === "HOSPITAL" && comment.hospitalLogo
-          ? comment.hospitalLogo
-          : comment.author_profile_image || null;
-
       const mappedComment = {
         id: comment.id,
         lecture_id: comment.lectureId,
@@ -2119,9 +2092,8 @@ export const getLectureComments = async (lectureId: string) => {
         content: comment.content,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
-        author_name: displayName,
-        author_profile_image: profileImage,
-        author_display_name: displayName, // 병원 계정의 경우 hospitalName이 여기에 설정됨
+        author_name: comment.author_name || "익명 사용자",
+        author_profile_image: comment.author_profile_image || null,
         replies: [],
       };
       commentMap.set(comment.id, mappedComment);
@@ -3797,19 +3769,13 @@ export const getForumComments = async (forumId: string) => {
   const query = `
     SELECT 
       fc.*,
-      COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
-      u."profileImage" as author_profile_image,
-      u."userType",
-      v."realName" as vet_real_name,
-      vs."realName" as vs_real_name,
-      h."hospitalName",
-      h."representativeName",
-      h."hospitalLogo"
+      CASE
+        WHEN u.provider != 'NORMAL' THEN u.nickname
+        ELSE COALESCE(u.nickname, u."realName")
+      END as author_name,
+      u."profileImage" as author_profile_image
     FROM forum_comments fc
     LEFT JOIN users u ON fc.user_id = u.id
-    LEFT JOIN veterinarians v ON u.id = v."userId"
-    LEFT JOIN veterinary_students vs ON u.id = vs."userId"
-    LEFT JOIN hospitals h ON u.id = h."userId"
     WHERE fc.forum_id = $1 AND fc."deletedAt" IS NULL
     ORDER BY fc."createdAt" ASC
   `;
@@ -3821,25 +3787,6 @@ export const getForumComments = async (forumId: string) => {
 
   // 모든 댓글을 맵에 저장
   result.rows.forEach((comment: any) => {
-    // 사용자 타입에 따라 적절한 이름 사용
-    let displayName;
-    if (comment.userType === "HOSPITAL") {
-      // 병원 계정: hospitalName을 무조건 우선적으로 사용
-      displayName = comment.hospitalName || "병원명 미설정";
-      console.log(`Forum comment - Using hospitalName: ${displayName}`);
-    } else if (comment.userType === "VETERINARIAN") {
-      displayName = comment.vet_real_name || "익명 사용자";
-    } else if (comment.userType === "VETERINARY_STUDENT") {
-      displayName = comment.vs_real_name || "익명 사용자";
-    } else {
-      displayName = "익명 사용자";
-    }
-
-    const profileImage =
-      comment.userType === "HOSPITAL" && comment.hospitalLogo
-        ? comment.hospitalLogo
-        : comment.author_profile_image || null;
-
     const mappedComment = {
       id: comment.id,
       forum_id: comment.forum_id,
@@ -3848,9 +3795,8 @@ export const getForumComments = async (forumId: string) => {
       content: comment.content,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
-      author_name: displayName,
-      author_profile_image: profileImage,
-      author_display_name: displayName,
+      author_name: comment.author_name || "익명 사용자",
+      author_profile_image: comment.author_profile_image || null,
       replies: [],
     };
     commentMap.set(comment.id, mappedComment);

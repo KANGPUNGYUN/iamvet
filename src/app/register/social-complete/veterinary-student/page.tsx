@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { completeSocialVeterinaryStudentRegistration } from "@/actions/auth";
 import { useState, useEffect } from "react";
 
-export default function () {
+export default function VeterinaryStudentSocialCompletePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +47,7 @@ export default function () {
       // 수의학과 학생 소셜 회원가입 완료 데이터 구성
       const registrationData = {
         email: socialData.email,
-        name: socialData.name,
+        name: formData.realName,
         profileImage: socialData.profileImage,
         provider: socialData.provider,
         providerId: socialData.providerId,

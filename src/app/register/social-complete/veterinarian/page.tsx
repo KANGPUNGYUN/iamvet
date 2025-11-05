@@ -43,7 +43,7 @@ export default function VeterinarianSocialCompletePage() {
       // 수의사 소셜 회원가입 완료 데이터 구성
       const registrationData = {
         email: socialData.email,
-        name: socialData.name,
+        name: formData.realName,
         profileImage: socialData.profileImage,
         provider: socialData.provider,
         providerId: socialData.providerId,
