@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNotificationStore } from "@/store/notificationStore";
 
 export interface MessageData {
   id: string;
@@ -128,6 +129,11 @@ export function useMessages(params: UseMessagesParams = {}) {
             : message
         )
       );
+
+      // 전역 알림 카운트 감소 (낙관적 업데이트)
+      if (messageType === 'notification') {
+        useNotificationStore.getState().decrementUnreadCount();
+      }
 
       return true;
     } catch (err) {

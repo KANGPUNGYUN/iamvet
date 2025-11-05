@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNotificationStore } from "@/store/notificationStore";
 import Image from "next/image";
 import { HeaderProfileProps } from "./types";
 
@@ -10,6 +11,12 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
+
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [fetchUnreadCount]);
 
   // 외부 클릭 감지
   useEffect(() => {
@@ -91,6 +98,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
           border: "none",
           cursor: "pointer",
           padding: "0",
+          position: "relative", // 알림 뱃지를 위해 추가
         }}
       >
         <svg
@@ -108,6 +116,20 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             strokeLinejoin="round"
           />
         </svg>
+        {unreadCount > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              top: "-4px",
+              right: "-4px",
+              width: "10px",
+              height: "10px",
+              borderRadius: "50%",
+              backgroundColor: "#FF8796",
+              border: "1.5px solid white",
+            }}
+          />
+        )}
       </button>
 
       {/* 프로필 아바타 및 이름 드롭다운 */}
