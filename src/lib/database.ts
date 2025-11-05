@@ -36,8 +36,8 @@ const pool = new Pool({
 });
 
 // Add error handler for the pool
-pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle database client', err);
+pool.on("error", (err, client) => {
+  console.error("Unexpected error on idle database client", err);
 });
 
 export const getUserByEmail = async (email: string, userType?: string) => {
@@ -2092,7 +2092,7 @@ export const getLectureComments = async (lectureId: string) => {
         content: comment.content,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
-        author_name: comment.author_name || "익명 사용자",
+        author_name: comment.author_name,
         author_profile_image: comment.author_profile_image || null,
         replies: [],
       };
@@ -3163,8 +3163,11 @@ export const getUserBySocialProvider = async (
   provider: string,
   providerId: string
 ) => {
-  console.log("[getUserBySocialProvider] Querying with:", { provider, providerId });
-  
+  console.log("[getUserBySocialProvider] Querying with:", {
+    provider,
+    providerId,
+  });
+
   const query = `
     SELECT 
       u.id,
@@ -3192,10 +3195,13 @@ export const getUserBySocialProvider = async (
     JOIN social_accounts sa ON u.id = sa."userId" 
     WHERE sa.provider = $1 AND sa."providerId" = $2 AND (u."isActive" = true OR u."isActive" IS NULL)
   `;
-  
+
   try {
     const result = await pool.query(query, [provider, providerId]);
-    console.log("[getUserBySocialProvider] Query result rows:", result.rows.length);
+    console.log(
+      "[getUserBySocialProvider] Query result rows:",
+      result.rows.length
+    );
     return result.rows[0] || null;
   } catch (error) {
     console.error("[getUserBySocialProvider] Database error:", error);
@@ -3510,8 +3516,8 @@ export const getLectureCommentReplies = async (commentId: string) => {
       lc.*,
       u."profileImage" as author_profile_image,
       u."userType",
-      v."realName" as vet_real_name,
-      vs."realName" as vs_real_name,
+      v."nickname" as vet_nickname,
+      vs."nickname" as vs_nickname,
       h."hospitalName",
       h."hospitalLogo",
       h."representativeName"
@@ -3532,9 +3538,9 @@ export const getLectureCommentReplies = async (commentId: string) => {
       displayName = reply.hospitalName || "병원명 미설정";
       console.log(`Reply - Using hospitalName: ${displayName}`);
     } else if (reply.userType === "VETERINARIAN") {
-      displayName = reply.vet_real_name || "익명 사용자";
+      displayName = reply.vet_nickname;
     } else if (reply.userType === "VETERINARY_STUDENT") {
-      displayName = reply.vs_real_name || "익명 사용자";
+      displayName = reply.vs_nickname;
     } else {
       displayName = "익명 사용자";
     }
@@ -3611,8 +3617,8 @@ export const getForumById = async (forumId: string) => {
       COALESCE(v.nickname, vs.nickname, h."hospitalName") as author_name,
       u."profileImage" as author_profile_image,
       u."userType",
-      v."realName" as vet_real_name,
-      vs."realName" as vs_real_name,
+      v."nickname" as vet_nickname,
+      vs."nickname" as vs_nickname,
       h."hospitalName",
       h."representativeName",
       h."hospitalLogo"
@@ -3637,9 +3643,9 @@ export const getForumById = async (forumId: string) => {
     profileImage = post.hospitalLogo || post.author_profile_image;
     console.log(`Forum post - Using hospitalName: ${displayName}`);
   } else if (post.userType === "VETERINARIAN") {
-    displayName = post.vet_real_name || "익명 사용자";
+    displayName = post.vet_nickname;
   } else if (post.userType === "VETERINARY_STUDENT") {
-    displayName = post.vs_real_name || "익명 사용자";
+    displayName = post.vs_nickname;
   } else {
     displayName = "익명 사용자";
   }
@@ -3795,7 +3801,7 @@ export const getForumComments = async (forumId: string) => {
       content: comment.content,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
-      author_name: comment.author_name || "익명 사용자",
+      author_name: comment.author_name,
       author_profile_image: comment.author_profile_image || null,
       replies: [],
     };
@@ -5096,19 +5102,21 @@ interface TokenPair {
   refreshToken: string;
 }
 
-export const generateTokens = async (user: UserForToken): Promise<TokenPair> => {
+export const generateTokens = async (
+  user: UserForToken
+): Promise<TokenPair> => {
   const jwt = require("jsonwebtoken");
   const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
   // 입력 검증
   if (!user.id) {
-    throw new Error('토큰 생성을 위한 user.id가 없습니다.');
+    throw new Error("토큰 생성을 위한 user.id가 없습니다.");
   }
   if (!user.email) {
-    throw new Error('토큰 생성을 위한 user.email이 없습니다.');
+    throw new Error("토큰 생성을 위한 user.email이 없습니다.");
   }
   if (!user.userType) {
-    throw new Error('토큰 생성을 위한 user.userType이 없습니다.');
+    throw new Error("토큰 생성을 위한 user.userType이 없습니다.");
   }
 
   // 데이터베이스의 대문자 userType을 JWT용 소문자로 변환
@@ -5131,7 +5139,14 @@ export const generateTokens = async (user: UserForToken): Promise<TokenPair> => 
     email: user.email,
   };
 
-  console.log('토큰 생성 - userId:', user.id, ', userType:', user.userType, ', email:', user.email);
+  console.log(
+    "토큰 생성 - userId:",
+    user.id,
+    ", userType:",
+    user.userType,
+    ", email:",
+    user.email
+  );
 
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
   const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });

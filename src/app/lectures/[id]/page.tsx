@@ -87,10 +87,7 @@ export default function LectureDetailPage({
   const { isLectureLiked, toggleLectureLike, setLectureLike } = useLikeStore();
 
   // 조회수 상태 관리 (Zustand 스토어)
-  const {
-    setLectureViewCount,
-    getLectureViewCount,
-  } = useViewCountStore();
+  const { setLectureViewCount, getLectureViewCount } = useViewCountStore();
 
   // useAuth 훅으로 현재 로그인한 사용자 정보 가져오기
   const { user: currentUser, isAuthenticated } = useAuth();
@@ -148,7 +145,9 @@ export default function LectureDetailPage({
   // 조회수 증가 함수
   const incrementViewCount = async () => {
     try {
-      console.log(`[LectureDetail] 조회수 증가 API 호출 시작 - Lecture ID: ${id}`);
+      console.log(
+        `[LectureDetail] 조회수 증가 API 호출 시작 - Lecture ID: ${id}`
+      );
 
       const token = localStorage.getItem("accessToken");
       const headers: HeadersInit = {
@@ -201,12 +200,14 @@ export default function LectureDetailPage({
   // 조회수 증가를 위한 별도 useEffect
   useEffect(() => {
     if (lectureDetail) {
-      console.log("[LectureDetail] 강의 데이터 로드 완료, 조회수 증가 API 호출");
-      
+      console.log(
+        "[LectureDetail] 강의 데이터 로드 완료, 조회수 증가 API 호출"
+      );
+
       // 낙관적 업데이트: API 호출 전에 먼저 클라이언트에서 조회수 증가
       const currentViewCount = getLectureViewCount(id);
       setLectureViewCount(id, currentViewCount + 1);
-      
+
       // 그 다음 API 호출
       incrementViewCount();
     }
@@ -573,90 +574,97 @@ export default function LectureDetailPage({
                   <h2 className="font-text text-[16px] text-sub text-light mb-[20px]">
                     참고자료
                   </h2>
-                  {lectureDetail.referenceFiles && lectureDetail.referenceFiles.length > 0 ? (
+                  {lectureDetail.referenceFiles &&
+                  lectureDetail.referenceFiles.length > 0 ? (
                     <div className="space-y-3">
-                      {lectureDetail.referenceFiles.map((file: ReferenceFile) => (
-                      <div
-                        key={file.id}
-                        className="flex items-center justify-between p-4 border border-[#EFEFF0] bg-white rounded-[8px]"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-[16px] h-[16px]">
-                            {file.type === "PDF" || file.name.endsWith(".pdf") ? (
-                              <PdfIcon currentColor="#EF4444" />
-                            ) : file.type === "WORD" || file.name.endsWith(".doc") ||
-                              file.name.endsWith(".docx") ? (
-                              <WordIcon currentColor="#3B82F6" />
-                            ) : file.type === "EXCEL" || file.name.endsWith(".xlsx") ||
-                              file.name.endsWith(".xls") ? (
-                              <ExcelIcon currentColor="#22C55E" />
-                            ) : file.type === "PPT" || file.name.endsWith(".ppt") ||
-                              file.name.endsWith(".pptx") ? (
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                              >
-                                <rect
-                                  x="2"
-                                  y="1"
-                                  width="10"
-                                  height="14"
-                                  rx="1"
-                                  fill="#FF8500"
-                                />
-                                <path
-                                  d="M5 5h4M5 8h3M5 11h2"
-                                  stroke="white"
-                                  strokeWidth="1"
-                                  strokeLinecap="round"
-                                />
-                              </svg>
-                            ) : (
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                              >
-                                <rect
-                                  x="2"
-                                  y="1"
-                                  width="10"
-                                  height="14"
-                                  rx="1"
-                                  fill="#6B7280"
-                                />
-                                <path
-                                  d="M5 5h4M5 8h3M5 11h2"
-                                  stroke="white"
-                                  strokeWidth="1"
-                                  strokeLinecap="round"
-                                />
-                              </svg>
-                            )}
+                      {lectureDetail.referenceFiles.map(
+                        (file: ReferenceFile) => (
+                          <div
+                            key={file.id}
+                            className="flex items-center justify-between p-4 border border-[#EFEFF0] bg-white rounded-[8px]"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-[16px] h-[16px]">
+                                {file.type === "PDF" ||
+                                file.name.endsWith(".pdf") ? (
+                                  <PdfIcon currentColor="#EF4444" />
+                                ) : file.type === "WORD" ||
+                                  file.name.endsWith(".doc") ||
+                                  file.name.endsWith(".docx") ? (
+                                  <WordIcon currentColor="#3B82F6" />
+                                ) : file.type === "EXCEL" ||
+                                  file.name.endsWith(".xlsx") ||
+                                  file.name.endsWith(".xls") ? (
+                                  <ExcelIcon currentColor="#22C55E" />
+                                ) : file.type === "PPT" ||
+                                  file.name.endsWith(".ppt") ||
+                                  file.name.endsWith(".pptx") ? (
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                  >
+                                    <rect
+                                      x="2"
+                                      y="1"
+                                      width="10"
+                                      height="14"
+                                      rx="1"
+                                      fill="#FF8500"
+                                    />
+                                    <path
+                                      d="M5 5h4M5 8h3M5 11h2"
+                                      stroke="white"
+                                      strokeWidth="1"
+                                      strokeLinecap="round"
+                                    />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                  >
+                                    <rect
+                                      x="2"
+                                      y="1"
+                                      width="10"
+                                      height="14"
+                                      rx="1"
+                                      fill="#6B7280"
+                                    />
+                                    <path
+                                      d="M5 5h4M5 8h3M5 11h2"
+                                      stroke="white"
+                                      strokeWidth="1"
+                                      strokeLinecap="round"
+                                    />
+                                  </svg>
+                                )}
+                              </div>
+                              <p className="text-[14px] font-semibold text-[#3B394D]">
+                                {file.name}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                const link = document.createElement("a");
+                                link.href = file.url;
+                                link.download = file.name;
+                                link.target = "_blank";
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                              className="flex items-center justify-center w-[32px] h-[32px] rounded-[8px] hover:bg-[#F8F9FA] transition-colors"
+                            >
+                              <DownloadIcon currentColor="#9098A4" />
+                            </button>
                           </div>
-                          <p className="text-[14px] font-semibold text-[#3B394D]">
-                            {file.name}
-                          </p>
-                        </div>
-                        <button 
-                          onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = file.url;
-                            link.download = file.name;
-                            link.target = '_blank';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                          }}
-                          className="flex items-center justify-center w-[32px] h-[32px] rounded-[8px] hover:bg-[#F8F9FA] transition-colors"
-                        >
-                          <DownloadIcon currentColor="#9098A4" />
-                        </button>
-                      </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   ) : (
                     <div className="text-center py-8">
@@ -720,7 +728,7 @@ export default function LectureDetailPage({
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
                               <span className="text-[14px] font-semibold text-[#3B394D]">
-                                {comment.author_name || "익명 사용자"}
+                                {comment.author_name}
                               </span>
                               <span className="text-[12px] text-[#9098A4]">
                                 {new Date(comment.createdAt)
@@ -838,7 +846,7 @@ export default function LectureDetailPage({
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex items-center gap-2">
                                       <span className="text-[14px] font-semibold text-[#3B394D]">
-                                        {reply.author_name || "익명 사용자"}
+                                        {reply.author_name}
                                       </span>
                                       <span className="text-[12px] text-[#9098A4]">
                                         {new Date(
