@@ -88,7 +88,7 @@ export async function GET(
               select: { id: true, title: true }
             },
             resumes: {
-              select: { id: true, title: true }
+              select: { id: true, introduction: true, name: true }
             }
           },
           orderBy: {
@@ -162,7 +162,10 @@ export async function GET(
             title: relatedInquiry.jobs.title,
             hospitalName: null
           } : null,
-          resume: relatedInquiry.resumes,
+          resume: relatedInquiry.resumes ? {
+            id: relatedInquiry.resumes.id,
+            title: relatedInquiry.resumes.introduction || relatedInquiry.resumes.name
+          } : null,
           inquiryType: relatedInquiry.type
         })
       };
@@ -181,7 +184,7 @@ export async function GET(
             }
           },
           resumes: {
-            select: { id: true, title: true }
+            select: { id: true, introduction: true, name: true }
           }
         }
       });
@@ -222,7 +225,10 @@ export async function GET(
           title: inquiry.jobs.title,
           hospitalName: null
         } : null,
-        resume: inquiry.resumes,
+        resume: inquiry.resumes ? {
+          id: inquiry.resumes.id,
+          title: inquiry.resumes.introduction || inquiry.resumes.name
+        } : null,
         inquiryType: inquiry.type,
         category: getInquiryCategory(inquiry.type)
       };
