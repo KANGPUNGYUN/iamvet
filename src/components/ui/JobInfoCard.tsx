@@ -101,8 +101,8 @@ const JobInfoCard: React.FC<JobInfoCardProps> = ({
             <Tag variant={1}>{dDay >= 0 ? `D-${dDay}` : "마감"}</Tag>
           )}
 
-          {/* 북마크 아이콘 - 병원 계정이 아닐 때만 표시 */}
-          {onBookmark && !isHospitalUser && (
+          {/* 북마크 아이콘 */}
+          {onBookmark && (
             <div
               className="w-6 h-6 flex items-center justify-center cursor-pointer"
               onClick={(e) => {
