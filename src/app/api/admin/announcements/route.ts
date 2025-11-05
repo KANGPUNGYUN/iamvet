@@ -68,37 +68,104 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // 데이터 변환
-    const transformedAnnouncements = announcements.map((announcement: any) => {
-      const latestBatch = announcement.notification_batches?.[0];
-      const authorName =
-        announcement.users?.veterinarians?.realName ||
-        announcement.users?.veterinary_students?.realName ||
-        announcement.users?.hospitals?.representativeName ||
-        "관리자";
+    // 읽음 수 계산
+    const notificationIdentifiers = announcements
+      .map((announcement: any) => ({
+        title: announcement.notifications?.title,
+        senderId: announcement.users?.id,
+      }))
+      .filter((id) => id.title && id.senderId);
 
-      return {
-        id: announcement.id,
-        title: announcement.notifications?.title || "",
-        content: announcement.notifications?.content || "",
-        images: (announcement as any).images || [],
-        priority: announcement.priority || "NORMAL",
-        status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
-        sendCount: latestBatch?.sentCount || 0,
-        totalRecipients: latestBatch?.totalRecipients || 0,
-        readCount: 0, // TODO: 읽음 수 계산 구현 필요
-        author: authorName,
-        createdAt: announcement.notifications?.createdAt || new Date(),
-        updatedAt: announcement.notifications?.updatedAt || new Date(),
-        sentAt: latestBatch?.completedAt || null,
-        targetUsers: announcement.targetUserTypes || [],
-      };
-    });
+    if (notificationIdentifiers.length > 0) {
+      const readCounts = await prisma.notifications.groupBy({
+        by: ["title", "senderId"],
+        where: {
+          type: "ANNOUNCEMENT",
+          isRead: true,
+          OR: notificationIdentifiers.map((id) => ({
+            title: id.title,
+            senderId: id.senderId,
+          })),
+        },
+        _count: {
+          id: true,
+        },
+      });
 
-    return NextResponse.json({
-      success: true,
-      data: transformedAnnouncements,
-    });
+      const countsMap = new Map<string, number>();
+      readCounts.forEach((group) => {
+        if (group.title && group.senderId) {
+          const key = `${group.title}:${group.senderId}`;
+          countsMap.set(key, group._count.id);
+        }
+      });
+
+      // 데이터 변환
+      const transformedAnnouncements = announcements.map((announcement: any) => {
+        const latestBatch = announcement.notification_batches?.[0];
+        const authorName =
+          announcement.users?.veterinarians?.realName ||
+          announcement.users?.veterinary_students?.realName ||
+          announcement.users?.hospitals?.representativeName ||
+          "관리자";
+
+        const key = `${announcement.notifications?.title}:${announcement.users?.id}`;
+        const readCount = countsMap.get(key) || 0;
+
+        return {
+          id: announcement.id,
+          title: announcement.notifications?.title || "",
+          content: announcement.notifications?.content || "",
+          images: (announcement as any).images || [],
+          priority: announcement.priority || "NORMAL",
+          status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
+          sendCount: latestBatch?.sentCount || 0,
+          totalRecipients: latestBatch?.totalRecipients || 0,
+          readCount: readCount,
+          author: authorName,
+          createdAt: announcement.notifications?.createdAt || new Date(),
+          updatedAt: announcement.notifications?.updatedAt || new Date(),
+          sentAt: latestBatch?.completedAt || null,
+          targetUsers: announcement.targetUserTypes || [],
+        };
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: transformedAnnouncements,
+      });
+    } else {
+      // 데이터 변환 (읽음 수를 0으로)
+      const transformedAnnouncements = announcements.map((announcement: any) => {
+        const latestBatch = announcement.notification_batches?.[0];
+        const authorName =
+          announcement.users?.veterinarians?.realName ||
+          announcement.users?.veterinary_students?.realName ||
+          announcement.users?.hospitals?.representativeName ||
+          "관리자";
+
+        return {
+          id: announcement.id,
+          title: announcement.notifications?.title || "",
+          content: announcement.notifications?.content || "",
+          images: (announcement as any).images || [],
+          priority: announcement.priority || "NORMAL",
+          status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
+          sendCount: latestBatch?.sentCount || 0,
+          totalRecipients: latestBatch?.totalRecipients || 0,
+          readCount: 0,
+          author: authorName,
+          createdAt: announcement.notifications?.createdAt || new Date(),
+          updatedAt: announcement.notifications?.updatedAt || new Date(),
+          sentAt: latestBatch?.completedAt || null,
+          targetUsers: announcement.targetUserTypes || [],
+        };
+      });
+      return NextResponse.json({
+        success: true,
+        data: transformedAnnouncements,
+      });
+    }
   } catch (error) {
     console.error("Failed to fetch announcements:", error);
     return NextResponse.json(
