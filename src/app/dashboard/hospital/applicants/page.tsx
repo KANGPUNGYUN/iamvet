@@ -151,6 +151,7 @@ export default function HospitalApplicantsPage() {
       });
 
       if (response.data.status === "success") {
+        console.log("API Response Data:", response.data);
         setApplications(response.data.data || []);
       }
     } catch (error: any) {
