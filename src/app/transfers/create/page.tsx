@@ -385,14 +385,14 @@ export default function CreateTransferPage() {
       <div className="min-h-screen bg-white">
         <div className="max-w-[878px] mx-auto pt-[20px] pb-[140px] px-4 lg:px-0">
           {/* 헤더 */}
-          <div className="flex lg:flex-col gap-[10px] lg:mb-[30px] lg:py-[0px] py-[17px] items-center lg:items-start">
+          <div className="flex flex-col gap-[10px] lg:mb-[30px] lg:py-[0px] py-[17px] items-start">
             <Link
               href="/transfers"
               className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
             >
               <ArrowLeftIcon currentColor="currentColor" />
             </Link>
-            <h1 className="font-title text-[16px] lg:text-[36px] title-light text-primary">
+            <h1 className="font-title text-[28px] title-light text-[#3B394D]">
               양도양수 게시글 작성
             </h1>
           </div>

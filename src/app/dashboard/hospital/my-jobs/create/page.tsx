@@ -167,7 +167,7 @@ export default function CreateJobPage() {
       experience: data.experience,
       position: data.position,
       salaryType: data.salaryType,
-      salary: data.salary.replace(/,/g, ''),
+      salary: data.salary.replace(/,/g, ""),
       workDays: data.workDays,
       isWorkDaysNegotiable: data.isWorkDaysNegotiable,
       workStartTime: data.workStartTime ? formatTime(data.workStartTime) : null,
@@ -212,7 +212,7 @@ export default function CreateJobPage() {
     <div className="bg-gray-50 min-h-screen pt-[20px] pb-[70px] px-[16px]">
       <div className="bg-white max-w-[1095px] w-full mx-auto px-[16px] lg:px-[20px] pt-[30px] pb-[156px] rounded-[16px] border border-[#EFEFF0]">
         <div className="max-w-[758px] mx-auto w-full">
-          <h1 className="font-title text-[28px] font-light text-primary text-center mb-[60px]">
+          <h1 className="font-title text-[28px] title-light text-[#3B394D] text-center mb-[60px]">
             채용 공고 등록
           </h1>
 

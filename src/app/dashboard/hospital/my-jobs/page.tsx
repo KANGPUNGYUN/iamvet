@@ -110,27 +110,35 @@ export default function HospitalMyJobsPage() {
           </div>
 
           {/* 필터링 및 정렬 */}
-          <div className="flex gap-4 mb-6">
-            <SelectBox
-              options={[
-                { value: "all", label: "전체" },
-                { value: "active", label: "모집중" },
-                { value: "expired", label: "마감" },
-                { value: "inactive", label: "비활성" },
-              ]}
-              value={statusFilter}
-              onChange={setStatusFilter}
-              placeholder="상태 선택"
-            />
-            <SelectBox
-              options={[
-                { value: "recent", label: "최신순" },
-                { value: "deadline", label: "마감일순" },
-              ]}
-              value={sortBy}
-              onChange={setSortBy}
-              placeholder="정렬 기준"
-            />
+          <div className="flex justify-between">
+            <div className="flex gap-4 mb-6">
+              <SelectBox
+                options={[
+                  { value: "all", label: "전체" },
+                  { value: "active", label: "모집중" },
+                  { value: "expired", label: "마감" },
+                  { value: "inactive", label: "비활성" },
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                placeholder="상태 선택"
+              />
+              <SelectBox
+                options={[
+                  { value: "recent", label: "최신순" },
+                  { value: "deadline", label: "마감일순" },
+                ]}
+                value={sortBy}
+                onChange={setSortBy}
+                placeholder="정렬 기준"
+              />
+            </div>
+            <Link
+              href="/dashboard/hospital/my-jobs/create"
+              className="h-[44px] w-[140px] bg-subtext hover:bg-[#3b394d] p-[10px] gap-[10px] flex items-center justify-center text-[white] rounded-[6px] font-text text-semibold text-[18px] whitespace-nowrap"
+            >
+              <EditIcon size="20" /> 글쓰기
+            </Link>
           </div>
 
           {/* 공고 목록 - 그리드 형태 */}
