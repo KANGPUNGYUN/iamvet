@@ -284,10 +284,15 @@ export default function ForumDetailPage({
   };
 
   const toggleReplies = (commentId: string) => {
-    setExpandedReplies((prev) => ({
-      ...prev,
-      [commentId]: !prev[commentId],
-    }));
+    setExpandedReplies((prev) => {
+      const newState = {
+        ...prev,
+        [commentId]: !prev[commentId],
+      };
+      console.log(`toggleReplies: ${commentId} changed from ${prev[commentId]} to ${newState[commentId]}`);
+      console.log('Current expandedReplies state:', newState);
+      return newState;
+    });
   };
 
   const handleEditComment = (commentId: string, content: string) => {
@@ -658,7 +663,10 @@ export default function ForumDetailPage({
                         {/* 답글 토글 버튼 */}
                         {comment.replies && comment.replies.length > 0 ? (
                           <button
-                            onClick={() => toggleReplies(comment.id)}
+                            onClick={() => {
+                              console.log(`Toggling replies for comment ${comment.id}, current state: ${expandedReplies[comment.id]}`);
+                              toggleReplies(comment.id);
+                            }}
                             className="flex items-center gap-1 text-[14px] text-[#FF8796] hover:text-[#FF7A8A] transition-colors"
                           >
                             {expandedReplies[comment.id] ? (
@@ -696,11 +704,14 @@ export default function ForumDetailPage({
                   </div>
 
                   {/* 답글 목록 */}
-                  {comment.replies &&
-                    comment.replies.length > 0 &&
-                    expandedReplies[comment.id] && (
+                  {(() => {
+                    console.log(`Comment ${comment.id}: replies=${comment.replies?.length || 0}, expanded=${expandedReplies[comment.id]}`);
+                    return comment.replies &&
+                      comment.replies.length > 0 &&
+                      expandedReplies[comment.id];
+                  })() && (
                       <div className="ml-[53px] space-y-4">
-                        {comment.replies.map((reply) => (
+                        {comment.replies?.map((reply) => (
                           <div key={reply.id} className="flex gap-3">
                             <Image
                               src={reply.author_profile_image || profileImg}
