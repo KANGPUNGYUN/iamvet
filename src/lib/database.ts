@@ -3397,17 +3397,15 @@ export const getHospitalApplicants = async (hospitalId: string) => {
   const query = `
     SELECT 
       a.*,
-      v.nickname,
       u.email,
       u.phone,
       u."profileImage",
-      v."realName",
+      COALESCE(dr.name, u."realName", u.nickname) as applicant_name,
       j.title as job_title,
       j.position as job_position,
       dr.id as resume_id
     FROM applications a
     JOIN users u ON a."veterinarianId" = u.id
-    LEFT JOIN veterinarians v ON u.id = v."userId"
     JOIN jobs j ON a."jobId" = j.id
     LEFT JOIN resumes dr ON dr."userId" = u.id
     WHERE j."hospitalId" = $1
