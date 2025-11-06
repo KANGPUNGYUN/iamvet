@@ -6,6 +6,8 @@ import {
   createLectureComment,
   getLectureById,
   getUserById,
+  createNotification,
+  getLectureCommentById,
 } from "@/lib/database";
 
 interface RouteContext {
@@ -87,6 +89,27 @@ export const POST = withAuth(
         content: content.trim(),
         parentId: parentId || null,
       });
+
+      // 답글인 경우 부모 댓글 작성자에게 알림 전송
+      if (parentId) {
+        try {
+          const parentComment = await getLectureCommentById(parentId);
+          if (parentComment && parentComment.userId !== user.userId) {
+            // 자신에게는 알림을 보내지 않음
+            await createNotification({
+              userId: parentComment.userId,
+              type: "SYSTEM",
+              title: "새로운 답글이 달렸습니다",
+              content: `'${lecture.title}' 강의에서 내 댓글에 답글이 달렸습니다.`,
+              url: `/lectures/${lectureId}`,
+              senderId: user.userId,
+            });
+          }
+        } catch (notificationError) {
+          console.error("Failed to send reply notification:", notificationError);
+          // 알림 전송 실패는 댓글 생성에 영향을 주지 않음
+        }
+      }
 
       return NextResponse.json(
         createApiResponse("success", "댓글이 등록되었습니다", comment)

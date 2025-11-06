@@ -4,7 +4,9 @@ import { createApiResponse, createErrorResponse } from "@/lib/utils";
 import { 
   getForumComments, 
   createForumComment, 
-  getForumById 
+  getForumById,
+  createNotification,
+  getForumCommentById
 } from "@/lib/database";
 
 interface RouteContext {
@@ -74,6 +76,39 @@ export const POST = withAuth(async (request: NextRequest, context: RouteContext)
       content: content.trim(),
       parentId
     });
+
+    // 알림 전송 로직
+    try {
+      if (parentId) {
+        // 답글인 경우: 부모 댓글 작성자에게 알림
+        const parentComment = await getForumCommentById(parentId);
+        if (parentComment && parentComment.user_id !== user.userId) {
+          await createNotification({
+            userId: parentComment.user_id,
+            type: "SYSTEM",
+            title: "새로운 답글이 달렸습니다",
+            content: `'${forum.title}' 포럼에서 내 댓글에 답글이 달렸습니다.`,
+            url: `/forums/${forumId}`,
+            senderId: user.userId,
+          });
+        }
+      } else {
+        // 댓글인 경우: 포럼 작성자에게 알림 (자신에게는 알림 안함)
+        if (forum.userId !== user.userId) {
+          await createNotification({
+            userId: forum.userId,
+            type: "SYSTEM",
+            title: "새로운 댓글이 달렸습니다",
+            content: `'${forum.title}' 포럼에 새로운 댓글이 달렸습니다.`,
+            url: `/forums/${forumId}`,
+            senderId: user.userId,
+          });
+        }
+      }
+    } catch (notificationError) {
+      console.error("Failed to send forum comment notification:", notificationError);
+      // 알림 전송 실패는 댓글 생성에 영향을 주지 않음
+    }
 
     return NextResponse.json(
       createApiResponse("success", "댓글이 등록되었습니다", comment)
