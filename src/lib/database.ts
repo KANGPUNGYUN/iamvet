@@ -3874,6 +3874,14 @@ export const getForumComments = async (forumId: string) => {
   `;
   const result = await pool.query(query, [forumId]);
 
+  // 디버깅을 위한 로그 출력
+  console.log(`getForumComments: Found ${result.rows.length} comments for forum ${forumId}`);
+  console.log('Raw comments data:', result.rows.map(row => ({
+    id: row.id,
+    parent_id: row.parent_id,
+    content: row.content.substring(0, 50) + '...'
+  })));
+
   // 댓글을 계층구조로 정리
   const commentMap = new Map();
   const rootComments: any[] = [];
@@ -3904,12 +3912,21 @@ export const getForumComments = async (forumId: string) => {
       const parentComment = commentMap.get(comment.parent_id);
       if (parentComment) {
         parentComment.replies.push(mappedComment);
+        console.log(`Added reply ${comment.id} to parent ${comment.parent_id}`);
+      } else {
+        console.log(`Parent comment ${comment.parent_id} not found for reply ${comment.id}`);
       }
     } else {
       // 최상위 댓글인 경우 rootComments에 추가
       rootComments.push(mappedComment);
     }
   });
+
+  console.log(`getForumComments: Returning ${rootComments.length} root comments`);
+  console.log('Root comments with replies:', rootComments.map(c => ({
+    id: c.id,
+    repliesCount: c.replies.length
+  })));
 
   return rootComments;
 };
@@ -3939,7 +3956,21 @@ export const createForumComment = async (commentData: {
     commentData.content,
   ];
 
+  console.log('createForumComment: Creating comment with data:', {
+    commentId,
+    forumId: commentData.forumId,
+    userId: commentData.userId,
+    parentId: commentData.parentId || null,
+    content: commentData.content.substring(0, 50) + '...'
+  });
+
   const result = await pool.query(query, values);
+  
+  console.log('createForumComment: Created comment:', {
+    id: result.rows[0].id,
+    parent_id: result.rows[0].parent_id
+  });
+  
   return result.rows[0];
 };
 
