@@ -273,7 +273,11 @@ export default function ForumDetailPage({
     try {
       await createComment(id, "forum", replyContent.trim(), parentId);
       setReplyInputs((prev) => ({ ...prev, [parentId]: "" }));
-      setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
+      
+      // 댓글 목록이 새로고침된 후 답글 영역을 다시 열어줌
+      setTimeout(() => {
+        setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
+      }, 100);
     } catch (error) {
       console.error("Failed to submit reply:", error);
     }
