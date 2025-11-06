@@ -3405,8 +3405,33 @@ export const getHospitalApplicants = async (
   const { status = 'all', jobId, page = 1, limit = 20 } = filters || {};
   const offset = (page - 1) * limit;
   
+  console.log('[DB] getHospitalApplicants called with:', { hospitalId, filters });
+  
+  // First, let's check what jobs exist for this hospital
+  const jobsCheckQuery = `
+    SELECT j.id, j.title, j."hospitalId", h."userId", h.id as hospital_id
+    FROM jobs j
+    LEFT JOIN hospitals h ON j."hospitalId" = h."userId"
+    WHERE h.id = $1
+  `;
+  const jobsCheck = await pool.query(jobsCheckQuery, [hospitalId]);
+  console.log('[DB] Jobs for hospital:', jobsCheck.rows);
+  
+  // Also check if there are any applications
+  const appsCheckQuery = `
+    SELECT a.id, a."jobId", a."veterinarianId", j.title
+    FROM applications a
+    JOIN jobs j ON a."jobId" = j.id
+    WHERE j."hospitalId" IN (
+      SELECT "userId" FROM hospitals WHERE id = $1
+    )
+  `;
+  const appsCheck = await pool.query(appsCheckQuery, [hospitalId]);
+  console.log('[DB] Applications found:', appsCheck.rows.length, appsCheck.rows);
+  
   // Build WHERE conditions
-  const conditions = [`j."hospitalId" = $1`];
+  // Since hospitalId from getHospitalByUserId is the hospitals.id, we need to join through hospitals table
+  const conditions = [`h.id = $1`];
   const params: any[] = [hospitalId];
   let paramIndex = 2;
   
@@ -3430,11 +3455,16 @@ export const getHospitalApplicants = async (
     FROM applications a
     JOIN users u ON a."veterinarianId" = u.id
     JOIN jobs j ON a."jobId" = j.id
+    JOIN hospitals h ON j."hospitalId" = h."userId"
     LEFT JOIN resumes dr ON dr."userId" = u.id
     WHERE ${whereClause}
   `;
+  console.log('[DB] Count query:', countQuery);
+  console.log('[DB] Query params:', params);
+  
   const countResult = await pool.query(countQuery, params);
   const total = parseInt(countResult.rows[0]?.total || 0);
+  console.log('[DB] Total applicants found:', total);
   
   // Main query with pagination
   params.push(limit);
@@ -3453,12 +3483,17 @@ export const getHospitalApplicants = async (
     FROM applications a
     JOIN users u ON a."veterinarianId" = u.id
     JOIN jobs j ON a."jobId" = j.id
+    JOIN hospitals h ON j."hospitalId" = h."userId"
     LEFT JOIN resumes dr ON dr."userId" = u.id
     WHERE ${whereClause}
     ORDER BY a."appliedAt" DESC
     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
+  console.log('[DB] Main query:', query);
+  console.log('[DB] Query params:', params);
+  
   const result = await pool.query(query, params);
+  console.log('[DB] Query result rows:', result.rows.length);
 
   return {
     applicants: result.rows,

@@ -168,7 +168,8 @@ const ApplicantsTable: React.FC<ApplicantsTableProps> = ({
       // console.log("ApplicantsTable: API response:", response.data);
 
       if (response.data.status === "success") {
-        setApplicants(response.data.data || []);
+        // API 응답 형식이 변경됨: data.applicants 배열과 data.pagination 객체
+        setApplicants(response.data.data?.applicants || response.data.data || []);
       }
     } catch (error: any) {
       console.error("ApplicantsTable: Failed to fetch applicants:", error);

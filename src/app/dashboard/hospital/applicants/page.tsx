@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRightIcon, ArrowLeftIcon } from "public/icons";
@@ -21,7 +21,8 @@ interface ApplicationData {
   email: string;
   phone?: string;
   profileImage?: string;
-  realName: string;
+  applicant_name?: string;
+  realName?: string;
   job_title: string;
   job_position: string;
   resume_id?: string;
@@ -72,7 +73,7 @@ const MobileApplicationCard: React.FC<{
             className="w-9 h-9 rounded-full object-cover"
           />
           <span className="text-[16px] font-bold text-primary">
-            {application.realName || application.nickname}
+            {application.applicant_name || application.realName || application.nickname}
           </span>
         </div>
         <Link
@@ -129,6 +130,8 @@ export default function HospitalApplicantsPage() {
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const itemsPerPage = 10;
 
   const { user, isAuthenticated } = useAuth();
@@ -137,14 +140,22 @@ export default function HospitalApplicantsPage() {
     if (isAuthenticated && user?.type === "hospital") {
       fetchApplications();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, currentPage, sortBy]);
 
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
       const token =
         localStorage.getItem("token") || localStorage.getItem("accessToken");
-      const response = await axios.get("/api/dashboard/hospital/applicants", {
+      
+      // API 호출 시 페이지네이션 파라미터 전달
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        status: 'all'
+      });
+      
+      const response = await axios.get(`/api/dashboard/hospital/applicants?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -152,46 +163,37 @@ export default function HospitalApplicantsPage() {
 
       if (response.data.status === "success") {
         console.log("API Response Data:", response.data);
-        setApplications(response.data.data || []);
+        const responseData = response.data.data;
+        
+        // 새로운 API 응답 형식 처리
+        if (responseData?.applicants && responseData?.pagination) {
+          setApplications(responseData.applicants);
+          setTotalCount(responseData.pagination.total);
+          setTotalPages(responseData.pagination.totalPages);
+        } else if (Array.isArray(responseData)) {
+          // 이전 형식 호환성
+          setApplications(responseData);
+          setTotalCount(responseData.length);
+          setTotalPages(Math.ceil(responseData.length / itemsPerPage));
+        } else {
+          setApplications([]);
+          setTotalCount(0);
+          setTotalPages(0);
+        }
       }
     } catch (error: any) {
       console.error("Failed to fetch applications:", error);
       setError("지원자 목록을 불러오는데 실패했습니다.");
+      setApplications([]);
+      setTotalCount(0);
+      setTotalPages(0);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 정렬 로직
-  const sortedApplications = useMemo(() => {
-    const sorted = [...applications];
-    switch (sortBy) {
-      case "recent":
-        return sorted.sort(
-          (a, b) =>
-            new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
-        );
-      case "popular":
-        return sorted.sort((a, b) =>
-          (a.realName || a.nickname).localeCompare(b.realName || b.nickname)
-        );
-      case "deadline":
-        return sorted.sort(
-          (a, b) =>
-            new Date(a.appliedAt).getTime() - new Date(b.appliedAt).getTime()
-        );
-      default:
-        return sorted;
-    }
-  }, [applications, sortBy]);
-
-  // 페이지네이션
-  const totalPages = Math.ceil(sortedApplications.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentApplications = sortedApplications.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  // 서버에서 이미 페이지네이션된 데이터를 받으므로 클라이언트 정렬/페이징 제거
+  const currentApplications = applications;
 
   if (!isAuthenticated || user?.type !== "hospital") {
     return (
@@ -317,7 +319,7 @@ export default function HospitalApplicantsPage() {
                             .replace(/\.$/, "")}
                         </td>
                         <td className="py-[22px] text-sm text-gray-900">
-                          {application.realName || application.nickname}
+                          {application.applicant_name || application.realName || application.nickname}
                         </td>
                         <td className="py-[22px] text-sm text-gray-900">
                           {application.job_position}
@@ -348,13 +350,15 @@ export default function HospitalApplicantsPage() {
               </div>
 
               {/* 페이지네이션 */}
-              <div className="mt-8 flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
+              {totalPages > 1 && (
+                <div className="mt-8 flex justify-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
             </>
           )}
         </div>
