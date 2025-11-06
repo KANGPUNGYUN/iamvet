@@ -206,6 +206,10 @@ export async function updateVeterinarianProfileAction(
       console.log('[Server Action] Updating profileImage:', updateData.profileImage);
       await sql`UPDATE users SET "profileImage" = ${updateData.profileImage}, "updatedAt" = NOW() WHERE id = ${userId}`;
     }
+    if (updateData.nickname !== undefined) {
+      console.log('[Server Action] Updating users.nickname:', updateData.nickname);
+      await sql`UPDATE users SET nickname = ${updateData.nickname}, "updatedAt" = NOW() WHERE id = ${userId}`;
+    }
 
     // veterinarians 테이블 업데이트 (수의사 전용 정보)
     if (updateData.nickname !== undefined || updateData.realName !== undefined || 
