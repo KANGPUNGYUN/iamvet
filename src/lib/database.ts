@@ -3393,7 +3393,53 @@ export const getApplicationById = async (applicationId: string) => {
   };
 };
 
-export const getHospitalApplicants = async (hospitalId: string) => {
+export const getHospitalApplicants = async (
+  hospitalId: string,
+  filters?: {
+    status?: string;
+    jobId?: string;
+    page?: number;
+    limit?: number;
+  }
+) => {
+  const { status = 'all', jobId, page = 1, limit = 20 } = filters || {};
+  const offset = (page - 1) * limit;
+  
+  // Build WHERE conditions
+  const conditions = [`j."hospitalId" = $1`];
+  const params: any[] = [hospitalId];
+  let paramIndex = 2;
+  
+  if (status && status !== 'all') {
+    conditions.push(`a.status = $${paramIndex}`);
+    params.push(status);
+    paramIndex++;
+  }
+  
+  if (jobId) {
+    conditions.push(`a."jobId" = $${paramIndex}`);
+    params.push(jobId);
+    paramIndex++;
+  }
+  
+  const whereClause = conditions.join(' AND ');
+  
+  // Count query for pagination
+  const countQuery = `
+    SELECT COUNT(*) as total
+    FROM applications a
+    JOIN users u ON a."veterinarianId" = u.id
+    JOIN jobs j ON a."jobId" = j.id
+    LEFT JOIN resumes dr ON dr."userId" = u.id
+    WHERE ${whereClause}
+  `;
+  const countResult = await pool.query(countQuery, params);
+  const total = parseInt(countResult.rows[0]?.total || 0);
+  
+  // Main query with pagination
+  params.push(limit);
+  params.push(offset);
+  
   const query = `
     SELECT 
       a.*,
@@ -3408,13 +3454,21 @@ export const getHospitalApplicants = async (hospitalId: string) => {
     JOIN users u ON a."veterinarianId" = u.id
     JOIN jobs j ON a."jobId" = j.id
     LEFT JOIN resumes dr ON dr."userId" = u.id
-    WHERE j."hospitalId" = $1
+    WHERE ${whereClause}
     ORDER BY a."appliedAt" DESC
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
-  const result = await pool.query(query, [hospitalId]);
+  const result = await pool.query(query, params);
 
-  // 데이터베이스에서 직접 가져온 상태를 그대로 사용
-  return result.rows;
+  return {
+    applicants: result.rows,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 
 export const getHospitalJobPostings = async (hospitalId: string) => {

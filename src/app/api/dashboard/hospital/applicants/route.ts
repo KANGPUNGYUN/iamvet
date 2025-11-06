@@ -41,12 +41,20 @@ export const GET = withAuth(async (request: NextRequest) => {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
-    console.log("[API] Fetching applicants for hospital:", hospital.id);
-    const applicants = await getHospitalApplicants(hospital.id);
-    console.log("[API] Applicants found:", applicants?.length || 0);
+    console.log("[API] Fetching applicants with filters:", { status, jobId, page, limit });
+    const result = await getHospitalApplicants(hospital.id, {
+      status,
+      jobId,
+      page,
+      limit
+    });
+    console.log("[API] Applicants found:", result.applicants?.length || 0, "Total:", result.pagination.total);
 
     return NextResponse.json(
-      createApiResponse("success", "지원자 목록 조회 성공", applicants)
+      createApiResponse("success", "지원자 목록 조회 성공", {
+        applicants: result.applicants,
+        pagination: result.pagination
+      })
     );
   } catch (error) {
     console.error("Hospital applicants error:", error);
