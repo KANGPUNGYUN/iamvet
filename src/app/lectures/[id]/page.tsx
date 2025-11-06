@@ -719,7 +719,7 @@ export default function LectureDetailPage({
                       <div className="flex gap-3">
                         <Image
                           src={comment.author_profile_image || profileImg}
-                          alt={comment.author_name || "사용자"}
+                          alt={comment.author_name || "익명"}
                           width={45}
                           height={45}
                           className="w-[45px] h-[45px] rounded-full object-cover"
@@ -728,7 +728,7 @@ export default function LectureDetailPage({
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
                               <span className="text-[14px] font-semibold text-[#3B394D]">
-                                {comment.author_name}
+                                {comment.author_name || "익명"}
                               </span>
                               <span className="text-[12px] text-[#9098A4]">
                                 {new Date(comment.createdAt)
@@ -837,7 +837,7 @@ export default function LectureDetailPage({
                               <div key={reply.id} className="flex gap-3">
                                 <Image
                                   src={reply.author_profile_image || profileImg}
-                                  alt={reply.author_name || "사용자"}
+                                  alt={reply.author_name || "익명"}
                                   width={36}
                                   height={36}
                                   className="w-[36px] h-[36px] rounded-full object-cover"
@@ -846,7 +846,7 @@ export default function LectureDetailPage({
                                   <div className="flex items-center justify-between mb-1">
                                     <div className="flex items-center gap-2">
                                       <span className="text-[14px] font-semibold text-[#3B394D]">
-                                        {reply.author_name}
+                                        {reply.author_name || "익명"}
                                       </span>
                                       <span className="text-[12px] text-[#9098A4]">
                                         {new Date(

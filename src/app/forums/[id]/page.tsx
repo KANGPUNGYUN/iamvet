@@ -582,7 +582,7 @@ export default function ForumDetailPage({
                   <div className="flex gap-3">
                     <Image
                       src={comment.author_profile_image || profileImg}
-                      alt={comment.author_name || "User"}
+                      alt={comment.author_name || "익명"}
                       width={40}
                       height={40}
                       className="w-[40px] h-[40px] rounded-full object-cover"
@@ -591,7 +591,7 @@ export default function ForumDetailPage({
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                           <span className="text-[14px] font-semibold text-[#3B394D]">
-                            {comment.author_name || "User"}
+                            {comment.author_name || "익명"}
                           </span>
                           <span className="text-[12px] text-[#9098A4]">
                             {new Date(comment.createdAt)
@@ -700,7 +700,7 @@ export default function ForumDetailPage({
                           <div key={reply.id} className="flex gap-3">
                             <Image
                               src={reply.author_profile_image || profileImg}
-                              alt={reply.author_name || "User"}
+                              alt={reply.author_name || "익명"}
                               width={32}
                               height={32}
                               className="w-[32px] h-[32px] rounded-full object-cover"
@@ -709,7 +709,7 @@ export default function ForumDetailPage({
                               <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-2">
                                   <span className="text-[14px] font-semibold text-[#3B394D]">
-                                    {reply.author_name || "User"}
+                                    {reply.author_name || "익명"}
                                   </span>
                                   <span className="text-[12px] text-[#9098A4]">
                                     {new Date(reply.createdAt)
