@@ -106,32 +106,8 @@ export const useCommentStore = create<CommentState>((set, get) => ({
           // 강의 댓글은 이미 계층구조로 반환됨
           set({ comments, isLoading: false });
         } else {
-          // 포럼 댓글을 계층구조로 정리
-          const commentMap = new Map<string, Comment>();
-          const rootComments: Comment[] = [];
-          
-          // 모든 댓글을 맵에 저장
-          comments.forEach((comment: Comment) => {
-            commentMap.set(comment.id, { ...comment, replies: [] });
-          });
-          
-          // 부모-자식 관계 설정
-          comments.forEach((comment: Comment) => {
-            const commentWithReplies = commentMap.get(comment.id)!;
-            
-            if (comment.parent_id) {
-              // 대댓글인 경우 부모 댓글의 replies에 추가
-              const parentComment = commentMap.get(comment.parent_id);
-              if (parentComment) {
-                parentComment.replies!.push(commentWithReplies);
-              }
-            } else {
-              // 최상위 댓글인 경우 rootComments에 추가
-              rootComments.push(commentWithReplies);
-            }
-          });
-          
-          set({ comments: rootComments, isLoading: false });
+          // 포럼 댓글은 이미 계층구조로 반환되므로, 별도의 계층구조 처리 없이 바로 사용
+          set({ comments, isLoading: false });
         }
       } else {
         set({ error: data.message, isLoading: false });
