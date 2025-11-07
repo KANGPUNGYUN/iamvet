@@ -986,9 +986,9 @@ export default function ResumeDetailPage({
 
         if (result.status === "success" && result.data) {
           // 해당 수의사가 이 병원의 공고에 지원한 모든 내역 찾기
-          const targetApplications = result.data.filter(
+          const targetApplications = Array.isArray(result.data) ? result.data.filter(
             (app: any) => app.veterinarianId === veterinarianId
-          );
+          ) : [];
 
           if (targetApplications.length > 0) {
             console.log("🎯 Found matching applications:", targetApplications);

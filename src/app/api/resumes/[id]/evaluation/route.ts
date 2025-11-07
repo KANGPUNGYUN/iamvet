@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
-import { createResumeEvaluation, getResumeEvaluations } from "@/lib/database";
+import { createResumeEvaluation, getResumeEvaluations, getResumeById, getHospitalByUserId, createNotification } from "@/lib/database";
 
 interface RouteContext {
   params: Promise<{
@@ -76,6 +76,31 @@ export const POST = withAuth(
         comments,
         overallRating: Math.round(overallRating * 2) / 2, // Round to nearest 0.5
       });
+
+      // Send notification to the resume owner
+      try {
+        const resume = await getResumeById(resumeId); // Assuming resumeId is the veterinarian's userId
+        const hospital = await getHospitalByUserId(user.userId);
+
+        if (resume && hospital) {
+          const notificationTitle = "새로운 인재 평가가 도착했습니다";
+          const notificationContent = `${hospital.hospitalName}에서 회원님의 이력서에 대한 인재 평가를 작성했습니다.`;
+
+          await createNotification({
+            userId: resume.userId, // The owner of the resume
+            type: "evaluation_received",
+            title: notificationTitle,
+            content: notificationContent,
+            senderId: user.userId, // The hospital that made the evaluation
+            url: `/resumes/${resumeId}?tab=talent-evaluation`, // Link to the resume evaluation section
+          });
+          console.log("Notification sent for resume evaluation.");
+        } else {
+          console.warn("Could not send notification: Resume or Hospital not found.");
+        }
+      } catch (notificationError) {
+        console.error("Failed to send notification for resume evaluation:", notificationError);
+      }
 
       return NextResponse.json(
         createApiResponse("success", "인재 평가가 등록되었습니다", evaluation)

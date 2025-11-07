@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getExperienceFilterConditions } from "@/lib/experienceMapping";
 
 // Type definitions
-type NotificationType =
+export type NotificationType =
   | "application_status"
   | "job_application"
   | "bookmark_added"
