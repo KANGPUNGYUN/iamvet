@@ -48,18 +48,6 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        notification_batches: {
-          select: {
-            totalRecipients: true,
-            sentCount: true,
-            status: true,
-            completedAt: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
-        },
       },
       orderBy: {
         notifications: {
@@ -68,49 +56,35 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // 읽음 수 계산
-    const notificationIdentifiers = announcements
-      .map((announcement: any) => ({
-        title: announcement.notifications?.title,
-        senderId: announcement.users?.id,
-      }))
-      .filter((id) => id.title && id.senderId);
-
-    if (notificationIdentifiers.length > 0) {
-      const readCounts = await prisma.notifications.groupBy({
-        by: ["title", "senderId"],
-        where: {
-          type: "ANNOUNCEMENT",
-          isRead: true,
-          OR: notificationIdentifiers.map((id) => ({
-            title: id.title,
-            senderId: id.senderId,
-          })),
-        },
-        _count: {
-          id: true,
-        },
-      });
-
-      const countsMap = new Map<string, number>();
-      readCounts.forEach((group) => {
-        if (group.title && group.senderId) {
-          const key = `${group.title}:${group.senderId}`;
-          countsMap.set(key, group._count.id);
-        }
-      });
-
-      // 데이터 변환
-      const transformedAnnouncements = announcements.map((announcement: any) => {
-        const latestBatch = announcement.notification_batches?.[0];
+    const announcementDetails = await Promise.all(
+      announcements.map(async (announcement: any) => {
         const authorName =
           announcement.users?.veterinarians?.realName ||
           announcement.users?.veterinary_students?.realName ||
           announcement.users?.hospitals?.representativeName ||
           "관리자";
 
-        const key = `${announcement.notifications?.title}:${announcement.users?.id}`;
-        const readCount = countsMap.get(key) || 0;
+        // Count all individual notifications sent for this announcement
+        const totalSentNotifications = await prisma.notifications.count({
+          where: {
+            type: NotificationType.ANNOUNCEMENT,
+            senderId: announcement.createdBy,
+            title: announcement.notifications.title,
+          },
+        });
+
+        // Count read notifications for this announcement
+        const totalReadNotifications = await prisma.notifications.count({
+          where: {
+            type: NotificationType.ANNOUNCEMENT,
+            senderId: announcement.createdBy,
+            title: announcement.notifications.title,
+            isRead: true,
+          },
+        });
+
+        // Determine status based on whether any notifications were sent
+        const status = totalSentNotifications > 0 ? "SENT" : "DRAFT";
 
         return {
           id: announcement.id,
@@ -118,54 +92,23 @@ export async function GET(req: NextRequest) {
           content: announcement.notifications?.content || "",
           images: (announcement as any).images || [],
           priority: announcement.priority || "NORMAL",
-          status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
-          sendCount: latestBatch?.sentCount || 0,
-          totalRecipients: latestBatch?.totalRecipients || 0,
-          readCount: readCount,
+          status: status,
+          sendCount: totalSentNotifications,
+          totalRecipients: totalSentNotifications,
+          readCount: totalReadNotifications,
           author: authorName,
           createdAt: announcement.notifications?.createdAt || new Date(),
           updatedAt: announcement.notifications?.updatedAt || new Date(),
-          sentAt: latestBatch?.completedAt || null,
+          sentAt: totalSentNotifications > 0 ? announcement.notifications?.createdAt : null,
           targetUsers: announcement.targetUserTypes || [],
         };
-      });
+      })
+    );
 
-      return NextResponse.json({
-        success: true,
-        data: transformedAnnouncements,
-      });
-    } else {
-      // 데이터 변환 (읽음 수를 0으로)
-      const transformedAnnouncements = announcements.map((announcement: any) => {
-        const latestBatch = announcement.notification_batches?.[0];
-        const authorName =
-          announcement.users?.veterinarians?.realName ||
-          announcement.users?.veterinary_students?.realName ||
-          announcement.users?.hospitals?.representativeName ||
-          "관리자";
-
-        return {
-          id: announcement.id,
-          title: announcement.notifications?.title || "",
-          content: announcement.notifications?.content || "",
-          images: (announcement as any).images || [],
-          priority: announcement.priority || "NORMAL",
-          status: latestBatch?.status === "COMPLETED" ? "SENT" : "DRAFT",
-          sendCount: latestBatch?.sentCount || 0,
-          totalRecipients: latestBatch?.totalRecipients || 0,
-          readCount: 0,
-          author: authorName,
-          createdAt: announcement.notifications?.createdAt || new Date(),
-          updatedAt: announcement.notifications?.updatedAt || new Date(),
-          sentAt: latestBatch?.completedAt || null,
-          targetUsers: announcement.targetUserTypes || [],
-        };
-      });
-      return NextResponse.json({
-        success: true,
-        data: transformedAnnouncements,
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      data: announcementDetails,
+    });
   } catch (error) {
     console.error("Failed to fetch announcements:", error);
     return NextResponse.json(
