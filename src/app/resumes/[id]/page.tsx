@@ -219,10 +219,7 @@ export default function ResumeDetailPage({
   } = useLikeStore();
 
   // Zustand 스토어에서 조회수 상태 관리
-  const {
-    setResumeViewCount,
-    getResumeViewCount,
-  } = useViewCountStore();
+  const { setResumeViewCount, getResumeViewCount } = useViewCountStore();
 
   // URL에서 applicationId 파라미터 가져오기
   const applicationId = searchParams.get("applicationId");
@@ -272,7 +269,9 @@ export default function ResumeDetailPage({
   // 조회수 증가 함수
   const incrementViewCount = async () => {
     try {
-      console.log(`[ResumeDetail] 조회수 증가 API 호출 시작 - Resume ID: ${id}`);
+      console.log(
+        `[ResumeDetail] 조회수 증가 API 호출 시작 - Resume ID: ${id}`
+      );
 
       const token = localStorage.getItem("accessToken");
       const headers: HeadersInit = {
@@ -325,12 +324,14 @@ export default function ResumeDetailPage({
   // 조회수 증가를 위한 별도 useEffect
   useEffect(() => {
     if (resumeData) {
-      console.log("[ResumeDetail] 이력서 데이터 로드 완료, 조회수 증가 API 호출");
-      
+      console.log(
+        "[ResumeDetail] 이력서 데이터 로드 완료, 조회수 증가 API 호출"
+      );
+
       // 낙관적 업데이트: API 호출 전에 먼저 클라이언트에서 조회수 증가
       const currentViewCount = getResumeViewCount(id);
       setResumeViewCount(id, currentViewCount + 1);
-      
+
       // 그 다음 API 호출
       incrementViewCount();
     }
@@ -986,9 +987,9 @@ export default function ResumeDetailPage({
 
         if (result.status === "success" && result.data) {
           // 해당 수의사가 이 병원의 공고에 지원한 모든 내역 찾기
-          const targetApplications = Array.isArray(result.data) ? result.data.filter(
+          const targetApplications = result.data.filter(
             (app: any) => app.veterinarianId === veterinarianId
-          ) : [];
+          );
 
           if (targetApplications.length > 0) {
             console.log("🎯 Found matching applications:", targetApplications);

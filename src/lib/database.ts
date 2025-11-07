@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getExperienceFilterConditions } from "@/lib/experienceMapping";
 
 // Type definitions
-export type NotificationType =
+type NotificationType =
   | "application_status"
   | "job_application"
   | "bookmark_added"
@@ -3402,11 +3402,14 @@ export const getHospitalApplicants = async (
     limit?: number;
   }
 ) => {
-  const { status = 'all', jobId, page = 1, limit = 20 } = filters || {};
+  const { status = "all", jobId, page = 1, limit = 20 } = filters || {};
   const offset = (page - 1) * limit;
-  
-  console.log('[DB] getHospitalApplicants called with:', { hospitalId, filters });
-  
+
+  console.log("[DB] getHospitalApplicants called with:", {
+    hospitalId,
+    filters,
+  });
+
   // First, let's check what jobs exist for this hospital
   const jobsCheckQuery = `
     SELECT j.id, j.title, j."hospitalId", h."userId", h.id as hospital_id
@@ -3415,8 +3418,8 @@ export const getHospitalApplicants = async (
     WHERE h.id = $1
   `;
   const jobsCheck = await pool.query(jobsCheckQuery, [hospitalId]);
-  console.log('[DB] Jobs for hospital:', jobsCheck.rows);
-  
+  console.log("[DB] Jobs for hospital:", jobsCheck.rows);
+
   // Also check if there are any applications
   const appsCheckQuery = `
     SELECT a.id, a."jobId", a."veterinarianId", j.title
@@ -3427,28 +3430,32 @@ export const getHospitalApplicants = async (
     )
   `;
   const appsCheck = await pool.query(appsCheckQuery, [hospitalId]);
-  console.log('[DB] Applications found:', appsCheck.rows.length, appsCheck.rows);
-  
+  console.log(
+    "[DB] Applications found:",
+    appsCheck.rows.length,
+    appsCheck.rows
+  );
+
   // Build WHERE conditions
   // Since hospitalId from getHospitalByUserId is the hospitals.id, we need to join through hospitals table
   const conditions = [`h.id = $1`];
   const params: any[] = [hospitalId];
   let paramIndex = 2;
-  
-  if (status && status !== 'all') {
+
+  if (status && status !== "all") {
     conditions.push(`a.status = $${paramIndex}`);
     params.push(status);
     paramIndex++;
   }
-  
+
   if (jobId) {
     conditions.push(`a."jobId" = $${paramIndex}`);
     params.push(jobId);
     paramIndex++;
   }
-  
-  const whereClause = conditions.join(' AND ');
-  
+
+  const whereClause = conditions.join(" AND ");
+
   // Count query for pagination
   const countQuery = `
     SELECT COUNT(*) as total
@@ -3459,17 +3466,17 @@ export const getHospitalApplicants = async (
     LEFT JOIN resumes dr ON dr."userId" = u.id
     WHERE ${whereClause}
   `;
-  console.log('[DB] Count query:', countQuery);
-  console.log('[DB] Query params:', params);
-  
+  console.log("[DB] Count query:", countQuery);
+  console.log("[DB] Query params:", params);
+
   const countResult = await pool.query(countQuery, params);
   const total = parseInt(countResult.rows[0]?.total || 0);
-  console.log('[DB] Total applicants found:', total);
-  
+  console.log("[DB] Total applicants found:", total);
+
   // Main query with pagination
   params.push(limit);
   params.push(offset);
-  
+
   const query = `
     SELECT 
       a.*,
@@ -3489,11 +3496,11 @@ export const getHospitalApplicants = async (
     ORDER BY a."appliedAt" DESC
     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
-  console.log('[DB] Main query:', query);
-  console.log('[DB] Query params:', params);
-  
+  console.log("[DB] Main query:", query);
+  console.log("[DB] Query params:", params);
+
   const result = await pool.query(query, params);
-  console.log('[DB] Query result rows:', result.rows.length);
+  console.log("[DB] Query result rows:", result.rows.length);
 
   return {
     applicants: result.rows,
@@ -3501,8 +3508,8 @@ export const getHospitalApplicants = async (
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
-    }
+      totalPages: Math.ceil(total / limit),
+    },
   };
 };
 
@@ -3875,12 +3882,17 @@ export const getForumComments = async (forumId: string) => {
   const result = await pool.query(query, [forumId]);
 
   // 디버깅을 위한 로그 출력
-  console.log(`getForumComments: Found ${result.rows.length} comments for forum ${forumId}`);
-  console.log('Raw comments data:', result.rows.map(row => ({
-    id: row.id,
-    parent_id: row.parent_id,
-    content: row.content.substring(0, 50) + '...'
-  })));
+  console.log(
+    `getForumComments: Found ${result.rows.length} comments for forum ${forumId}`
+  );
+  console.log(
+    "Raw comments data:",
+    result.rows.map((row) => ({
+      id: row.id,
+      parent_id: row.parent_id,
+      content: row.content.substring(0, 50) + "...",
+    }))
+  );
 
   // 댓글을 계층구조로 정리
   const commentMap = new Map();
@@ -3914,7 +3926,9 @@ export const getForumComments = async (forumId: string) => {
         parentComment.replies.push(mappedComment);
         console.log(`Added reply ${comment.id} to parent ${comment.parent_id}`);
       } else {
-        console.log(`Parent comment ${comment.parent_id} not found for reply ${comment.id}`);
+        console.log(
+          `Parent comment ${comment.parent_id} not found for reply ${comment.id}`
+        );
       }
     } else {
       // 최상위 댓글인 경우 rootComments에 추가
@@ -3922,11 +3936,16 @@ export const getForumComments = async (forumId: string) => {
     }
   });
 
-  console.log(`getForumComments: Returning ${rootComments.length} root comments`);
-  console.log('Root comments with replies:', rootComments.map(c => ({
-    id: c.id,
-    repliesCount: c.replies.length
-  })));
+  console.log(
+    `getForumComments: Returning ${rootComments.length} root comments`
+  );
+  console.log(
+    "Root comments with replies:",
+    rootComments.map((c) => ({
+      id: c.id,
+      repliesCount: c.replies.length,
+    }))
+  );
 
   return rootComments;
 };
@@ -3956,21 +3975,21 @@ export const createForumComment = async (commentData: {
     commentData.content,
   ];
 
-  console.log('createForumComment: Creating comment with data:', {
+  console.log("createForumComment: Creating comment with data:", {
     commentId,
     forumId: commentData.forumId,
     userId: commentData.userId,
     parentId: commentData.parentId || null,
-    content: commentData.content.substring(0, 50) + '...'
+    content: commentData.content.substring(0, 50) + "...",
   });
 
   const result = await pool.query(query, values);
-  
-  console.log('createForumComment: Created comment:', {
+
+  console.log("createForumComment: Created comment:", {
     id: result.rows[0].id,
-    parent_id: result.rows[0].parent_id
+    parent_id: result.rows[0].parent_id,
   });
-  
+
   return result.rows[0];
 };
 

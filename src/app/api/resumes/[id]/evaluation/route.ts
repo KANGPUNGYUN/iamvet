@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
-import { createResumeEvaluation, getResumeEvaluations, getResumeById, getHospitalByUserId, createNotification } from "@/lib/database";
+import { createResumeEvaluation, getResumeEvaluations } from "@/lib/database";
 
 interface RouteContext {
   params: Promise<{
@@ -40,10 +40,10 @@ export const POST = withAuth(
       const resumeId = params.id;
       const evaluationData = await request.json();
 
-      console.log('[Evaluation API] User check:', {
+      console.log("[Evaluation API] User check:", {
         userId: user.userId,
         userType: user.userType,
-        isHospital: user.userType === "HOSPITAL"
+        isHospital: user.userType === "HOSPITAL",
       });
 
       // Only hospitals can evaluate veterinarians
@@ -56,7 +56,7 @@ export const POST = withAuth(
 
       // Validate evaluation data
       const { ratings, comments } = evaluationData;
-      
+
       if (!ratings || !comments) {
         return NextResponse.json(
           createErrorResponse("평가 항목과 코멘트가 필요합니다"),
@@ -66,7 +66,9 @@ export const POST = withAuth(
 
       // Calculate overall rating as average of all ratings
       const ratingValues = Object.values(ratings) as number[];
-      const overallRating = ratingValues.reduce((sum, rating) => sum + rating, 0) / ratingValues.length;
+      const overallRating =
+        ratingValues.reduce((sum, rating) => sum + rating, 0) /
+        ratingValues.length;
 
       // Create resume evaluation
       const evaluation = await createResumeEvaluation({
@@ -76,31 +78,6 @@ export const POST = withAuth(
         comments,
         overallRating: Math.round(overallRating * 2) / 2, // Round to nearest 0.5
       });
-
-      // Send notification to the resume owner
-      try {
-        const resume = await getResumeById(resumeId); // Assuming resumeId is the veterinarian's userId
-        const hospital = await getHospitalByUserId(user.userId);
-
-        if (resume && hospital) {
-          const notificationTitle = "새로운 인재 평가가 도착했습니다";
-          const notificationContent = `${hospital.hospitalName}에서 회원님의 이력서에 대한 인재 평가를 작성했습니다.`;
-
-          await createNotification({
-            userId: resume.userId, // The owner of the resume
-            type: "evaluation_received",
-            title: notificationTitle,
-            content: notificationContent,
-            senderId: user.userId, // The hospital that made the evaluation
-            url: `/resumes/${resumeId}?tab=talent-evaluation`, // Link to the resume evaluation section
-          });
-          console.log("Notification sent for resume evaluation.");
-        } else {
-          console.warn("Could not send notification: Resume or Hospital not found.");
-        }
-      } catch (notificationError) {
-        console.error("Failed to send notification for resume evaluation:", notificationError);
-      }
 
       return NextResponse.json(
         createApiResponse("success", "인재 평가가 등록되었습니다", evaluation)
