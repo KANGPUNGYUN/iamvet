@@ -312,6 +312,8 @@ export default function TransferDetailPage({
           console.log("Transfer data:", data.data);
           console.log("Current user:", user);
           setTransferData(data.data);
+          console.log("DEBUG: Full transferData object:", data.data);
+          console.log("DEBUG: relatedTransfers before filter:", data.data.relatedTransfers);
 
           // 좋아요 상태를 Zustand 스토어에 동기화
           if (data.data.isLiked) {
@@ -664,7 +666,7 @@ export default function TransferDetailPage({
 
   // 추천 카드 데이터
   const recommendedTransfers = transferData.relatedTransfers?.filter(
-    (transfer: any) => transfer.status !== "temporary"
+    (transfer: any) => !transfer.isDraft
   ) || [];
 
   // 카드 슬라이드 관련 계산
