@@ -74,7 +74,10 @@ export default function EditTransferPage({
 
   useEffect(() => {
     const isDraftFromQuery = searchParams.get("isDraft") === "true";
+    console.log("DEBUG: isDraftFromQuery from URL:", searchParams.get("isDraft"));
+    console.log("DEBUG: isDraftFromQuery boolean:", isDraftFromQuery);
     setIsDraft(isDraftFromQuery);
+    console.log("DEBUG: isDraft state after setting:", isDraftFromQuery);
   }, [searchParams]);
 
   // 기존 데이터 로드
@@ -715,7 +718,7 @@ export default function EditTransferPage({
             <Button
               variant="default"
               size="large"
-              onClick={() => handleSubmit(false)}
+              onClick={() => handleSubmit(isDraft)}
               loading={isLoading}
             >
               {isDraft ? "등록하기" : "수정하기"}

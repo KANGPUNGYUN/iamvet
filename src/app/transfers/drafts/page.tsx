@@ -149,7 +149,7 @@ export default function DraftTransfersPage() {
                       <div className="text-center text-white">
                         <div className="flex gap-2 justify-center">
                           <Link
-                            href={`/transfers/${draft.id}/edit`}
+                            href={`/transfers/${draft.id}/edit?isDraft=true`}
                             className="flex items-center gap-1"
                           >
                             <Button
