@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect } from "react";
+import { useState, use, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -207,6 +207,16 @@ export default function JobDetailPage({
     userType: user?.type,
     isAuthenticated: isAuthenticated,
   });
+
+  // 채용공고 마감 여부 확인
+  const isJobClosed = useMemo(() => {
+    if (jobData?.deadline && jobData.deadline !== "상시") {
+      const deadlineDate = new Date(jobData.deadline);
+      // 마감일이 오늘보다 이전이면 마감된 것으로 간주
+      return deadlineDate < new Date();
+    }
+    return false;
+  }, [jobData?.deadline]);
 
   if (isLoading) {
     return (
@@ -836,7 +846,11 @@ export default function JobDetailPage({
               <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-[40px] mt-[30px]">
                 {canApply && (
                   <>
-                    {!jobData.hasApplied ? (
+                    {isJobClosed ? (
+                      <Button variant="line" size="large" disabled={true}>
+                        마감
+                      </Button>
+                    ) : !jobData.hasApplied ? (
                       <Button
                         variant="default"
                         size="large"
