@@ -191,7 +191,7 @@ export default function CommentManagementPage({
                 <div className="flex gap-2">
                   <SelectBox
                     value={commentFilter}
-                    onChange={setCommentFilter}
+                    onChange={(value) => setCommentFilter(value as "all" | "forum" | "lecture")}
                     placeholder="전체"
                     options={[
                       { value: "all", label: "전체" },

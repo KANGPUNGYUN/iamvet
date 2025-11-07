@@ -204,9 +204,6 @@ export default function HospitalForumBookmarksPage() {
           if (isBookmarked) {
             // If frontend thought it was bookmarked
             setForumBookmark(forumId, false); // Force unbookmarked state
-            if (onBookmarkChange) {
-              onBookmarkChange(forumId, false);
-            }
           }
           // If unbookmarking from a bookmarked list, refetch to remove it
           if (!isBookmarked) {
