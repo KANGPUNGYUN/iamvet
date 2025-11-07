@@ -663,7 +663,9 @@ export default function TransferDetailPage({
     : profileImg;
 
   // 추천 카드 데이터
-  const recommendedTransfers = transferData.relatedTransfers || [];
+  const recommendedTransfers = transferData.relatedTransfers?.filter(
+    (transfer: any) => transfer.status !== "temporary"
+  ) || [];
 
   // 카드 슬라이드 관련 계산
   const cardsPerView = 3; // 한 번에 보이는 카드 개수
