@@ -76,13 +76,33 @@ const ChevronRightIcon: React.FC<{ className?: string }> = ({
   </svg>
 );
 
+const CommentIcon: React.FC<{ currentColor?: string }> = ({
+  currentColor = "currentColor",
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="M15 10.3333C15 10.7459 14.8361 11.1416 14.5444 11.4333C14.2527 11.725 13.857 11.8889 13.4444 11.8889H4.11111L1 15V2.55556C1 2.143 1.16389 1.74733 1.45561 1.45561C1.74733 1.16389 2.143 1 2.55556 1H13.4444C13.857 1 14.2527 1.16389 14.5444 1.45561C14.8361 1.74733 15 2.143 15 2.55556V10.3333Z"
+      stroke="currentColor"
+      strokeWidth="1.0"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 interface BookmarkChildMenuItem {
   id: string;
   label: string;
   href: string;
 }
 
-interface BookmarkMenuGroup {
+interface MenuGroup {
   id: string;
   label: string;
   icon: React.ComponentType<{ currentColor?: string }>;
@@ -107,7 +127,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
     useHospitalAuthModal();
   const { unreadCount, fetchUnreadCount } = useNotificationStore();
   const [expandedGroups, setExpandedGroups] = React.useState<Set<string>>(
-    new Set(["bookmarks"])
+    new Set(["posts-management", "comments-management", "bookmarks"])
   );
 
   // active 상태 확인 함수 (Sidebar와 동일한 로직)
@@ -118,10 +138,29 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
     return pathname.startsWith(href);
   };
 
+  // 게시물 관리 그룹 정의
+  const getPostsGroup = (type: "veterinarian" | "hospital"): MenuGroup => {
+    return {
+      id: "posts-management",
+      label: "게시물 관리",
+      icon: ListIcon,
+      children: [
+        {
+          id: "my-forum-posts",
+          label: "임상포럼 게시물",
+          href: `/dashboard/${type}/my-forum-posts`,
+        },
+        {
+          id: "my-transfer-posts",
+          label: "양도양수 게시물",
+          href: `/dashboard/${type}/my-transfer-posts`,
+        },
+      ],
+    };
+  };
+
   // 북마크 그룹 정의
-  const getBookmarkGroup = (
-    type: "veterinarian" | "hospital"
-  ): BookmarkMenuGroup => {
+  const getBookmarkGroup = (type: "veterinarian" | "hospital"): MenuGroup => {
     if (type === "veterinarian") {
       return {
         id: "bookmarks",
@@ -218,6 +257,12 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           icon: SettingsIcon,
           href: "/dashboard/veterinarian/profile",
         },
+        {
+          id: "my-comments",
+          label: "댓글 관리",
+          icon: CommentIcon,
+          href: `/dashboard/veterinarian/my-comments`,
+        },
       ];
     } else {
       return [
@@ -252,6 +297,12 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           icon: SettingsIcon,
           href: "/dashboard/hospital/profile",
         },
+        {
+          id: "my-comments",
+          label: "댓글 관리",
+          icon: CommentIcon,
+          href: `/dashboard/hospital/my-comments`,
+        },
       ];
     }
   };
@@ -261,12 +312,13 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   const dashboardItems = actualUserType
     ? getDashboardMenuItems(actualUserType)
     : [];
+  const postsGroup = actualUserType ? getPostsGroup(actualUserType) : null;
   const bookmarkGroup = actualUserType
     ? getBookmarkGroup(actualUserType)
     : null;
 
-  // 북마크 그룹의 활성 상태 확인
-  const isGroupActive = (group: BookmarkMenuGroup) => {
+  // 그룹의 활성 상태 확인
+  const isGroupActive = (group: MenuGroup) => {
     return group.children.some(
       (child) => actualUserType && isActive(child.href, actualUserType)
     );
@@ -496,6 +548,118 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
                           </Link>
                         );
                       })}
+
+                      {/* 게시물 관리 그룹 */}
+                      {postsGroup && (
+                        <div className="mt-2">
+                          <button
+                            onClick={() => toggleGroup(postsGroup.id)}
+                            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                              isGroupActive(postsGroup)
+                                ? "text-[#FF8796] bg-[#FFF7F7]"
+                                : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                            }`}
+                          >
+                            <postsGroup.icon
+                              currentColor={
+                                isGroupActive(postsGroup)
+                                  ? "#FF8796"
+                                  : "#4F5866"
+                              }
+                            />
+                            <span className="ml-3">{postsGroup.label}</span>
+                            <span className="ml-auto">
+                              {expandedGroups.has(postsGroup.id) ? (
+                                <ChevronDownIcon className="w-4 h-4" />
+                              ) : (
+                                <ChevronRightIcon className="w-4 h-4" />
+                              )}
+                            </span>
+                          </button>
+
+                          {/* 하위 메뉴 */}
+                          {expandedGroups.has(postsGroup.id) && (
+                            <div className="mt-2 ml-6 space-y-1">
+                              {postsGroup.children.map((child) => {
+                                const childActive =
+                                  actualUserType &&
+                                  isActive(child.href, actualUserType);
+
+                                return (
+                                  <Link
+                                    key={child.id}
+                                    href={child.href}
+                                    onClick={onToggle}
+                                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                      childActive
+                                        ? "text-[#FF8796] bg-[#FFF7F7]"
+                                        : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                                    }`}
+                                  >
+                                    <span>{child.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 댓글 관리 그룹 */}
+                      {/* {commentsGroup && (
+                        <div className="mt-2">
+                          <button
+                            onClick={() => toggleGroup(commentsGroup.id)}
+                            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                              isGroupActive(commentsGroup)
+                                ? "text-[#FF8796] bg-[#FFF7F7]"
+                                : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                            }`}
+                          >
+                            <commentsGroup.icon
+                              currentColor={
+                                isGroupActive(commentsGroup)
+                                  ? "#FF8796"
+                                  : "#4F5866"
+                              }
+                            />
+                            <span className="ml-3">{commentsGroup.label}</span>
+                            <span className="ml-auto">
+                              {expandedGroups.has(commentsGroup.id) ? (
+                                <ChevronDownIcon className="w-4 h-4" />
+                              ) : (
+                                <ChevronRightIcon className="w-4 h-4" />
+                              )}
+                            </span>
+                          </button> */}
+
+                      {/* 하위 메뉴 */}
+                      {/* {expandedGroups.has(commentsGroup.id) && (
+                            <div className="mt-2 ml-6 space-y-1">
+                              {commentsGroup.children.map((child) => {
+                                const childActive =
+                                  actualUserType &&
+                                  isActive(child.href, actualUserType);
+
+                                return (
+                                  <Link
+                                    key={child.id}
+                                    href={child.href}
+                                    onClick={onToggle}
+                                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                      childActive
+                                        ? "text-[#FF8796] bg-[#FFF7F7]"
+                                        : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-100"
+                                    }`}
+                                  >
+                                    <span>{child.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )} */}
 
                       {/* 북마크 그룹 */}
                       {bookmarkGroup && (

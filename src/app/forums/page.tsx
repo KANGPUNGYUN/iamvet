@@ -68,7 +68,7 @@ export default function ForumsPage() {
   }, [searchParams]);
 
   // URL 업데이트
-  const updateURL = (newFilters: typeof appliedFilters, page: number = 1) => {
+  const updateURL = (newFilters: typeof filters, page: number = 1) => {
     const params = new URLSearchParams();
 
     if (newFilters.animal.length > 0) {

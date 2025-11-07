@@ -74,6 +74,26 @@ const ChevronRightIcon: React.FC<{ className?: string }> = ({
   </svg>
 );
 
+const CommentIcon: React.FC<{ currentColor?: string }> = ({
+  currentColor = "currentColor",
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+  >
+    <path
+      d="M15 10.3333C15 10.7459 14.8361 11.1416 14.5444 11.4333C14.2527 11.725 13.857 11.8889 13.4444 11.8889H4.11111L1 15V2.55556C1 2.143 1.16389 1.74733 1.45561 1.45561C1.74733 1.16389 2.143 1 2.55556 1H13.4444C13.857 1 14.2527 1.16389 14.5444 1.45561C14.8361 1.74733 15 2.143 15 2.55556V10.3333Z"
+      stroke="currentColor"
+      strokeWidth="1.0"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 interface SidebarMenuItem {
   id: string;
   label: string;
@@ -103,7 +123,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
   const pathname = usePathname();
   const [expandedGroups, setExpandedGroups] = React.useState<Set<string>>(
-    new Set(["bookmarks"])
+    new Set(["posts-management", "bookmarks"])
   );
 
   // 알림 store에서 읽지 않은 알림 수 가져오기
@@ -147,6 +167,12 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
       icon: SettingsIcon,
       href: "/dashboard/veterinarian/profile",
     },
+    {
+      id: "my-comments",
+      label: "댓글 관리",
+      icon: CommentIcon,
+      href: "/dashboard/veterinarian/my-comments",
+    },
   ];
 
   // 병원용 메뉴
@@ -182,9 +208,34 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
       icon: SettingsIcon,
       href: "/dashboard/hospital/profile",
     },
+    {
+      id: "my-comments",
+      label: "댓글 관리",
+      icon: CommentIcon,
+      href: "/dashboard/hospital/my-comments",
+    },
   ];
 
   // 병원용 북마크 그룹
+  // 게시물 관리 그룹 (병원용)
+  const hospitalPostsGroup: SidebarMenuGroup = {
+    id: "posts-management",
+    label: "게시물 관리",
+    icon: ListIcon,
+    children: [
+      {
+        id: "my-forum-posts",
+        label: "임상포럼 게시물",
+        href: "/dashboard/hospital/my-forum-posts",
+      },
+      {
+        id: "my-transfer-posts",
+        label: "양도양수 게시물",
+        href: "/dashboard/hospital/my-transfer-posts",
+      },
+    ],
+  };
+
   const hospitalBookmarkGroup: SidebarMenuGroup = {
     id: "bookmarks",
     label: "북마크 관리",
@@ -209,6 +260,25 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
         id: "favorite-talents",
         label: "이력서 북마크",
         href: "/dashboard/hospital/favorite-talents",
+      },
+    ],
+  };
+
+  // 게시물 관리 그룹 (수의사용)
+  const veterinarianPostsGroup: SidebarMenuGroup = {
+    id: "posts-management",
+    label: "게시물 관리",
+    icon: ListIcon,
+    children: [
+      {
+        id: "my-forum-posts",
+        label: "임상포럼 게시물",
+        href: "/dashboard/veterinarian/my-forum-posts",
+      },
+      {
+        id: "my-transfer-posts",
+        label: "양도양수 게시물",
+        href: "/dashboard/veterinarian/my-transfer-posts",
       },
     ],
   };
@@ -310,6 +380,110 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
             );
           })}
 
+          {/* 게시물 관리 그룹 */}
+          {userType === "hospital" && (
+            <li key={hospitalPostsGroup.id}>
+              <button
+                onClick={() => toggleGroup(hospitalPostsGroup.id)}
+                className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  isGroupActive(hospitalPostsGroup)
+                    ? "text-[#FF8796] bg-[#FFF7F7]"
+                    : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <hospitalPostsGroup.icon
+                  currentColor={
+                    isGroupActive(hospitalPostsGroup) ? "#FF8796" : "#4F5866"
+                  }
+                />
+                <span className="ml-3">{hospitalPostsGroup.label}</span>
+                <span className="ml-auto">
+                  {expandedGroups.has(hospitalPostsGroup.id) ? (
+                    <ChevronDownIcon className="w-4 h-4" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4" />
+                  )}
+                </span>
+              </button>
+
+              {/* 하위 메뉴 */}
+              {expandedGroups.has(hospitalPostsGroup.id) && (
+                <ul className="mt-2 ml-6 space-y-1">
+                  {hospitalPostsGroup.children.map((child) => {
+                    const childActive = isActive(child.href);
+
+                    return (
+                      <li key={child.id}>
+                        <Link
+                          href={child.href}
+                          className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                            childActive
+                              ? "text-[#FF8796] bg-[#FFF7F7]"
+                              : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                          }`}
+                        >
+                          <span>{child.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          )}
+
+          {/* 댓글 관리 그룹 */}
+          {/* {userType === "hospital" && (
+            <li key={hospitalCommentsGroup.id}>
+              <button
+                onClick={() => toggleGroup(hospitalCommentsGroup.id)}
+                className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  isGroupActive(hospitalCommentsGroup)
+                    ? "text-[#FF8796] bg-[#FFF7F7]"
+                    : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <hospitalCommentsGroup.icon
+                  currentColor={
+                    isGroupActive(hospitalCommentsGroup) ? "#FF8796" : "#4F5866"
+                  }
+                />
+                <span className="ml-3">{hospitalCommentsGroup.label}</span>
+                <span className="ml-auto">
+                  {expandedGroups.has(hospitalCommentsGroup.id) ? (
+                    <ChevronDownIcon className="w-4 h-4" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4" />
+                  )}
+                </span>
+              </button> */}
+
+          {/* 하위 메뉴 */}
+          {/* {expandedGroups.has(hospitalCommentsGroup.id) && (
+                <ul className="mt-2 ml-6 space-y-1">
+                  {hospitalCommentsGroup.children.map((child) => {
+                    const childActive = isActive(child.href);
+
+                    return (
+                      <li key={child.id}>
+                        <Link
+                          href={child.href}
+                          className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                            childActive
+                              ? "text-[#FF8796] bg-[#FFF7F7]"
+                              : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                          }`}
+                        >
+                          <span>{child.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          )} */}
+
           {/* 북마크 그룹 */}
           {userType === "hospital" && (
             <li key={hospitalBookmarkGroup.id}>
@@ -361,6 +535,114 @@ const Sidebar: React.FC<SidebarProps> = ({ userType, className = "" }) => {
               )}
             </li>
           )}
+
+          {/* 게시물 관리 그룹 (수의사용) */}
+          {userType === "veterinarian" && (
+            <li key={veterinarianPostsGroup.id}>
+              <button
+                onClick={() => toggleGroup(veterinarianPostsGroup.id)}
+                className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  isGroupActive(veterinarianPostsGroup)
+                    ? "text-[#FF8796] bg-[#FFF7F7]"
+                    : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <veterinarianPostsGroup.icon
+                  currentColor={
+                    isGroupActive(veterinarianPostsGroup)
+                      ? "#FF8796"
+                      : "#4F5866"
+                  }
+                />
+                <span className="ml-3">{veterinarianPostsGroup.label}</span>
+                <span className="ml-auto">
+                  {expandedGroups.has(veterinarianPostsGroup.id) ? (
+                    <ChevronDownIcon className="w-4 h-4" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4" />
+                  )}
+                </span>
+              </button>
+
+              {/* 하위 메뉴 */}
+              {expandedGroups.has(veterinarianPostsGroup.id) && (
+                <ul className="mt-2 ml-6 space-y-1">
+                  {veterinarianPostsGroup.children.map((child) => {
+                    const childActive = isActive(child.href);
+
+                    return (
+                      <li key={child.id}>
+                        <Link
+                          href={child.href}
+                          className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                            childActive
+                              ? "text-[#FF8796] bg-[#FFF7F7]"
+                              : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                          }`}
+                        >
+                          <span>{child.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          )}
+
+          {/* 댓글 관리 그룹 (수의사용) */}
+          {/* {userType === "veterinarian" && (
+            <li key={veterinarianCommentsGroup.id}>
+              <button
+                onClick={() => toggleGroup(veterinarianCommentsGroup.id)}
+                className={`w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  isGroupActive(veterinarianCommentsGroup)
+                    ? "text-[#FF8796] bg-[#FFF7F7]"
+                    : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <veterinarianCommentsGroup.icon
+                  currentColor={
+                    isGroupActive(veterinarianCommentsGroup)
+                      ? "#FF8796"
+                      : "#4F5866"
+                  }
+                />
+                <span className="ml-3">{veterinarianCommentsGroup.label}</span>
+                <span className="ml-auto">
+                  {expandedGroups.has(veterinarianCommentsGroup.id) ? (
+                    <ChevronDownIcon className="w-4 h-4" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4" />
+                  )}
+                </span>
+              </button> */}
+
+          {/* 하위 메뉴 */}
+          {/* {expandedGroups.has(veterinarianCommentsGroup.id) && (
+                <ul className="mt-2 ml-6 space-y-1">
+                  {veterinarianCommentsGroup.children.map((child) => {
+                    const childActive = isActive(child.href);
+
+                    return (
+                      <li key={child.id}>
+                        <Link
+                          href={child.href}
+                          className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                            childActive
+                              ? "text-[#FF8796] bg-[#FFF7F7]"
+                              : "text-[#4F5866] hover:text-gray-900 hover:bg-gray-50"
+                          }`}
+                        >
+                          <span>{child.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          )} */}
 
           {userType === "veterinarian" && (
             <li key={veterinarianBookmarkGroup.id}>

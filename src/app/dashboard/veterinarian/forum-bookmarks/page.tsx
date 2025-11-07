@@ -195,7 +195,24 @@ export default function VeterinarianForumBookmarksPage() {
           await fetchBookmarkedForums();
         }
       } else {
-        console.error("북마크 처리 실패:", await response.text());
+        const errorData = await response.json();
+        if (errorData.message === "북마크가 존재하지 않습니다") {
+          console.warn("북마크 처리 실패: 북마크가 존재하지 않습니다. UI 상태를 동기화합니다.");
+          // 백엔드에 북마크가 없으므로, UI 상태를 북마크 해제됨으로 설정
+          if (isBookmarked) { // If frontend thought it was bookmarked
+            setForumBookmark(forumId, false); // Force unbookmarked state
+            if (onBookmarkChange) {
+              onBookmarkChange(forumId, false);
+            }
+          }
+          // If unbookmarking from a bookmarked list, refetch to remove it
+          if (!isBookmarked) {
+            await fetchBookmarkedForums();
+          }
+        } else {
+          console.error("북마크 처리 실패:", errorData.message || "알 수 없는 오류");
+          alert(`북마크 처리 중 오류가 발생했습니다: ${errorData.message || "알 수 없는 오류"}`);
+        }
       }
     } catch (error) {
       console.error("북마크 처리 중 오류:", error);

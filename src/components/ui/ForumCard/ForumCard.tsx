@@ -87,7 +87,20 @@ export default function ForumCard({
           onBookmarkChange(id, newState);
         }
       } else {
-        console.error("북마크 처리 실패:", await response.text());
+        const errorData = await response.json();
+        if (errorData.message === "이미 북마크한 임상포럼입니다") {
+          console.warn("북마크 처리 실패: 이미 북마크한 임상포럼입니다. UI 상태를 동기화합니다.");
+          // 이미 북마크된 상태이므로, UI 상태를 강제로 북마크됨으로 설정
+          if (!isBookmarked) {
+            toggleForumBookmark(id); // UI 상태를 북마크됨으로 변경
+            if (onBookmarkChange) {
+              onBookmarkChange(id, true);
+            }
+          }
+        } else {
+          console.error("북마크 처리 실패:", errorData.message || "알 수 없는 오류");
+          alert(`북마크 처리 중 오류가 발생했습니다: ${errorData.message || "알 수 없는 오류"}`);
+        }
       }
     } catch (error) {
       console.error("북마크 처리 중 오류:", error);

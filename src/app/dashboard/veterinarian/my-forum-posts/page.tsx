@@ -7,29 +7,30 @@ import { SelectBox } from "@/components/ui/SelectBox";
 import { FilterBox } from "@/components/ui/FilterBox";
 import { Pagination } from "@/components/ui/Pagination";
 import { ForumCard } from "@/components/ui/ForumCard";
+import { useAuthStore } from "@/stores/authStore";
 import { useBookmarkStore } from "@/stores/bookmarkStore";
 
-interface Forum {
+interface ForumPost {
   id: string;
   title: string;
+  content: string;
   animalType?: string;
   medicalField?: string;
   viewCount: number;
   commentCount: number;
+  likeCount: number;
   createdAt: string;
   updatedAt?: string;
+  user: {
+    id: string;
+    displayName: string;
+    profileImage?: string;
+    userType: string;
+  };
 }
 
-export default function HospitalForumBookmarksPage() {
+export default function VeterinarianMyForumPostsPage() {
   const router = useRouter();
-
-  // Zustand 스토어에서 북마크 상태 관리
-  const {
-    setForumBookmark,
-    toggleForumBookmark,
-    initializeForumBookmarks,
-    isForumBookmarked,
-  } = useBookmarkStore();
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [sortBy, setSortBy] = useState("recent");
@@ -38,11 +39,19 @@ export default function HospitalForumBookmarksPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  const { userId } = useAuthStore();
+  const {
+    setForumBookmark,
+    toggleForumBookmark,
+    initializeForumBookmarks,
+    isForumBookmarked,
+  } = useBookmarkStore();
+
   // API 상태 관리
-  const [forums, setForums] = useState<Forum[]>([]);
+  const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalForums, setTotalForums] = useState(0);
+  const [totalPosts, setTotalPosts] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
   const itemsPerPage = 10;
@@ -74,163 +83,130 @@ export default function HospitalForumBookmarksPage() {
     };
   }, [isMobileFilterOpen]);
 
-  // 북마크된 포럼 목록 가져오기
-  const fetchBookmarkedForums = async () => {
+  // 내가 작성한 임상포럼 게시물 목록 가져오기
+  const fetchMyForumPosts = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("/api/forums/bookmarks", {
+      const response = await fetch(`/api/my-posts?type=forum`, {
         credentials: "include",
       });
 
       if (!response.ok) {
-        throw new Error("북마크한 포럼 목록을 불러오는데 실패했습니다.");
+        throw new Error(
+          "내가 작성한 임상포럼 게시물을 불러오는데 실패했습니다."
+        );
       }
 
       const result = await response.json();
 
       if (result.status === "success") {
-        let bookmarkedForums = result.data || [];
+        let forumPosts: ForumPost[] = result.data?.posts || [];
 
         // 클라이언트 사이드 필터링
         if (searchKeyword.trim()) {
           const keyword = searchKeyword.toLowerCase().trim();
-          bookmarkedForums = bookmarkedForums.filter(
-            (forum: Forum) =>
-              forum.title.toLowerCase().includes(keyword) ||
-              forum.animalType?.toLowerCase().includes(keyword) ||
-              forum.medicalField?.toLowerCase().includes(keyword)
+          forumPosts = forumPosts.filter(
+            (post: ForumPost) =>
+              post.title.toLowerCase().includes(keyword) ||
+              post.animalType?.toLowerCase().includes(keyword) ||
+              post.medicalField?.toLowerCase().includes(keyword)
           );
         }
 
         if (selectedFields.length > 0) {
-          bookmarkedForums = bookmarkedForums.filter((forum: Forum) =>
-            selectedFields.includes(forum.medicalField || "")
+          forumPosts = forumPosts.filter((post: ForumPost) =>
+            selectedFields.includes(post.medicalField || "")
           );
         }
 
         if (selectedAnimals.length > 0) {
-          bookmarkedForums = bookmarkedForums.filter((forum: Forum) =>
-            selectedAnimals.includes(forum.animalType || "")
+          forumPosts = forumPosts.filter((post: ForumPost) =>
+            selectedAnimals.includes(post.animalType || "")
           );
         }
 
         // 정렬 적용
         switch (sortBy) {
           case "recent":
-            bookmarkedForums.sort(
-              (a: Forum, b: Forum) =>
+            forumPosts.sort(
+              (a: ForumPost, b: ForumPost) =>
                 new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime()
             );
             break;
           case "popular":
-            bookmarkedForums.sort(
-              (a: Forum, b: Forum) => b.viewCount - a.viewCount
+            forumPosts.sort(
+              (a: ForumPost, b: ForumPost) => b.viewCount - a.viewCount
             );
             break;
           case "comments":
-            bookmarkedForums.sort(
-              (a: Forum, b: Forum) => b.commentCount - a.commentCount
+            forumPosts.sort(
+              (a: ForumPost, b: ForumPost) => b.commentCount - a.commentCount
             );
             break;
         }
 
         // 페이지네이션 적용
-        const total = bookmarkedForums.length;
+        const total = forumPosts.length;
         const totalPagesCount = Math.ceil(total / itemsPerPage);
         const startIndex = (currentPage - 1) * itemsPerPage;
-        const paginatedForums = bookmarkedForums.slice(
+        const paginatedPosts = forumPosts.slice(
           startIndex,
           startIndex + itemsPerPage
         );
 
-        setForums(paginatedForums);
-        setTotalForums(total);
+        setPosts(paginatedPosts);
+        setTotalPosts(total);
         setTotalPages(totalPagesCount);
 
-        // 북마크 상태 초기화
-        const forumIds = result.data.map((forum: Forum) => forum.id);
-        initializeForumBookmarks(forumIds);
+        // Fetch bookmarked IDs and initialize the store
+        const bookmarkResponse = await fetch("/api/forums/bookmarks", {
+          credentials: "include",
+        });
+        if (bookmarkResponse.ok) {
+          const bookmarkResult = await bookmarkResponse.json();
+          if (bookmarkResult.status === "success") {
+            const bookmarkedForumIds = bookmarkResult.data.map(
+              (forum: ForumPost) => forum.id
+            );
+            initializeForumBookmarks(bookmarkedForumIds || []);
+          }
+        }
       } else {
         throw new Error(
-          result.message || "북마크한 포럼 목록을 불러오는데 실패했습니다."
+          result.message ||
+            "내가 작성한 임상포럼 게시물을 불러오는데 실패했습니다."
         );
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
-      console.error("북마크 포럼 목록 조회 오류:", err);
+      console.error("내 임상포럼 게시물 목록 조회 오류:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  // 필터나 페이지가 변경될 때마다 API 호출
-  useEffect(() => {
-    fetchBookmarkedForums();
-  }, [searchKeyword, sortBy, selectedFields, selectedAnimals, currentPage]);
 
   // 포럼 북마크 변경 핸들러
   const handleBookmarkChange = async (
     forumId: string,
     isBookmarked: boolean
   ) => {
-    try {
-      const method = isBookmarked ? "POST" : "DELETE";
-      const response = await fetch(`/api/forums/${forumId}/bookmark`, {
-        method,
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        // 스토어 상태 업데이트
-        toggleForumBookmark(forumId);
-
-        // 북마크 제거 시 목록 새로고침
-        if (!isBookmarked) {
-          await fetchBookmarkedForums();
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.message === "북마크가 존재하지 않습니다") {
-          console.warn(
-            "북마크 처리 실패: 북마크가 존재하지 않습니다. UI 상태를 동기화합니다."
-          );
-          // 백엔드에 북마크가 없으므로, UI 상태를 북마크 해제됨으로 설정
-          if (isBookmarked) {
-            // If frontend thought it was bookmarked
-            setForumBookmark(forumId, false); // Force unbookmarked state
-            if (onBookmarkChange) {
-              onBookmarkChange(forumId, false);
-            }
-          }
-          // If unbookmarking from a bookmarked list, refetch to remove it
-          if (!isBookmarked) {
-            await fetchBookmarkedForums();
-          }
-        } else {
-          console.error(
-            "북마크 처리 실패:",
-            errorData.message || "알 수 없는 오류"
-          );
-          alert(
-            `북마크 처리 중 오류가 발생했습니다: ${
-              errorData.message || "알 수 없는 오류"
-            }`
-          );
-        }
-      }
-    } catch (error) {
-      console.error("북마크 처리 중 오류:", error);
+    // This function should only react to changes, not initiate them.
+    // The ForumCard's handleBookmarkClick will handle the API call and toggleForumBookmark.
+    // If a bookmark is removed, we might want to refetch the list.
+    if (!isBookmarked) {
+      await fetchMyForumPosts(); // Refetch if a bookmark is removed
     }
   };
 
-  const fieldOptions = ["내과", "외과", "피부과", "응급의학", "예방의학"];
+  // 필터나 페이지가 변경될 때마다 API 호출
+  useEffect(() => {
+    fetchMyForumPosts();
+  }, [searchKeyword, sortBy, selectedFields, selectedAnimals, currentPage]);
 
+  const fieldOptions = ["내과", "외과", "피부과", "응급의학", "예방의학"];
   const animalOptions = ["개", "고양이", "대동물", "특수동물"];
 
   const handleFieldChange = (fields: string[]) => {
@@ -306,7 +282,7 @@ export default function HospitalForumBookmarksPage() {
               {/* 제목 */}
               <div className="flex justify-between items-center self-stretch">
                 <h1 className="text-primary font-text text-[24px] text-bold mb-6">
-                  임상포럼 북마크
+                  임상포럼 게시물 관리
                 </h1>
 
                 {/* 검색바 */}
@@ -319,7 +295,7 @@ export default function HospitalForumBookmarksPage() {
 
               {/* 결과 정보 및 정렬 */}
               <div className="flex justify-between items-center">
-                <p className="text-[16px] text-[#9098A4]">총 {totalForums}건</p>
+                <p className="text-[16px] text-[#9098A4]">총 {totalPosts}건</p>
                 <SelectBox
                   value={sortBy}
                   onChange={setSortBy}
@@ -337,9 +313,7 @@ export default function HospitalForumBookmarksPage() {
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff8796] mx-auto mb-4"></div>
-                    <p className="text-[#9098A4]">
-                      북마크한 포럼을 불러오는 중...
-                    </p>
+                    <p className="text-[#9098A4]">게시물을 불러오는 중...</p>
                   </div>
                 </div>
               )}
@@ -350,7 +324,7 @@ export default function HospitalForumBookmarksPage() {
                   <div className="text-center">
                     <p className="text-red-500 mb-4">{error}</p>
                     <button
-                      onClick={fetchBookmarkedForums}
+                      onClick={fetchMyForumPosts}
                       className="px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
                     >
                       다시 시도
@@ -359,29 +333,27 @@ export default function HospitalForumBookmarksPage() {
                 </div>
               )}
 
-              {/* 포럼 목록 */}
+              {/* 게시물 목록 */}
               {!loading && !error && (
                 <div className="space-y-0">
-                  {forums.map((forum) => {
+                  {posts.map((post) => {
                     const tags = [];
-                    if (forum.animalType) tags.push(forum.animalType);
-                    if (forum.medicalField) tags.push(forum.medicalField);
+                    if (post.animalType) tags.push(post.animalType);
+                    if (post.medicalField) tags.push(post.medicalField);
 
                     return (
                       <ForumCard
-                        key={forum.id}
-                        id={forum.id}
-                        title={forum.title}
+                        key={post.id}
+                        id={post.id}
+                        title={post.title}
                         tags={tags}
-                        viewCount={forum.viewCount}
-                        commentCount={forum.commentCount}
-                        createdAt={new Date(forum.createdAt)}
+                        viewCount={post.viewCount}
+                        commentCount={post.commentCount}
+                        createdAt={new Date(post.createdAt)}
                         updatedAt={
-                          forum.updatedAt
-                            ? new Date(forum.updatedAt)
-                            : undefined
+                          post.updatedAt ? new Date(post.updatedAt) : undefined
                         }
-                        isBookmarked={isForumBookmarked(forum.id)}
+                        isBookmarked={isForumBookmarked(post.id)}
                         onBookmarkChange={handleBookmarkChange}
                       />
                     );
@@ -390,20 +362,20 @@ export default function HospitalForumBookmarksPage() {
               )}
 
               {/* 데이터 없음 상태 */}
-              {!loading && !error && forums.length === 0 && (
+              {!loading && !error && posts.length === 0 && (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
                     <p className="text-[#9098A4] text-lg">
-                      북마크한 임상포럼이 없습니다.
+                      작성한 임상포럼 게시물이 없습니다.
                     </p>
                     <p className="text-[#9098A4] text-sm mt-2">
-                      임상포럼에서 관심있는 게시글을 북마크해보세요.
+                      임상포럼에서 게시물을 작성해보세요.
                     </p>
                     <button
-                      onClick={() => router.push("/forums")}
+                      onClick={() => router.push("/forums/create")}
                       className="mt-4 px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
                     >
-                      임상포럼 둘러보기
+                      임상포럼 글쓰기
                     </button>
                   </div>
                 </div>
@@ -428,7 +400,7 @@ export default function HospitalForumBookmarksPage() {
               {/* 제목과 필터 버튼 */}
               <div className="flex justify-between items-center">
                 <h1 className="text-primary font-text text-[24px] text-bold mb-6">
-                  임상포럼 북마크
+                  임상포럼 게시물 관리
                 </h1>
                 <button
                   onClick={() => setIsMobileFilterOpen(true)}
@@ -469,7 +441,7 @@ export default function HospitalForumBookmarksPage() {
 
               {/* 총 결과 수와 정렬 */}
               <div className="flex justify-between items-center">
-                <p className="text-[14px] text-[#9098A4]">총 {totalForums}건</p>
+                <p className="text-[14px] text-[#9098A4]">총 {totalPosts}건</p>
                 <SelectBox
                   value={sortBy}
                   onChange={setSortBy}
@@ -487,9 +459,7 @@ export default function HospitalForumBookmarksPage() {
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff8796] mx-auto mb-4"></div>
-                    <p className="text-[#9098A4]">
-                      북마크한 포럼을 불러오는 중...
-                    </p>
+                    <p className="text-[#9098A4]">게시물을 불러오는 중...</p>
                   </div>
                 </div>
               )}
@@ -500,7 +470,7 @@ export default function HospitalForumBookmarksPage() {
                   <div className="text-center">
                     <p className="text-red-500 mb-4">{error}</p>
                     <button
-                      onClick={fetchBookmarkedForums}
+                      onClick={fetchMyForumPosts}
                       className="px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
                     >
                       다시 시도
@@ -509,29 +479,27 @@ export default function HospitalForumBookmarksPage() {
                 </div>
               )}
 
-              {/* 포럼 목록 (모바일) */}
+              {/* 게시물 목록 (모바일) */}
               {!loading && !error && (
                 <div className="space-y-0">
-                  {forums.map((forum) => {
+                  {posts.map((post) => {
                     const tags = [];
-                    if (forum.animalType) tags.push(forum.animalType);
-                    if (forum.medicalField) tags.push(forum.medicalField);
+                    if (post.animalType) tags.push(post.animalType);
+                    if (post.medicalField) tags.push(post.medicalField);
 
                     return (
                       <ForumCard
-                        key={forum.id}
-                        id={forum.id}
-                        title={forum.title}
+                        key={post.id}
+                        id={post.id}
+                        title={post.title}
                         tags={tags}
-                        viewCount={forum.viewCount}
-                        commentCount={forum.commentCount}
-                        createdAt={new Date(forum.createdAt)}
+                        viewCount={post.viewCount}
+                        commentCount={post.commentCount}
+                        createdAt={new Date(post.createdAt)}
                         updatedAt={
-                          forum.updatedAt
-                            ? new Date(forum.updatedAt)
-                            : undefined
+                          post.updatedAt ? new Date(post.updatedAt) : undefined
                         }
-                        isBookmarked={isForumBookmarked(forum.id)}
+                        isBookmarked={isForumBookmarked(post.id)}
                         onBookmarkChange={handleBookmarkChange}
                       />
                     );
@@ -540,20 +508,20 @@ export default function HospitalForumBookmarksPage() {
               )}
 
               {/* 데이터 없음 상태 (모바일) */}
-              {!loading && !error && forums.length === 0 && (
+              {!loading && !error && posts.length === 0 && (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
                     <p className="text-[#9098A4] text-lg">
-                      북마크한 임상포럼이 없습니다.
+                      작성한 임상포럼 게시물이 없습니다.
                     </p>
                     <p className="text-[#9098A4] text-sm mt-2">
-                      임상포럼에서 관심있는 게시글을 북마크해보세요.
+                      임상포럼에서 게시물을 작성해보세요.
                     </p>
                     <button
-                      onClick={() => router.push("/forums")}
+                      onClick={() => router.push("/forums/create")}
                       className="mt-4 px-4 py-2 bg-[#ff8796] text-white rounded-lg hover:bg-[#ffb7b8]"
                     >
-                      임상포럼 둘러보기
+                      임상포럼 글쓰기
                     </button>
                   </div>
                 </div>

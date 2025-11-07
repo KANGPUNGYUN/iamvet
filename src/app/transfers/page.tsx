@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { InputBox } from "@/components/ui/Input/InputBox";
 import MobileFilterModal from "@/components/ui/MobileFilterModal";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import React from "react";
 import { regionOptions } from "@/data/regionOptions";
 import { CloseIcon, ArrowRightIcon, EditIcon } from "public/icons";

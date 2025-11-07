@@ -31,21 +31,23 @@ export async function GET(request: NextRequest) {
       const forumIds = result.map((forum: any) => forum.id).filter(Boolean);
       if (forumIds.length > 0) {
         const likes = await (prisma as any).forumPostLike.findMany({
-          where: { 
+          where: {
             userId,
-            forumPostId: { in: forumIds }
+            forumPostId: { in: forumIds },
           },
-          select: { forumPostId: true }
+          select: { forumPostId: true },
         });
         userLikes = likes.map((like: any) => like.forumPostId);
       }
     }
 
     // 좋아요 정보를 포함한 포럼 데이터 변환
-    const forumsWithLikes = result ? result.map((forum: any) => ({
-      ...forum,
-      isLiked: userId ? userLikes.includes(forum.id) : false
-    })) : [];
+    const forumsWithLikes = result
+      ? result.map((forum: any) => ({
+          ...forum,
+          isLiked: userId ? userLikes.includes(forum.id) : false,
+        }))
+      : [];
 
     return NextResponse.json(
       createApiResponse("success", "임상포럼 목록 조회 성공", {
