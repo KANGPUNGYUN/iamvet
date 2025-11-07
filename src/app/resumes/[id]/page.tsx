@@ -800,6 +800,39 @@ export default function ResumeDetailPage({
         setShowRatingModal(false);
         setEditingEvaluationId(null);
         resetRatingForm();
+
+        // 알림 생성 로직 추가
+        if (!editingEvaluationId && user && resumeData) {
+          try {
+            const notificationResponse = await fetch("/api/inquiries", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                subject: "인재 평가 알림",
+                message: `${user.profileName}으로부터 이력서 평가가 작성되었습니다.`,
+                recipientId: resumeData.userId,
+                resumeId: id,
+                type: "evaluation_received",
+              }),
+            });
+
+            const notificationResult = await notificationResponse.json();
+            if (notificationResponse.ok && notificationResult.success) {
+              console.log(
+                "Notification sent successfully:",
+                notificationResult
+              );
+            } else {
+              console.error("Failed to send notification:", notificationResult);
+            }
+          } catch (notificationError) {
+            console.error("Error sending notification:", notificationError);
+          }
+        }
+
         // 평가 목록 새로고침
         const refreshResponse = await fetch(`/api/resumes/${id}/evaluation`, {
           headers: {
@@ -986,8 +1019,18 @@ export default function ResumeDetailPage({
         console.log("📋 All hospital applications:", result);
 
         if (result.status === "success" && result.data) {
+          // result.data가 배열인지 확인
+          // result.data가 객체이고 applicants 속성이 배열인지 확인
+          if (!result.data || !Array.isArray(result.data.applicants)) {
+            console.warn(
+              "result.data.applicants is not an array or result.data is not an object:",
+              result.data
+            );
+            setApplicationInfo([]);
+            return null;
+          }
           // 해당 수의사가 이 병원의 공고에 지원한 모든 내역 찾기
-          const targetApplications = result.data.filter(
+          const targetApplications = result.data.applicants.filter(
             (app: any) => app.veterinarianId === veterinarianId
           );
 
