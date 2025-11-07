@@ -5333,6 +5333,24 @@ export const getForumBookmarks = async (userId: string) => {
   return result.rows;
 };
 
+export const getMyForumComments = async (userId: string) => {
+  const query = `
+    SELECT
+      fc.*,
+      CASE
+        WHEN u.provider != 'NORMAL' THEN u.nickname
+        ELSE COALESCE(u.nickname, u."realName")
+      END as author_name,
+      u."profileImage" as author_profile_image
+    FROM forum_comments fc
+    LEFT JOIN users u ON fc.user_id = u.id
+    WHERE fc.user_id = $1 AND fc."deletedAt" IS NULL
+    ORDER BY fc."createdAt" DESC
+  `;
+  const result = await pool.query(query, [userId]);
+  return result.rows;
+};
+
 // Export query function for direct database access
 export const query = async (text: string, params?: any[]) => {
   const result = await pool.query(text, params);
