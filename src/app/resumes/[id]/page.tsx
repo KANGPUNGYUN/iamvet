@@ -801,38 +801,6 @@ export default function ResumeDetailPage({
         setEditingEvaluationId(null);
         resetRatingForm();
 
-        // 알림 생성 로직 추가
-        if (!editingEvaluationId && user && resumeData) {
-          try {
-            const notificationResponse = await fetch("/api/inquiries", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                subject: "인재 평가 알림",
-                message: `${user.profileName}으로부터 이력서 평가가 작성되었습니다.`,
-                recipientId: resumeData.userId,
-                resumeId: id,
-                type: "evaluation_received",
-              }),
-            });
-
-            const notificationResult = await notificationResponse.json();
-            if (notificationResponse.ok && notificationResult.success) {
-              console.log(
-                "Notification sent successfully:",
-                notificationResult
-              );
-            } else {
-              console.error("Failed to send notification:", notificationResult);
-            }
-          } catch (notificationError) {
-            console.error("Error sending notification:", notificationError);
-          }
-        }
-
         // 평가 목록 새로고침
         const refreshResponse = await fetch(`/api/resumes/${id}/evaluation`, {
           headers: {

@@ -921,6 +921,7 @@ enum NotificationType {
   APPLICATION_STATUS
   APPLICATION_NEW
   SYSTEM
+  EVALUATION
 }
 
 enum Provider {

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
 import { createApiResponse, createErrorResponse } from "@/lib/utils";
-import { createResumeEvaluation, getResumeEvaluations } from "@/lib/database";
+import { createResumeEvaluation, getResumeEvaluations, getHospitalByUserId, pool } from "@/lib/database";
+import { prisma } from "@/lib/prisma";
+import { NotificationType } from "@prisma/client";
+import { nanoid } from "nanoid";
 
 interface RouteContext {
   params: Promise<{
@@ -70,6 +73,17 @@ export const POST = withAuth(
         ratingValues.reduce((sum, rating) => sum + rating, 0) /
         ratingValues.length;
 
+      // Check if this is a new evaluation (not an update)
+      const checkQuery = `
+        SELECT id FROM resume_evaluations 
+        WHERE "resumeId" = $1 AND "userId" = $2
+      `;
+      const existingEvaluation = await pool.query(checkQuery, [
+        resumeId,
+        user.userId,
+      ]);
+      const isNewEvaluation = existingEvaluation.rows.length === 0;
+
       // Create resume evaluation
       const evaluation = await createResumeEvaluation({
         resumeId,
@@ -78,6 +92,49 @@ export const POST = withAuth(
         comments,
         overallRating: Math.round(overallRating * 2) / 2, // Round to nearest 0.5
       });
+
+      // 알림 생성 (새로운 평가일 때만)
+      if (isNewEvaluation) {
+        try {
+          // Resume의 userId 조회 (알림을 받을 수의사)
+          const resumeQuery = `SELECT "userId" FROM resumes WHERE id = $1`;
+          const resumeResult = await pool.query(resumeQuery, [resumeId]);
+          
+          if (resumeResult.rows.length > 0) {
+            const veterinarianId = resumeResult.rows[0].userId;
+            
+            // 병원 이름 조회
+            const hospital = await getHospitalByUserId(user.userId);
+            const hospitalName = hospital?.hospitalName || "병원";
+            
+            // 알림 생성
+            const notificationId = nanoid();
+            await prisma.notifications.create({
+              data: {
+                id: notificationId,
+                type: NotificationType.EVALUATION,
+                recipientId: veterinarianId,
+                recipientType: "VETERINARIAN",
+                senderId: user.userId,
+                title: "인재평가 알림",
+                content: `${hospitalName}에서 인재평가를 등록했습니다.`,
+                isRead: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            });
+            
+            console.log("[Evaluation API] Notification created:", {
+              notificationId,
+              recipientId: veterinarianId,
+              hospitalName,
+            });
+          }
+        } catch (notificationError) {
+          console.error("[Evaluation API] Failed to create notification:", notificationError);
+          // 알림 생성 실패는 평가 생성 자체를 막지 않음
+        }
+      }
 
       return NextResponse.json(
         createApiResponse("success", "인재 평가가 등록되었습니다", evaluation)
