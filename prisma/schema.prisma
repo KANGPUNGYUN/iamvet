@@ -40,29 +40,6 @@ model applications {
   @@index([veterinarianId], map: "idx_applications_veterinarian_id")
 }
 
-model comment_notifications {
-  id              String        @id
-  notificationId  String        @unique
-  postType        String
-  postId          String
-  commentId       String
-  parentCommentId String?
-  notifications   notifications @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-
-  @@index([postType, postId])
-}
-
-model comment_replies {
-  id               String           @id
-  commentId        String
-  userId           String
-  content          String
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  deletedAt        DateTime?
-  lecture_comments lecture_comments @relation(fields: [commentId], references: [id])
-  users            users            @relation(fields: [userId], references: [id])
-}
 
 model contact_inquiries {
   id                                          String   @id
@@ -319,7 +296,6 @@ model lecture_comments {
   updatedAt              DateTime
   deletedAt              DateTime?
   parentId               String?            @db.VarChar(255)
-  comment_replies        comment_replies[]
   lecture_comments       lecture_comments?  @relation("lecture_commentsTolecture_comments", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_lecture_comment_parent")
   other_lecture_comments lecture_comments[] @relation("lecture_commentsTolecture_comments")
   lectures               lectures           @relation(fields: [lectureId], references: [id])
@@ -361,19 +337,6 @@ model lectures {
   lecture_likes      lecture_likes[]
 }
 
-model messages {
-  id                               String        @id
-  senderId                         String
-  receiverId                       String
-  subject                          String?
-  content                          String
-  status                           MessageStatus @default(UNREAD)
-  readAt                           DateTime?
-  createdAt                        DateTime      @default(now())
-  updatedAt                        DateTime
-  users_messages_receiverIdTousers users         @relation("messages_receiverIdTousers", fields: [receiverId], references: [id])
-  users_messages_senderIdTousers   users         @relation("messages_senderIdTousers", fields: [senderId], references: [id])
-}
 
 model migration_log {
   id             Int       @id @default(autoincrement())
@@ -422,7 +385,6 @@ model notifications {
   createdAt                              DateTime               @default(now())
   updatedAt                              DateTime
   announcements                          announcements?
-  comment_notifications                  comment_notifications?
   inquiries                              inquiries?
   job_notifications                      job_notifications?
   users_notifications_recipientIdTousers users                  @relation("notifications_recipientIdTousers", fields: [recipientId], references: [id], onDelete: Cascade)
@@ -621,7 +583,6 @@ model users {
   lastLoginAt                                                 DateTime?                    @db.Timestamp(6)
   announcements                                               announcements[]
   applications                                                applications[]
-  comment_replies                                             comment_replies[]
   contact_inquiries_contact_inquiries_recipient_idTousers     contact_inquiries[]          @relation("contact_inquiries_recipient_idTousers")
   contact_inquiries_contact_inquiries_sender_idTousers        contact_inquiries[]          @relation("contact_inquiries_sender_idTousers")
   email_verifications                                         email_verifications[]
@@ -640,8 +601,6 @@ model users {
   jobs                                                        jobs[]
   lecture_comments                                            lecture_comments[]
   lecture_likes                                               lecture_likes[]
-  messages_messages_receiverIdTousers                         messages[]                   @relation("messages_receiverIdTousers")
-  messages_messages_senderIdTousers                           messages[]                   @relation("messages_senderIdTousers")
   notification_settings                                       notification_settings?
   notifications_notifications_recipientIdTousers              notifications[]              @relation("notifications_recipientIdTousers")
   notifications_notifications_senderIdTousers                 notifications[]              @relation("notifications_senderIdTousers")
@@ -836,46 +795,6 @@ model forum_bookmarks {
   @@index([user_id], map: "idx_forum_bookmarks_user_id")
 }
 
-model hospital_equipments {
-  id                String    @id
-  hospitalProfileId String
-  name              String
-  category          String
-  manufacturer      String?
-  model             String?
-  purchaseDate      DateTime?
-  description       String?
-  image             String?
-  sortOrder         Int       @default(0)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime
-}
-
-model hospital_facility_images {
-  id           String   @id
-  userId       String
-  imageUrl     String
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime
-
-  @@index([userId])
-}
-
-model hospital_staff {
-  id                String   @id
-  hospitalProfileId String
-  name              String
-  position          String
-  specialization    String?
-  experience        String?
-  education         String?
-  profileImage      String?
-  introduction      String?
-  sortOrder         Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime
-}
 
 enum AnimalType {
   DOG
@@ -897,10 +816,6 @@ enum JobStatus {
   DRAFT
 }
 
-enum MessageStatus {
-  UNREAD
-  READ
-}
 
 enum NotificationBatchStatus {
   PENDING
