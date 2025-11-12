@@ -9,12 +9,12 @@ import { Textarea } from "@/components/ui/Input/Textarea";
 import { SelectBox } from "@/components/ui/SelectBox";
 import { Checkbox } from "@/components/ui/Input/Checkbox";
 import { Button } from "@/components/ui/Button";
-import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { regionOptions } from "@/data/regionOptions";
 import { DocumentUpload } from "@/components/features/profile/DocumentUpload";
 import { MultiImageUpload } from "@/components/features/profile/MultiImageUpload";
 import { uploadFile } from "@/lib/s3";
 import { useAuth } from "@/hooks/api/useAuth";
+import { MapLocationModal } from "@/components/features/map/MapLocationModal";
 
 interface FormData {
   title: string;
@@ -28,6 +28,8 @@ interface FormData {
   detailAddress: string; // 상세주소 (사용자가 입력하는 상세 주소)
   sido: string; // 시도 (서울, 경기, 부산 등)
   sigungu: string; // 시군구 (강남구, 분당구 등)
+  latitude?: number; // 위도
+  longitude?: number; // 경도
   images: string[]; // 양도양수 이미지 URL들 (MultiImageUpload에서 처리됨)
   documents: File[]; // 양도양수 파일들 (UI 표시용)
   documentUrls: string[]; // 업로드된 문서 URL들
@@ -51,19 +53,22 @@ export default function CreateTransferPage() {
     isSale: true, // 기본값은 매매
     salePrice: "",
     rentPrice: "",
-    area: "",
-    description: "",
-    address: "",
-    detailAddress: "",
-    sido: "",
-    sigungu: "",
-    images: [], // URL 배열
-    documents: [], // UI 표시용
-    documentUrls: [], // 실제 업로드된 URL들
-  });
+      area: "",
+      description: "",
+      address: "",
+      detailAddress: "",
+      sido: "",
+      sigungu: "",
+      latitude: undefined,
+      longitude: undefined,
+      images: [], // URL 배열
+      documents: [], // UI 표시용
+      documentUrls: [], // 실제 업로드된 URL들
+    });
 
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   // 컴포넌트 마운트 시 임시저장 확인
   useEffect(() => {
@@ -173,20 +178,6 @@ export default function CreateTransferPage() {
     return { sido: "", sigungu: "" };
   };
 
-  // 기본주소 변경 시 시도/시군구 자동 추출
-  const handleAddressChange = (address: string) => {
-    const { sido, sigungu } = extractRegionFromAddress(address);
-    setFormData((prev) => ({
-      ...prev,
-      address,
-      sido,
-      sigungu,
-    }));
-    // 에러 제거
-    if (errors.address) {
-      setErrors((prev) => ({ ...prev, address: "" }));
-    }
-  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -268,6 +259,8 @@ export default function CreateTransferPage() {
         detailAddress: formData.detailAddress, // 상세주소
         sido: formData.sido, // 시도
         sigungu: formData.sigungu, // 시군구
+        latitude: formData.latitude, // 위도
+        longitude: formData.longitude, // 경도
         price:
           parseInt(
             (formData.category === "병원양도"
@@ -555,17 +548,47 @@ export default function CreateTransferPage() {
               <label className="block font-title text-[16px] lg:text-[20px] title-light text-primary mb-4">
                 주소 검색
               </label>
-              <div className="w-full">
-                <AddressSearch
-                  address={formData.address}
-                  detailAddress={formData.detailAddress}
-                  onAddressChange={handleAddressChange}
-                  onDetailAddressChange={handleInputChange("detailAddress")}
-                />
-                {errors.address && (
-                  <p className="mt-2 text-sm text-red-500">{errors.address}</p>
-                )}
-              </div>
+              
+              {formData.address ? (
+                <div className="space-y-3">
+                  <InputBox
+                    value={formData.address}
+                    readOnly
+                    placeholder="지도에서 주소를 선택해주세요"
+                    className="w-full"
+                  />
+                  <InputBox
+                    value={formData.detailAddress}
+                    onChange={handleInputChange("detailAddress")}
+                    placeholder="상세주소를 입력하세요 (예: 동/호수, 층수 등)"
+                    className="w-full"
+                  />
+                  <Button
+                    variant="line"
+                    size="medium"
+                    onClick={() => setIsMapModalOpen(true)}
+                    className="w-full"
+                  >
+                    주소 변경하기
+                  </Button>
+                </div>
+              ) : (
+                <div className="border border-[#EFEFF0] rounded-md p-6 bg-gray-50 text-center">
+                  <p className="text-gray-600 mb-4">지도에서 주소를 선택해주세요</p>
+                  <Button
+                    variant="default"
+                    size="medium"
+                    onClick={() => setIsMapModalOpen(true)}
+                    className="w-full"
+                  >
+                    지도에서 주소 선택
+                  </Button>
+                </div>
+              )}
+              
+              {errors.address && (
+                <p className="mt-2 text-sm text-red-500">{errors.address}</p>
+              )}
             </div>
           </div>
 
@@ -622,6 +645,29 @@ export default function CreateTransferPage() {
           </div>
         </div>
       </div>
+
+      {/* 지도 모달 */}
+      <MapLocationModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onConfirm={(data) => {
+          const { sido, sigungu } = extractRegionFromAddress(data.address);
+          setFormData((prev) => ({
+            ...prev,
+            address: data.address,
+            detailAddress: data.detailAddress || '',
+            sido,
+            sigungu,
+            latitude: data.latitude,
+            longitude: data.longitude,
+          }));
+          setIsMapModalOpen(false);
+        }}
+        initialAddress={formData.address}
+        initialDetailAddress={formData.detailAddress}
+        initialLatitude={formData.latitude}
+        initialLongitude={formData.longitude}
+      />
     </>
   );
 }

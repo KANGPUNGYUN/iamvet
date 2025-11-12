@@ -4777,7 +4777,7 @@ export const incrementTransferViewCount = async (
 export const getRelatedTransfers = async (transferId: string, limit = 5) => {
   const query = `
     SELECT * FROM transfers 
-    WHERE id != $1 AND "deletedAt" IS NULL AND status != 'DISABLED'
+    WHERE id != $1 AND "deletedAt" IS NULL AND status != 'DISABLED' AND "isDraft" = false
     ORDER BY "createdAt" DESC 
     LIMIT $2
   `;
@@ -4822,6 +4822,14 @@ export const updateTransfer = async (transferId: string, updateData: any) => {
   if (updateData.sigungu !== undefined) {
     fields.push(`sigungu = $${paramIndex++}`);
     values.push(updateData.sigungu);
+  }
+  if (updateData.latitude !== undefined) {
+    fields.push(`latitude = $${paramIndex++}`);
+    values.push(updateData.latitude);
+  }
+  if (updateData.longitude !== undefined) {
+    fields.push(`longitude = $${paramIndex++}`);
+    values.push(updateData.longitude);
   }
   if (updateData.area !== undefined) {
     fields.push(`area = $${paramIndex++}`);
@@ -4885,7 +4893,7 @@ export const getTransfersWithPagination = async (page = 1, limit = 10) => {
   // Data query
   const query = `
     SELECT id, "userId", title, description, location, base_address, detail_address, sido, sigungu, 
-           price, category, images, documents, status, area, views, "createdAt", "updatedAt"
+           price, category, images, documents, status, area, views, "isDraft", "createdAt", "updatedAt"
     FROM transfers 
     WHERE "deletedAt" IS NULL AND status != 'DISABLED' AND "isDraft" = false
     ORDER BY "createdAt" DESC 
@@ -4951,8 +4959,8 @@ export const createTransfer = async (transferData: any) => {
     .substring(2)}`;
 
   const query = `
-    INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, price, category, images, documents, status, area, views, "isDraft", "createdAt", "updatedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
+    INSERT INTO transfers (id, "userId", title, description, location, base_address, detail_address, sido, sigungu, latitude, longitude, price, category, images, documents, status, area, views, "isDraft", "createdAt", "updatedAt")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW(), NOW())
     RETURNING *
   `;
   const values = [
@@ -4965,6 +4973,8 @@ export const createTransfer = async (transferData: any) => {
     transferData.detailAddress, // 상세주소
     transferData.sido, // 시도
     transferData.sigungu, // 시군구
+    transferData.latitude || null, // 위도
+    transferData.longitude || null, // 경도
     transferData.price,
     transferData.category,
     transferData.images,

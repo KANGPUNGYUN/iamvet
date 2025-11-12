@@ -3,13 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { InputBox } from "@/components/ui/Input/InputBox";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { AddressSearch } from "@/components/features/profile/AddressSearch";
 import { FilterBox } from "@/components/ui/FilterBox";
 import {
   ProfileImageUpload,
   MultiImageUpload,
 } from "@/components/features/profile";
+import { MapLocationModal } from "@/components/features/map/MapLocationModal";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import { FileUpload } from "@/components/ui/FileUpload";
 import { BirthDateInput } from "@/components/ui/FormattedInput";
@@ -65,6 +64,8 @@ export default function HospitalProfileEditPage() {
     error: userError,
   } = useCurrentUser();
   const saveProfileMutation = useSaveDetailedHospitalProfile();
+
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<HospitalProfileData>({
     hospitalLogo: hospitalImage.src,
@@ -521,25 +522,48 @@ export default function HospitalProfileEditPage() {
             </div>
 
             {/* 주소 */}
-            <AddressSearch
-              address={formData.address}
-              detailAddress={formData.detailAddress}
-              onAddressChange={(address) =>
-                setFormData({ ...formData, address })
-              }
-              onDetailAddressChange={(detailAddress) =>
-                setFormData({ ...formData, detailAddress })
-              }
-              onAddressDataChange={(data) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  address: data.address,
-                  postalCode: data.postalCode,
-                  latitude: data.latitude || null,
-                  longitude: data.longitude || null,
-                }));
-              }}
-            />
+            <div>
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                주소
+              </label>
+              
+              {formData.address ? (
+                <div className="space-y-3">
+                  <InputBox
+                    value={formData.address}
+                    readOnly
+                    placeholder="지도에서 주소를 선택해주세요"
+                  />
+                  <InputBox
+                    value={formData.detailAddress}
+                    onChange={(value) =>
+                      setFormData({ ...formData, detailAddress: value })
+                    }
+                    placeholder="상세주소를 입력하세요 (예: 동/호수, 층수 등)"
+                  />
+                  <Button
+                    variant="line"
+                    size="medium"
+                    onClick={() => setIsMapModalOpen(true)}
+                    className="w-full"
+                  >
+                    주소 변경하기
+                  </Button>
+                </div>
+              ) : (
+                <div className="border border-gray-300 rounded-md p-4 bg-gray-50 text-center">
+                  <p className="text-gray-600 mb-3">지도에서 주소를 선택해주세요</p>
+                  <Button
+                    variant="default"
+                    size="medium"
+                    onClick={() => setIsMapModalOpen(true)}
+                    className="w-full"
+                  >
+                    지도에서 주소 선택
+                  </Button>
+                </div>
+              )}
+            </div>
 
             <div className="flex flex-col lg:flex-row gap-[16px]">
               {/* 병원 웹사이트 */}
@@ -763,6 +787,26 @@ export default function HospitalProfileEditPage() {
           </div>
         </div>
       </div>
+
+      {/* 지도 모달 */}
+      <MapLocationModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onConfirm={(data) => {
+          setFormData((prev) => ({
+            ...prev,
+            address: data.address,
+            detailAddress: data.detailAddress || '',
+            latitude: data.latitude,
+            longitude: data.longitude,
+          }));
+          setIsMapModalOpen(false);
+        }}
+        initialAddress={formData.address}
+        initialDetailAddress={formData.detailAddress}
+        initialLatitude={formData.latitude || undefined}
+        initialLongitude={formData.longitude || undefined}
+      />
     </div>
   );
 }

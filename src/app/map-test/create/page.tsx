@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Script from 'next/script';
 
 declare global {
@@ -11,8 +11,9 @@ declare global {
 
 interface Location {
   id: string;
-  name: string;
+  name?: string;
   address: string;
+  detailAddress?: string;
   lat: number;
   lng: number;
   createdAt: string;
@@ -23,10 +24,14 @@ export default function MapCreatePage() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [locationName, setLocationName] = useState('');
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [marker, setMarker] = useState<any>(null);
   const [infoWindow, setInfoWindow] = useState<any>(null);
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [address, setAddress] = useState('');
+  const [detailAddress, setDetailAddress] = useState('');
+  const markerRef = useRef<any>(null);
 
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
 
@@ -95,14 +100,22 @@ export default function MapCreatePage() {
       infoWindowInstance.open(mapInstance, latlng);
 
       const result = response.v2.address;
+      const lat = latlng.lat();
+      const lng = latlng.lng();
+      const foundAddress = result.roadAddress || result.jibunAddress || '주소를 찾을 수 없습니다';
+      
       setSelectedLocation({
         id: '',
-        name: '',
-        address: result.roadAddress || result.jibunAddress || '주소를 찾을 수 없습니다',
-        lat: latlng.lat(),
-        lng: latlng.lng(),
+        address: foundAddress,
+        lat: lat,
+        lng: lng,
         createdAt: ''
       });
+      
+      // 주소 및 경도/위도 input 자동 입력
+      setAddress(foundAddress);
+      setLatitude(lat.toFixed(6));
+      setLongitude(lng.toFixed(6));
     });
   };
 
@@ -181,16 +194,24 @@ export default function MapCreatePage() {
   };
 
   const updateMarker = (lat: number, lng: number, mapInstance: any) => {
-    if (marker) {
-      marker.setMap(null);
+    // 이전 마커가 있으면 제거
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+      markerRef.current = null;
     }
 
+    // 새 마커 생성
     const newMarker = new window.naver.maps.Marker({
       position: new window.naver.maps.LatLng(lat, lng),
       map: mapInstance
     });
 
+    markerRef.current = newMarker;
     setMarker(newMarker);
+    
+    // 경도/위도 input 자동 입력
+    setLatitude(lat.toFixed(6));
+    setLongitude(lng.toFixed(6));
   };
 
   const searchAddressToCoordinate = (address: string) => {
@@ -214,7 +235,12 @@ export default function MapCreatePage() {
 
       const htmlAddresses: string[] = [];
       const item = response.v2.addresses[0];
-      const point = new window.naver.maps.Point(item.x, item.y);
+      
+      // 네이버 지도 geocode API 결과는 이미 위경도 좌표계입니다
+      // item.y = 위도(latitude), item.x = 경도(longitude)
+      const lat = parseFloat(item.y);
+      const lng = parseFloat(item.x);
+      const latlng = new window.naver.maps.LatLng(lat, lng);
 
       if (item.roadAddress) {
         htmlAddresses.push('[도로명 주소] ' + item.roadAddress);
@@ -236,19 +262,24 @@ export default function MapCreatePage() {
           '</div>'
         ].join('\n'));
 
-        map.setCenter(point);
-        infoWindow.open(map, point);
+        map.setCenter(latlng);
+        infoWindow.open(map, latlng);
       }
-
-      updateMarker(item.y, item.x, map);
+      const foundAddress = item.roadAddress || item.jibunAddress;
+      
+      updateMarker(lat, lng, map);
       setSelectedLocation({
         id: '',
-        name: '',
-        address: item.roadAddress || item.jibunAddress,
-        lat: parseFloat(item.y),
-        lng: parseFloat(item.x),
+        address: foundAddress,
+        lat: lat,
+        lng: lng,
         createdAt: ''
       });
+
+      // 주소 및 경도/위도 input 자동 입력
+      setAddress(foundAddress);
+      setLatitude(lat.toFixed(6));
+      setLongitude(lng.toFixed(6));
 
       setSearchResults([]);
       setSearchKeyword('');
@@ -264,15 +295,24 @@ export default function MapCreatePage() {
 
 
   const saveLocation = () => {
-    if (!selectedLocation || !locationName.trim()) {
-      alert('위치와 이름을 모두 입력해주세요.');
+    if (!selectedLocation) {
+      alert('위치를 선택해주세요.');
       return;
     }
+
+    // input 필드의 값이 있으면 사용, 없으면 selectedLocation의 값 사용
+    const lat = latitude ? parseFloat(latitude) : selectedLocation.lat;
+    const lng = longitude ? parseFloat(longitude) : selectedLocation.lng;
+    const savedAddress = address || selectedLocation.address;
+    const savedDetailAddress = detailAddress.trim() || undefined;
 
     const newLocation: Location = {
       ...selectedLocation,
       id: Date.now().toString(),
-      name: locationName,
+      address: savedAddress,
+      detailAddress: savedDetailAddress,
+      lat: lat,
+      lng: lng,
       createdAt: new Date().toISOString()
     };
 
@@ -283,9 +323,13 @@ export default function MapCreatePage() {
 
     alert('위치가 저장되었습니다.');
     setSelectedLocation(null);
-    setLocationName('');
-    if (marker) {
-      marker.setMap(null);
+    setAddress('');
+    setDetailAddress('');
+    setLatitude('');
+    setLongitude('');
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+      markerRef.current = null;
       setMarker(null);
     }
   };
@@ -337,7 +381,7 @@ export default function MapCreatePage() {
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && searchLocation()}
-                  placeholder="주소 또는 건물명 검색"
+                  placeholder="지번주소 및 도로명주소 검색"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
@@ -355,24 +399,46 @@ export default function MapCreatePage() {
                 <h2 className="text-lg font-semibold mb-3">선택된 위치</h2>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">위치 이름</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">주소</label>
                     <input
                       type="text"
-                      value={locationName}
-                      onChange={(e) => setLocationName(e.target.value)}
-                      placeholder="예: 우리집, 회사, 즐겨찾는 카페"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="주소를 입력하거나 지도에서 선택하세요"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">주소</label>
-                    <p className="text-gray-800">{selectedLocation.address}</p>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">상세주소</label>
+                    <input
+                      type="text"
+                      value={detailAddress}
+                      onChange={(e) => setDetailAddress(e.target.value)}
+                      placeholder="예: 동/호수, 층수 등 (선택사항)"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">좌표</label>
-                    <p className="text-gray-800 text-sm">
-                      위도: {selectedLocation.lat.toFixed(6)}, 경도: {selectedLocation.lng.toFixed(6)}
-                    </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">위도</label>
+                      <input
+                        type="text"
+                        value={latitude}
+                        onChange={(e) => setLatitude(e.target.value)}
+                        placeholder="위도"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">경도</label>
+                      <input
+                        type="text"
+                        value={longitude}
+                        onChange={(e) => setLongitude(e.target.value)}
+                        placeholder="경도"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
                   </div>
                   <button
                     onClick={saveLocation}
@@ -388,7 +454,7 @@ export default function MapCreatePage() {
               <p className="font-medium mb-1">사용 방법:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>주소로 검색하거나 지도를 클릭하여 위치를 선택하세요</li>
-                <li>위치 이름을 입력하고 저장하세요</li>
+                <li>자세한 위치는 직접 지도를 클릭해서 마커가 표시된 부근을 저장하시면 됩니다</li>
                 <li>저장된 위치는 다른 페이지에서 확인할 수 있습니다</li>
               </ul>
             </div>

@@ -579,10 +579,12 @@ model transfers {
   sigungu        String?
   views          Int              @default(0)
   documents      Json?            @default("[]")
+  isDraft        Boolean          @default(false)
   transfer_likes transfer_likes[]
   users          users            @relation(fields: [userId], references: [id])
 
   @@index([documents], map: "idx_transfers_documents", type: Gin)
+  @@index([isDraft], map: "idx_transfers_is_draft")
 }
 
 model users {

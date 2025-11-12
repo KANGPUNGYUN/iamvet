@@ -7,7 +7,6 @@ import { BirthDateInput } from "@/components/ui/FormattedInput";
 import { Textarea } from "@/components/ui/Input/Textarea";
 import {
   ProfileImageUpload,
-  AddressSearch,
   MultiImageUpload,
 } from "@/components/features/profile";
 import { FileUpload } from "@/components/ui/FileUpload";
@@ -21,6 +20,7 @@ import { HospitalRegistrationData } from "@/types/hospital";
 import Link from "next/link";
 import { useState } from "react";
 import { majorOptions } from "@/constants/options";
+import { MapLocationModal } from "@/components/features/map/MapLocationModal";
 
 interface HospitalRegistrationFormProps {
   onSubmit?: (data: HospitalRegistrationData) => void;
@@ -121,6 +121,9 @@ export const HospitalRegistrationForm: React.FC<
     privacy: false,
     marketing: false,
   });
+
+  // 지도 모달 상태
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   const handleInputChange =
     (field: keyof HospitalRegistrationData) => (value: string) => {
@@ -1100,21 +1103,57 @@ export const HospitalRegistrationForm: React.FC<
             </div>
 
             {/* 주소 */}
-            <AddressSearch
-              address={formData.address}
-              detailAddress={formData.detailAddress}
-              onAddressChange={handleInputChange("address")}
-              onDetailAddressChange={handleInputChange("detailAddress")}
-              onAddressDataChange={(data) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  address: data.address,
-                  postalCode: data.postalCode,
-                  latitude: data.latitude || null,
-                  longitude: data.longitude || null,
-                }));
-              }}
-            />
+            <div>
+              <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
+                주소 <span className="text-[#FF4A4A]">(필수)</span>
+              </label>
+              
+              {formData.address ? (
+                <div className="space-y-3">
+                  <div>
+                    <InputBox
+                      value={formData.address}
+                      readOnly
+                      placeholder="지도에서 주소를 선택해주세요"
+                      className="mb-2"
+                    />
+                  </div>
+                  <div>
+                    <InputBox
+                      value={formData.detailAddress}
+                      onChange={handleInputChange("detailAddress")}
+                      placeholder="상세주소를 입력하세요 (예: 동/호수, 층수 등)"
+                    />
+                  </div>
+                  <Button
+                    variant="line"
+                    size="medium"
+                    onClick={() => setIsMapModalOpen(true)}
+                    className="w-full"
+                  >
+                    주소 변경하기
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="border border-gray-300 rounded-md p-4 bg-gray-50 text-center">
+                    <p className="text-gray-600 mb-3">지도에서 주소를 선택해주세요</p>
+                    <Button
+                      variant="default"
+                      size="medium"
+                      onClick={() => setIsMapModalOpen(true)}
+                      className="w-full"
+                    >
+                      지도에서 주소 선택
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {inputErrors.address && (
+                <p className="mt-2 text-sm text-red-500">{inputErrors.address}</p>
+              )}
+            </div>
             {/* 진료 가능 동물 */}
             <div>
               <label className="block text-[20px] font-medium text-[#3B394D] mb-3">
@@ -1299,6 +1338,26 @@ export const HospitalRegistrationForm: React.FC<
           </Button>
         </div>
       </div>
+
+      {/* 지도 모달 */}
+      <MapLocationModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onConfirm={(data) => {
+          setFormData((prev) => ({
+            ...prev,
+            address: data.address,
+            detailAddress: data.detailAddress || '',
+            latitude: data.latitude,
+            longitude: data.longitude,
+          }));
+          setIsMapModalOpen(false);
+        }}
+        initialAddress={formData.address}
+        initialDetailAddress={formData.detailAddress}
+        initialLatitude={formData.latitude || undefined}
+        initialLongitude={formData.longitude || undefined}
+      />
     </div>
   );
 };

@@ -22,6 +22,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [uploadingFileNames, setUploadingFileNames] = useState<Map<string, string>>(new Map());
 
   // 개별 파일을 S3에 직접 업로드하는 함수
   const uploadFileToS3 = async (file: File): Promise<string | null> => {
@@ -133,6 +134,14 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       fileIds.forEach((id) => newSet.add(id));
       return newSet;
     });
+    // 파일 이름 매핑 저장
+    setUploadingFileNames((prev) => {
+      const newMap = new Map(prev);
+      validFiles.forEach((file, index) => {
+        newMap.set(fileIds[index], file.name);
+      });
+      return newMap;
+    });
 
     try {
       // 파일들을 S3에 순차적으로 업로드
@@ -161,6 +170,12 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         const newSet = new Set(prev);
         fileIds.forEach((id) => newSet.delete(id));
         return newSet;
+      });
+      // 파일 이름 매핑 제거
+      setUploadingFileNames((prev) => {
+        const newMap = new Map(prev);
+        fileIds.forEach((id) => newMap.delete(id));
+        return newMap;
       });
 
       // input 초기화
@@ -236,48 +251,113 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     return file.name;
   };
 
+  const isUploading = uploadingFiles.size > 0;
+
   return (
     <div className={`w-full space-y-4 ${className}`}>
       {/* 파일 업로드 버튼 */}
       {value.length < maxFiles && (
         <div
-          className={`w-full h-[200px] border-2 border-dashed rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
-            disabled ? "cursor-not-allowed opacity-50" : "hover:border-gray-400"
+          className={`relative w-full h-[200px] border-2 border-dashed rounded-lg overflow-hidden transition-all duration-200 ${
+            disabled || isUploading
+              ? "cursor-not-allowed opacity-50"
+              : "cursor-pointer hover:border-gray-400"
           }`}
-          onClick={handleUploadClick}
+          onClick={!disabled && !isUploading ? handleUploadClick : undefined}
           style={{
             backgroundColor: "#FAFAFA",
             borderColor: "#E5E5E5",
           }}
         >
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <UploadIcon currentColor="#9098A4" />
-            <p
-              className="mt-4"
-              style={{
-                color: "#9098A4",
-                fontFamily: "SUIT, sans-serif",
-                fontSize: "14px",
-                fontWeight: 500,
-                lineHeight: "135%",
-              }}
-            >
-              클릭하여 파일 업로드
-            </p>
-            <p
-              className="mt-2"
-              style={{
-                color: "#9098A4",
-                fontFamily: "SUIT, sans-serif",
-                fontSize: "14px",
-                fontWeight: 500,
-                lineHeight: "135%",
-              }}
-            >
-              PDF, Word, Excel 파일 (20MB 이하)
-              <br />({value.length}/{maxFiles}개 업로드됨)
-            </p>
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#9098A4] border-t-transparent"></div>
+                <p
+                  className="mt-4"
+                  style={{
+                    color: "#9098A4",
+                    fontFamily: "SUIT, sans-serif",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    lineHeight: "135%",
+                  }}
+                >
+                  업로드 중...
+                </p>
+              </>
+            ) : (
+              <>
+                <UploadIcon currentColor="#9098A4" />
+                <p
+                  className="mt-4"
+                  style={{
+                    color: "#9098A4",
+                    fontFamily: "SUIT, sans-serif",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    lineHeight: "135%",
+                  }}
+                >
+                  클릭하여 파일 업로드
+                </p>
+                <p
+                  className="mt-2"
+                  style={{
+                    color: "#9098A4",
+                    fontFamily: "SUIT, sans-serif",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    lineHeight: "135%",
+                  }}
+                >
+                  PDF, Word, Excel 파일 (20MB 이하)
+                  <br />({value.length}/{maxFiles}개 업로드됨)
+                </p>
+              </>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* 업로드 중인 파일들 표시 */}
+      {uploadingFileNames.size > 0 && (
+        <div className="space-y-3">
+          {Array.from(uploadingFileNames.entries()).map(([fileId, fileName]) => (
+            <div
+              key={fileId}
+              className="flex items-center gap-3 p-4 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5]"
+            >
+              <div className="flex-shrink-0">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#9098A4] border-t-transparent"></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  className="truncate"
+                  style={{
+                    color: "#3B394D",
+                    fontFamily: "SUIT, sans-serif",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    lineHeight: "135%",
+                  }}
+                >
+                  {fileName.length > 25 ? fileName.substring(0, 22) + "..." : fileName}
+                </p>
+                <p
+                  style={{
+                    color: "#9098A4",
+                    fontFamily: "SUIT, sans-serif",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    lineHeight: "135%",
+                  }}
+                >
+                  업로드 중...
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

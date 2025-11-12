@@ -2374,7 +2374,7 @@ export async function saveDetailedHospitalProfile(
           if (imageUrl) {
             await sql`
               INSERT INTO hospital_images (
-                id, "hospitalId", "userId", "imageUrl", "imageOrder", "createdAt", "updatedAt"
+                id, "hospitalId", "userId", "imageUrl", "displayOrder", "createdAt", "updatedAt"
               ) VALUES (
                 ${createId()}, ${hospitalId}, ${userId}, ${imageUrl}, ${
               i + 1
